@@ -42,7 +42,7 @@ export default function Animate(
     const renderedKeys = renderedChildren.map((c) => getKey(c));
 
     // New children keys. (They weren't rendered)
-    const enteringKeys = currentKeys.filter((k) => !renderedKeys.includes(k));
+    const enteringKeys = currentKeys.filter((k) => !renderedKeys.includes(k) || !animValues.current[k]);
 
     // Children rendered, they just stay.
     const exitingKeys = renderedKeys.filter((k) => !currentKeys.includes(k));
