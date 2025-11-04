@@ -1,12 +1,8 @@
 import React, { ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
 import { Animated } from 'react-native';
 import { View } from '@base';
-import { DefaultReact } from '@types';
-
-type AnimateProps = DefaultReact.ViewProps & {
-  duration?: number;
-  delay?: number;
-};
+import { AnimadoTypes } from '@types';
+import { parseConfig } from './utils';
 
 const getKey = (child: React.ReactNode) => {
   if (!child) throw Error('Child of Animate cannot be null or undefined');
@@ -21,10 +17,11 @@ const getKey = (child: React.ReactNode) => {
 export default function Animate(
   {
     children,
+    config,
     duration = 300,
     delay = 80,
     ...props
-  }: AnimateProps
+  }: AnimadoTypes.AnimadoProps
 ) {
   const childArray = React.Children.toArray(children) as ReactNode[];
   const animValues = useRef<Record<string, Animated.Value>>({});
@@ -135,26 +132,8 @@ export default function Animate(
           const key = getKey(child);
 
           const anim = animValues.current[key];
-          const style = anim
-            ? {
-                opacity: anim,
-                transform: [
-                  {
-                    scale: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.95, 1],
-                    }),
-                  },
-                  {
-                    translateY: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [8, 0],
-                    }),
-                  },
-                ],
-              }
-            : { opacity: 1 };
-
+          const style = anim && config ? parseConfig(anim, config) : {};
+          
           return (
             <Animated.View key={`inside-${key}`} style={style}>
               {child}
