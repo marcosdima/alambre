@@ -1,8 +1,7 @@
 import { createLightDarkContext } from "./create-light-dark-provider";
-import { useConfig, ConfigProvider } from "./config-provider";
+import { createConfigProvider } from "./create-config-provider";
 
 export {
-  useConfig,
-  ConfigProvider,
+  createConfigProvider,
   createLightDarkContext,
 }
