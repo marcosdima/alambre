@@ -1,118 +1,139 @@
-import React, { ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
-import { Animated } from 'react-native';
-import { View } from '@base';
-import { AnimadoTypes } from '@types';
-import { parseConfig } from './utils';
+import React, { useEffect, useRef, useState } from "react";
+import { AnimadoTypes } from "@types";
+import AnimadoWrapper from "./AnimadoWrapper";
+import useAnimado from "./use-animado";
+import {
+  getAnimadoChild,
+  AnimadoChild,
+  findByKey,
+  findBySignature,
+  State,
+} from './utils';
+import { Animated } from "react-native";
 
-const getKey = (child: React.ReactNode) => {
-  if (!child) throw Error('Child of Animate cannot be null or undefined');
+type UpdateState = Partial<Record<State, AnimadoChild[]>>;
 
-  const key =
-    typeof child === 'object' && 'key' in child ? (child.key as string) : null;
-  if (!key) throw Error('Each child of Animate must have a unique key prop');
-
-  return key;
-};
-
-export default function Animate(
+export default (
   {
-    children,
-    config,
-    duration = 300,
-    delay = 80,
+    children,    // Children to render.
+    config,     // Start-End-Update-Idle animation config.
+    propagate, // What to propagate to children.
     ...props
   }: AnimadoTypes.AnimadoProps
-) {
-  const childArray = React.Children.toArray(children) as ReactNode[];
-  const animValues = useRef<Record<string, Animated.Value>>({});
+) => {
+  const childArray = React.Children.toArray(children) as React.ReactElement[];
+  const currChildrenInfo = childArray.map(getAnimadoChild).filter((c) => c !== null);
   const activeAnimations = useRef<Animated.CompositeAnimation[]>([]);
+  const childrenState = useRef<Record<string, State>>({});
 
-  const [renderedChildren, setRenderedChildren] = useState<ReactElement[]>(
-    () => childArray.map((c) => c as ReactElement)
-  );
+  const {
+    renderedChildren,
+    animationValues,
+    removeChild,
+    addChild,
+  } = useAnimado(currChildrenInfo);
+ 
+  // Update hooks.
+  const [updateChildren, setUpdateChildren] = useState<UpdateState>({})
+  const updateState = (newState: UpdateState) => {
+    Object.keys(newState).forEach((k) => {
+      const key = k as State; // It's always state...
+      const arr = newState[key];
+
+      // Set states.
+      arr?.forEach((c) => childrenState.current[c.key] = key);
+      setUpdateChildren(prev => ({ ...prev, [key]: arr }));
+    })
+  }
+  const removeState = (state: State) => {
+    setUpdateChildren(prev => {
+      const { [state]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // First render.
+  useEffect(() => updateState({ start: currChildrenInfo }), []);
 
   useEffect(() => {
-    // Current children keys.
-    const currentKeys = childArray.map((c) => getKey(c));
-
-    // Rendered children keys.
-    const renderedKeys = renderedChildren.map((c) => getKey(c));
-
-    // New children keys. (They weren't rendered)
-    const enteringKeys = currentKeys.filter((k) => !renderedKeys.includes(k) || !animValues.current[k]);
-
-    // Children rendered, they just stay.
-    const exitingKeys = renderedKeys.filter((k) => !currentKeys.includes(k));
-
-    // If there are new children...
-    if (enteringKeys.length > 0) {
-      // Update rendered children.
-      setRenderedChildren(childArray as ReactElement[]);
+    const toRemove = [] as AnimadoChild[];
+    const toUpdate = [] as AnimadoChild[];
+    const toAppend = currChildrenInfo.filter((c) => !findByKey(renderedChildren, c));
     
-      // Set new children animation values.
-      const entranceAnims: Animated.CompositeAnimation[] = [];
+    renderedChildren.forEach(
+      (renderedChild) => {
+        const exists = findByKey(currChildrenInfo, renderedChild);
+        if (exists) {
+          const same = findBySignature(currChildrenInfo, renderedChild);
+          if (!same) toUpdate.push(exists);
+        } else {
+          toRemove.push(renderedChild);
+        }
+      }
+    );
 
-      enteringKeys.forEach((key) => {
-        animValues.current[key] = new Animated.Value(0);
-
-        const anim = Animated.spring(
-          animValues.current[key],
-          {
-            toValue: 1,
-            useNativeDriver: true,
-          }
-        );
-
-        entranceAnims.push(anim);
-      });
-
-      const seq = Animated.stagger(delay, entranceAnims);
-      activeAnimations.current.push(seq);
-      seq.start(() => {
-        // Clean animations.
-        activeAnimations.current = activeAnimations.current.filter((a) => a !== seq);
-      });
+    const update = {} as UpdateState;
+    
+    // Missing update.
+    if (toRemove.length > 0) update['end'] = toRemove;
+    if (toAppend.length > 0) {
+      toAppend.forEach(addChild);
+      update['start'] = toAppend;
     }
+    
+    if (Object.keys(update).length > 0) updateState(update);
+  }, [children]);
 
-    // Animate exiting components and delete them.
-    if (exitingKeys.length > 0) {
-      const exitAnims: Array<{ key: string; anim: Animated.CompositeAnimation }> = [];
+  // On update.
+  useEffect(() => {
+    const execAnimations = (state: State, onEnd?: () => void) => {
+      // Animations array.
+      const animations: Animated.CompositeAnimation[] = [];
+      
+      // Checks that exists an update array.
+      const arr = updateChildren[state];
+      if (!arr) return;
+      
+      // Checks if exists a propagate config for this state.
+      const config = propagate?.[state];
+      if (!config) return;
 
-      exitingKeys.forEach((key) => {
-        const val = animValues.current[key];
-        if (!val) animValues.current[key] = new Animated.Value(1);
+      // For each children, creates an animation.
+      arr.forEach(
+        (c) => {
+          const childAnim = animationValues[c.key];
+          childAnim.setValue(0);
 
-        const anim = Animated.timing(
-          animValues.current[key],
-          {
-            toValue: 0,
-            duration,
-            useNativeDriver: true,
-          }
-        );
-
-        exitAnims.push({ key, anim });
-      });
-
-      const animList = exitAnims.map((e) => e.anim);
-      const staggered = Animated.stagger(delay, animList);
-      activeAnimations.current.push(staggered);
-
-      staggered.start(({ finished }) => {
-        activeAnimations.current = activeAnimations.current.filter((a) => a !== staggered);
-
-        if (finished) {
-          setRenderedChildren((prev) =>
-            prev.filter((c) => !exitingKeys.includes(getKey(c)))
+          const anim = Animated.timing(
+            childAnim,
+            {
+              toValue: 1,
+              duration: config.duration ?? 0,
+              useNativeDriver: true,
+            }
           );
 
-          exitingKeys.forEach((k) => {
-            delete animValues.current[k];
-          });
+          animations.push(anim);
+        }
+      );
+
+      const seq = Animated.stagger(config.stagger ?? 0, animations);
+      activeAnimations.current.push(seq);
+      
+      seq.start(({ finished }) => {
+        // Clean animations.
+        activeAnimations.current = activeAnimations.current.filter((a) => a !== seq);
+
+        if (finished) {
+          onEnd?.();
+          removeState(state);
         }
       });
     }
-  }, [childArray]);
+
+    if (updateChildren.end) execAnimations('end', () => updateChildren.end?.forEach((c) => removeChild(c)));
+    else if (updateChildren.start) execAnimations('start');
+  }, [updateChildren]);
 
   useEffect(() => {
     return () => {
@@ -126,21 +147,25 @@ export default function Animate(
   }, []);
 
   return (
-    <View {...props}>
+    <Animated.View {...props}>
       {
-        renderedChildren.map((child) => {
-          const key = getKey(child);
+        renderedChildren.map(
+          (c, i) => {
+            const anim = animationValues[c.key];
+            if (!anim) return;
 
-          const anim = animValues.current[key];
-          const style = anim && config ? parseConfig(anim, config) : {};
-          
-          return (
-            <Animated.View key={`inside-${key}`} style={style}>
-              {child}
-            </Animated.View>
-          );
-        })
+            return (
+              <AnimadoWrapper
+                key={i}
+                child={c}
+                config={propagate ?? {}}
+                anim={animationValues[c.key]}
+                state={childrenState.current[c.key]}
+              />
+            )
+          }
+        )
       }
-    </View>
-  );
+    </Animated.View>
+  )
 }

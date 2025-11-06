@@ -1,24 +1,35 @@
 import { DefaultReact } from "@types";
 
-type InterpolationConfig = {
-  inputRange: [number, number];
-  outputRange: [number, number];
-};
+type State = 'idle' | 'start' | 'update' | 'end';
 
-type AnimadoValue = boolean | InterpolationConfig;
+type AnimadoValue = {
+  from: number,
+  to: number,
+}
 
-type AnimadoConfig = {
+type AnimadoFields = {
   opacity?: AnimadoValue;
   scale?: AnimadoValue;
   translateX?: AnimadoValue;
   translateY?: AnimadoValue;
   rotate?: AnimadoValue;
+}
+
+type Config = {
+  duration: number;
+  fields: AnimadoFields;
+  stagger?: number,
 };
 
 type AnimadoProps = DefaultReact.ViewProps & {
-  duration?: number;
-  delay?: number;
-  config?: AnimadoConfig;
+  config?: Partial<Record<State, Config>>;
+  propagate?: Partial<Record<State, Config>>;
 };
 
-export type { AnimadoProps, AnimadoConfig, AnimadoValue, InterpolationConfig };
+export type {
+  AnimadoProps,
+  AnimadoValue,
+  AnimadoFields,
+  State,
+  Config,
+};

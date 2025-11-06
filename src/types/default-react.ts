@@ -7,9 +7,17 @@ type TextInputProps = ComponentProps<typeof TextInput>;
 type ViewProps = ComponentProps<typeof View>;
 type SafeAreaViewProps = ComponentProps<typeof SafeAreaView>;
 
+type ChildInfo = {
+  key: string;
+  props: object;
+  children: React.ReactNode[];
+  raw: React.ReactElement,
+};
+
 export {
     TextProps,
     TextInputProps,
     ViewProps,
     SafeAreaViewProps,
-}
+    ChildInfo,
+};
