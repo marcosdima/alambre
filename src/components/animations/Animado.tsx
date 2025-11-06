@@ -29,24 +29,36 @@ export default (
   const {
     renderedChildren,
     animationValues,
-    removeChild,
-    addChild,
+    removeChildren,
+    addChildren,
+    updateChildren,
   } = useAnimado(currChildrenInfo);
  
   // Update hooks.
-  const [updateChildren, setUpdateChildren] = useState<UpdateState>({})
+  const [updateChildrenArray, setUpdateChildrenArray] = useState<UpdateState>({})
   const updateState = (newState: UpdateState) => {
-    Object.keys(newState).forEach((k) => {
-      const key = k as State; // It's always state...
-      const arr = newState[key];
+    setUpdateChildrenArray(prev => {
+      const next = { ...prev };
 
-      // Set states.
-      arr?.forEach((c) => childrenState.current[c.key] = key);
-      setUpdateChildren(prev => ({ ...prev, [key]: arr }));
-    })
-  }
+      Object.entries(newState).forEach(([k, arr]) => {
+        const key = k as State;
+        if (!arr) return;
+
+        for (const s of Object.keys(next) as State[]) {
+          if (s !== key) {
+            next[s] = next[s]?.filter(c => !arr.some(x => x.key === c.key)) ?? [];
+          }
+        }
+
+        next[key] = arr;
+        arr.forEach(c => (childrenState.current[c.key] = key));
+      });
+
+      return next;
+    });
+  };
   const removeState = (state: State) => {
-    setUpdateChildren(prev => {
+    setUpdateChildrenArray(prev => {
       const { [state]: _, ...rest } = prev;
       return rest;
     });
@@ -75,10 +87,14 @@ export default (
     const update = {} as UpdateState;
     
     // Missing update.
-    if (toRemove.length > 0) update['end'] = toRemove;
+    if (toRemove.length > 0) update.end = toRemove;
     if (toAppend.length > 0) {
-      toAppend.forEach(addChild);
-      update['start'] = toAppend;
+      addChildren(toAppend);
+      update.start = toAppend;
+    }
+    if (toUpdate.length > 0) {
+      updateChildren(toUpdate);
+      update.update = toUpdate;
     }
     
     if (Object.keys(update).length > 0) updateState(update);
@@ -91,7 +107,7 @@ export default (
       const animations: Animated.CompositeAnimation[] = [];
       
       // Checks that exists an update array.
-      const arr = updateChildren[state];
+      const arr = updateChildrenArray[state];
       if (!arr) return;
       
       // Checks if exists a propagate config for this state.
@@ -121,19 +137,18 @@ export default (
       activeAnimations.current.push(seq);
       
       seq.start(({ finished }) => {
-        // Clean animations.
-        activeAnimations.current = activeAnimations.current.filter((a) => a !== seq);
-
         if (finished) {
+          activeAnimations.current = activeAnimations.current.filter((a) => a !== seq);
           onEnd?.();
           removeState(state);
         }
       });
     }
-
-    if (updateChildren.end) execAnimations('end', () => updateChildren.end?.forEach((c) => removeChild(c)));
-    else if (updateChildren.start) execAnimations('start');
-  }, [updateChildren]);
+    
+    if (updateChildrenArray.end) execAnimations('end', () => removeChildren(updateChildrenArray.end ?? []));
+    if (updateChildrenArray.start) execAnimations('start');
+    if (updateChildrenArray.update) execAnimations('update');
+  }, [updateChildrenArray]);
 
   useEffect(() => {
     return () => {
