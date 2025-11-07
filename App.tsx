@@ -1,34 +1,20 @@
-import { Button, StyleSheet } from 'react-native';
-import { View } from '@base';
-import { useState } from 'react';
 import { LightDarkProvider } from 'tests/theme/theme';
 import { ConfigProvider } from 'tests/config/config';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Circle from 'src/components/animations/reanimated/Circle';
-
+import { LangProvider } from 'tests/text/lang-provider';
+import Test from 'tests/Test';
+import { SafeAreaView } from '@base';
 
 export default function App() {
-  const [val, setVal] = useState(0);
-  const odd = val % 2 === 0;
   return (
     <ConfigProvider>
       <LightDarkProvider>
-        <GestureHandlerRootView style={styles.container}>
-          <View style={{ height: 300 }}>
-            <Circle />
-          </View>
-          <Button title='Button' onPress={() => setVal(val + 1)}/>
-        </GestureHandlerRootView>
+        <LangProvider>
+          <GestureHandlerRootView>
+              <Test />
+          </GestureHandlerRootView>
+        </LangProvider>
       </LightDarkProvider>
     </ConfigProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

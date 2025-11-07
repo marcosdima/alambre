@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { DefaultReact, ActionTypes } from '@types';
 
 export const createConfigProvider = <T extends Record<string, string>>(
