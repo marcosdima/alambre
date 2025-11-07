@@ -1,19 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet } from 'react-native';
+import { View } from '@base';
+import { useState } from 'react';
+import { LightDarkProvider } from 'tests/theme/theme';
+import { ConfigProvider } from 'tests/config/config';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Circle from 'src/components/animations/reanimated/Circle';
+
 
 export default function App() {
+  const [val, setVal] = useState(0);
+  const odd = val % 2 === 0;
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ConfigProvider>
+      <LightDarkProvider>
+        <GestureHandlerRootView style={styles.container}>
+          <View style={{ height: 300 }}>
+            <Circle />
+          </View>
+          <Button title='Button' onPress={() => setVal(val + 1)}/>
+        </GestureHandlerRootView>
+      </LightDarkProvider>
+    </ConfigProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'black',
     alignItems: 'center',
     justifyContent: 'center',
   },
