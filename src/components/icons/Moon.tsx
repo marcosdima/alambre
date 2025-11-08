@@ -1,66 +1,73 @@
-import Svg, { CircleProps, LineProps } from "react-native-svg";
-import { AnimatedCircle, svgBaseConfig, AnimatedLine } from "./utils";
+import Svg, { CircleProps } from "react-native-svg";
+import { svgBaseConfig } from "./utils";
 import { DefaultReact } from "@types";
 import { View } from "@base";
 import { StyleSheet } from "react-native";
-import { SharedValue, useAnimatedProps, useSharedValue, withTiming } from "react-native-reanimated";
-import { useEffect } from "react";
+import Circle from "./base/Circle";
+import { useAnimatedProps, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 
-const RADIUS = 35
-const CIRCUMFERENCE = (2 * Math.PI * RADIUS);
-
-const baseConfig = {
-  fillOpacity: 0,
-  stroke: 'black',
-  strokeWidth: 3,
-  strokeDashoffset: 100,
-  strokeDasharray: CIRCUMFERENCE,
-  r: RADIUS,
-}
-
-const circleConfig: CircleProps = {
-  ...baseConfig,
-  strokeDasharray: CIRCUMFERENCE,
+const circle: CircleProps = {
   cx: 50,
   cy: 50,
-  r: RADIUS,
+  r: 35,
+  stroke: 'black',
+  fillOpacity: 0,
+  strokeWidth: 3,
+  strokeDashoffset: 100,
 };
 
 type SunProps = DefaultReact.ViewProps & {
   reset: boolean;
 }
 
-export default ({ reset, ...props } : SunProps) => {
-  const progressCircle = useSharedValue(CIRCUMFERENCE); 
-  const progressSmallCircle = useSharedValue(CIRCUMFERENCE); 
+const getRandomInt = (n: number) => Math.floor(Math.random() * n);
 
-  const createAnimatedProps = (shared: SharedValue<number>) =>(
-    useAnimatedProps(() => ({
-      strokeDashoffset: withTiming(shared.value, { duration: 1000 }),
-    }))
-  );
+export default ({ reset, ...props } : SunProps) => {  
+  const bigCircleCofig = {
+    circle: {
+      ...circle,
+      fillOpacity: reset ? 0 : 1,
+      fill: 'gray',
+    },
+    reset,
+    strokeOffset: 25,
+    rotation: 0,
+  }
 
-  const animatedCircleProps = createAnimatedProps(progressCircle);
-  const animatedSmallCircleProps = createAnimatedProps(progressSmallCircle);
+  const completeCircle = {
+    circle,
+    reset,
+    strokeOffset: 80,
+    rotation: 279,
+  }
 
-  useEffect(() => {
-    progressCircle.value = reset ? CIRCUMFERENCE : (CIRCUMFERENCE * 0.25);
-    progressSmallCircle.value = reset ? CIRCUMFERENCE : (-175);
-  }, [reset]);
-
+  const smallCircles = [
+    { cx: 45, cy: 70, r: 5 },
+    { cx: 30, cy: 60, r: 3 },
+    { cx: 43, cy: 35, r: 5 },
+    { cx: 70, cy: 50, r: 5 },
+  ];
+  
   return (
     <View {...props}>
       <View style={styles.container}>
         <Svg {...svgBaseConfig}>
-          <AnimatedCircle
-            animatedProps={animatedCircleProps}
-            {...circleConfig}
-          />
-          <AnimatedCircle
-            animatedProps={animatedSmallCircleProps}
-            transform='rotate(-7, 50, 50)'
-            {...circleConfig}
-          />
+          <Circle {...bigCircleCofig} />
+          <Circle {...completeCircle} />
+          {
+            smallCircles.map((c,i) => (
+              <Circle
+                key={i}
+                circle={{ ...circle, ...c }}
+                reset={reset}
+                strokeOffset={
+                  (getRandomInt(2) % 2 === 0)
+                    ? 0
+                    : getRandomInt(10) + 10
+                }
+              />
+            ))
+          }
         </Svg>
       </View>
     </View>
