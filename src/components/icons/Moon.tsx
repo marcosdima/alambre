@@ -49,34 +49,24 @@ export default ({ reset, ...props } : SunProps) => {
   
   return (
     <View {...props}>
-      <View style={styles.container}>
-        <Svg {...svgBaseConfig}>
-          <Circle {...bigCircleCofig} />
-          <Circle {...completeCircle} />
-          {
-            smallCircles.map((c,i) => (
-              <Circle
-                key={i}
-                circle={{ ...circle, ...c }}
-                reset={reset}
-                strokeOffset={
-                  (getRandomInt(2) % 2 === 0)
-                    ? 0
-                    : getRandomInt(10) + 10
-                }
-              />
-            ))
-          }
-        </Svg>
-      </View>
+      <Svg {...svgBaseConfig}>
+        <Circle {...bigCircleCofig} />
+        <Circle {...completeCircle} />
+        {
+          smallCircles.map((c,i) => (
+            <Circle
+              key={i}
+              circle={{ ...circle, ...c }}
+              reset={reset}
+              strokeOffset={
+                (getRandomInt(2) % 2 === 0)
+                  ? 0
+                  : getRandomInt(10) + 10
+              }
+            />
+          ))
+        }
+      </Svg>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    backgroundColor: 'white',
-    borderRadius: 25,
-  }
-});

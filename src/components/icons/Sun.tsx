@@ -60,38 +60,28 @@ export default ({ reset, ...props } : SunProps) => {
 
   return (
     <View {...props}>
-      <View style={styles.container}>
-        <Svg {...svgBaseConfig}>
-          <Circle {...circle}/>
-          { 
-            [...Array(8)].map(
-              (_, i) => {
-                const even = i % 2 === 0;
-                const auxlineConfig: LineProps = {
-                  ...lineConfig,
-                  x1: even ? 0 : 1,
-                  transform: `rotate(${45 * i} 50 50)`,
-                };
-                return (
-                  <AnimatedLine
-                    key={i}
-                    animatedProps={even ? animatedProps : animatedShortProps}
-                    {...auxlineConfig}
-                  />
-                )
-              }
-            )
-          }
-        </Svg>
-      </View>
+      <Svg {...svgBaseConfig}>
+        <Circle {...circle}/>
+        { 
+          [...Array(8)].map(
+            (_, i) => {
+              const even = i % 2 === 0;
+              const auxlineConfig: LineProps = {
+                ...lineConfig,
+                x1: even ? 0 : 1,
+                transform: `rotate(${45 * i} 50 50)`,
+              };
+              return (
+                <AnimatedLine
+                  key={i}
+                  animatedProps={even ? animatedProps : animatedShortProps}
+                  {...auxlineConfig}
+                />
+              )
+            }
+          )
+        }
+      </Svg>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    backgroundColor: 'white',
-    borderRadius: 25,
-  }
-});
