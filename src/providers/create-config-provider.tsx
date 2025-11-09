@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { DefaultReact, ActionTypes } from '@types';
 
-export const createConfigProvider = <T extends Record<string, string>>(
+const createConfigProvider = <T extends Record<string, string>>(
   baseConfig: T,
   storage: ActionTypes.Storage,
 ) => {
@@ -58,3 +58,5 @@ export const createConfigProvider = <T extends Record<string, string>>(
 
   return { ConfigProvider, useConfig };
 };
+
+export default createConfigProvider;

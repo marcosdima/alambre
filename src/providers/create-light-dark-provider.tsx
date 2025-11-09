@@ -40,7 +40,7 @@ const useThemeContext = <T extends object>(
   };
 };
 
-export const createLightDarkProvider = <T extends object>(
+const createLightDarkProvider = <T extends object>(
   lightTheme: T,
   darkTheme: T,
   storage: ActionTypes.Storage,
@@ -72,3 +72,5 @@ export const createLightDarkProvider = <T extends object>(
 
   return { LightDarkProvider, useLightDark };
 };
+
+export default createLightDarkProvider;

@@ -36,7 +36,7 @@ const useLangContext = <T extends Langs>(
   };
 };
 
-export const createLangProvider = <T extends Langs>(
+const createLangProvider = <T extends Langs>(
   langs: T,
   storage: ActionTypes.Storage,
 ) => {
@@ -67,3 +67,5 @@ export const createLangProvider = <T extends Langs>(
 
   return { LangProvider, useLang };
 };
+
+export default createLangProvider;
