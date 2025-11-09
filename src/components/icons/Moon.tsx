@@ -31,7 +31,6 @@ export default ({ reset, ...props } : SunProps) => {
     },
     reset,
     strokeOffset: 25,
-    rotation: 0,
   }
 
   const completeCircle = {
