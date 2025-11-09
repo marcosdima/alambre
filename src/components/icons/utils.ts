@@ -1,5 +1,6 @@
-import Animated from "react-native-reanimated";
-import { Circle, Line, Path, SvgProps } from "react-native-svg";
+import Animated from 'react-native-reanimated';
+import type { SvgProps } from 'react-native-svg';
+import { Circle, Line, Path } from 'react-native-svg';
 
 export type LineCoords = {
   x1: number;

@@ -26,7 +26,7 @@ export default function App() {
       // shake between -OFFSET and OFFSET 5 times
       withRepeat(withTiming(OFFSET, { duration: TIME }), 5, true),
       // go back to 0 at the end
-      withSpring(0)
+      withSpring(0),
     );
   };
 

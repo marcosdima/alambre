@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, StyleSheet, LayoutChangeEvent, Pressable } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -11,7 +12,7 @@ import Animated, {
 import Svg from 'react-native-svg';
 import Sun from '../icons/Sun';
 import Moon from '../icons/Moon';
-import { DefaultReact } from '@types';
+import type { DefaultReact } from '@types';
 import { AnimatedCircle } from '../icons/utils';
 
 type Colors = {
@@ -39,7 +40,7 @@ export default (
     toggle,
     colors = {},
     ...props
-  }: ToggleProps
+  }: ToggleProps,
 ) => {
   // Default colors.
   const {
@@ -53,7 +54,7 @@ export default (
 
   // Hooks.
   const [width, setWidth] = useState(0);
-  const [side, setSide] = useState(setLeft ? 1 : 0)
+  const [side, setSide] = useState(setLeft ? 1 : 0);
 
   // Animation values.
   const cx = useSharedValue(0);
@@ -75,7 +76,7 @@ export default (
     cx.value = withTiming(toLeft ? width * LEFT : width * RIGHT, { duration: 400 });
     r.value = withTiming(width * RADIUS, { duration: 300 });
     progress.value = withSpring(toLeft);
-    setSide(toLeft)
+    setSide(toLeft);
     toggle();
   };
 
@@ -90,7 +91,7 @@ export default (
     backgroundColor: interpolateColor(progress.value, [1, 0], [backgroundLight, backgroundDark]),
     borderColor: interpolateColor(progress.value, [1, 0], [borderDark, borderLight]),
   }));
-  
+
   return (
     <Pressable
       onPressIn={onBegin}

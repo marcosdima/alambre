@@ -1,6 +1,6 @@
-import { DefaultReact } from "@types";
-import { Button } from "react-native";
-import Animated, { LinearTransition, useSharedValue, withSpring } from "react-native-reanimated";
+import type { DefaultReact } from '@types';
+import { Button } from 'react-native';
+import Animated, { LinearTransition, useSharedValue, withSpring } from 'react-native-reanimated';
 
 export default ({ children, ...props }: DefaultReact.ViewProps) => {
   const scale = useSharedValue(1);
@@ -17,13 +17,14 @@ export default ({ children, ...props }: DefaultReact.ViewProps) => {
           transform: [
             {
               scale,
-            }
-          ]
+            },
+          ],
         }
       }
+      {...props}
     >
       {children}
       <Button onPress={handlePress} title="Click me" />
     </Animated.View>
-  )
-} 
+  );
+};

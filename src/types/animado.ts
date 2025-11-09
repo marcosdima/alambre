@@ -1,4 +1,4 @@
-import { DefaultReact } from "@types";
+import type { DefaultReact } from '@types';
 
 type State = 'idle' | 'start' | 'update' | 'end';
 

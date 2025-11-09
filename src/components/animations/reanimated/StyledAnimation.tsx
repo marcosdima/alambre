@@ -33,7 +33,7 @@ export default ({ width }: AppProps) => {
         easing: Easing.back(3),
       }),
       -1,
-      true
+      true,
     );
     defaultAnim.value = withRepeat(
       // highlight-next-line
@@ -41,9 +41,9 @@ export default ({ width }: AppProps) => {
         duration,
       }),
       -1,
-      true
+      true,
     );
-  }, []);
+  }, [defaultAnim, linear]);
 
   return (
     <View style={styles.container}>
@@ -55,7 +55,7 @@ export default ({ width }: AppProps) => {
       </Animated.View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

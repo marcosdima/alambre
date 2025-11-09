@@ -1,10 +1,9 @@
-import Svg, { CircleProps } from "react-native-svg";
-import { svgBaseConfig } from "./utils";
-import { DefaultReact } from "@types";
-import { View } from "@base";
-import { StyleSheet } from "react-native";
-import Circle from "./base/Circle";
-import { useAnimatedProps, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import type { CircleProps } from 'react-native-svg';
+import Svg from 'react-native-svg';
+import { svgBaseConfig } from './utils';
+import type { DefaultReact } from '@types';
+import { View } from '@base';
+import Circle from './base/Circle';
 
 const circle: CircleProps = {
   cx: 50,
@@ -22,7 +21,7 @@ type SunProps = DefaultReact.ViewProps & {
 
 const getRandomInt = (n: number) => Math.floor(Math.random() * n);
 
-export default ({ reset, ...props } : SunProps) => {  
+export default ({ reset, ...props } : SunProps) => {
   const bigCircleCofig = {
     circle: {
       ...circle,
@@ -31,14 +30,14 @@ export default ({ reset, ...props } : SunProps) => {
     },
     reset,
     strokeOffset: 25,
-  }
+  };
 
   const completeCircle = {
     circle,
     reset,
     strokeOffset: 80,
     rotation: 279,
-  }
+  };
 
   const smallCircles = [
     { cx: 45, cy: 70, r: 5 },
@@ -46,7 +45,7 @@ export default ({ reset, ...props } : SunProps) => {
     { cx: 43, cy: 35, r: 5 },
     { cx: 70, cy: 50, r: 5 },
   ];
-  
+
   return (
     <View {...props}>
       <Svg {...svgBaseConfig}>

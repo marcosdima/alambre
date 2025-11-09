@@ -10,7 +10,6 @@ import Animated, {
 import {
   Gesture,
   GestureDetector,
-  GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 
 type Translate = {
@@ -20,10 +19,6 @@ type Translate = {
 
 const INITIAL = { translationX: 0, translationY: 0 };
 const DELETE = { translationX: 100, translationY: 100 };
-
-const insideDeleteArea = ({ translationX, translationY }: Translate) => {
-  return 
-}
 
 export default function App() {
   const pressed = useSharedValue<boolean>(false);
@@ -44,8 +39,8 @@ export default function App() {
       offset.value = withSpring(INITIAL);
       pressed.value = false;
       deletePosition.value = false;
-    })
-  
+    });
+
   const animatedStyles = useAnimatedStyle(() => ({
     backgroundColor:
       withSpring(

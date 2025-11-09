@@ -1,5 +1,5 @@
-import Text from "./Text";
-import { TextProps } from "../../types/default-react";
+import Text from './Text';
+import type { TextProps } from '../../types/default-react';
 
 export default ({ style, ...props }: TextProps) => {
   return (
@@ -8,7 +8,7 @@ export default ({ style, ...props }: TextProps) => {
         {
           fontSize: 24,
           fontWeight: 'bold',
-          marginBottom: 8
+          marginBottom: 8,
         },
         style,
       ]}

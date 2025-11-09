@@ -1,7 +1,7 @@
-import { Button } from "react-native";
-import { useLang } from "./lang-provider"
-import { Text, View } from "@base";
-import { useLightDark } from "../theme/theme"
+import { Button } from 'react-native';
+import { useLang } from './lang-provider';
+import { Text, View } from '@base';
+import { useLightDark } from '../theme/theme';
 
 export default () => {
   const { lang, currentLang, changeLang } = useLang();
@@ -16,6 +16,6 @@ export default () => {
         }
       />
     </View>
-    
+
   );
-}
+};

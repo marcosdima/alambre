@@ -1,6 +1,7 @@
-import { ComponentProps } from "react";
-import { Text, TextInput, View } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import type { ComponentProps } from 'react';
+import type { Text, TextInput, View } from 'react-native';
+import type { SafeAreaView } from 'react-native-safe-area-context';
+import type React from 'react';
 
 type TextProps = ComponentProps<typeof Text>;
 type TextInputProps = ComponentProps<typeof TextInput>;
@@ -15,9 +16,9 @@ type ChildInfo = {
 };
 
 export {
-    TextProps,
-    TextInputProps,
-    ViewProps,
-    SafeAreaViewProps,
-    ChildInfo,
+  TextProps,
+  TextInputProps,
+  ViewProps,
+  SafeAreaViewProps,
+  ChildInfo,
 };

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { DefaultReact, ActionTypes } from '@types';
+import type { DefaultReact, ActionTypes } from '@types';
 
 const langKey = 'currentLanguage';
 type Langs = Record<string, object>;
@@ -11,10 +11,10 @@ const useLangContext = <T extends Langs>(
   }: {
     langs: T,
     storage: ActionTypes.Storage;
-  }
+  },
 ) => {
   const [currentLang, setCurrentLang] = useState<keyof T>(
-    Object.keys(langs).shift() as keyof T
+    Object.keys(langs).shift() as keyof T,
   );
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const useLangContext = <T extends Langs>(
       const stored = await storage.get(langKey);
       if (stored) setCurrentLang(stored);
     })();
-  }, []);
+  }, [storage]);
 
   const changeLang = async (lang: keyof T) => {
     setCurrentLang(lang);
@@ -45,11 +45,11 @@ const createLangProvider = <T extends Langs>(
         lang: T[keyof T];
         currentLang: keyof T;
         changeLang: (newLangKey: keyof T) => void;
-      }
-    | undefined
-  >(undefined);
+          }
+          | undefined
+          >(undefined);
 
-  const LangProvider = ({ children, ...props}: DefaultReact.ViewProps) => {
+  const LangProvider = ({ children, ...props }: DefaultReact.ViewProps) => {
     const value = useLangContext<T>({ langs, storage });
     return (
       <LangContext.Provider {...props} value={value}>

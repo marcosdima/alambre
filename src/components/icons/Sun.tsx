@@ -1,11 +1,11 @@
-import Svg, { CircleProps, LineProps } from "react-native-svg";
-import { AnimatedCircle, svgBaseConfig, AnimatedLine } from "./utils";
-import { DefaultReact } from "@types";
-import { View } from "@base";
-import { StyleSheet } from "react-native";
-import { SharedValue, useAnimatedProps, useSharedValue, withTiming } from "react-native-reanimated";
-import { useEffect } from "react";
-import Circle from "./base/Circle";
+import type { CircleProps, LineProps } from 'react-native-svg';
+import Svg from 'react-native-svg';
+import { svgBaseConfig, AnimatedLine } from './utils';
+import type { DefaultReact } from '@types';
+import { View } from '@base';
+import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useEffect } from 'react';
+import Circle from './base/Circle';
 
 const lineConfig: LineProps = {
   fillOpacity: 0,
@@ -34,21 +34,20 @@ type SunProps = DefaultReact.ViewProps & {
 
 export default ({ reset, ...props } : SunProps) => {
   const progress = useSharedValue(100);
-  const progressShort = useSharedValue(100); 
+  const progressShort = useSharedValue(100);
 
-  const createAnimatedProps = (shared: SharedValue<number>) =>(
-    useAnimatedProps(() => ({
-      strokeDashoffset: withTiming(shared.value, { duration: 1000 }),
-    }))
-  );
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: withTiming(progress.value, { duration: 1000 }),
+  }));
 
-  const animatedProps = createAnimatedProps(progress);
-  const animatedShortProps = createAnimatedProps(progressShort);
+  const animatedShortProps = useAnimatedProps(() => ({
+    strokeDashoffset: withTiming(progressShort.value, { duration: 1000 }),
+  }));
 
   useEffect(() => {
     progress.value = reset ? 100 : 80;
     progressShort.value = reset ? 100 : 85;
-  }, [reset]);
+  }, [progress, progressShort, reset]);
 
   const circle = {
     circle: {
@@ -56,13 +55,13 @@ export default ({ reset, ...props } : SunProps) => {
       fillOpacity: reset ? 0 : 1,
     },
     reset,
-  }
+  };
 
   return (
     <View {...props}>
       <Svg {...svgBaseConfig}>
         <Circle {...circle}/>
-        { 
+        {
           [...Array(8)].map(
             (_, i) => {
               const even = i % 2 === 0;
@@ -77,8 +76,8 @@ export default ({ reset, ...props } : SunProps) => {
                   animatedProps={even ? animatedProps : animatedShortProps}
                   {...auxlineConfig}
                 />
-              )
-            }
+              );
+            },
           )
         }
       </Svg>

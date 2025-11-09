@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { DefaultReact, ActionTypes } from '@types';
+import type { DefaultReact, ActionTypes } from '@types';
 
 const createConfigProvider = <T extends Record<string, string>>(
   baseConfig: T,
@@ -27,10 +27,10 @@ const createConfigProvider = <T extends Record<string, string>>(
         }
         setConfig(newConfig);
       })();
-    }, []);
+    }, [baseConfig, storage]);
 
     const setField = (field: keyof T, value: string) => {
-      setConfig(prev => ({ ...prev, [field]: value }));
+      setConfig((prev) => ({ ...prev, [field]: value }));
     };
 
     const saveField = async (field: keyof T, value: string) => {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { DefaultReact, ActionTypes } from '@types';
+import type { DefaultReact, ActionTypes } from '@types';
 
 const lightDarkThemeKey = 'lightDarkThemeKey';
 
@@ -14,7 +14,7 @@ const useThemeContext = <T extends object>(
     lightTheme: T;
     darkTheme: T;
     storage: ActionTypes.Storage;
-  }
+  },
 ) => {
   const [themeName, setThemeName] = useState<ThemeName>('light');
 
@@ -23,7 +23,7 @@ const useThemeContext = <T extends object>(
       const stored = await storage.get(lightDarkThemeKey);
       if (stored === 'dark' || stored === 'light') setThemeName(stored);
     })();
-  }, []);
+  }, [storage]);
 
   const toggleTheme = async () => {
     const next = themeName === 'light' ? 'dark' : 'light';
@@ -50,11 +50,11 @@ const createLightDarkProvider = <T extends object>(
         theme: T;
         toggleTheme: () => void;
         setThemeName: (theme: ThemeName) => void;
-      }
-    | undefined
-  >(undefined);
+          }
+          | undefined
+          >(undefined);
 
-  const LightDarkProvider = ({ children, ...props}: DefaultReact.ViewProps) => {
+  const LightDarkProvider = ({ children, ...props }: DefaultReact.ViewProps) => {
     const value = useThemeContext<T>({ lightTheme, darkTheme, storage });
     return (
       <LightDarkContext.Provider {...props} value={value}>
