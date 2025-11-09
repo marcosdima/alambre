@@ -5,31 +5,27 @@ import { View } from "@base";
 import { StyleSheet } from "react-native";
 import { SharedValue, useAnimatedProps, useSharedValue, withTiming } from "react-native-reanimated";
 import { useEffect } from "react";
+import Circle from "./base/Circle";
 
-const RADIUS = 23
-const CIRCUMFERENCE = (2 * Math.PI * RADIUS);
-
-const baseConfig = {
+const lineConfig: LineProps = {
   fillOpacity: 0,
   stroke: 'black',
   strokeWidth: 3,
   strokeDashoffset: 100,
-}
-
-const circleConfig: CircleProps = {
-  ...baseConfig,
-  strokeDasharray: CIRCUMFERENCE,
-  cx: 50,
-  cy: 50,
-  r: RADIUS,
-};
-
-const lineConfig: LineProps = {
-  ...baseConfig,
   strokeDasharray: 100,
   y1: 50,
   x2: 50,
   y2: 50,
+};
+
+const circleBaseConfig: CircleProps = {
+  cx: 50,
+  cy: 50,
+  r: 23,
+  stroke: 'black',
+  fill: 'orange',
+  strokeWidth: 3,
+  strokeDashoffset: 100,
 };
 
 type SunProps = DefaultReact.ViewProps & {
@@ -39,7 +35,6 @@ type SunProps = DefaultReact.ViewProps & {
 export default ({ reset, ...props } : SunProps) => {
   const progress = useSharedValue(100);
   const progressShort = useSharedValue(100); 
-  const progressCircle = useSharedValue(CIRCUMFERENCE); 
 
   const createAnimatedProps = (shared: SharedValue<number>) =>(
     useAnimatedProps(() => ({
@@ -49,22 +44,25 @@ export default ({ reset, ...props } : SunProps) => {
 
   const animatedProps = createAnimatedProps(progress);
   const animatedShortProps = createAnimatedProps(progressShort);
-  const animatedCircleProps = createAnimatedProps(progressCircle);
 
   useEffect(() => {
     progress.value = reset ? 100 : 80;
     progressShort.value = reset ? 100 : 85;
-    progressCircle.value = reset ? CIRCUMFERENCE : 0;
   }, [reset]);
+
+  const circle = {
+    circle: {
+      ...circleBaseConfig,
+      fillOpacity: reset ? 0 : 1,
+    },
+    reset,
+  }
 
   return (
     <View {...props}>
       <View style={styles.container}>
         <Svg {...svgBaseConfig}>
-          <AnimatedCircle
-            animatedProps={animatedCircleProps}
-            {...circleConfig}
-          />
+          <Circle {...circle}/>
           { 
             [...Array(8)].map(
               (_, i) => {
