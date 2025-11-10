@@ -12,13 +12,13 @@ const body: LineProps = {
 };
 
 const arrowUp: LineProps = {
-  x1: 140, y1: 10,
+  x1: 130, y1: 0,
   // --------- //
   x2: 180, y2: 50,
 };
 
 const arrowDown: LineProps = {
-  x1: 140, y1: 90,
+  x1: 130, y1: 100,
   // --------- //
   x2: 180, y2: 50,
 };

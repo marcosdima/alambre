@@ -1,12 +1,20 @@
 import { View } from '@base';
 import type { DefaultReact } from '@types';
 import type { ReactNode } from 'react';
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { Pressable } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import Arrow from 'src/components/icons/Arrow';
 
+// Types-
 type AnimationDefault = 'to-left' | 'to-right';
 
 type Page = {
@@ -16,6 +24,23 @@ type Page = {
 }
 
 type NavigatorObject = Record<string, Page>;
+
+type NavigatorReturn = {
+  currentPage: Page;
+  navigate: (target: string) => void;
+  previous: () => void;
+  noPreviusPages: boolean;
+};
+
+type NavigatorProviderProps = DefaultReact.ViewProps & {
+  pages: NavigatorObject;
+};
+
+type NavigatorBodyProps = DefaultReact.ViewProps & {
+   arrowColor?: ColorValue;
+   width?: number,
+   pressStyle?: StyleProp<ViewStyle>,
+};
 
 const useNavigartorContext = (pages: NavigatorObject) => {
   type Key = keyof NavigatorObject;
@@ -43,17 +68,9 @@ const useNavigartorContext = (pages: NavigatorObject) => {
   };
 };
 
-type NavigatorReturn = {
-  currentPage: Page;
-  navigate: (target: string) => void;
-  previous: () => void;
-  noPreviusPages: boolean;
-};
 const NavigatorContext = createContext<NavigatorReturn | undefined>(undefined);
 
-type NavigatorProviderProps = DefaultReact.ViewProps & {
-  pages: NavigatorObject;
-};
+
 export const NavigatorProvider = (
   {
     children,
@@ -76,11 +93,6 @@ export const useNavigator = () => {
   return ctx;
 };
 
-type NavigatorBodyProps = DefaultReact.ViewProps & {
-   arrowColor?: ColorValue;
-   width?: number,
-   pressStyle?: StyleProp<ViewStyle>,
-};
 export const NavigatorBody = (
   {
     children: _children,
@@ -105,24 +117,60 @@ export const NavigatorBody = (
       padding: 2,
     },
   } = props;
+  const scale = useSharedValue(1);
+  const shows = useSharedValue(0);
   const { previous, currentPage, noPreviusPages } = useNavigator();
+
+  useEffect(() => {
+    shows.value = withTiming(noPreviusPages ? 1 : 0, { duration: 1000 });
+  }, [noPreviusPages, arrowColor, shows]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(
+      shows.value,
+      [0, 1],
+      ['transparent', arrowColor as string],
+    ),
+    transform: [{ scale: scale.value }],
+  }));
+
+  const onPressIn = () => {
+    scale.value = withTiming(0.85, { duration: 300 });
+  };
+
+  const onPressOut = () => {
+    scale.value = withSpring(1, {
+      damping: 6,
+      stiffness: 250,
+      mass: 1,
+    });
+    previous();
+  };
 
   return (
     <View
       style={[{ position: 'relative', flex: 1 }, style]}
       {...props}
     >
-      <Pressable
-        onPressOut={previous}
-        style={[StyleSheet.absoluteFillObject, pressStyle]}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          pressStyle,
+          animatedStyle,
+        ]}
       >
-        <Arrow
-          reset={!noPreviusPages}
-          color={arrowColor}
-          lineWidth={width}
-          rotate={180}
-        />
-      </Pressable>
+        <Pressable
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
+        >
+          <Arrow
+            reset={!noPreviusPages}
+            color={arrowColor}
+            lineWidth={width}
+            rotate={180}
+          />
+        </Pressable>
+      </Animated.View>
       {currentPage.component}
     </View>
   );
