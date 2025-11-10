@@ -1,4 +1,4 @@
 export type Storage = {
-  get: (key: string) => Promise<string>;
-  set: (key: string, value: unknown) => Promise<void>;
+  get: (key: string) => Promise<string | null>;
+  set: (key: string, value: string) => Promise<void>;
 }
