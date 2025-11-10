@@ -1,34 +1,23 @@
-import { View } from '@base';
-import { Button, StyleSheet } from 'react-native';
-import Hi from './text/Hi';
-import { useLightDark } from './theme/theme';
-import ToggleLightDark from 'src/components/animations/ToggleLightDark';
-import Sun from 'src/components/icons/Sun';
-import { useState } from 'react';
-import Moon from 'src/components/icons/Moon';
+import { SafeAreaView } from '@base';
+import { StyleSheet } from 'react-native';
+import { NavigatorBody } from '@providers';
 
 export default () => {
-  const { theme, toggleTheme } = useLightDark();
-  const [val,setVal] = useState(0);
-
+  //const { theme, toggleTheme } = useLightDark();
+  //const [val,setVal] = useState(0);
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Sun reset={val % 2 === 0} style={styles.toggle}/>
-      <Moon reset={val % 2 === 0} style={styles.toggle}/>
-      <Button title="AHHH" onPress={() => setVal(val + 1)}/>
-      <Hi />
-      <ToggleLightDark setLeft={false} style={styles.toggle} toggle={toggleTheme}/>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <NavigatorBody
+        style={styles.container}
+      />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
+    backgroundColor: 'rgba(95, 95, 74, 0.13)',
   },
   toggle: {
     width: 210,
