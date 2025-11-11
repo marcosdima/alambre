@@ -26,7 +26,7 @@ const useLangContext = <T extends Langs>(
 
   const changeLang = async (lang: keyof T) => {
     setCurrentLang(lang);
-    await storage.set(langKey, lang);
+    await storage.set(langKey, String(lang));
   };
 
   return {
