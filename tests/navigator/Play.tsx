@@ -7,7 +7,7 @@ export default () => {
   return (
     <View style={styles.container}>
       <Title style={styles.title}>Play</Title>
-      <Pressable style={styles.press} onPress={() => navigate('home')} />
+      <Pressable style={styles.press} onPress={() => navigate('home', { subpage: 'configuration' })} />
     </View>
   );
 };

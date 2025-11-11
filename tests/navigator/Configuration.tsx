@@ -1,18 +1,29 @@
-import { Title } from '@base';
-import { StyleSheet } from 'react-native';
+import { Title, View } from '@base';
+import { Pressable, StyleSheet } from 'react-native';
+import { useNavigator } from '@providers';
 
 export default () => {
+  const { navigate } = useNavigator();
   return (
-    <Title style={styles.container}>Config</Title>
+    <View style={styles.container}>
+      <Title style={styles.title}>Config</Title>
+      <Pressable style={styles.press} onPress={() => navigate('home', { subpage: 'configuration,advance' })} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
+    paddingTop: 50,
+  },
+  title: {
+    textAlignVertical: 'center',
+    textAlign: 'center',
+  },
+  press: {
+    backgroundColor: 'blue',
+    height: 200,
+    aspectRatio: 2,
   },
 });

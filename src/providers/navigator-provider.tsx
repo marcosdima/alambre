@@ -16,7 +16,7 @@ type NavigatorReturn = {
   currentPage: Page;
   pageKey: string;
   noPreviousPages: boolean;
-  navigate: (target: string) => void;
+  navigate: (target: string, settings?: NavigationSettings) => void;
   previous: () => void;
 };
 
@@ -24,17 +24,14 @@ type NavigatorProviderProps = DefaultReact.ViewProps & {
   pages: NavigatorObject;
 };
 
+type NavigationSettings = {
+  subpage?: string,
+};
+
 const useNavigartorContext = (pages: NavigatorObject) => {
-  type Key = keyof NavigatorObject;
-
-  const firstPage = Object.keys(pages).shift() as Key;
-  const stack = useRef<Key[]>([]);
-  const [currentPage, updatePage] = useState<Key>(firstPage);
-
-  const navigate = (target: Key) => {
-    stack.current.push(currentPage);
-    updatePage(target);
-  };
+  const firstPage = Object.keys(pages).shift() ?? '';
+  const stack = useRef<string[]>([]);
+  const [currentPage, updatePage] = useState<string>(firstPage);
 
   const previous = () => {
     const target = stack.current.pop();
@@ -42,8 +39,37 @@ const useNavigartorContext = (pages: NavigatorObject) => {
     updatePage(target);
   };
 
+  const navigate = (
+    target: string,
+    settings: NavigationSettings = {},
+  ) => {
+    const { subpage } = settings;
+    const aux = subpage
+      ? `${target},${subpage}`
+      : String(target);
+    stack.current.push(currentPage);
+    updatePage(aux);
+  };
+
+
+  const getComponent = (path: string[]) => {
+    // Get the first key, if it does not exist then goes to the first page.
+    const firstKey = path.shift();
+    if (!firstKey) return pages[firstPage];
+
+    // Get that page and, if that's all it is, return it.
+    const first = pages[firstKey];
+    if (path.length === 0) return first;
+
+    // Follow the path.
+    return path.reduce(
+      (acc, key) => acc?.subpages?.[key],
+      first as Page | undefined,
+    ) ?? first;
+  };
+
   return {
-    currentPage: pages[currentPage],
+    currentPage: getComponent(currentPage.split(',')),
     pageKey: stack.current.join(', '),
     noPreviousPages: stack.current.length === 0,
     navigate,
@@ -52,7 +78,6 @@ const useNavigartorContext = (pages: NavigatorObject) => {
 };
 
 const NavigatorContext = createContext<NavigatorReturn | undefined>(undefined);
-
 
 export const NavigatorProvider = (
   {

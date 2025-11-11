@@ -88,7 +88,7 @@ export const NavigatorBody = (
       mass: 1,
     });
     setIsReturning(true);
-    setTimeout(previous, 100);
+    setTimeout(previous, 10); // TODO: When you go back to the beggining, it can break.
   };
 
   const {
