@@ -88,7 +88,7 @@ export const NavigatorBody = (
       mass: 1,
     });
     setIsReturning(true);
-    previous();
+    setTimeout(previous, 100);
   };
 
   const {

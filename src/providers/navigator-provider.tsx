@@ -40,7 +40,7 @@ const useNavigartorContext = (pages: NavigatorObject) => {
   const previous = () => {
     const target = stack.current.pop();
     if (!target) return;
-    setTimeout(() => updatePage(target), 100);
+    updatePage(target);
   };
 
   return {
