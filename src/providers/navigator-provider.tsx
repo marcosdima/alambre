@@ -2,7 +2,6 @@ import type { DefaultReact } from '@types';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useRef, useState } from 'react';
 
-// Types-
 type AnimationDefault = 'to-left' | 'to-right';
 
 type Page = {
@@ -16,7 +15,7 @@ type NavigatorObject = Record<string, Page>;
 type NavigatorReturn = {
   currentPage: Page;
   pageKey: string;
-  noPreviusPages: boolean;
+  noPreviousPages: boolean;
   navigate: (target: string) => void;
   previous: () => void;
 };
@@ -46,7 +45,7 @@ const useNavigartorContext = (pages: NavigatorObject) => {
   return {
     currentPage: pages[currentPage],
     pageKey: stack.current.join(', '),
-    noPreviusPages: stack.current.length === 0,
+    noPreviousPages: stack.current.length === 0,
     navigate,
     previous,
   };

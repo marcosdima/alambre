@@ -46,7 +46,7 @@ export const NavigatorBody = (
   const {
     previous,
     currentPage,
-    noPreviusPages,
+    noPreviousPages,
     pageKey,
   } = useNavigator();
 
@@ -56,8 +56,8 @@ export const NavigatorBody = (
 
   // Shows arrow just if there are previus pages.
   useEffect(() => {
-    shows.value = withTiming(noPreviusPages ? 0 : 1, { duration: 1000 });
-  }, [noPreviusPages, arrowColor, shows]);
+    shows.value = withTiming(noPreviousPages ? 0 : 1, { duration: 1000 });
+  }, [noPreviousPages, arrowColor, shows]);
 
   // TODO: Rethink. This is the simpliest way to handle this animation bug.
   useEffect(() => {
@@ -129,7 +129,7 @@ export const NavigatorBody = (
           onPressOut={onPressOut}
         >
           <Arrow
-            reset={noPreviusPages}
+            reset={noPreviousPages}
             color={arrowColor}
             lineWidth={width}
             rotate={180}
