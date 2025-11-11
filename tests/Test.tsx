@@ -1,6 +1,13 @@
 import { SafeAreaView } from '@base';
 import { StyleSheet } from 'react-native';
-import { NavigatorBody } from '@providers';
+import {
+  BounceInLeft,
+  BounceInRight,
+  BounceOutLeft,
+  BounceOutRight,
+  Easing,
+} from 'react-native-reanimated';
+import { NavigatorBody } from 'src/components/navigator/NavigatorBody';
 
 export default () => {
   //const { theme, toggleTheme } = useLightDark();
@@ -9,6 +16,16 @@ export default () => {
     <SafeAreaView style={styles.container}>
       <NavigatorBody
         style={styles.container}
+        animations={{
+          go: {
+            pageEntering: BounceInRight.duration(800).delay(400).easing(Easing.ease),
+            pageExiting: BounceOutLeft.duration(600).easing(Easing.ease),
+          },
+          return: {
+            pageEntering: BounceInLeft.duration(800).delay(400).easing(Easing.ease),
+            pageExiting: BounceOutRight.duration(800).easing(Easing.ease),
+          },
+        }}
       />
     </SafeAreaView>
   );

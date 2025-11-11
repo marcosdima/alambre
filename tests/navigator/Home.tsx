@@ -21,6 +21,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 50,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
   title: {
     textAlignVertical: 'center',
@@ -28,7 +30,7 @@ const styles = StyleSheet.create({
   },
   press: {
     backgroundColor: 'blue',
-    height: 200,
+    height: '20%',
     aspectRatio: 2,
   },
 });
