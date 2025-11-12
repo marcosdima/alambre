@@ -7,7 +7,7 @@ import {
   BounceOutRight,
   Easing,
 } from 'react-native-reanimated';
-import { NavigatorBody } from 'src/components/navigator/NavigatorBody';
+import NavigatorBody from 'src/components/navigator/NavigatorBody';
 
 export default () => {
   //const { theme, toggleTheme } = useLightDark();
