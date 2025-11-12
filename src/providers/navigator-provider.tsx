@@ -1,5 +1,4 @@
-import type { DefaultReact, NavigatorTypes } from '@types';
-import type { ReactNode } from 'react';
+import type { NavigatorTypes } from '@types';
 import { createContext, useContext, useRef, useState } from 'react';
 
 
@@ -16,7 +15,7 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
 
   const navigate = (
     target: string,
-    settings: NavigationSettings = {},
+    settings: NavigatorTypes.NavigationSettings = {},
   ) => {
     const { subpage } = settings;
     const aux = subpage
@@ -39,7 +38,7 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
     // Follow the path.
     return path.reduce(
       (acc, key) => acc?.subpages?.[key],
-      first as Page | undefined,
+      first as NavigatorTypes.Page | undefined,
     ) ?? first;
   };
 
@@ -52,14 +51,14 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
   };
 };
 
-const NavigatorContext = createContext<NavigatorReturn | undefined>(undefined);
+const NavigatorContext = createContext<NavigatorTypes.NavigatorReturn | undefined>(undefined);
 
 export const NavigatorProvider = (
   {
     children,
     pages,
     ...props
-  }: NavigatorProviderProps,
+  }: NavigatorTypes.NavigatorProviderProps,
 ) => {
   const value = useNavigartorContext(pages);
   return (
