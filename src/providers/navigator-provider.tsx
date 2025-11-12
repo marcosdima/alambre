@@ -1,34 +1,9 @@
-import type { DefaultReact } from '@types';
+import type { DefaultReact, NavigatorTypes } from '@types';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useRef, useState } from 'react';
 
-type AnimationDefault = 'to-left' | 'to-right';
 
-type Page = {
-  component: ReactNode;
-  transition?: AnimationDefault;
-  subpages?: NavigatorObject;
-}
-
-type NavigatorObject = Record<string, Page>;
-
-type NavigatorReturn = {
-  currentPage: Page;
-  pageKey: string;
-  noPreviousPages: boolean;
-  navigate: (target: string, settings?: NavigationSettings) => void;
-  previous: () => void;
-};
-
-type NavigatorProviderProps = DefaultReact.ViewProps & {
-  pages: NavigatorObject;
-};
-
-type NavigationSettings = {
-  subpage?: string,
-};
-
-const useNavigartorContext = (pages: NavigatorObject) => {
+const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
   const firstPage = Object.keys(pages).shift() ?? '';
   const stack = useRef<string[]>([]);
   const [currentPage, updatePage] = useState<string>(firstPage);

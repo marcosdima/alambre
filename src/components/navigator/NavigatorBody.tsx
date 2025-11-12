@@ -33,7 +33,7 @@ type NavigatorBodyProps = DefaultReact.ViewProps & {
    },
 };
 
-export const NavigatorBody = (
+export default (
   {
     children: _children,
     style,
