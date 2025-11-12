@@ -17,4 +17,4 @@ const storage = {
   get: getItem,
 };
 
-export const { LangProvider, useLang } = createLangProvider<typeof langs>(langs, storage);
+export const { LangProvider, useLang } = createLangProvider(langs, storage);

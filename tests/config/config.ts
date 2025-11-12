@@ -11,4 +11,4 @@ const storage = {
   get: getItem,
 };
 
-export const { ConfigProvider, useConfig } = createConfigProvider<typeof config>(config, storage);
+export const { ConfigProvider, useConfig } = createConfigProvider(config, storage);

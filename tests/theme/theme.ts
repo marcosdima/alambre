@@ -16,4 +16,4 @@ const storage = {
   get: getItem,
 };
 
-export const { LightDarkProvider, useLightDark } = createLightDarkProvider<typeof light>(light, dark, storage);
+export const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
