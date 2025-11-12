@@ -2,9 +2,16 @@
   "name": "alambre",
   "version": "1.0.0",
   "description": "Several simple react-native code solutions.",
-  "main": "index.ts",
-  "types": "index.d.ts",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "author": "Marcos Di Matteo Brambilla",
   "license": "MIT",
   "repository": {
@@ -20,7 +27,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
