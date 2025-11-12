@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Several simple react-native code solutions.",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "index.ts",
   "types": "dist/index.d.ts",
   "files": ["dist"],
   "exports": {
