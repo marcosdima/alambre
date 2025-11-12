@@ -30,9 +30,7 @@ type ToggleProps = DefaultReact.ViewProps & {
   colors?: Colors;
 };
 
-const LEFT = 0.02;
-const RIGHT = 1 - LEFT;
-const RADIUS = 0.17;
+const RADIUS = 13;
 
 export default (
   {
@@ -54,6 +52,7 @@ export default (
 
   // Hooks.
   const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
   const [side, setSide] = useState(setLeft ? 1 : 0);
 
   // Animation values.
@@ -63,18 +62,30 @@ export default (
 
   // Set width and circle variables.
   const onLayout = (e: LayoutChangeEvent) => {
-    const w = e.nativeEvent.layout.width;
+    const { width: w, height: h } = e.nativeEvent.layout;
     setWidth(w);
-    r.value = w * RADIUS;
-    cx.value = setLeft ? w * LEFT : w * RIGHT;
+    setHeight(h);
+    updateValues();
+  };
+
+  const updateValues = () => {
+    const offset = 73;
+    const leftOffset = offset;
+    const rightOffset = 300 - offset;
+
+    const toLeft = side === 0 ? 1 : 0;
+    cx.value = withTiming(toLeft ? leftOffset : rightOffset, { duration: 400 });
+    r.value = withTiming((width / height) * RADIUS, { duration: 300 });
   };
 
   // On press events.
   const onBegin = () => (r.value = withTiming(r.value * 1.25, { duration: 200 }));
   const onFinalize = () => {
+    if (!width) return;
+
     const toLeft = side === 0 ? 1 : 0;
-    cx.value = withTiming(toLeft ? width * LEFT : width * RIGHT, { duration: 400 });
-    r.value = withTiming(width * RADIUS, { duration: 300 });
+
+    updateValues();
     progress.value = withSpring(toLeft);
     setSide(toLeft);
     toggle();
@@ -101,8 +112,13 @@ export default (
       <Animated.View onLayout={onLayout} style={[styles.container, containerStyle]}>
         {
           width > 0 && (
-            <Svg width="100%" height="100%" viewBox={`0 0 ${width} 100`} style={styles.svg}>
-              <AnimatedCircle animatedProps={circleAnimatedProps} cy={50} fill="black" opacity={0.4} />
+            <Svg width="100%" height="100%" viewBox={'0 0 300 100'} style={styles.svg}>
+              <AnimatedCircle
+                animatedProps={circleAnimatedProps}
+                cy={50}
+                fill="black"
+                opacity={0.4}
+              />
             </Svg>
           )
         }
@@ -118,7 +134,7 @@ export default (
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    aspectRatio: 3,
+    height: '100%',
     borderRadius: 25,
     borderWidth: 2,
     justifyContent: 'center',
@@ -126,14 +142,13 @@ const styles = StyleSheet.create({
   },
   svg: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    zIndex: 2,
   },
   row: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 16,
     zIndex: 1,
   },
   icon: {

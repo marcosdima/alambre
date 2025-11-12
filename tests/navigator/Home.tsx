@@ -1,18 +1,17 @@
 import { Title, View } from 'src/components/base';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
-import Arrow from 'src/components/icons/Arrow';
+import { useLightDark } from 'tests/theme/theme';
+import { ToggleLightDark } from 'src';
 
 export default () => {
   const { navigate } = useNavigator();
+  const { toggleTheme } = useLightDark();
   return (
     <View style={styles.container}>
       <Title style={styles.title}>Home</Title>
       <Pressable style={styles.press} onPress={() => navigate('play')} />
-      <Arrow color='red' lineWidth={10} rotate={180} style={{
-        width: 100,
-        height: 100,
-      }}/>
+      <ToggleLightDark toggle={toggleTheme} style={{ height: 100, aspectRatio: 3 }}/>
     </View>
   );
 };
