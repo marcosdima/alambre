@@ -1,4 +1,4 @@
-import { createLightDarkProvider } from '@providers';
+import { createLightDarkProvider } from 'src/providers';
 import { getItem, saveItem } from 'src/utils/storage';
 
 export const light = {

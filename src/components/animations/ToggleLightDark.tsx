@@ -12,7 +12,7 @@ import Animated, {
 import Svg from 'react-native-svg';
 import Sun from '../icons/Sun';
 import Moon from '../icons/Moon';
-import type { DefaultReact } from '@types';
+import type { DefaultReact } from '../../types';
 import { AnimatedCircle } from '../icons/utils';
 
 type Colors = {

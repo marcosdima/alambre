@@ -1,4 +1,4 @@
-import type { NavigatorTypes } from '@types';
+import type { NavigatorTypes } from '../types';
 import { createContext, useContext, useRef, useState } from 'react';
 
 

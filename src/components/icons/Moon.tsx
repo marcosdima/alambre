@@ -1,8 +1,8 @@
 import type { CircleProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import { svgBaseConfig } from './utils';
-import type { DefaultReact } from '@types';
-import { View } from '@base';
+import type { DefaultReact } from '../../types';
+import { View } from '../base';
 import Circle from './base/Circle';
 
 const circle: CircleProps = {

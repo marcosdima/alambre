@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { DefaultReact, ActionTypes } from '@types';
+import type { DefaultReact, ActionTypes } from '../types';
 
 const lightDarkThemeKey = 'lightDarkThemeKey';
 

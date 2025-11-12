@@ -1,6 +1,6 @@
-import { View } from '@base';
-import { useNavigator } from '@providers';
-import type { DefaultReact } from '@types';
+import { View } from '../base';
+import { useNavigator } from '../../providers';
+import type { DefaultReact } from '../../types';
 import {  useEffect, useState } from 'react';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet } from 'react-native';
@@ -16,7 +16,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import Arrow from 'src/components/icons/Arrow';
+import { Arrow } from '../icons';
 
 type Animations = {
   pageEntering?: EntryOrExitLayoutType;

@@ -1,5 +1,5 @@
 
-import { createLangProvider } from '@providers';
+import { createLangProvider } from 'src/providers';
 import { getItem, saveItem } from 'src/utils/storage';
 
 const langs = {

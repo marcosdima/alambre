@@ -1,4 +1,4 @@
-import { Text, View } from '@base';
+import { Text, View } from 'src/components/base';
 import { Button } from 'react-native';
 import { useLightDark } from './theme';
 import { useConfig } from '../config/config';

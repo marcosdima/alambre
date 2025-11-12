@@ -1,4 +1,4 @@
-import type { DefaultReact } from '@types';
+import type { DefaultReact } from '../types';
 import type { ReactNode } from 'react';
 
 export type AnimationDefault = 'to-left' | 'to-right';

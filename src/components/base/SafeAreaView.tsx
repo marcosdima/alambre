@@ -1,4 +1,4 @@
-import type { DefaultReact } from '@types';
+import type { DefaultReact } from '../../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default ({ children, ...props }: DefaultReact.SafeAreaViewProps) => {

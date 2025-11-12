@@ -1,4 +1,4 @@
-import { SafeAreaView } from '@base';
+import { SafeAreaView } from 'src/components/base';
 import { StyleSheet } from 'react-native';
 import {
   BounceInLeft,

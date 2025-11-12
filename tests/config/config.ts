@@ -1,4 +1,4 @@
-import { createConfigProvider } from '@providers';
+import { createConfigProvider } from '../../src/providers';
 import { getItem, saveItem } from 'src/utils/storage';
 
 const config = {

@@ -3,11 +3,5 @@
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
-    "paths": {
-      "@base": ["src/components/base/index"],
-      "@types": ["src/types/index"],
-      "@providers": ["src/providers/index"],
-      "@icons": ["src/components/icons/index"]
-    }
   }
 }

@@ -1,8 +1,8 @@
 import type { CircleProps, LineProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import { svgBaseConfig, AnimatedLine } from './utils';
-import type { DefaultReact } from '@types';
-import { View } from '@base';
+import type { DefaultReact } from '../../types';
+import { View } from '../base';
 import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import Circle from './base/Circle';

@@ -2,8 +2,8 @@ import type { ColorValue } from 'react-native';
 import type { LineProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import Line from './base/Line';
-import type { DefaultReact } from '@types';
-import { View } from '@base';
+import type { DefaultReact } from '../../types';
+import { View } from '../base';
 
 const body: LineProps = {
   x1: 20, y1: 50,

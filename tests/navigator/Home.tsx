@@ -1,6 +1,6 @@
-import { Title, View } from '@base';
+import { Title, View } from 'src/components/base';
 import { Pressable, StyleSheet } from 'react-native';
-import { useNavigator } from '@providers';
+import { useNavigator } from 'src/providers';
 import Arrow from 'src/components/icons/Arrow';
 
 export default () => {

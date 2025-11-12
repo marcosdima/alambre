@@ -3,7 +3,7 @@ import { ConfigProvider } from 'tests/config/config';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LangProvider } from 'tests/text/lang-provider';
 import Test from 'tests/Test';
-import { NavigatorProvider } from '@providers';
+import { NavigatorProvider } from './src/providers';
 import navigator from 'tests/navigator/navigator';
 
 export default function App() {

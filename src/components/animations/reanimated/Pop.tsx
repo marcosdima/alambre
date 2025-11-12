@@ -1,4 +1,4 @@
-import type { DefaultReact } from '@types';
+import type { DefaultReact } from '../../../types';
 import { Button } from 'react-native';
 import Animated, { LinearTransition, useSharedValue, withSpring } from 'react-native-reanimated';
 

@@ -1,6 +1,6 @@
 import { Button } from 'react-native';
 import { useLang } from './lang-provider';
-import { Text, View } from '@base';
+import { Text, View } from 'src/components/base';
 import { useLightDark } from '../theme/theme';
 
 export default () => {

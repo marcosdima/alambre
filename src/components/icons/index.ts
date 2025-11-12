@@ -1,6 +1,6 @@
-export * from './Moon';
-export * from './Arrow';
-export * from './Sun';
-export * from './base/Circle';
-export * from './base/Line';
-export * from './base/Path';
+export { default as Moon } from './Moon';
+export { default as Arrow } from './Arrow';
+export { default as Sun } from './Sun';
+export { default as Circle } from './base/Circle';
+export { default as Line } from './base/Line';
+export { default as Path } from './base/Path';

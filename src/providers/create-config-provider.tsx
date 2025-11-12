@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { DefaultReact, ActionTypes } from '@types';
+import type { DefaultReact, ActionTypes } from '../types';
 
 const createConfigProvider = <T extends Record<string, string>>(
   baseConfig: T,
