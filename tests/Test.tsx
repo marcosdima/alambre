@@ -8,6 +8,7 @@ import {
   Easing,
 } from 'react-native-reanimated';
 import NavigatorBody from 'src/components/navigator/NavigatorBody';
+import { useNavigator } from 'src';
 
 export default () => {
   //const { theme, toggleTheme } = useLightDark();
@@ -26,6 +27,7 @@ export default () => {
             pageExiting: BounceOutRight.duration(800).easing(Easing.ease),
           },
         }}
+        useNavigator={useNavigator}
       />
     </SafeAreaView>
   );

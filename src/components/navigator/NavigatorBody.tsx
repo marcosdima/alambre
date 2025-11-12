@@ -1,6 +1,6 @@
 import { View } from '../base';
-import { useNavigator } from '../../providers';
-import type { DefaultReact } from '../../types';
+import type { NavigatorTypes } from '../../types';
+import { type DefaultReact } from '../../types';
 import {  useEffect, useState } from 'react';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet } from 'react-native';
@@ -30,7 +30,8 @@ type NavigatorBodyProps = DefaultReact.ViewProps & {
    animations?: {
     go?: Animations,
     return?: Animations,
-   },
+   };
+   useNavigator: () => NavigatorTypes.NavigatorReturn;
 };
 
 export default (
@@ -40,6 +41,7 @@ export default (
     animations,
     arrowColor = 'black',
     width = 4,
+    useNavigator,
     ...props
   }: NavigatorBodyProps,
 ) => {
