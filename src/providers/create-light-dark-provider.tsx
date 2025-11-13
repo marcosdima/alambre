@@ -37,6 +37,7 @@ const useThemeContext = <T extends object>(
     theme,
     toggleTheme,
     setThemeName,
+    currThemeName: themeName,
   };
 };
 
@@ -50,6 +51,7 @@ const createLightDarkProvider = <T extends object>(
         theme: T;
         toggleTheme: () => void;
         setThemeName: (theme: ThemeName) => void;
+        currThemeName: ThemeName,
           }
           | undefined
           >(undefined);
