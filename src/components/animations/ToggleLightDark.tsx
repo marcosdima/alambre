@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   svg: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 2,
+    zIndex: 0,
   },
   row: {
     ...StyleSheet.absoluteFillObject,
