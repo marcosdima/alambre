@@ -1,4 +1,4 @@
-import { Title, View } from 'src/components/base';
+import { Title, View, Text } from 'src/components/base';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
 import { useLightDark } from 'tests/theme/theme';
@@ -6,12 +6,17 @@ import { ToggleLightDark } from 'src';
 
 export default () => {
   const { navigate } = useNavigator();
-  const { toggleTheme } = useLightDark();
+  const { toggleTheme, theme: { color }, currThemeName } = useLightDark();
   return (
     <View style={styles.container}>
       <Title style={styles.title}>Home</Title>
       <Pressable style={styles.press} onPress={() => navigate('play')} />
-      <ToggleLightDark toggle={toggleTheme} style={{ height: 100, aspectRatio: 3 }}/>
+      <ToggleLightDark
+        toggle={toggleTheme}
+        style={{ height: 100, aspectRatio: 3 }}
+        setLeft={currThemeName === 'light'}
+      />
+      <Text style={{ color }}>Color: {color}</Text>
     </View>
   );
 };
