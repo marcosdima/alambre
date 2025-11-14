@@ -1,12 +1,14 @@
-import { Title, View, Text } from 'src/components/base';
+import { Title, View } from 'src/components/base';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
 import { useLightDark } from 'tests/theme/theme';
 import { ToggleLightDark } from 'src';
+import AnimadoText from 'src/components/animations/animado/AnimadoText';
+import { withTiming } from 'react-native-reanimated';
 
 export default () => {
   const { navigate } = useNavigator();
-  const { toggleTheme, theme: { color }, currThemeName } = useLightDark();
+  const { toggleTheme, theme: { color, background }, currThemeName } = useLightDark();
   return (
     <View style={styles.container}>
       <Title style={styles.title}>Home</Title>
@@ -16,7 +18,18 @@ export default () => {
         style={{ height: 100, aspectRatio: 3 }}
         setLeft={currThemeName === 'light'}
       />
-      <Text style={{ color }}>Color: {color}</Text>
+      <AnimadoText
+        text='Casa de reina'
+        animation={(v: number) => withTiming(v, { duration: 200 })}
+        style={{
+          backgroundColor: background,
+          borderColor: color,
+          color: color === 'black' ? 'red' : 'blue',
+          borderWidth: 3,
+          width: 100,
+          aspectRatio: 1,
+        }}
+      />
     </View>
   );
 };
