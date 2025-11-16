@@ -3,7 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
 import { useLightDark } from 'tests/theme/theme';
 import { ToggleLightDark } from 'src';
-import BorderButton from 'src/components/base/input/button/BorderButton';
+import BorderButton from 'src/components/base/input/buttons/BorderButton';
 import AnimadoView from 'src/components/animations/animado/AnimadoView';
 import { withTiming } from 'react-native-reanimated';
 
