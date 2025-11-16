@@ -1,5 +1,5 @@
 import type { SharedValue } from 'react-native-reanimated';
-import type { State, PosibleColor } from './types';
+import type { State, PosibleColor } from '../../../types/animado';
 import { StyleSheet } from 'react-native';
 import {
   useSharedValue,

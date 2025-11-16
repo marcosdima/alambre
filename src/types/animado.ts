@@ -1,35 +1,10 @@
-import type { DefaultReact } from '../types';
+import type { ColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { TextProps, ViewProps } from './default-react';
 
-type State = 'idle' | 'start' | 'update' | 'end';
-
-type AnimadoValue = {
-  from: number,
-  to: number,
-}
-
-type AnimadoFields = {
-  opacity?: AnimadoValue;
-  scale?: AnimadoValue;
-  translateX?: AnimadoValue;
-  translateY?: AnimadoValue;
-  rotate?: AnimadoValue;
-}
-
-type Config = {
-  duration: number;
-  fields: AnimadoFields;
-  stagger?: number,
+export type AnimadoProps = ViewProps & TextProps & {
+  animation?: Animation;
 };
-
-type AnimadoProps = DefaultReact.ViewProps & {
-  config?: Partial<Record<State, Config>>;
-  propagate?: Partial<Record<State, Config>>;
-};
-
-export type {
-  AnimadoProps,
-  AnimadoValue,
-  AnimadoFields,
-  State,
-  Config,
-};
+export type Animation = (value: number) => number;
+export type AnimadoStyle = ViewStyle & TextStyle;
+export type State = StyleProp<AnimadoStyle>;
+export type PosibleColor = ColorValue | undefined;
