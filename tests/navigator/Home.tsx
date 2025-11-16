@@ -1,16 +1,20 @@
-import { Title, View } from 'src/components/base';
+import { Title } from 'src/components/base';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
 import { useLightDark } from 'tests/theme/theme';
 import { ToggleLightDark } from 'src';
-import AnimadoText from 'src/components/animations/animado/AnimadoText';
+import BorderButton from 'src/components/base/input/button/BorderButton';
+import AnimadoView from 'src/components/animations/animado/AnimadoView';
 import { withTiming } from 'react-native-reanimated';
 
 export default () => {
   const { navigate } = useNavigator();
   const { toggleTheme, theme: { color, background }, currThemeName } = useLightDark();
   return (
-    <View style={styles.container}>
+    <AnimadoView
+      animation={(v: number) => withTiming(v, { duration: 2000 })}
+      style={[styles.container, { backgroundColor: background }]}
+    >
       <Title style={styles.title}>Home</Title>
       <Pressable style={styles.press} onPress={() => navigate('play')} />
       <ToggleLightDark
@@ -18,19 +22,19 @@ export default () => {
         style={{ height: 100, aspectRatio: 3 }}
         setLeft={currThemeName === 'light'}
       />
-      <AnimadoText
-        text='Casa de reina'
-        animation={(v: number) => withTiming(v, { duration: 200 })}
-        style={{
-          backgroundColor: background,
+      <BorderButton
+        style={{ width: 100  }}
+        label='Button'
+        textStyle={{
+          borderRadius: 15,
+          borderWidth: 2,
           borderColor: color,
-          color: color === 'black' ? 'red' : 'blue',
-          borderWidth: 3,
-          width: 100,
-          aspectRatio: 1,
+          padding: '5%',
+          textAlign: 'center',
+          color,
         }}
       />
-    </View>
+    </AnimadoView>
   );
 };
 
