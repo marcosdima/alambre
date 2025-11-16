@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import type { AnimadoProps } from '../../../types/animado';
 import useAnimado from './use-animado';
 
-export default ({ style, animation, ...props }: AnimadoProps) => {
+export default ({ style, animation, children, ...props }: AnimadoProps) => {
   const {
     animatedStyle,
     animateTo,
@@ -14,8 +14,8 @@ export default ({ style, animation, ...props }: AnimadoProps) => {
   }, [animateTo, animation, style]);
 
   return (
-    <Animated.View style={animatedStyle} {...props}>
-      <></>
+    <Animated.View style={[style, animatedStyle]} {...props}>
+      {children}
     </Animated.View>
   );
 };

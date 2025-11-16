@@ -25,7 +25,7 @@ export default (
   }, [animateTo, animation, style]);
 
   return (
-    <Animated.Text style={animatedStyle} {...props}>
+    <Animated.Text style={[style, animatedStyle]} {...props}>
       {text}
     </Animated.Text>
   );

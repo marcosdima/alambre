@@ -1,5 +1,4 @@
-import type { SharedValue } from 'react-native-reanimated';
-import type { State, PosibleColor } from '../../../types/animado';
+import type { State, PosibleColor, AnimadoStyle } from '../../../types/animado';
 import { StyleSheet } from 'react-native';
 import {
   useSharedValue,
@@ -8,11 +7,17 @@ import {
   interpolateColor,
 } from 'react-native-reanimated';
 
-export default (initialState: State) => {
-  const flat = StyleSheet.flatten(initialState);
+const filterTargets = (state: State) => {
+  const flat = StyleSheet.flatten(state);
+  const { backgroundColor, borderColor, color } = flat;
+  return { backgroundColor, borderColor, color } as AnimadoStyle;
+};
 
-  const prevState = useSharedValue(flat);
-  const nextState = useSharedValue(flat);
+export default (initialState: State) => {
+  const targets = filterTargets(initialState);
+
+  const prevState = useSharedValue<AnimadoStyle>(targets);
+  const nextState = useSharedValue(targets);
   const progress = useSharedValue(0);
 
   const defaultAnimation = (v: number) => withTiming(v, { duration: 300 });
@@ -22,7 +27,7 @@ export default (initialState: State) => {
     animation: (value: number) => number = defaultAnimation,
   ) => {
     prevState.value = nextState.value;
-    nextState.value = StyleSheet.flatten(setNextState);
+    nextState.value = filterTargets(setNextState);
 
     progress.value = 0;
     progress.value = animation(1);
@@ -32,26 +37,21 @@ export default (initialState: State) => {
     const from = prevState.value;
     const to = nextState.value;
 
-    const getInterpolateColor = (
-      shared: SharedValue<number>,
-      from: PosibleColor,
-      to: PosibleColor,
+    const interpolate = (
+      from: PosibleColor = 'transparent',
+      to: PosibleColor = 'transparent',
     ) => (
       interpolateColor(
-        shared.value,
+        progress.value,
         [0, 1],
-        [
-          String(from),
-          String(to),
-        ],
+        [String(from), String(to)],
       )
     );
 
     return {
-      ...to,
-      backgroundColor: getInterpolateColor(progress, from.backgroundColor, to.backgroundColor),
-      borderColor: getInterpolateColor(progress, from.borderColor, to.borderColor),
-      color: from.color && to.color ? getInterpolateColor(progress, from.color, to.color) : '',
+      backgroundColor: interpolate(from.backgroundColor, to.backgroundColor),
+      borderColor: interpolate(from.borderColor, to.borderColor),
+      color: interpolate(from.color, to.color),
     };
   });
 
