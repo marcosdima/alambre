@@ -1,11 +1,7 @@
 import Animated from 'react-native-reanimated';
 import { useEffect } from 'react';
 import useAnimado from './use-animado';
-import type { AnimadoProps } from '../../../types/animado';
-
-type AnimadoTextProps = AnimadoProps & {
-  text: string,
-};
+import type { AnimadoTextProps } from '../../../types/animado';
 
 export default (
   {
