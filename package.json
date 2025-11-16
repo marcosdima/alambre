@@ -28,7 +28,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json && npm pack && rm -rf dist"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
