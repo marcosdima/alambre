@@ -127,6 +127,8 @@ export default (
     ),
   }));
 
+  const drawAnimation = (v: number) => withTiming(v, { duration: 1700 });
+
   return (
     <Pressable
       onPressIn={onBegin}
@@ -146,8 +148,8 @@ export default (
           />
         </Svg>
         <View style={styles.row}>
-          <Sun reset={side === 1} style={styles.icon} />
-          <Moon reset={side === 0} style={styles.icon} />
+          <Sun drawIt={side === 0} style={styles.icon} iconAnimation={{ drawAnimation }} />
+          <Moon drawIt={side === 1} style={styles.icon} iconAnimation={{ drawAnimation }} />
         </View>
       </Animated.View>
     </Pressable>

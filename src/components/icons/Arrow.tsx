@@ -2,7 +2,7 @@ import type { ColorValue } from 'react-native';
 import type { LineProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import Line from './base/Line';
-import type { DefaultReact } from '../../types';
+import type { IconstTypes } from '../../types';
 import { View } from '../base';
 
 const body: LineProps = {
@@ -23,19 +23,18 @@ const arrowDown: LineProps = {
   x2: 180, y2: 50,
 };
 
-type ArrowProps = DefaultReact.ViewProps & {
-  reset?: boolean;
+type ArrowProps = IconstTypes.BaseIcon & {
+  drawIt?: boolean;
   color: ColorValue;
   lineWidth: number;
-  rotate?: number;
 };
 
 export default (
   {
-    reset = false,
+    drawIt = false,
     color,
     lineWidth,
-    rotate = 0,
+    rotation = 0,
     style,
     ...props
   }: ArrowProps,
@@ -44,32 +43,32 @@ export default (
     stroke: color,
     strokeWidth: lineWidth,
   };
-  const rotation = {
-    transform: [{ rotate: `${rotate}deg` }],
+  const rotationTransform = {
+    transform: [{ rotate: `${rotation}deg` }],
   };
   return (
-    <View style={[style, rotation]}  {...props}>
+    <View style={[style, rotationTransform]}  {...props}>
       <Svg height='100%' width='100%' viewBox='0 0 200 100'>
         <Line
           line={{
             ...body,
             ...baseConfig,
           }}
-          reset={reset}
+          drawIt={drawIt}
         />
         <Line
           line={{
             ...arrowUp,
             ...baseConfig,
           }}
-          reset={reset}
+          drawIt={drawIt}
         />
         <Line
           line={{
             ...arrowDown,
             ...baseConfig,
           }}
-          reset={reset}
+          drawIt={drawIt}
         />
       </Svg>
     </View>

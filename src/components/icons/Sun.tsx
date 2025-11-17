@@ -1,7 +1,7 @@
 import type { CircleProps, LineProps } from 'react-native-svg';
+import type { IconstTypes } from '../../types';
 import Svg from 'react-native-svg';
 import { svgBaseConfig, AnimatedLine } from './utils';
-import type { DefaultReact } from '../../types';
 import { View } from '../base';
 import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect } from 'react';
@@ -25,14 +25,9 @@ const circleBaseConfig: CircleProps = {
   stroke: 'black',
   fill: 'orange',
   strokeWidth: 3,
-  strokeDashoffset: 100,
 };
 
-type SunProps = DefaultReact.ViewProps & {
-  reset: boolean;
-}
-
-export default ({ reset, ...props } : SunProps) => {
+export default ({ drawIt, iconAnimation, ...props } : IconstTypes.BaseIcon) => {
   const progress = useSharedValue(100);
   const progressShort = useSharedValue(100);
 
@@ -45,16 +40,17 @@ export default ({ reset, ...props } : SunProps) => {
   }));
 
   useEffect(() => {
-    progress.value = reset ? 100 : 80;
-    progressShort.value = reset ? 100 : 85;
-  }, [progress, progressShort, reset]);
+    progress.value = !drawIt ? 100 : 80;
+    progressShort.value = !drawIt ? 100 : 85;
+  }, [progress, progressShort, drawIt]);
 
   const circle = {
     circle: {
       ...circleBaseConfig,
-      fillOpacity: reset ? 0 : 1,
+      fillOpacity: !drawIt ? 0 : 1,
     },
-    reset,
+    drawIt,
+    iconAnimation,
   };
 
   return (

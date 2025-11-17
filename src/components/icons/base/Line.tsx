@@ -1,21 +1,14 @@
 import type { LineProps } from 'react-native-svg';
-import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { AnimatedLine } from '../utils';
-
-type CustomLineProps = {
-  reset: boolean;
-  line: LineProps;
-  rotation?: number;
-  strokeOffset?: number;
-};
-
-const timingConfig = { duration: 1000 };
+import type { CustomLineProps } from '../../../types/icons';
+import { useIconAnimation } from 'src/hooks';
 
 export default (
   {
-    reset,
+    drawIt,
     line,
+    iconAnimation,
     rotation = 0,
     strokeOffset = 0,
   }: CustomLineProps,
@@ -24,39 +17,29 @@ export default (
     (line.x2 as number) -(line.x1 as number),
     (line.x2 as number) - (line.y1 as number),
   );
-  const strokeDasharray = useRef(length).current;
 
-  const progressCircle = useSharedValue(strokeDasharray);
-
-  const animatedCircleProps = useAnimatedProps(() => ({
-    strokeDashoffset: progressCircle.value,
-    fillOpacity: withTiming(
-      line.fillOpacity && !reset && line.fillOpacity as number > 0
-        ? 1
-        : 0,
-      timingConfig,
-    ),
-  }));
+  const {
+    strokeOffestStyle,
+    reset,
+    draw,
+  } = useIconAnimation({
+    ...iconAnimation,
+    strokeDasharray: iconAnimation?.strokeDasharray ?? length,
+  });
 
   useEffect(() => {
-    progressCircle.value = withTiming(
-      reset ? strokeDasharray : strokeDasharray * (strokeOffset / 100),
-      timingConfig,
-    );
-  }, [progressCircle, reset, strokeDasharray, strokeOffset]);
+    if (drawIt) draw(strokeOffset);
+    else reset();
+  }, [draw, drawIt, reset, strokeOffset]);
 
   const modLine: LineProps = {
     ...line,
-    strokeDasharray,
     transform: `rotate(${rotation}, ${line.x2}, ${line.y2})`,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
   };
 
   return (
-    <AnimatedLine
-      animatedProps={animatedCircleProps}
-      {...modLine}
-    />
+    <AnimatedLine animatedProps={strokeOffestStyle} {...modLine}/>
   );
 };

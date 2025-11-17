@@ -1,54 +1,41 @@
 import type { CircleProps } from 'react-native-svg';
-import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import type { IconstTypes } from '../../../types';
 import { useEffect, useMemo } from 'react';
 import { AnimatedCircle } from '../utils';
-
-type CustomCircleProps = {
-  reset: boolean;
-  circle: CircleProps;
-  rotation?: number;
-  strokeOffset?: number;
-};
-
-const timingConfig = { duration: 1000 };
+import { useIconAnimation } from '../../../hooks';
 
 export default (
   {
-    reset,
+    drawIt = true,
     circle,
+    iconAnimation,
     rotation = 0,
     strokeOffset = 0,
-  }: CustomCircleProps,
+  }: IconstTypes.CustomCircleProps,
 ) => {
   const strokeDasharray = useMemo(
     () => 2 * Math.PI * (circle.r as number),
     [circle.r],
   );
 
-  const progressCircle = useSharedValue(strokeDasharray);
-
-  const animatedCircleProps = useAnimatedProps(() => ({
-    strokeDashoffset: progressCircle.value,
-    fillOpacity: withTiming(
-      circle.fillOpacity && !reset && circle.fillOpacity as number > 0
-        ? 1
-        : 0,
-      timingConfig,
-    ),
-  }));
+  const {
+    strokeOffestStyle,
+    reset,
+    draw,
+  } = useIconAnimation({
+    ...iconAnimation,
+    strokeDasharray: iconAnimation?.strokeDasharray ?? strokeDasharray,
+  });
 
   useEffect(() => {
-    progressCircle.value = withTiming(
-      reset ? strokeDasharray : strokeDasharray * (strokeOffset / 100),
-      timingConfig,
-    );
-  }, [progressCircle, reset, strokeDasharray, strokeOffset]);
+    if (drawIt) draw(strokeOffset);
+    else reset();
+  }, [draw, drawIt, reset, strokeOffset]);
 
   const modCircle: CircleProps = {
     ...circle,
-    strokeDasharray,
     transform: `rotate(${rotation}, ${circle.cx}, ${circle.cy})`,
   };
 
-  return <AnimatedCircle animatedProps={animatedCircleProps} {...modCircle} />;
+  return <AnimatedCircle animatedProps={strokeOffestStyle} {...modCircle} />;
 };

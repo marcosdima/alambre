@@ -1,7 +1,7 @@
 import type { CircleProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import { svgBaseConfig } from './utils';
-import type { DefaultReact } from '../../types';
+import type { IconstTypes } from '../../types';
 import { View } from '../base';
 import Circle from './base/Circle';
 
@@ -12,31 +12,28 @@ const circle: CircleProps = {
   stroke: 'black',
   fillOpacity: 0,
   strokeWidth: 3,
-  strokeDashoffset: 100,
 };
-
-type SunProps = DefaultReact.ViewProps & {
-  reset: boolean;
-}
 
 const getRandomInt = (n: number) => Math.floor(Math.random() * n);
 
-export default ({ reset, ...props } : SunProps) => {
+export default ({ drawIt, iconAnimation, ...props } : IconstTypes.BaseIcon) => {
   const bigCircleCofig = {
     circle: {
       ...circle,
-      fillOpacity: reset ? 0 : 1,
+      fillOpacity: !drawIt ? 0 : 1,
       fill: 'gray',
     },
-    reset,
+    drawIt,
+    iconAnimation,
     strokeOffset: 25,
   };
 
   const completeCircle = {
     circle,
-    reset,
-    strokeOffset: 80,
+    drawIt,
     rotation: 279,
+    iconAnimation,
+    strokeOffset: 80,
   };
 
   const smallCircles = [
@@ -56,12 +53,13 @@ export default ({ reset, ...props } : SunProps) => {
             <Circle
               key={i}
               circle={{ ...circle, ...c }}
-              reset={reset}
+              drawIt={drawIt}
               strokeOffset={
                 (getRandomInt(2) % 2 === 0)
                   ? 0
                   : getRandomInt(10) + 10
               }
+              iconAnimation={iconAnimation}
             />
           ))
         }
