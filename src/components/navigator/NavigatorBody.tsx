@@ -131,10 +131,10 @@ export default (
           onPressOut={onPressOut}
         >
           <Arrow
-            reset={noPreviousPages}
+            drawIt={!noPreviousPages}
             color={arrowColor}
             lineWidth={width}
-            rotate={180}
+            rotation={180}
           />
         </Pressable>
       </Animated.View>
