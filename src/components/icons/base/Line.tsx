@@ -15,7 +15,7 @@ export default (
 ) => {
   const length = Math.hypot(
     (line.x2 as number) -(line.x1 as number),
-    (line.x2 as number) - (line.y1 as number),
+    (line.y2 as number) - (line.y1 as number),
   );
 
   const {
