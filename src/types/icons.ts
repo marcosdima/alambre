@@ -3,7 +3,7 @@ import type { UseIconAnimationProps } from './hooks';
 import type { ViewProps } from './default-react';
 
 export type BaseIcon = ViewProps & {
-  drawIt: boolean;
+  drawIt?: boolean;
   rotation?: number;
   strokeOffset?: number;
   iconAnimation?: UseIconAnimationProps;
