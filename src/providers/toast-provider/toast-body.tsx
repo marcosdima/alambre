@@ -3,8 +3,7 @@ import { View, Text, Title } from '../../components/base';
 import Animated, { BounceInUp, BounceOutUp, Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect, useMemo } from 'react';
 import useToast from './use-toast';
-import Cross from 'src/components/icons/Cross';
-import Tick from 'src/components/icons/Tick';
+import { Cross, Tick } from '../../components/icons';
 import type { ToastBodyProps } from './types';
 
 export default ({ palette = {}, delay = 700, animationTime = 800 }: ToastBodyProps) => {

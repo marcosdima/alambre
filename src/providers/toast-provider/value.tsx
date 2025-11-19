@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RegisterToast, Toast, UseToastType } from './types';
-import { useStack } from 'src/hooks';
+import { useStack } from '../../hooks';
 
 export default (delay: number = 0) => {
   const { push, pop, top } = useStack<RegisterToast>();

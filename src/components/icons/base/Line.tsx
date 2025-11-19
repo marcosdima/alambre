@@ -2,7 +2,7 @@ import type { LineProps } from 'react-native-svg';
 import { useEffect } from 'react';
 import { AnimatedLine } from '../utils';
 import type { CustomLineProps } from '../../../types/icons';
-import { useIconAnimation } from 'src/hooks';
+import { useIconAnimation } from '../../../hooks';
 
 export default (
   {
