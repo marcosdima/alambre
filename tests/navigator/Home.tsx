@@ -6,17 +6,35 @@ import { ToggleLightDark } from 'src';
 import BorderButton from 'src/components/base/input/buttons/BorderButton';
 import AnimadoView from 'src/components/animations/animado/AnimadoView';
 import { withTiming } from 'react-native-reanimated';
+import useToast from 'src/providers/toast-provider/use-toast';
 
 export default () => {
   const { navigate } = useNavigator();
   const { toggleTheme, theme: { color, background }, currThemeName } = useLightDark();
+  const { setMessage } = useToast();
   return (
     <AnimadoView
       animation={(v: number) => withTiming(v, { duration: 2000 })}
       style={[styles.container, { backgroundColor: background }]}
     >
       <Title style={styles.title}>Home</Title>
-      <Pressable style={styles.press} onPress={() => navigate('play')} />
+      <Pressable
+        style={styles.press}
+        onPress={
+          () => {
+            setMessage({
+              content: 'Error al crear la vida',
+              type: 'error',
+              duration: 7000,
+            });
+            setMessage({
+              content: 'coso',
+              type: 'info',
+              duration: 7000,
+            });
+          }
+        }
+      />
       <ToggleLightDark
         toggle={toggleTheme}
         style={{ height: 100, aspectRatio: 3 }}
