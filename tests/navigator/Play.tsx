@@ -1,7 +1,8 @@
 import { Text, Title, View } from 'src/components/base';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useNavigator } from 'src/providers';
 import { useLightDark } from 'tests/theme/theme';
+import { ApiShow } from 'tests/api';
 
 export default () => {
   const { navigate } = useNavigator();
@@ -9,24 +10,35 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Title style={[styles.title, { color: theme.color }]}>Play</Title>
-        <Text style={[styles.description, { color: theme.muted }]}>Entrypoint para arrancar pruebas de flujo y volver a secciones de setup.</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps='handled'
+        nestedScrollEnabled
+      >
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Title style={[styles.title, { color: theme.color }]}>Play</Title>
+          <Text style={[styles.description, { color: theme.muted }]}>
+            Entrypoint para arrancar pruebas de flujo y volver a secciones de setup.
+          </Text>
 
-        <Pressable
-          style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-          onPress={() => navigate('home', { subpage: 'configuration' })}
-        >
-          <Text style={[styles.primaryLabel, { color: theme.onPrimary }]}>Ir a Configuracion</Text>
-        </Pressable>
+          <Pressable
+            style={[styles.primaryButton, { backgroundColor: theme.primary }]}
+            onPress={() => navigate('home', { subpage: 'configuration' })}
+          >
+            <Text style={[styles.primaryLabel, { color: theme.onPrimary }]}>Ir a Configuracion</Text>
+          </Pressable>
 
-        <Pressable
-          style={[styles.secondaryButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}
-          onPress={() => navigate('home')}
-        >
-          <Text style={[styles.secondaryLabel, { color: theme.color }]}>Volver a Home</Text>
-        </Pressable>
-      </View>
+          <Pressable
+            style={[styles.secondaryButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}
+            onPress={() => navigate('home')}
+          >
+            <Text style={[styles.secondaryLabel, { color: theme.color }]}>Volver a Home</Text>
+          </Pressable>
+
+          <ApiShow />
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -34,9 +46,17 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  scroll: {
+    width: '100%',
+  },
+  scrollContent: {
+    paddingBottom: 16,
   },
   card: {
     width: '100%',

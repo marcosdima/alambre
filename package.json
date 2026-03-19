@@ -34,6 +34,7 @@
     "build:test": "tsc -p tsconfig.build.json && npm pack && rm -rf dist"
   },
   "peerDependencies": {
+    "@tanstack/react-query": ">=5.0.0",
     "react": ">=18.0.0",
     "react-native": ">=0.72.0",
     "react-native-gesture-handler": ">=2.0.0",
@@ -43,6 +44,7 @@
     "react-native-worklets": ">=0.5.0"
   },
   "devDependencies": {
+    "@tanstack/react-query": "^5.90.5",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@types/react": "~19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.46.3",

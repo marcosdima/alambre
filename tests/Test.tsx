@@ -9,14 +9,16 @@ import {
 } from 'react-native-reanimated';
 import NavigatorBody from 'src/components/navigator/NavigatorBody';
 import { useNavigator } from 'src';
+import { useLightDark } from './theme/theme';
 
 export default () => {
-  //const { theme, toggleTheme } = useLightDark();
+  const { theme } = useLightDark();
   //const [val,setVal] = useState(0);
   return (
     <SafeAreaView style={styles.container}>
       <NavigatorBody
         style={styles.container}
+        arrowColor={theme.primary}
         animations={{
           go: {
             pageEntering: BounceInRight.duration(800).delay(400).easing(Easing.ease),

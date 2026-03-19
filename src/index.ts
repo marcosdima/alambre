@@ -20,6 +20,7 @@ export {
   createLightDarkProvider,
   createConfigProvider,
   createLangProvider,
+  createApiProvider,
   NavigatorProvider,
   useNavigator,
   ToastProvider,
