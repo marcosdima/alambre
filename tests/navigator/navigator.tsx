@@ -1,9 +1,9 @@
 
-import Home from './Home';
-import Configuration from './Configuration';
-import Play from './Play';
-import Advance from './Advance';
-import Toast from './Toast';
+import Home from 'tests/views/navigator/Home';
+import Configuration from 'tests/views/navigator/Configuration';
+import Play from 'tests/views/navigator/Play';
+import Advance from 'tests/views/navigator/Advance';
+import Toast from 'tests/views/navigator/Toast';
 
 export default {
   home: {

@@ -15,7 +15,7 @@ export type {
   NavigatorTypes,
 } from './types';
 
-// Providers
+// Modules
 export {
   createLightDarkProvider,
   createConfigProvider,
@@ -25,7 +25,7 @@ export {
   useNavigator,
   ToastProvider,
   useToast,
-} from './providers';
+} from './modules';
 
 // Icons
 export * as AlambreIcons from './components/icons';
@@ -37,5 +37,4 @@ export * as Buttons from './components/base/input/buttons';
 export { default as AnimadoView } from './components/animations/animado/AnimadoView';
 export { default as AnimadoText } from './components/animations/animado/AnimadoText';
 export { default as ToggleLightDark } from './components/animations/ToggleLightDark';
-export { default as NavigatorBody } from './components/navigator/NavigatorBody';
-export { default as NavigatorScrollView } from './components/navigator/NavigatorScrollView';
+export { NavigatorBody } from './modules/navigator';
