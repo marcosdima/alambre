@@ -6,10 +6,12 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
   const firstPage = Object.keys(pages).shift() ?? '';
   const stack = useRef<string[]>([]);
   const [currentPage, updatePage] = useState<string>(firstPage);
+  const [scrollTop, setScrollTop] = useState<number>(0);
 
   const previous = () => {
     const target = stack.current.pop();
     if (!target) return;
+    setScrollTop(0);
     updatePage(target);
   };
 
@@ -22,6 +24,7 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
       ? `${target},${subpage}`
       : String(target);
     stack.current.push(currentPage);
+    setScrollTop(0);
     updatePage(aux);
   };
 
@@ -46,8 +49,10 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
     currentPage: getComponent(currentPage.split(',')),
     pageKey: stack.current.join(', '),
     noPreviousPages: stack.current.length === 0,
+    scrollTop,
     navigate,
     previous,
+    setScrollTop,
   };
 };
 

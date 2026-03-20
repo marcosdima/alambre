@@ -1,16 +1,15 @@
 import { View } from '../base';
 import type { NavigatorTypes } from '../../types';
 import { type DefaultReact } from '../../types';
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Pressable } from 'react-native';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 import Animated, {
   Easing,
   FadeInDown,
   FadeOutUp,
-  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -25,6 +24,7 @@ type Animations = {
 
 type NavigatorBodyProps = DefaultReact.ViewProps & {
    arrowColor?: ColorValue;
+  arrowBackgroundColor?: ColorValue;
    width?: number;
    pressStyle?: StyleProp<ViewStyle>;
    animations?: {
@@ -40,6 +40,7 @@ export default (
     style,
     animations,
     arrowColor = 'black',
+    arrowBackgroundColor = 'rgba(15, 23, 42, 0.16)',
     width = 4,
     useNavigator,
     ...props
@@ -50,16 +51,40 @@ export default (
     currentPage,
     noPreviousPages,
     pageKey,
+    scrollTop,
+    setScrollTop,
   } = useNavigator();
 
   const scale = useSharedValue(1);
-  const shows = useSharedValue(0);
+  const iconVisible = useSharedValue(0);
+  const detailsVisible = useSharedValue(0);
   const [isReturning, setIsReturning] = useState(false);
+  const [drawArrow, setDrawArrow] = useState(false);
+  const canShowArrow = !noPreviousPages && scrollTop <= 4;
 
-  // Shows arrow just if there are previus pages.
   useEffect(() => {
-    shows.value = withTiming(noPreviousPages ? 0 : 1, { duration: 1000 });
-  }, [noPreviousPages, arrowColor, shows]);
+    if (canShowArrow) {
+      setDrawArrow(false);
+      iconVisible.value = withTiming(1, { duration: 120 });
+
+      const drawTimer = setTimeout(() => {
+        setDrawArrow(true);
+      }, 40);
+
+      const detailsTimer = setTimeout(() => {
+        detailsVisible.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.cubic) });
+      }, 160);
+
+      return () => {
+        clearTimeout(drawTimer);
+        clearTimeout(detailsTimer);
+      };
+    }
+
+    setDrawArrow(false);
+    detailsVisible.value = withTiming(0, { duration: 140 });
+    iconVisible.value = withTiming(0, { duration: 120 });
+  }, [canShowArrow, detailsVisible, iconVisible]);
 
   // TODO: Rethink. This is the simpliest way to handle this animation bug.
   useEffect(() => {
@@ -69,11 +94,15 @@ export default (
 
   // Arrow contenedor animated style.
   const animatedStyle = useAnimatedStyle(() => ({
-    borderColor: interpolateColor(
-      shows.value,
-      [0, 1],
-      ['transparent', arrowColor as string],
-    ),
+    opacity: iconVisible.value * (0.55 + detailsVisible.value * 0.45),
+    transform: [
+      { translateY: (1 - detailsVisible.value) * -6 },
+      { scale: scale.value },
+    ],
+  }));
+
+  const iconStyle = useAnimatedStyle(() => ({
+    opacity: iconVisible.value,
     transform: [{ scale: scale.value }],
   }));
 
@@ -95,16 +124,17 @@ export default (
 
   const {
     pressStyle = {
-      height: '3.5%',
-      width: '12.5%',
       position: 'absolute',
-      top: 10,
-      left: 10,
+      top: 12,
+      left: 12,
       zIndex: 999,
-      borderColor: arrowColor,
-      borderRadius: 50,
-      borderWidth: 2,
-      padding: 2,
+      minWidth: 44,
+      height: 34,
+      paddingHorizontal: 10,
+      borderRadius: 18,
+      backgroundColor: arrowBackgroundColor,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   } = props;
 
@@ -119,32 +149,74 @@ export default (
       style={[{ position: 'relative', flex: 1 }, style]}
       {...props}
     >
+      <ScrollView
+        style={styles.pageScroll}
+        contentContainerStyle={styles.pageScrollContent}
+        onScroll={(event) => setScrollTop(Math.max(0, event.nativeEvent.contentOffset.y))}
+        scrollEventThrottle={16}
+        keyboardShouldPersistTaps='handled'
+      >
+        <Animated.View
+          key={pageKey}
+          style={styles.pageContainer}
+          {...animationConfig}
+        >
+          {currentPage.component}
+        </Animated.View>
+      </ScrollView>
+
       <Animated.View
         style={[
-          StyleSheet.absoluteFillObject,
           pressStyle,
           animatedStyle,
         ]}
+        pointerEvents={canShowArrow ? 'auto' : 'none'}
       >
         <Pressable
           onPressIn={onPressIn}
           onPressOut={onPressOut}
+          disabled={!canShowArrow}
+          hitSlop={12}
         >
-          <Arrow
-            drawIt={!noPreviousPages}
-            color={arrowColor}
-            lineWidth={width}
-            rotation={180}
-          />
+          <Animated.View style={[styles.iconBody, iconStyle]}>
+            <Arrow
+              drawIt={drawArrow}
+              iconAnimation={{
+                drawAnimation: (value: number) => withTiming(value, {
+                  duration: 320,
+                  easing: Easing.out(Easing.exp),
+                }),
+                resetAnimation: (value: number) => withTiming(value, {
+                  duration: 160,
+                  easing: Easing.in(Easing.quad),
+                }),
+              }}
+              color={arrowColor}
+              lineWidth={width}
+              rotation={180}
+            />
+          </Animated.View>
         </Pressable>
-      </Animated.View>
-      <Animated.View
-        key={pageKey}
-        style={{ width: '100%', height: '100%', position: 'absolute' }}
-        {...animationConfig}
-      >
-        {currentPage.component}
       </Animated.View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  pageScroll: {
+    flex: 1,
+    width: '100%',
+  },
+  pageScrollContent: {
+    flexGrow: 1,
+  },
+  pageContainer: {
+    flex: 1,
+    width: '100%',
+    minHeight: '100%',
+  },
+  iconBody: {
+    width: 28,
+    height: 28,
+  },
+});

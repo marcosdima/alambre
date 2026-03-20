@@ -15,8 +15,10 @@ export type NavigatorReturn = {
   currentPage: Page;
   pageKey: string;
   noPreviousPages: boolean;
+  scrollTop: number;
   navigate: (target: string, settings?: NavigationSettings) => void;
   previous: () => void;
+  setScrollTop: (value: number) => void;
 };
 
 export type NavigatorProviderProps = DefaultReact.ViewProps & {

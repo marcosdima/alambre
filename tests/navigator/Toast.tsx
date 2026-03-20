@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { Text, Title, View } from 'src/components/base';
 import { useLightDark } from 'tests/theme/theme';
 import { useNavigator, useToast } from 'src/providers';
@@ -146,60 +146,58 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps='handled'>
-        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Title style={[styles.title, { color: theme.color }]}>{lang.toast.title}</Title>
-          <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.toast.subtitle}</Text>
+      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <Title style={[styles.title, { color: theme.color }]}>{lang.toast.title}</Title>
+        <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.toast.subtitle}</Text>
 
-          <View style={styles.grid}>
-            <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => makeToast(show, 'info', toastLabels)}>
-              <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.info}</Text>
-            </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: theme.success }]} onPress={() => makeToast(show, 'success', toastLabels)}>
-              <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.success}</Text>
-            </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: theme.warning }]} onPress={() => makeToast(show, 'warning', toastLabels)}>
-              <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.warning}</Text>
-            </Pressable>
-            <Pressable style={[styles.button, { backgroundColor: theme.danger }]} onPress={() => makeToast(show, 'error', toastLabels)}>
-              <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.error}</Text>
-            </Pressable>
-          </View>
-
-          <View style={[styles.infoBox, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}>
-            <Text style={[styles.infoText, { color: theme.color }]}>{lang.toast.queue}: {queueLength}</Text>
-            <Text style={[styles.infoText, { color: theme.muted }]}>{lang.toast.active}: {activePayload?.tone ?? lang.toast.none}</Text>
-          </View>
-
-          <View style={styles.actionsRow}>
-            <Pressable style={[styles.secondaryButton, { borderColor: theme.border }]} onPress={() => dismiss()}>
-              <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.closeCurrent}</Text>
-            </Pressable>
-            <Pressable style={[styles.secondaryButton, { borderColor: theme.border }]} onPress={() => clear()}>
-              <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.clearQueue}</Text>
-            </Pressable>
-          </View>
-
-          <Text style={[styles.presetTitle, { color: theme.color }]}>{lang.toast.presets}</Text>
-
-          <View style={styles.presetRow}>
-            <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runSoftPreset(show, toastMessages)}>
-              <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.softFlow}</Text>
-            </Pressable>
-            <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runAlertPreset(show, clear, toastMessages)}>
-              <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.alertFlow}</Text>
-            </Pressable>
-          </View>
-
-          <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runPersistentPreset(show, toastMessages)}>
-            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.persistentToast}</Text>
+        <View style={styles.grid}>
+          <Pressable style={[styles.button, { backgroundColor: theme.primary }]} onPress={() => makeToast(show, 'info', toastLabels)}>
+            <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.info}</Text>
           </Pressable>
-
-          <Pressable style={[styles.backButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => navigate('home')}>
-            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.backHome}</Text>
+          <Pressable style={[styles.button, { backgroundColor: theme.success }]} onPress={() => makeToast(show, 'success', toastLabels)}>
+            <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.success}</Text>
+          </Pressable>
+          <Pressable style={[styles.button, { backgroundColor: theme.warning }]} onPress={() => makeToast(show, 'warning', toastLabels)}>
+            <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.warning}</Text>
+          </Pressable>
+          <Pressable style={[styles.button, { backgroundColor: theme.danger }]} onPress={() => makeToast(show, 'error', toastLabels)}>
+            <Text style={[styles.buttonLabel, { color: theme.onPrimary }]}>{lang.toast.error}</Text>
           </Pressable>
         </View>
-      </ScrollView>
+
+        <View style={[styles.infoBox, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}>
+          <Text style={[styles.infoText, { color: theme.color }]}>{lang.toast.queue}: {queueLength}</Text>
+          <Text style={[styles.infoText, { color: theme.muted }]}>{lang.toast.active}: {activePayload?.tone ?? lang.toast.none}</Text>
+        </View>
+
+        <View style={styles.actionsRow}>
+          <Pressable style={[styles.secondaryButton, { borderColor: theme.border }]} onPress={() => dismiss()}>
+            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.closeCurrent}</Text>
+          </Pressable>
+          <Pressable style={[styles.secondaryButton, { borderColor: theme.border }]} onPress={() => clear()}>
+            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.clearQueue}</Text>
+          </Pressable>
+        </View>
+
+        <Text style={[styles.presetTitle, { color: theme.color }]}>{lang.toast.presets}</Text>
+
+        <View style={styles.presetRow}>
+          <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runSoftPreset(show, toastMessages)}>
+            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.softFlow}</Text>
+          </Pressable>
+          <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runAlertPreset(show, clear, toastMessages)}>
+            <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.alertFlow}</Text>
+          </Pressable>
+        </View>
+
+        <Pressable style={[styles.presetButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => runPersistentPreset(show, toastMessages)}>
+          <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.persistentToast}</Text>
+        </Pressable>
+
+        <Pressable style={[styles.backButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]} onPress={() => navigate('home')}>
+          <Text style={[styles.secondaryLabel, { color: theme.color }]}>{lang.toast.backHome}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };
@@ -209,12 +207,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 16,
-  },
-  scroll: {
-    width: '100%',
-  },
-  scrollContent: {
     paddingBottom: 16,
   },
   card: {

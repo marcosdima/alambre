@@ -38,3 +38,4 @@ export { default as AnimadoView } from './components/animations/animado/AnimadoV
 export { default as AnimadoText } from './components/animations/animado/AnimadoText';
 export { default as ToggleLightDark } from './components/animations/ToggleLightDark';
 export { default as NavigatorBody } from './components/navigator/NavigatorBody';
+export { default as NavigatorScrollView } from './components/navigator/NavigatorScrollView';
