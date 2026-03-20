@@ -6,6 +6,7 @@ import Test from 'tests/Test';
 import { NavigatorProvider, ToastProvider } from './src/providers';
 import navigator from 'tests/navigator/navigator';
 import { ApiProvider } from 'tests/api';
+import { ExampleToast } from 'tests/toast';
 
 export default function App() {
   return (
@@ -15,7 +16,7 @@ export default function App() {
           <LangProvider>
             <GestureHandlerRootView>
               <NavigatorProvider pages={navigator}>
-                <ToastProvider>
+                <ToastProvider ToastComponent={ExampleToast}>
                   <Test />
                 </ToastProvider>
               </NavigatorProvider>

@@ -6,6 +6,7 @@ import {
   type ApiRouteKey,
   useExecuteRoute,
 } from './api';
+import { useLang } from 'tests/text/lang-provider';
 import { useLightDark } from 'tests/theme/theme';
 import ResponseShow from './ResponseShow';
 
@@ -13,6 +14,7 @@ import ResponseShow from './ResponseShow';
 export default () => {
   const [selectedRouteKey, setSelectedRouteKey] = useState<ApiRouteKey>('usersList');
   const { theme } = useLightDark();
+  const { lang } = useLang();
   const executeRoute = useExecuteRoute();
 
   const selectedRoutePath = useMemo(() => {
@@ -21,14 +23,14 @@ export default () => {
   }, [selectedRouteKey]);
 
   const statusText = executeRoute.isPending
-    ? 'Consultando route...'
+    ? lang.api.loadingRoute
     : executeRoute.error
       ? `Error: ${executeRoute.error.message}`
-      : `Route seleccionada: ${selectedRoutePath}`;
+      : `${lang.api.selectedRoute}: ${selectedRoutePath}`;
 
   return (
     <View style={[styles.container, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-      <Title style={[styles.title, { color: theme.color }]}>API Test</Title>
+      <Title style={[styles.title, { color: theme.color }]}>{lang.api.title}</Title>
       <Text style={[styles.status, { color: theme.muted }]}>{statusText}</Text>
 
       <View style={styles.routesRow}>
@@ -56,11 +58,11 @@ export default () => {
         style={[styles.runButton, { backgroundColor: theme.primary }]}
         onPress={() => executeRoute.mutate({ routeKey: selectedRouteKey })}
       >
-        <Text style={[styles.runButtonLabel, { color: theme.onPrimary }]}>Ejecutar route</Text>
+        <Text style={[styles.runButtonLabel, { color: theme.onPrimary }]}>{lang.api.executeRoute}</Text>
       </Pressable>
 
       <View style={[styles.responsePanel, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}>
-        <Text style={[styles.responseTitle, { color: theme.color }]}>Respuesta</Text>
+        <Text style={[styles.responseTitle, { color: theme.color }]}>{lang.api.response}</Text>
 
         <ResponseShow response={executeRoute.data} />
       </View>

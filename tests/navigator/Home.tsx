@@ -6,26 +6,10 @@ import { ToggleLightDark } from 'src';
 import BorderButton from 'src/components/base/input/buttons/BorderButton';
 import AnimadoView from 'src/components/animations/animado/AnimadoView';
 import { withTiming } from 'react-native-reanimated';
-import useToast from 'src/providers/toast-provider/use-toast';
 
 export default () => {
   const { navigate } = useNavigator();
   const { toggleTheme, theme, currThemeName } = useLightDark();
-  const { setMessage } = useToast();
-
-  const showToasts = () => {
-    setMessage({
-      content: 'Error al crear la vida',
-      type: 'error',
-      duration: 7000,
-    });
-
-    setMessage({
-      content: 'Mensaje de informacion en cola',
-      type: 'info',
-      duration: 5000,
-    });
-  };
 
   return (
     <AnimadoView
@@ -55,10 +39,10 @@ export default () => {
       </View>
 
       <Pressable
-        style={[styles.toastButton, { borderColor: theme.warning, backgroundColor: theme.surface }]}
-        onPress={showToasts}
+        style={[styles.toastButton, { borderColor: theme.warning, backgroundColor: theme.surfaceAlt }]}
+        onPress={() => navigate('toast')}
       >
-        <Text style={[styles.toastLabel, { color: theme.warning }]}>Mostrar Toasts</Text>
+        <Text style={[styles.toastLabel, { color: theme.warning }]}>Ir a Toast Playground</Text>
       </Pressable>
 
       <ToggleLightDark

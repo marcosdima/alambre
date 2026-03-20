@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { Text, View } from 'src/components/base';
+import { useLang } from 'tests/text/lang-provider';
 import { useLightDark } from 'tests/theme/theme';
 import type { KnownApiResponse } from './api';
 
@@ -17,7 +18,7 @@ const toItems = (response?: KnownApiResponse): ResponseItem[] => {
 };
 
 
-const titleOfItem = (item: ResponseItem, index: number): string => {
+const titleOfItem = (item: ResponseItem, index: number, fallbackLabel: string): string => {
   const nameValue = item.name;
   if (typeof nameValue === 'string' && nameValue.trim()) return nameValue;
 
@@ -25,9 +26,9 @@ const titleOfItem = (item: ResponseItem, index: number): string => {
   if (typeof titleValue === 'string' && titleValue.trim()) return titleValue;
 
   const idValue = item.id;
-  if (typeof idValue === 'number' || typeof idValue === 'string') return `Item ${idValue}`;
+  if (typeof idValue === 'number' || typeof idValue === 'string') return `${fallbackLabel} ${idValue}`;
 
-  return `Item ${index + 1}`;
+  return `${fallbackLabel} ${index + 1}`;
 };
 
 
@@ -40,12 +41,13 @@ const valueToText = (value: RowValue): string => {
 
 export default ({ response }: ResponseShowProps) => {
   const { theme } = useLightDark();
+  const { lang } = useLang();
   const items = toItems(response);
 
   if (items.length === 0) {
     return (
       <View style={[styles.emptyContainer, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}>
-        <Text style={[styles.emptyText, { color: theme.muted }]}>Presiona "Ejecutar route" para ver una respuesta.</Text>
+        <Text style={[styles.emptyText, { color: theme.muted }]}>{lang.api.pressToLoad}</Text>
       </View>
     );
   }
@@ -61,8 +63,8 @@ export default ({ response }: ResponseShowProps) => {
           showsVerticalScrollIndicator
         >
           {items.map((item, index) => (
-            <View key={`${titleOfItem(item, index)}-${index}`} style={[styles.card, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-              <Text style={[styles.cardTitle, { color: theme.color }]}>{titleOfItem(item, index)}</Text>
+            <View key={`${titleOfItem(item, index, lang.api.fallbackItem)}-${index}`} style={[styles.card, { borderColor: theme.border, backgroundColor: theme.surface }]}>
+              <Text style={[styles.cardTitle, { color: theme.color }]}>{titleOfItem(item, index, lang.api.fallbackItem)}</Text>
 
               {Object.entries(item).map(([key, value]) => (
                 <View key={`${key}-${index}`} style={styles.row}>

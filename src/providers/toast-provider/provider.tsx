@@ -1,15 +1,31 @@
 import type { ProviderProps } from './types';
 import Context from './context';
-import ToastBody from './toast-body';
 import value from './value';
 
-export default ({ children, bodyProps, ...props }: ProviderProps) => {
-  const hookValue = value(bodyProps?.delay);
-  const { toast } = hookValue;
+export default ({
+  children,
+  delay,
+  defaultDuration,
+  queueMode,
+  ToastComponent,
+  ...props
+}: ProviderProps) => {
+  const hookValue = value(delay, { defaultDuration, queueMode });
+  const {
+    toast,
+    dismiss,
+    clear,
+    next,
+    queueLength,
+  } = hookValue;
 
   return (
     <Context.Provider {...props} value={hookValue}>
-      { toast ? <ToastBody {...bodyProps}/> : undefined}
+      {
+        toast
+          ? <ToastComponent toast={toast} dismiss={dismiss} clear={clear} next={next} queueLength={queueLength} />
+          : undefined
+      }
       {children}
     </Context.Provider>
   );
