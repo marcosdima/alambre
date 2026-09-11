@@ -2,7 +2,7 @@ import type { NavigatorTypes } from '../../types';
 import { createContext, useContext, useRef, useState } from 'react';
 
 
-const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
+const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
   const firstPage = Object.keys(pages).shift() ?? '';
   const stack = useRef<string[]>([]);
   const [currentPage, updatePage] = useState<string>(firstPage);
@@ -29,17 +29,17 @@ const useNavigartorContext = (pages: NavigatorTypes.NavigatorObject) => {
   };
 
 
-  const getComponent = (path: string[]) => {
-    // Get the first key, if it does not exist then goes to the first page.
-    const firstKey = path.shift();
+  const getComponent = (path: readonly string[]) => {
+    // Get the first key; if it does not exist, go to the first page.
+    const [firstKey, ...rest] = path;
     if (!firstKey) return pages[firstPage];
 
     // Get that page and, if that's all it is, return it.
     const first = pages[firstKey];
-    if (path.length === 0) return first;
+    if (rest.length === 0) return first;
 
     // Follow the path.
-    return path.reduce(
+    return rest.reduce(
       (acc, key) => acc?.subpages?.[key],
       first as NavigatorTypes.Page | undefined,
     ) ?? first;
@@ -65,7 +65,7 @@ export const NavigatorProvider = (
     ...props
   }: NavigatorTypes.NavigatorProviderProps,
 ) => {
-  const value = useNavigartorContext(pages);
+  const value = useNavigatorContext(pages);
   return (
     <NavigatorContext.Provider {...props} value={value}>
       {children}

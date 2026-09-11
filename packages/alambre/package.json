@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/marcosdima/alambre#readme",
   "scripts": {
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint .",
     "build": "bob build",
     "typecheck": "tsc --noEmit"
   },
