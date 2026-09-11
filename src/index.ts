@@ -1,4 +1,4 @@
-// Base Components
+// Base Components.
 export {
   SafeAreaView,
   SubTitle,
@@ -7,16 +7,22 @@ export {
   View,
 } from './components/base';
 
-// Types
+// Types.
 export type {
   DefaultReact,
   AnimadoTypes,
   ActionTypes,
   NavigatorTypes,
+  HooksTypes,
+  IconstTypes,
 } from './types';
 
-// Modules
+export type { ToastComponentProps } from './modules';
+
+// Modules.
 export {
+  BaseModule,
+  createModuleProvider,
   createLightDarkProvider,
   createConfigProvider,
   createLangProvider,
@@ -25,15 +31,16 @@ export {
   useNavigator,
   ToastProvider,
   useToast,
+  DefaultToastBody,
 } from './modules';
 
-// Icons
+// Icons.
 export * as AlambreIcons from './components/icons';
 
 // Buttons.
 export * as Buttons from './components/base/input/buttons';
 
-// Animations & Components
+// Animations & Components.
 export { default as AnimadoView } from './components/animations/animado/AnimadoView';
 export { default as AnimadoText } from './components/animations/animado/AnimadoText';
 export { default as ToggleLightDark } from './components/animations/ToggleLightDark';

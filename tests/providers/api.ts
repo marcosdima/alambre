@@ -106,14 +106,6 @@ export const apiRoutes = createRoutes({
   }),
 });
 
-const routePathByKey: Record<ApiRouteKey, string> = {
-  usersList: '/users',
-  postsList: '/posts',
-  commentsList: '/comments',
-  albumsList: '/albums',
-  todosList: '/todos',
-};
-
 export const usePostById = createQueryHookFromRoute(apiRoutes.postById);
 
 export const useCreatePost = createMutationHook<Post, CreatePostInput>(
@@ -126,7 +118,7 @@ export const useCreatePost = createMutationHook<Post, CreatePostInput>(
 export const useExecuteRoute = createMutationHook<KnownApiResponse, ExecuteRouteInput>({
   key: ['api', 'execute-route'],
   method: 'GET',
-  path: ({ routeKey }) => routePathByKey[routeKey],
+  path: ({ routeKey }) => (apiRoutes[routeKey].path as string),
 });
 
 export { ApiProvider };

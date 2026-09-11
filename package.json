@@ -1,6 +1,6 @@
 {
   "name": "alambre",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Several simple react-native code solutions.",
   "type": "module",
   "main": "index.ts",
