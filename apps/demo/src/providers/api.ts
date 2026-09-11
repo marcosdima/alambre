@@ -1,4 +1,4 @@
-import { createApiProvider } from 'src/modules';
+import { createApiProvider } from 'alambre';
 
 export type User = {
   id: number;

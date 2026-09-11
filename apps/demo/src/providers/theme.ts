@@ -1,5 +1,5 @@
-import { createLightDarkProvider } from 'src/modules';
-import { getItem, saveItem } from 'src/utils/storage';
+import { createLightDarkProvider } from 'alambre';
+import { getItem, saveItem } from '../utils/storage';
 
 export const light = {
   color: '#1f2937',

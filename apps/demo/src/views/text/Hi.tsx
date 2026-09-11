@@ -1,7 +1,7 @@
 import { Button } from 'react-native';
-import { useLang } from 'tests/providers/lang';
-import { Text, View } from 'src/components/base';
-import { useLightDark } from 'tests/providers/theme';
+import { useLang } from '../../providers/lang';
+import { Text, View } from 'alambre';
+import { useLightDark } from '../../providers/theme';
 
 export default () => {
   const { lang, currentLang, changeLang } = useLang();

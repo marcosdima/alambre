@@ -1,12 +1,12 @@
-import { LightDarkProvider } from 'tests/providers/theme';
-import { ConfigProvider } from 'tests/providers/config';
+import { LightDarkProvider } from './src/providers/theme';
+import { ConfigProvider } from './src/providers/config';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { LangProvider } from 'tests/providers/lang';
-import Test from 'tests/navigator/Test';
-import { NavigatorProvider, ToastProvider } from './src/modules';
-import navigator from 'tests/navigator/navigator';
-import { ApiProvider } from 'tests/providers/api';
-import ExampleToast from 'tests/providers/toast';
+import { LangProvider } from './src/providers/lang';
+import Test from './src/navigator/Test';
+import { NavigatorProvider, ToastProvider } from 'alambre';
+import navigator from './src/navigator/navigator';
+import { ApiProvider } from './src/providers/api';
+import ExampleToast from './src/providers/toast';
 
 export default function App() {
   return (

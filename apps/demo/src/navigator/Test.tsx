@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'src/components/base';
+import { SafeAreaView } from 'alambre';
 import { StyleSheet } from 'react-native';
 import {
   BounceInLeft,
@@ -7,9 +7,9 @@ import {
   BounceOutRight,
   Easing,
 } from 'react-native-reanimated';
-import { NavigatorBody } from 'src/modules/navigator';
-import { useNavigator } from 'src';
-import { useLightDark } from 'tests/providers/theme';
+import { NavigatorBody } from 'alambre';
+import { useNavigator } from 'alambre';
+import { useLightDark } from '../providers/theme';
 
 export default () => {
   const { theme } = useLightDark();

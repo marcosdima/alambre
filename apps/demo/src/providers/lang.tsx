@@ -1,6 +1,6 @@
 
-import { createLangProvider } from 'src/modules';
-import { getItem, saveItem } from 'src/utils/storage';
+import { createLangProvider } from 'alambre';
+import { getItem, saveItem } from '../utils/storage';
 
 const langs = {
   en: {

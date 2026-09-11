@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'src/components/base';
+import { Text, Title, View } from 'alambre';
 import {
   apiRouteOptions,
   type ApiRouteKey,
   useExecuteRoute,
-} from 'tests/providers/api';
-import { useLang } from 'tests/providers/lang';
-import { useLightDark } from 'tests/providers/theme';
+} from '../../providers/api';
+import { useLang } from '../../providers/lang';
+import { useLightDark } from '../../providers/theme';
 import ResponseShow from './ResponseShow';
 
 

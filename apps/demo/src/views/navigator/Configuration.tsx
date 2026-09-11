@@ -1,8 +1,7 @@
-import { Text, Title, View } from 'src/components/base';
+import { Text, Title, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
-import { useNavigator } from 'src/modules';
-import { useLightDark } from 'tests/providers/theme';
-import ApiShow from 'tests/views/api/ApiShow';
+import { useNavigator } from 'alambre';
+import { useLightDark } from '../../providers/theme';
 
 export default () => {
   const { navigate } = useNavigator();
@@ -11,26 +10,22 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Title style={[styles.title, { color: theme.color }]}>Play</Title>
-        <Text style={[styles.description, { color: theme.muted }]}>
-          Entrypoint para arrancar pruebas de flujo y volver a secciones de setup.
-        </Text>
+        <Title style={[styles.title, { color: theme.color }]}>Configuration</Title>
+        <Text style={[styles.description, { color: theme.muted }]}>Aca dejamos accesos directos para testear la profundidad del arbol de paginas.</Text>
 
         <Pressable
-          style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-          onPress={() => navigate('home', { subpage: 'configuration' })}
+          style={[styles.primaryButton, { backgroundColor: theme.success }]}
+          onPress={() => navigate('home', { subpage: 'configuration,advance' })}
         >
-          <Text style={[styles.primaryLabel, { color: theme.onPrimary }]}>Ir a Configuracion</Text>
+          <Text style={[styles.primaryLabel, { color: theme.onPrimary }]}>Ir a Advance</Text>
         </Pressable>
 
         <Pressable
           style={[styles.secondaryButton, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }]}
-          onPress={() => navigate('home')}
+          onPress={() => navigate('play')}
         >
-          <Text style={[styles.secondaryLabel, { color: theme.color }]}>Volver a Home</Text>
+          <Text style={[styles.secondaryLabel, { color: theme.color }]}>Ir a Play</Text>
         </Pressable>
-
-        <ApiShow />
       </View>
     </View>
   );
@@ -39,11 +34,9 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
   },
   card: {
     width: '100%',

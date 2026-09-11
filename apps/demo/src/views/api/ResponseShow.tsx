@@ -1,8 +1,8 @@
 import { ScrollView, StyleSheet } from 'react-native';
-import { Text, View } from 'src/components/base';
-import { useLang } from 'tests/providers/lang';
-import { useLightDark } from 'tests/providers/theme';
-import type { KnownApiResponse } from 'tests/providers/api';
+import { Text, View } from 'alambre';
+import { useLang } from '../../providers/lang';
+import { useLightDark } from '../../providers/theme';
+import type { KnownApiResponse } from '../../providers/api';
 
 type ResponseShowProps = {
   response?: KnownApiResponse;

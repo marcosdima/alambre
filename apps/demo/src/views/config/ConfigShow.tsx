@@ -1,5 +1,5 @@
-import { useConfig } from 'tests/providers/config';
-import { Text } from 'src/components/base';
+import { useConfig } from '../../providers/config';
+import { Text } from 'alambre';
 import { Button } from 'react-native';
 
 const keyOf = <T extends object>(obj: T): (keyof T)[] => {

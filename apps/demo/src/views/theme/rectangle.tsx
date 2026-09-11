@@ -1,7 +1,7 @@
-import { Text, View } from 'src/components/base';
+import { Text, View } from 'alambre';
 import { Button } from 'react-native';
-import { useLightDark } from 'tests/providers/theme';
-import { useConfig } from 'tests/providers/config';
+import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 
 export default () => {
   const { theme, toggleTheme } = useLightDark();

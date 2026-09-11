@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'src/components/base';
-import { useLightDark } from 'tests/providers/theme';
-import { useNavigator, useToast } from 'src/modules';
-import { useLang } from 'tests/providers/lang';
+import { Text, Title, View } from 'alambre';
+import { useLightDark } from '../../providers/theme';
+import { useNavigator, useToast } from 'alambre';
+import { useLang } from '../../providers/lang';
 
 type DemoTone = 'info' | 'success' | 'warning' | 'error';
 

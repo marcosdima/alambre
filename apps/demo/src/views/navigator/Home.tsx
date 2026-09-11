@@ -1,10 +1,10 @@
-import { Text, Title, View } from 'src/components/base';
+import { Text, Title, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
-import { useNavigator } from 'src/modules';
-import { useLightDark } from 'tests/providers/theme';
-import { ToggleLightDark } from 'src';
-import BorderButton from 'src/components/base/input/buttons/BorderButton';
-import AnimadoView from 'src/components/animations/animado/AnimadoView';
+import { useNavigator } from 'alambre';
+import { useLightDark } from '../../providers/theme';
+import { ToggleLightDark } from 'alambre';
+import { Buttons } from 'alambre';
+import { AnimadoView } from 'alambre';
 import { withTiming } from 'react-native-reanimated';
 
 export default () => {
@@ -51,7 +51,7 @@ export default () => {
         setLeft={currThemeName === 'light'}
       />
 
-      <BorderButton
+      <Buttons.BorderButton
         style={styles.springButton}
         label='Ir a Advance'
         onPress={() => navigate('home', { subpage: 'configuration,advance' })}

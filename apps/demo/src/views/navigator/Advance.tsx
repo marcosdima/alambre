@@ -1,7 +1,7 @@
-import { Text, Title, View } from 'src/components/base';
+import { Text, Title, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
-import { useNavigator } from 'src/modules';
-import { useLightDark } from 'tests/providers/theme';
+import { useNavigator } from 'alambre';
+import { useLightDark } from '../../providers/theme';
 
 export default () => {
   const { navigate } = useNavigator();

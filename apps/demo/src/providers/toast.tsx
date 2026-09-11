@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'src/components/base';
-import type { ToastComponentProps } from 'src/modules';
-import { useLightDark } from 'tests/providers/theme';
-import { Arrow, Cross, Tick } from 'src/components/icons';
+import { Text, Title, View } from 'alambre';
+import type { ToastComponentProps } from 'alambre';
+import { useLightDark } from './theme';
+import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
   FadeInDown,
@@ -124,12 +124,12 @@ export default ({ toast, dismiss, queueLength }: ToastComponentProps) => {
             <View style={styles.iconWrap}>
               {
                 tone === 'error'
-                  ? <Cross key={`error-${data.id}`} {...iconProps} lineWidth={5} />
+                  ? <AlambreIcons.Cross key={`error-${data.id}`} {...iconProps} lineWidth={5} />
                   : tone === 'warning'
-                    ? <Arrow key={`warning-${data.id}`} {...iconProps} lineWidth={7} rotation={-25} />
+                    ? <AlambreIcons.Arrow key={`warning-${data.id}`} {...iconProps} lineWidth={7} rotation={-25} />
                     : tone === 'success'
-                      ? <Tick key={`success-${data.id}`} {...iconProps} lineWidth={5} />
-                      : <Arrow key={`info-${data.id}`} {...iconProps} lineWidth={7} />
+                      ? <AlambreIcons.Tick key={`success-${data.id}`} {...iconProps} lineWidth={5} />
+                      : <AlambreIcons.Arrow key={`info-${data.id}`} {...iconProps} lineWidth={7} />
               }
             </View>
 
@@ -138,7 +138,7 @@ export default ({ toast, dismiss, queueLength }: ToastComponentProps) => {
 
           <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>
             <View style={styles.closeIconWrap}>
-              <Cross
+              <AlambreIcons.Cross
                 key={`close-${data.id}`}
                 drawIt={shouldDrawIcon}
                 iconAnimation={iconAnimation}

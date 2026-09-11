@@ -1,5 +1,5 @@
-import { createConfigProvider } from 'src/modules';
-import { getItem, saveItem } from 'src/utils/storage';
+import { createConfigProvider } from 'alambre';
+import { getItem, saveItem } from '../utils/storage';
 
 const config = {
   alias: '',
