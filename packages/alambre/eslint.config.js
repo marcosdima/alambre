@@ -6,6 +6,10 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactNative from 'eslint-plugin-react-native';
 
 export default [
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', '**/android/**', '**/.expo/**'],
+  },
+
   js.configs.recommended,
 
   {
