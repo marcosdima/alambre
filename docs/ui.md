@@ -48,6 +48,7 @@ Following `docs/architecture.md` section 6, the framework no longer ships opinio
 * `DefaultToastBody` was removed. `ToastProvider` already requires a client-provided `ToastComponent`; a canned, branded toast body shipped in the framework was application presentation. The demo owns its toast body (`apps/demo/src/providers/toast.tsx`).
 * `NavigatorBody` was moved to the application: the demo owns its navigation chrome (`apps/demo/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
 * `ToggleLightDark` was moved to the application: the demo owns its light/dark switch (`apps/demo/src/components/ToggleLightDark.tsx`).
+* `AnimadoText` was removed (dead export with no consumers). `AnimadoView` remains for now; its animation scope is reviewed separately.
 
 ### Icons: kept in the framework, decoupled from hard-coded presentation
 
@@ -58,7 +59,9 @@ The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre
 * Removed non-reproducible randomness (e.g. `Moon`'s random stroke offsets) and fixed viewport defaults that were presentation choices.
 * Geometry (the shape itself) stays: a tick is a tick. Shapes are a concept, not application identity.
 
-The graphic primitives (`base/Circle`, `base/Line`, `base/Path`, and the animated utilities) remain as generic drawing infrastructure.
+The graphic primitives (`base/Circle` and `base/Line`, plus the animated utilities used by them) remain as generic drawing infrastructure.
+
+> `base/Path` was removed from the framework: it was an orphaned public primitive with no internal or external consumer, never validated, and its implementation did not follow the shared drawing contract used by `Circle` and `Line` (it hard-coded its own timing and relied on native path measurement). Removing it is consistent with the abstraction criteria (no artificial consumer, no unvalidated public surface).
 
 > Forward note: a future layer of common defaults and styling may live in a "Base Native"/"Base Template" layer once that layer is definitively defined. This decision does not introduce it.
 

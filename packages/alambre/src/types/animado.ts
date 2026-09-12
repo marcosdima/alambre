@@ -14,7 +14,3 @@ export type AnimadoStyle = {
 export type Animation = (value: number) => number;
 export type State = StyleProp<AnimadoStyle>;
 export type PosibleColor = ColorValue | undefined;
-
-export type AnimadoTextProps = AnimadoProps & {
-  text: string,
-};

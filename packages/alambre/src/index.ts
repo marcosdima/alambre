@@ -39,4 +39,3 @@ export * as AlambreIcons from './components/icons';
 
 // Animations & Components.
 export { default as AnimadoView } from './components/animations/animado/AnimadoView';
-export { default as AnimadoText } from './components/animations/animado/AnimadoText';
