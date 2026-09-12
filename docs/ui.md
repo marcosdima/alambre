@@ -59,6 +59,10 @@ The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre
 * Removed non-reproducible randomness (e.g. `Moon`'s random stroke offsets) and fixed viewport defaults that were presentation choices.
 * Geometry (the shape itself) stays: a tick is a tick. Shapes are a concept, not application identity.
 
+* `Arrow` honours the full `iconAnimation`/`strokeOffset` contract like the other concrete icons (a regression where it swallowed those props was surfaced and fixed during test coverage).
+
+* The icon layer (base primitives and concrete icons) is covered by contract tests in `packages/alambre/tests/icons-base.test.tsx` and `packages/alambre/tests/icons.test.tsx` (draw/reset, `strokeOffset`, `rotation`, `iconAnimation`, geometry and fill).
+
 The graphic primitives (`base/Circle` and `base/Line`, plus the animated utilities used by them) remain as generic drawing infrastructure.
 
 > `base/Path` was removed from the framework: it was an orphaned public primitive with no internal or external consumer, never validated, and its implementation did not follow the shared drawing contract used by `Circle` and `Line` (it hard-coded its own timing and relied on native path measurement). Removing it is consistent with the abstraction criteria (no artificial consumer, no unvalidated public surface).

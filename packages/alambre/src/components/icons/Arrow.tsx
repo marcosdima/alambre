@@ -32,6 +32,8 @@ export default (
     color,
     lineWidth,
     rotation = 0,
+    iconAnimation,
+    strokeOffset = 0,
     style,
     ...props
   }: ArrowProps,
@@ -52,6 +54,8 @@ export default (
             ...baseConfig,
           }}
           drawIt={drawIt}
+          iconAnimation={iconAnimation}
+          strokeOffset={strokeOffset}
         />
         <Line
           line={{
@@ -59,6 +63,8 @@ export default (
             ...baseConfig,
           }}
           drawIt={drawIt}
+          iconAnimation={iconAnimation}
+          strokeOffset={strokeOffset}
         />
         <Line
           line={{
@@ -66,6 +72,8 @@ export default (
             ...baseConfig,
           }}
           drawIt={drawIt}
+          iconAnimation={iconAnimation}
+          strokeOffset={strokeOffset}
         />
       </Svg>
     </View>
