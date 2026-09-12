@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import type { ToastComponentProps } from 'alambre';
 import { useLightDark } from './theme';
 import { AlambreIcons } from 'alambre';
+import AppTitle from '../components/AppTitle';
 import Animated, {
   Easing,
   FadeInDown,
@@ -133,7 +134,7 @@ export default ({ toast, dismiss, queueLength }: ToastComponentProps) => {
               }
             </View>
 
-            <Title style={[styles.title, { color: toneStyles[tone] }]}>{title}</Title>
+            <AppTitle style={[styles.title, { color: toneStyles[tone] }]}>{title}</AppTitle>
           </View>
 
           <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>

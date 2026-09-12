@@ -1,9 +1,6 @@
 // Base Components.
 export {
-  SafeAreaView,
-  SubTitle,
   Text,
-  Title,
   View,
 } from './components/base';
 

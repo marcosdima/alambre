@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { View, Text, Title } from '../../components/base';
+import { View, Text } from '../../components/base';
 import Animated, { BounceInUp, BounceOutUp, Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect, useMemo } from 'react';
 import { Cross, Tick } from '../../components/icons';
@@ -87,7 +87,7 @@ export default ({
             { toneType === 'error' ? <Cross {...iconConfig} /> : <Tick {...iconConfig} /> }
           </View>
           <View style={styles.text}>
-            <Title style={{ color: tone }}>{title}</Title>
+            <Text style={[styles.toastTitle, { color: tone }]}>{title}</Text>
             <Text style={{ color: text }}>{content}</Text>
           </View>
         </View>
@@ -104,6 +104,11 @@ export default ({
 };
 
 const styles = StyleSheet.create({
+  toastTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
   container: {
     width: '100%',
     minHeight: 110,

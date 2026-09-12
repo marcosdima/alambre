@@ -1,7 +1,8 @@
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import AppTitle from '../../components/AppTitle';
 import ApiShow from '../../views/api/ApiShow';
 
 export default () => {
@@ -11,7 +12,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Title style={[styles.title, { color: theme.color }]}>Play</Title>
+        <AppTitle style={[styles.title, { color: theme.color }]}>Play</AppTitle>
         <Text style={[styles.description, { color: theme.muted }]}>
           Entrypoint para arrancar pruebas de flujo y volver a secciones de setup.
         </Text>

@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useNavigator, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
+import AppTitle from '../../components/AppTitle';
 
 type DemoTone = 'info' | 'success' | 'warning' | 'error';
 
@@ -147,7 +148,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Title style={[styles.title, { color: theme.color }]}>{lang.toast.title}</Title>
+        <AppTitle style={[styles.title, { color: theme.color }]}>{lang.toast.title}</AppTitle>
         <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.toast.subtitle}</Text>
 
         <View style={styles.grid}>

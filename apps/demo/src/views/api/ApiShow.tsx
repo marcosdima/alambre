@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import {
   apiRouteOptions,
   type ApiRouteKey,
@@ -8,6 +8,7 @@ import {
 } from '../../providers/api';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
+import AppTitle from '../../components/AppTitle';
 import ResponseShow from './ResponseShow';
 
 
@@ -30,7 +31,7 @@ export default () => {
 
   return (
     <View style={[styles.container, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-      <Title style={[styles.title, { color: theme.color }]}>{lang.api.title}</Title>
+      <AppTitle style={[styles.title, { color: theme.color }]}>{lang.api.title}</AppTitle>
       <Text style={[styles.status, { color: theme.muted }]}>{statusText}</Text>
 
       <View style={styles.routesRow}>

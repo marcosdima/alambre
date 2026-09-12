@@ -1,8 +1,9 @@
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { ToggleLightDark } from 'alambre';
+import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import { AnimadoView } from 'alambre';
 import { withTiming } from 'react-native-reanimated';
@@ -18,7 +19,7 @@ export default () => {
     >
       <View style={[styles.hero, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.badge, { color: theme.primary, backgroundColor: theme.primarySoft }]}>Navigator Demo</Text>
-        <Title style={[styles.title, { color: theme.color }]}>Home</Title>
+        <AppTitle style={[styles.title, { color: theme.color }]}>Home</AppTitle>
         <Text style={[styles.subtitle, { color: theme.muted }]}>Probando navegacion, tema y componentes interactivos.</Text>
       </View>
 

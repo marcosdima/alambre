@@ -1,7 +1,8 @@
-import { Text, Title, View } from 'alambre';
+import { Text, View } from 'alambre';
 import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import AppTitle from '../../components/AppTitle';
 
 export default () => {
   const { navigate } = useNavigator();
@@ -10,7 +11,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Title style={[styles.title, { color: theme.color }]}>Advance</Title>
+        <AppTitle style={[styles.title, { color: theme.color }]}>Advance</AppTitle>
         <Text style={[styles.description, { color: theme.muted }]}>Nivel profundo para validar retorno de stack y enlaces cruzados.</Text>
 
         <Pressable

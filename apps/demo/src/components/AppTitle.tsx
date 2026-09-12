@@ -1,7 +1,7 @@
-import Text from './Text';
-import type { TextProps } from '../../types/default-react';
+import type { ComponentProps } from 'react';
+import { Text } from 'alambre';
 
-export default ({ style, ...props }: TextProps) => {
+export default function AppTitle({ style, ...props }: ComponentProps<typeof Text>) {
   return (
     <Text
       style={[
@@ -15,4 +15,4 @@ export default ({ style, ...props }: TextProps) => {
       {...props}
     />
   );
-};
+}
