@@ -7,6 +7,10 @@ export {
   View,
 } from './components/base';
 
+// Buttons.
+export { Button } from './components/base/input/buttons';
+export type { ButtonProps, ButtonState } from './components/base/input/buttons';
+
 // Types.
 export type {
   DefaultReact,
@@ -36,9 +40,6 @@ export {
 
 // Icons.
 export * as AlambreIcons from './components/icons';
-
-// Buttons.
-export * as Buttons from './components/base/input/buttons';
 
 // Animations & Components.
 export { default as AnimadoView } from './components/animations/animado/AnimadoView';

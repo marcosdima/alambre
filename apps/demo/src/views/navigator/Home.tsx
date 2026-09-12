@@ -3,7 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { ToggleLightDark } from 'alambre';
-import { Buttons } from 'alambre';
+import AppButton from '../../components/AppButton';
 import { AnimadoView } from 'alambre';
 import { withTiming } from 'react-native-reanimated';
 
@@ -51,22 +51,14 @@ export default () => {
         setLeft={currThemeName === 'light'}
       />
 
-      <Buttons.BorderButton
+      <AppButton
         style={styles.springButton}
-        label='Ir a Advance'
         onPress={() => navigate('home', { subpage: 'configuration,advance' })}
-        textStyle={{
-          borderRadius: 12,
-          borderWidth: 2,
-          borderColor: theme.success,
-          backgroundColor: theme.surface,
-          paddingVertical: 10,
-          paddingHorizontal: 20,
-          textAlign: 'center',
-          color: theme.success,
-          fontWeight: '700',
-        }}
-      />
+      >
+        <Text style={[styles.springLabel, { color: theme.success }]}>
+          Ir a Advance
+        </Text>
+      </AppButton>
     </AnimadoView>
   );
 };
@@ -146,5 +138,9 @@ const styles = StyleSheet.create({
   springButton: {
     minWidth: 180,
     alignItems: 'center',
+  },
+  springLabel: {
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
