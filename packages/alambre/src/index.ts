@@ -32,7 +32,6 @@ export {
   useNavigator,
   ToastProvider,
   useToast,
-  DefaultToastBody,
 } from './modules';
 
 // Icons.
@@ -41,5 +40,3 @@ export * as AlambreIcons from './components/icons';
 // Animations & Components.
 export { default as AnimadoView } from './components/animations/animado/AnimadoView';
 export { default as AnimadoText } from './components/animations/animado/AnimadoText';
-export { default as ToggleLightDark } from './components/animations/ToggleLightDark';
-export { NavigatorBody } from './modules/navigator';

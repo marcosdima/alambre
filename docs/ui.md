@@ -37,11 +37,39 @@ An application composes its own presentation component on top of `alambre.Button
 
 ---
 
-## 2. Open questions
+## 2. Application owns presentation
 
-The following UI topics remain open and are deliberately not resolved here:
+Following `docs/architecture.md` section 6, the framework no longer ships opinionated or hard-coded presentation. The application is the owner of colors, typography, dimensions, concrete icons and application-specific animations.
 
-* Fate of currently opinionated primitives shipped in alambre (`Title`, `SubTitle`, `SafeAreaView`).
-* Fate of `DefaultToastBody` and `NavigatorBody` (full opinionated UI shipped inside the framework).
-* Fate of the concrete icon components and `ToggleLightDark` (hard-coded visual identity).
+### Resolved fates
+
+* `Title` and `SubTitle` were removed from the framework (hard-coded typography). The application owns typography: the demo implements `AppTitle` (`apps/demo/src/components/AppTitle.tsx`). `SubTitle` had no consumers and was dead code.
+* `SafeAreaView` was removed from the framework. Safe areas are an ecosystem concern solved by `react-native-safe-area-context` (ecosystem-first); the demo uses it directly. The dependency was dropped from `alambre`'s peer and dev dependencies.
+* `DefaultToastBody` was removed. `ToastProvider` already requires a client-provided `ToastComponent`; a canned, branded toast body shipped in the framework was application presentation. The demo owns its toast body (`apps/demo/src/providers/toast.tsx`).
+* `NavigatorBody` was moved to the application: the demo owns its navigation chrome (`apps/demo/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
+* `ToggleLightDark` was moved to the application: the demo owns its light/dark switch (`apps/demo/src/components/ToggleLightDark.tsx`).
+
+### Icons: kept in the framework, decoupled from hard-coded presentation
+
+The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre**, but no longer impose a concrete application's presentation:
+
+* `color` is required (no hard-coded `black`/`orange`/`gray` strokes and fills); optional `fill` is accepted where the shape supports it.
+* Animation timing and behavior are driven by the `iconAnimation` configuration (the same `drawAnimation`/`resetAnimation` contract used by the base primitives), not by fixed durations inside the icon.
+* Removed non-reproducible randomness (e.g. `Moon`'s random stroke offsets) and fixed viewport defaults that were presentation choices.
+* Geometry (the shape itself) stays: a tick is a tick. Shapes are a concept, not application identity.
+
+The graphic primitives (`base/Circle`, `base/Line`, `base/Path`, and the animated utilities) remain as generic drawing infrastructure.
+
+> Forward note: a future layer of common defaults and styling may live in a "Base Native"/"Base Template" layer once that layer is definitively defined. This decision does not introduce it.
+
+---
+
+## 3. Base contracts retained
+
+`Text` and `View` remain as thin passthrough contracts (no presentation). They are not opinionated components; whether mere pass-throughs add enough reusable value is a future review, not resolved here.
+
+---
+
+## 4. Open questions
+
 * Whether the behavior-first pattern validated with `Button` extends to other UI primitives.

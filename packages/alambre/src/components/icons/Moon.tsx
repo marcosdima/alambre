@@ -1,27 +1,47 @@
 import type { CircleProps } from 'react-native-svg';
+import type { ColorValue } from 'react-native';
 import Svg from 'react-native-svg';
-import { svgBaseConfig } from './utils';
-import type { IconstTypes } from '../../types';
-import { View } from '../base';
 import Circle from './base/Circle';
+import { svgBaseConfig } from './utils';
+import { View } from '../base';
+import type { IconstTypes } from '../../types';
 
-const circle: CircleProps = {
-  cx: 50,
-  cy: 50,
-  r: 35,
-  stroke: 'black',
-  fillOpacity: 0,
-  strokeWidth: 3,
+type MoonProps = IconstTypes.BaseIcon & {
+  color: ColorValue;
+  lineWidth: number;
+  fill?: ColorValue;
 };
 
-const getRandomInt = (n: number) => Math.floor(Math.random() * n);
+export default (
+  {
+    drawIt = true,
+    iconAnimation,
+    color,
+    lineWidth,
+    fill,
+    rotation = 0,
+    style,
+    ...props
+  }: MoonProps,
+) => {
+  const strokeConfig: CircleProps = {
+    stroke: color,
+    strokeWidth: lineWidth,
+  };
 
-export default ({ drawIt, iconAnimation, ...props } : IconstTypes.BaseIcon) => {
-  const bigCircleCofig = {
+  const baseCircle: CircleProps = {
+    cx: 50,
+    cy: 50,
+    r: 35,
+    ...strokeConfig,
+    fillOpacity: 0,
+  };
+
+  const bigCircle = {
     circle: {
-      ...circle,
+      ...baseCircle,
       fillOpacity: !drawIt ? 0 : 1,
-      fill: 'gray',
+      fill,
     },
     drawIt,
     iconAnimation,
@@ -29,7 +49,7 @@ export default ({ drawIt, iconAnimation, ...props } : IconstTypes.BaseIcon) => {
   };
 
   const completeCircle = {
-    circle,
+    circle: baseCircle,
     drawIt,
     rotation: 279,
     iconAnimation,
@@ -43,22 +63,22 @@ export default ({ drawIt, iconAnimation, ...props } : IconstTypes.BaseIcon) => {
     { cx: 70, cy: 50, r: 5 },
   ];
 
+  const rotationTransform = {
+    transform: [{ rotate: `${rotation}deg` }],
+  };
+
   return (
-    <View {...props}>
+    <View style={[style, rotationTransform]} {...props}>
       <Svg {...svgBaseConfig}>
-        <Circle {...bigCircleCofig} />
+        <Circle {...bigCircle} />
         <Circle {...completeCircle} />
         {
-          smallCircles.map((c,i) => (
+          smallCircles.map((c, i) => (
             <Circle
               key={i}
-              circle={{ ...circle, ...c }}
+              circle={{ ...baseCircle, ...c }}
               drawIt={drawIt}
-              strokeOffset={
-                (getRandomInt(2) % 2 === 0)
-                  ? 0
-                  : getRandomInt(10) + 10
-              }
+              strokeOffset={0}
               iconAnimation={iconAnimation}
             />
           ))

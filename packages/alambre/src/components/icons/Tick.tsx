@@ -7,15 +7,16 @@ import { View } from '../base';
 import { svgBaseConfig } from './utils';
 
 type TickProps = IconstTypes.BaseIcon & {
-  color?: ColorValue;
-  lineWidth?: number;
+  drawIt?: boolean;
+  color: ColorValue;
+  lineWidth: number;
 };
 
 export default (
   {
     drawIt = true,
-    color = 'black',
-    lineWidth = 3,
+    color,
+    lineWidth,
     rotation = 0,
     iconAnimation,
     style,
@@ -26,7 +27,6 @@ export default (
     stroke: color,
     strokeWidth: lineWidth,
   };
-
 
   const topLeft = {
     line: {
@@ -53,7 +53,7 @@ export default (
   };
 
   return (
-    <View style={[style, rotationTransform]}  {...props}>
+    <View style={[style, rotationTransform]} {...props}>
       <Svg {...svgBaseConfig}>
         <Line {...topLeft}/>
         <Line {...bottomLeft}/>

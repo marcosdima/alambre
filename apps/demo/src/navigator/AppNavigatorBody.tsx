@@ -1,7 +1,10 @@
-import { View } from '../../../components/base';
+import type { ComponentProps } from 'react';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Pressable } from 'react-native';
+import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
+import type { NavigatorTypes } from 'alambre';
+import { View } from 'alambre';
+import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
   FadeInDown,
@@ -11,11 +14,26 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Arrow } from '../../../components/icons';
-import type { NavigatorBodyProps } from '../navigator-types';
+import type { EntryOrExitLayoutType } from 'react-native-reanimated';
+
+type AppNavigatorAnimations = {
+  pageEntering?: EntryOrExitLayoutType;
+  pageExiting?: EntryOrExitLayoutType;
+};
+
+type AppNavigatorBodyProps = ComponentProps<typeof View> & {
+  arrowColor?: ColorValue;
+  arrowBackgroundColor?: ColorValue;
+  width?: number;
+  pressStyle?: StyleProp<ViewStyle>;
+  animations?: {
+    go?: AppNavigatorAnimations;
+    return?: AppNavigatorAnimations;
+  };
+  useNavigator: () => NavigatorTypes.NavigatorReturn;
+};
 
 export default ({
-  children: _children,
   style,
   animations,
   arrowColor = 'black',
@@ -23,7 +41,7 @@ export default ({
   width = 4,
   useNavigator,
   ...props
-}: NavigatorBodyProps) => {
+}: AppNavigatorBodyProps) => {
   const {
     previous,
     currentPage,
@@ -153,7 +171,7 @@ export default ({
           hitSlop={12}
         >
           <Animated.View style={[styles.iconBody, iconStyle]}>
-            <Arrow
+            <AlambreIcons.Arrow
               drawIt={drawArrow}
               iconAnimation={{
                 drawAnimation: (value: number) => withTiming(value, {

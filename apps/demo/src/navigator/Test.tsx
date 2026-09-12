@@ -7,16 +7,16 @@ import {
   BounceOutRight,
   Easing,
 } from 'react-native-reanimated';
-import { NavigatorBody } from 'alambre';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import AppNavigatorBody from './AppNavigatorBody';
 
 export default () => {
   const { theme } = useLightDark();
   //const [val,setVal] = useState(0);
   return (
     <SafeAreaView style={styles.container}>
-      <NavigatorBody
+      <AppNavigatorBody
         style={styles.container}
         arrowColor={theme.primary}
         animations={{

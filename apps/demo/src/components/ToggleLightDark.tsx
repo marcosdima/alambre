@@ -9,13 +9,13 @@ import Animated, {
   interpolateColor,
   withSpring,
 } from 'react-native-reanimated';
-import Svg from 'react-native-svg';
-import Sun from '../icons/Sun';
-import Moon from '../icons/Moon';
-import type { DefaultReact } from '../../types';
-import { AnimatedCircle } from '../icons/utils';
+import Svg, { Circle } from 'react-native-svg';
+import { AlambreIcons } from 'alambre';
+import type { ComponentProps } from 'react';
+import type { View as AlambreView } from 'alambre';
 
 const RADIUS = 13;
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 type Colors = {
   background?: ColorValue;
@@ -28,7 +28,7 @@ type ThemeColors = {
   dark?: Colors,
 }
 
-type ToggleProps = DefaultReact.ViewProps & {
+type ToggleProps = ComponentProps<typeof AlambreView> & {
   toggle: () => void;
   setLeft?: boolean;
   colors?: ThemeColors;
@@ -148,8 +148,20 @@ export default (
           />
         </Svg>
         <View style={styles.row}>
-          <Sun drawIt={side === 0} style={styles.icon} iconAnimation={{ drawAnimation }} />
-          <Moon drawIt={side === 1} style={styles.icon} iconAnimation={{ drawAnimation }} />
+          <AlambreIcons.Sun
+            drawIt={side === 0}
+            style={styles.icon}
+            color={light.border}
+            lineWidth={3}
+            iconAnimation={{ drawAnimation }}
+          />
+          <AlambreIcons.Moon
+            drawIt={side === 1}
+            style={styles.icon}
+            color={light.border}
+            lineWidth={3}
+            iconAnimation={{ drawAnimation }}
+          />
         </View>
       </Animated.View>
     </Pressable>
