@@ -18,7 +18,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 - A content-driven capability factory `createCollectionProvider` — content = key + initial records, framework supplies load/CRUD/persist, mirroring the existing `createConfigProvider` shape.
 - Validate against a second consumer (alarms in I3) before proposing.
 
-**Not adopted:** app-level prototype, per project rules (prototype first, extract when demonstrated).
+**Status (I6): ADOPTED.** `Storage.remove` (optional) and `createCollectionProvider` ship with `alambre` (see `packages/alambre/CHANGELOG.md`, `docs/architecture.md` §8, and the Q3 decision log). Colguetti's items and alarms are the validating consumers.
 
 ## Screen forms need navigation params (discovered in I2)
 
@@ -28,7 +28,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Candidate for alambre:** the navigator `navigate(target, { subpage })` settings could accept arbitrary params carried by the page path, or expose an optional `params` on the navigation settings. The `RouteIntent` context is the app-level prototype.
 
-**Not adopted:** app-level prototype.
+**Status (I6): NOT EXTRACTED.** Navigational params keep their app-level prototype (`RouteIntent`) until a second consumer demonstrates reuse. Same for the shared `createId` util (trivial, app-owned).
 
 ## The app re-implements the capability pattern with React context (discovered in I2)
 
@@ -36,7 +36,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Candidate for alambre:** feeds into the `createCollectionProvider` idea above; also suggests a generic "async-loading provider" shape. If a `createCollectionProvider` lands in alambre, Colguetti's items and alarms both become its consumers.
 
-**Not adopted:** app-level prototype.
+**Status (I6): ADOPTED — superseded by `createCollectionProvider`.** `ItemsProvider` and `AlarmsProvider` are thin adapters now wrapping the shipped capability (see the first entry).
 
 ## Local-notification plan differs structurally from framework value (I4)
 

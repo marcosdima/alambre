@@ -33,6 +33,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createConfigProvider).toBe('function');
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
+    expect(typeof Alambre.createCollectionProvider).toBe('function');
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
@@ -58,6 +59,7 @@ describe('public API — type surface', () => {
     const storage: Alambre.Storage = {
       get: async () => null,
       set: async () => undefined,
+      remove: async () => undefined,
     };
     const iconAnimation: Alambre.IconAnimationConfig = {
       drawAnimation: (value) => value,

@@ -140,7 +140,8 @@ Intentional public type contracts:
 * `ButtonProps`, `ButtonState` — the `Button` primitive contract.
 * `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
 * `NavigatorTypes` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
-* `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, and `createLightDarkProvider`.
+* `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, and `createCollectionProvider`. `remove` is optional and additive.
+* `UseCollectionType` — the `createCollectionProvider` hook contract (`records`, `loading`, `add`, `update`, `remove`).
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
 
@@ -176,6 +177,10 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 `BaseModule` and `createModuleProvider` are no longer part of the public API (Q1 restructure). The shared module machinery was replaced by an internal `core` (`createStore` + `createProvider`); the public surface is the concrete capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`) and behaviors (`createApiProvider`, `NavigatorProvider`/`useNavigator`, `ToastProvider`/`useToast`). This is breaking for any consumer relying on the module machinery directly.
 
 `AnimadoView` and its `AnimadoTypes` type surface were moved to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the only known consumer was the demo, which now owns the implementation.
+
+`createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter, demonstrated in the reference app (Colguetti items and alarms). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
+
+Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/discoveries.md`).
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 

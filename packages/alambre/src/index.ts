@@ -8,11 +8,13 @@ export type { NavigatorTypes } from './types';
 export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
+export type { UseCollectionType } from './capabilities/collection';
 
 export type { ToastComponentProps } from './behaviors';
 
 // Capabilities.
 export {
+  createCollectionProvider,
   createConfigProvider,
   createLangProvider,
   createLightDarkProvider,

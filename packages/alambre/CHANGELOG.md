@@ -13,3 +13,5 @@ Breaking and structural changes recorded while the contract was being defined, k
 - [refactor] Curate the public type surface into first-class contracts (`Storage`, `IconAnimationConfig`, `IconProps`) and remove the internal blanket namespace re-exports.
 - [refactor] Move `AnimadoView` (and its `AnimadoTypes`) to the application layer.
 - [test] Reorganize the test suite to mirror the `src` tree (`core`/`capabilities`/`behaviors`/`components`).
+- [add] Add `createCollectionProvider` capability: a content-driven, persisted, typed collection (add/update/remove) built on `createStore`/`createProvider` and the `Storage` adapter (validated in the base-template reference app: items and alarms are now consumers).
+- [add] Extend the `Storage` contract with an optional `remove` (additive; existing adapters remain valid).
