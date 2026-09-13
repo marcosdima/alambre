@@ -10,6 +10,7 @@ import {
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppNavigatorBody from './AppNavigatorBody';
+import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 
 export default () => {
   const { theme } = useLightDark();
@@ -31,6 +32,7 @@ export default () => {
         }}
         useNavigator={useNavigator}
       />
+      <NotificationsWatcher />
     </SafeAreaView>
   );
 };
