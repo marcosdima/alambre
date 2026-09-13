@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet } from 'react-native';
-import { Text, View } from 'alambre';
+import { Text, View } from 'react-native';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import type { KnownApiResponse } from '../../providers/api';

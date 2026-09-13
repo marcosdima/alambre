@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, View } from 'alambre';
+import { Text, View } from 'react-native';
 import type { ToastComponentProps } from 'alambre';
 import { useLightDark } from './theme';
 import { AlambreIcons } from 'alambre';

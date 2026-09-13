@@ -3,7 +3,7 @@ import type { LineProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import Line from './base/Line';
 import type { IconstTypes } from '../../types';
-import { View } from '../base';
+import { View } from 'react-native';
 
 const body: LineProps = {
   x1: 20, y1: 50,

@@ -103,6 +103,8 @@ The general separation is:
 
 Composition should remain simple and favor React's existing composition mechanisms.
 
+Mere passthroughs of React Native components are not considered meaningful reusable behavior and are not part of the framework; applications import React Native primitives directly.
+
 Exceptions must be explicit decisions, recorded in `docs/ui.md`. One exception is already adopted: concrete icons may remain in `alambre` when they are presentation-neutral contracts — the application still owns colors, dimensions, and animation (see `docs/ui.md` §2).
 
 ---

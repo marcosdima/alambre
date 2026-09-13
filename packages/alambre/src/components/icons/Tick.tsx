@@ -3,7 +3,7 @@ import type { LineProps } from 'react-native-svg';
 import type { ColorValue } from 'react-native';
 import Svg from 'react-native-svg';
 import Line from './base/Line';
-import { View } from '../base';
+import { View } from 'react-native';
 import { svgBaseConfig } from './utils';
 
 type TickProps = IconstTypes.BaseIcon & {

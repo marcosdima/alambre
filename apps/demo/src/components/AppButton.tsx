@@ -1,6 +1,6 @@
 import type { ButtonProps } from 'alambre';
-import { Button, View } from 'alambre';
-import { StyleSheet } from 'react-native';
+import { Button } from 'alambre';
+import { View, StyleSheet } from 'react-native';
 import { useLightDark } from '../providers/theme';
 
 export default function AppButton({ style, children, ...props }: ButtonProps) {

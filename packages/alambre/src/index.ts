@@ -1,9 +1,3 @@
-// Base Components.
-export {
-  Text,
-  View,
-} from './components/base';
-
 // Buttons.
 export { Button } from './components/base/input/buttons';
 export type { ButtonProps, ButtonState } from './components/base/input/buttons';

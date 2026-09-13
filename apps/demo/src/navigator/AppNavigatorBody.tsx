@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import type { NavigatorTypes } from 'alambre';
-import { View } from 'alambre';
+import { View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, View } from 'alambre';
+import { Text, View } from 'react-native';
 import { useLightDark } from '../../providers/theme';
 import { useNavigator, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';

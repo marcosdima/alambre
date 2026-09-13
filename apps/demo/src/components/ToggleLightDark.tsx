@@ -12,7 +12,7 @@ import Animated, {
 import Svg, { Circle } from 'react-native-svg';
 import { AlambreIcons } from 'alambre';
 import type { ComponentProps } from 'react';
-import type { View as AlambreView } from 'alambre';
+import type { View as AlambreView } from 'react-native';
 
 const RADIUS = 13;
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);

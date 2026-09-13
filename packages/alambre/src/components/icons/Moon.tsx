@@ -3,7 +3,7 @@ import type { ColorValue } from 'react-native';
 import Svg from 'react-native-svg';
 import Circle from './base/Circle';
 import { svgBaseConfig } from './utils';
-import { View } from '../base';
+import { View } from 'react-native';
 import type { IconstTypes } from '../../types';
 
 type MoonProps = IconstTypes.BaseIcon & {

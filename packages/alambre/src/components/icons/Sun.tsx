@@ -4,7 +4,7 @@ import Svg from 'react-native-svg';
 import Circle from './base/Circle';
 import Line from './base/Line';
 import { svgBaseConfig } from './utils';
-import { View } from '../base';
+import { View } from 'react-native';
 import type { IconstTypes } from '../../types';
 
 const RAYS = 8;

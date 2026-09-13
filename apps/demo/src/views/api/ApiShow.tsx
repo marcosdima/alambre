@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { Text, View } from 'alambre';
+import { Text, View } from 'react-native';
 import {
   apiRouteOptions,
   type ApiRouteKey,

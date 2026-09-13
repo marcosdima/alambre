@@ -1,4 +1,4 @@
-import { Text, View } from 'alambre';
+import { Text, View } from 'react-native';
 import { Button } from 'react-native';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';

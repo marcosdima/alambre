@@ -71,12 +71,14 @@ The graphic primitives (`base/Circle` and `base/Line`, plus the animated utiliti
 
 ---
 
-## 3. Base contracts retained
+## 3. Base contracts: passthroughs were not retained
 
-`Text` and `View` remain as thin passthrough contracts (no presentation). They are not opinionated components; whether mere pass-throughs add enough reusable value is a future review, not resolved here.
+`Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
+
+`DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the modules, `animado`, the icons, and the navigator.
 
 ---
 
 ## 4. Open questions
 
-* Whether the behavior-first pattern validated with `Button` extends to other UI primitives.
+* The scope of the `AnimadoView` animation primitive (single consumer, transitional) is still open; it will be reviewed when a second demonstrated need exists.
