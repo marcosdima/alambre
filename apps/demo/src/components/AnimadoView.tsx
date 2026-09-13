@@ -37,22 +37,22 @@ export default ({ style, animation, children, ...props }: AnimadoProps) => {
   const nextState = useSharedValue(targets);
   const progress = useSharedValue(0);
 
-  const defaultAnimation = (v: number) => withTiming(v, { duration: 300 });
-
-  const animateTo = (
-    setNextState: AnimadoState,
-    animation: (value: number) => number = defaultAnimation,
-  ) => {
-    prevState.value = nextState.value;
-    nextState.value = filterTargets(setNextState);
-
-    progress.value = 0;
-    progress.value = animation(1);
-  };
-
   useEffect(() => {
+    const defaultAnimation = (v: number) => withTiming(v, { duration: 300 });
+
+    const animateTo = (
+      setNextState: AnimadoState,
+      animation: (value: number) => number = defaultAnimation,
+    ) => {
+      prevState.value = nextState.value;
+      nextState.value = filterTargets(setNextState);
+
+      progress.value = 0;
+      progress.value = animation(1);
+    };
+
     animateTo(style, animation);
-  }, [animateTo, animation, style]);
+  }, [animation, style, nextState, prevState, progress]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const from = prevState.value;
