@@ -1,8 +1,8 @@
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import ToastProvider from '../src/modules/toast/toast-provider';
-import useToast from '../src/modules/toast/use-toast';
-import type { ToastComponentProps, UseToastType } from '../src/modules/toast/toast-types';
+import ToastProvider from '../../src/behaviors/toast/toast-provider';
+import useToast from '../../src/behaviors/toast/use-toast';
+import type { ToastComponentProps, UseToastType } from '../../src/behaviors/toast/toast-types';
 
 describe('ToastProvider', () => {
   beforeEach(() => {

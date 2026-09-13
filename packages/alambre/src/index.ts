@@ -9,21 +9,23 @@ export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
 
-export type { ToastComponentProps } from './modules';
+export type { ToastComponentProps } from './behaviors';
 
-// Modules.
+// Capabilities.
 export {
-  BaseModule,
-  createModuleProvider,
-  createLightDarkProvider,
   createConfigProvider,
   createLangProvider,
+  createLightDarkProvider,
+} from './capabilities';
+
+// Behaviors.
+export {
   createApiProvider,
   NavigatorProvider,
   useNavigator,
   ToastProvider,
   useToast,
-} from './modules';
+} from './behaviors';
 
 // Icons.
 export * as AlambreIcons from './components/icons';

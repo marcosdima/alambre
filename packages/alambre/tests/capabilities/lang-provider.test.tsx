@@ -1,8 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createLangProvider from '../src/modules/lang/lang-provider';
-import type { Langs, UseLangType } from '../src/modules/lang/lang-types';
-import { createMemoryStorage } from './helpers/storage';
+import createLangProvider from '../../src/capabilities/lang/lang-provider';
+import type { Langs, UseLangType } from '../../src/capabilities/lang/lang-types';
+import { createMemoryStorage } from '../helpers/storage';
 
 const langs: Langs = {
   en: { hello: 'Hello' },

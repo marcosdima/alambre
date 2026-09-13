@@ -30,8 +30,6 @@ vi.mock('react-native-svg', async () => {
 describe('public API — value surface', () => {
   it('exposes the intentional value contracts', () => {
     expect(typeof Alambre.Button).toBe('function');
-    expect(typeof Alambre.BaseModule).toBe('function');
-    expect(typeof Alambre.createModuleProvider).toBe('function');
     expect(typeof Alambre.createConfigProvider).toBe('function');
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
@@ -126,5 +124,9 @@ describe('public API — type surface', () => {
     void Alambre.AnimadoTypes;
     // @ts-expect-error AnimadoView must not be public API (moved to the application).
     void Alambre.AnimadoView;
+    // @ts-expect-error BaseModule must not be public API (internal core).
+    void Alambre.BaseModule;
+    // @ts-expect-error createModuleProvider must not be public API (internal core).
+    void Alambre.createModuleProvider;
   });
 });

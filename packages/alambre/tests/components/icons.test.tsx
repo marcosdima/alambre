@@ -2,12 +2,12 @@ import { render } from '@testing-library/react-native';
 import type { RenderResult } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import Arrow from '../src/components/icons/Arrow';
-import Cross from '../src/components/icons/Cross';
-import Tick from '../src/components/icons/Tick';
-import Sun from '../src/components/icons/Sun';
-import Moon from '../src/components/icons/Moon';
-import * as AlambreIcons from '../src/components/icons';
+import Arrow from '../../src/components/icons/Arrow';
+import Cross from '../../src/components/icons/Cross';
+import Tick from '../../src/components/icons/Tick';
+import Sun from '../../src/components/icons/Sun';
+import Moon from '../../src/components/icons/Moon';
+import * as AlambreIcons from '../../src/components/icons';
 import {
   clearBoxes,
   expectRotation,
@@ -16,7 +16,7 @@ import {
   circlesOf,
   svgOf,
   strokePairs,
-} from './helpers/icons-helpers';
+} from '../helpers/icons-helpers';
 
 vi.mock('react-native-reanimated', () => {
   const key = '__alambreIconSharedValues__';

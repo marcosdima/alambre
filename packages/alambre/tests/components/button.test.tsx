@@ -1,8 +1,8 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { describe, expect, it, vi } from 'vitest';
-import type { ButtonState } from '../src/components/base/input/buttons/Button';
-import Button from '../src/components/base/input/buttons/Button';
+import type { ButtonState } from '../../src/components/base/input/buttons/Button';
+import Button from '../../src/components/base/input/buttons/Button';
 
 describe('Button', () => {
   it('renders children as a plain node', async () => {

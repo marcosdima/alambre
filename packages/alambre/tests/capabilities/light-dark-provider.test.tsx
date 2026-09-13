@@ -1,8 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createLightDarkProvider from '../src/modules/theme/theme-provider';
-import type { UseLightDarkType } from '../src/modules/theme/theme-types';
-import { createMemoryStorage, type StorageMock } from './helpers/storage';
+import createLightDarkProvider from '../../src/capabilities/light-dark/light-dark-provider';
+import type { UseLightDarkType } from '../../src/capabilities/light-dark/light-dark-types';
+import { createMemoryStorage, type StorageMock } from '../helpers/storage';
 
 type Theme = { color: string };
 

@@ -1,8 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createConfigProvider from '../src/modules/config/config-provider';
-import type { UseConfigType } from '../src/modules/config/config-types';
-import { createMemoryStorage } from './helpers/storage';
+import createConfigProvider from '../../src/capabilities/config/config-provider';
+import type { UseConfigType } from '../../src/capabilities/config/config-types';
+import { createMemoryStorage } from '../helpers/storage';
 
 type Config = { alias: string; theme: string };
 

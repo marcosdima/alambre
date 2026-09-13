@@ -2,15 +2,15 @@ import { render } from '@testing-library/react-native';
 import type { RenderResult } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import Circle from '../src/components/icons/base/Circle';
-import Line from '../src/components/icons/base/Line';
+import Circle from '../../src/components/icons/base/Circle';
+import Line from '../../src/components/icons/base/Line';
 import {
   clearBoxes,
   expectStrokeState,
   linesOf,
   circlesOf,
   strokePairs,
-} from './helpers/icons-helpers';
+} from '../helpers/icons-helpers';
 
 vi.mock('react-native-reanimated', () => {
   const key = '__alambreIconSharedValues__';
