@@ -146,6 +146,29 @@ Intentional public type contracts:
 
 `src/index.ts` must export its types explicitly and intentionally. Blanket namespace re-exports (`export * as ...`) that turn internal type modules into public API are not allowed.
 
+The versioning policy for this public contract is defined in §9.
+
+---
+
+## 9. Versioning policy
+
+**Status: the public contract is still being defined.** The current `1.0.x` version series is a frozen placeholder and does not promise SemVer stability. Breaking changes are currently allowed without a version bump.
+
+### Pre-baseline phase (current)
+
+- Breaking changes must still be intentional. Each one is recorded in §8 "Compatibility implications" and validated by the public API contract test (`packages/alambre/tests/public-api.test.ts`).
+- Changes that alter an adopted architectural principle require discussion before implementation (§7 and `docs/project.md` §4.2).
+- `packages/alambre/CHANGELOG.md` collects changes manually so nothing is lost for the future baseline.
+
+### Baseline declaration (future)
+
+A baseline will be declared when the public contract is considered solid enough to develop an application without issues, validated through the demo app and the reference application template. No change to the public contract happens implicitly.
+
+From the baseline onward:
+
+- SemVer applies: breaking public contract changes require a major version bump; additive changes a minor; fixes a patch. Breaking includes any removal, rename, or signature change of a public export of `src/index.ts`.
+- Agents may bump patch and minor versions autonomously. Any breaking change (and therefore any major bump) requires explicit approval before it is shipped.`
+
 ### Compatibility implications
 
 The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namespaces are no longer part of the public API. They were blanket re-exports of internal type modules; their members that constitute genuine public contracts now have first-class names (`Storage`, `IconAnimationConfig`, `IconProps`).
@@ -156,4 +179,4 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
-No versioning decision is made in this milestone; no explicit versioning policy currently requires one.
+The versioning policy for this public contract is defined in §9.

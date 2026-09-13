@@ -35,7 +35,7 @@ npm version <bump>
 npm publish
 ```
 
-The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`.
+The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`. The package is currently in a frozen pre-baseline versioning phase — see the versioning policy in `docs/architecture.md` §9 before changing versions.
 
 ## Tooling
 
