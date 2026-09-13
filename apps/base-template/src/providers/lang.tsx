@@ -20,6 +20,14 @@ const langs = {
     items: {
       title: 'Mis ítems',
       empty: 'Todavía no agregaste ítems para recordar.',
+      addTitle: 'Nuevo ítem',
+      editTitle: 'Editar ítem',
+      nameLabel: 'Nombre',
+      namePlaceholder: 'Ej.: llaves',
+      colorLabel: 'Color',
+      iconLabel: 'Ícono',
+      add: 'Agregar',
+      delete: 'Borrar',
     },
     alarms: {
       title: 'Alarmas',
@@ -49,6 +57,14 @@ const langs = {
     items: {
       title: 'My items',
       empty: 'You have not added any items to remember yet.',
+      addTitle: 'New item',
+      editTitle: 'Edit item',
+      nameLabel: 'Name',
+      namePlaceholder: 'E.g.: keys',
+      colorLabel: 'Color',
+      iconLabel: 'Icon',
+      add: 'Add',
+      delete: 'Delete',
     },
     alarms: {
       title: 'Alarms',

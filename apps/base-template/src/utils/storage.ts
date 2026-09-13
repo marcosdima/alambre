@@ -17,7 +17,16 @@ const getItem = async (key: string) => {
   }
 };
 
+const removeItem = async (key: string) => {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (e) {
+    console.error('Error removing', e);
+  }
+};
+
 export {
   saveItem,
   getItem,
+  removeItem,
 };

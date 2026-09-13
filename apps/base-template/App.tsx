@@ -6,6 +6,8 @@ import Root from './src/navigator/Root';
 import { NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { ColguettiToast } from './src/providers/toast';
+import { RouteIntentProvider } from './src/navigator/RouteIntent';
+import { ItemsProvider } from './src/items/items-context';
 
 export default function App() {
   return (
@@ -13,11 +15,15 @@ export default function App() {
       <LightDarkProvider>
         <LangProvider>
           <GestureHandlerRootView>
-            <NavigatorProvider pages={navigator}>
-              <ToastProvider ToastComponent={ColguettiToast}>
-                <Root />
-              </ToastProvider>
-            </NavigatorProvider>
+            <RouteIntentProvider>
+              <ItemsProvider>
+                <NavigatorProvider pages={navigator}>
+                  <ToastProvider ToastComponent={ColguettiToast}>
+                    <Root />
+                  </ToastProvider>
+                </NavigatorProvider>
+              </ItemsProvider>
+            </RouteIntentProvider>
           </GestureHandlerRootView>
         </LangProvider>
       </LightDarkProvider>

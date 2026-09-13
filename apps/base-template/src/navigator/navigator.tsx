@@ -1,5 +1,6 @@
 import Home from '../views/home/Home';
 import Items from '../views/items/Items';
+import ItemForm from '../views/items/ItemForm';
 import Alarms from '../views/alarms/Alarms';
 import Settings from '../views/settings/Settings';
 
@@ -9,6 +10,11 @@ export default {
   },
   items: {
     component: <Items />,
+    subpages: {
+      'item-form': {
+        component: <ItemForm />,
+      },
+    },
   },
   alarms: {
     component: <Alarms />,
