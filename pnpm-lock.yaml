@@ -166,7 +166,7 @@ importers:
 
   .: {}
 
-  apps/base-template:
+  apps/colguetti:
     dependencies:
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
