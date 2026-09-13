@@ -1,5 +1,5 @@
 import type { CircleProps } from 'react-native-svg';
-import type { IconstTypes } from '../../../types';
+import type { CustomCircleProps } from '../../../types/icons';
 import { useEffect, useMemo } from 'react';
 import { AnimatedCircle } from '../utils';
 import { useIconAnimation } from '../../../hooks';
@@ -11,7 +11,7 @@ export default (
     iconAnimation,
     rotation = 0,
     strokeOffset = 0,
-  }: IconstTypes.CustomCircleProps,
+  }: CustomCircleProps,
 ) => {
   const strokeDasharray = useMemo(
     () => 2 * Math.PI * (circle.r as number),

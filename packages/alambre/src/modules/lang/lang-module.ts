@@ -1,4 +1,4 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import BaseModule from '../base-module';
 import type { Langs, LangState } from './lang-types';
 
@@ -10,7 +10,7 @@ export default class LangModule<T extends Langs> extends BaseModule<LangState<T>
 
   constructor(
     private readonly langs: T,
-    private readonly storage: ActionTypes.Storage,
+    private readonly storage: Storage,
   ) {
     const firstLangKey = Object.keys(langs).shift() as keyof T | undefined;
 

@@ -4,9 +4,9 @@ import Svg from 'react-native-svg';
 import Circle from './base/Circle';
 import { svgBaseConfig } from './utils';
 import { View } from 'react-native';
-import type { IconstTypes } from '../../types';
+import type { IconProps } from '../../types/icons';
 
-type MoonProps = IconstTypes.BaseIcon & {
+type MoonProps = IconProps & {
   color: ColorValue;
   lineWidth: number;
   fill?: ColorValue;

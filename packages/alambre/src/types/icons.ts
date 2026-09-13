@@ -1,18 +1,18 @@
 import type { CircleProps, LineProps } from 'react-native-svg';
-import type { UseIconAnimationProps } from './hooks';
+import type { IconAnimationConfig } from './hooks';
 import type { ViewProps } from './default-react';
 
-export type BaseIcon = ViewProps & {
+export type IconProps = ViewProps & {
   drawIt?: boolean;
   rotation?: number;
   strokeOffset?: number;
-  iconAnimation?: UseIconAnimationProps;
+  iconAnimation?: IconAnimationConfig;
 }
 
-export type CustomCircleProps = BaseIcon & {
+export type CustomCircleProps = IconProps & {
   circle: CircleProps;
 };
 
-export type CustomLineProps = BaseIcon & {
+export type CustomLineProps = IconProps & {
   line: LineProps;
 };

@@ -1,4 +1,4 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import BaseModule from '../base-module';
 import type { ThemeName, ThemeState } from './theme-types';
 
@@ -8,7 +8,7 @@ export default class ThemeModule<T extends object> extends BaseModule<ThemeState
   constructor(
     private readonly lightTheme: T,
     private readonly darkTheme: T,
-    private readonly storage: ActionTypes.Storage,
+    private readonly storage: Storage,
   ) {
     super({ themeName: 'light' });
   }

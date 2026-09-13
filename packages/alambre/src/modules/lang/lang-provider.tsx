@@ -1,11 +1,11 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import createModuleProvider from '../module-provider';
 import LangModule from './lang-module';
 import type { LangState, Langs, UseLangType } from './lang-types';
 
 const createLangProvider = <T extends Langs>(
   langs: T,
-  storage: ActionTypes.Storage,
+  storage: Storage,
 ) => {
   const {
     Provider,

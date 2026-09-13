@@ -1,11 +1,11 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import createModuleProvider from '../module-provider';
 import ConfigModule from './config-module';
 import type { ConfigState, UseConfigType } from './config-types';
 
 const createConfigProvider = <T extends Record<string, string>>(
   baseConfig: T,
-  storage: ActionTypes.Storage,
+  storage: Storage,
 ) => {
   const {
     Provider,

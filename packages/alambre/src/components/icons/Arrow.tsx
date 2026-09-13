@@ -2,7 +2,7 @@ import type { ColorValue } from 'react-native';
 import type { LineProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
 import Line from './base/Line';
-import type { IconstTypes } from '../../types';
+import type { IconProps } from '../../types/icons';
 import { View } from 'react-native';
 
 const body: LineProps = {
@@ -20,7 +20,7 @@ const arrowDown: LineProps = {
   x2: 180, y2: 50,
 };
 
-type ArrowProps = IconstTypes.BaseIcon & {
+type ArrowProps = IconProps & {
   drawIt?: boolean;
   color: ColorValue;
   lineWidth: number;

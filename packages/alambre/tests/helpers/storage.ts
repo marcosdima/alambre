@@ -1,6 +1,6 @@
-import type { ActionTypes } from '../../src/types';
+import type { Storage } from '../../src/types/actions';
 
-export type StorageMock = ActionTypes.Storage & {
+export type StorageMock = Storage & {
   data: Record<string, string>;
   getCalls: string[];
   setCalls: Array<[string, string]>;

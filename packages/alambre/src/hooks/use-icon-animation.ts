@@ -1,5 +1,5 @@
 import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
-import type { HooksTypes } from '../types';
+import type { IconAnimationConfig, UseIconAnimationReturn } from '../types/hooks';
 
 const defaultAnimation = (v: number) => withTiming(v, { duration: 300 });
 
@@ -9,7 +9,7 @@ export default (
     strokeDasharray = 100,
     resetAnimation = defaultAnimation,
     drawAnimation = defaultAnimation,
-  }: HooksTypes.UseIconAnimationProps,
+  }: IconAnimationConfig,
 ) => {
   const strokeOffsetProgress = useSharedValue(strokeDasharray);
   const progress = useSharedValue(0);
@@ -36,5 +36,5 @@ export default (
     strokeOffestStyle: animatedProps,
     reset,
     draw,
-  } as HooksTypes.UseIconAnimationReturn;
+  } as UseIconAnimationReturn;
 };

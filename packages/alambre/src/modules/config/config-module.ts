@@ -1,11 +1,11 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import BaseModule from '../base-module';
 import type { ConfigState } from './config-types';
 
 export default class ConfigModule<T extends Record<string, string>> extends BaseModule<ConfigState<T>> {
   constructor(
     private readonly baseConfig: T,
-    private readonly storage: ActionTypes.Storage,
+    private readonly storage: Storage,
   ) {
     super({ config: baseConfig });
   }

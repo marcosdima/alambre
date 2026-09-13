@@ -5,11 +5,11 @@ import Circle from './base/Circle';
 import Line from './base/Line';
 import { svgBaseConfig } from './utils';
 import { View } from 'react-native';
-import type { IconstTypes } from '../../types';
+import type { IconProps } from '../../types/icons';
 
 const RAYS = 8;
 
-type SunProps = IconstTypes.BaseIcon & {
+type SunProps = IconProps & {
   color: ColorValue;
   lineWidth: number;
   fill?: ColorValue;

@@ -1,4 +1,4 @@
-import type { ActionTypes } from '../../types';
+import type { Storage } from '../../types/actions';
 import createModuleProvider from '../module-provider';
 import ThemeModule from './theme-module';
 import type { ThemeState, UseLightDarkType } from './theme-types';
@@ -6,7 +6,7 @@ import type { ThemeState, UseLightDarkType } from './theme-types';
 const createLightDarkProvider = <T extends object>(
   lightTheme: T,
   darkTheme: T,
-  storage: ActionTypes.Storage,
+  storage: Storage,
 ) => {
   const {
     Provider,
