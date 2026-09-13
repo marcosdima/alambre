@@ -2,9 +2,7 @@ import { createConfigProvider } from 'alambre';
 import { getItem, saveItem } from '../utils/storage';
 
 const config = {
-  alias: '',
-  dateFormat: 'DD/MM/YYYY',
-  batteryOptions: 'default',
+  leaveGraceMinutes: '10',
 };
 const storage = {
   set: saveItem,

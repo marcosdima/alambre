@@ -64,7 +64,7 @@ const iconAnimation = {
   }),
 };
 
-export default ({ toast, dismiss, queueLength }: ToastComponentProps) => {
+export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentProps) {
   const { theme } = useLightDark();
   const { data, startedAt } = toast;
   const payload = parsePayload(data.payload);
@@ -165,7 +165,7 @@ export default ({ toast, dismiss, queueLength }: ToastComponentProps) => {
       </Animated.View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   root: {

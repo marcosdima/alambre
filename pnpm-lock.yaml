@@ -166,7 +166,7 @@ importers:
 
   .: {}
 
-  apps/demo:
+  apps/base-template:
     dependencies:
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0

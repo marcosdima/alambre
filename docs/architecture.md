@@ -162,7 +162,7 @@ The versioning policy for this public contract is defined in §9.
 
 ### Baseline declaration (future)
 
-A baseline will be declared when the public contract is considered solid enough to develop an application without issues, validated through the demo app and the reference application template. No change to the public contract happens implicitly.
+A baseline will be declared when the public contract is considered solid enough to develop an application without issues, validated through the reference application template (base-template). No change to the public contract happens implicitly.
 
 From the baseline onward:
 
