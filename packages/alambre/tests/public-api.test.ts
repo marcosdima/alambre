@@ -40,7 +40,6 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
-    expect(typeof Alambre.AnimadoView).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 
@@ -107,13 +106,11 @@ describe('public API — type surface', () => {
       queueLength: 0,
     };
     const page: Alambre.NavigatorTypes.Page = { component: null };
-    const animadoProps: Alambre.AnimadoTypes.AnimadoProps = {};
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
     expect(toastComponentProps).toBeDefined();
     expect(page).toBeDefined();
-    expect(animadoProps).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {
@@ -125,5 +122,9 @@ describe('public API — type surface', () => {
     void Alambre.HooksTypes;
     // @ts-expect-error IconstTypes must not be public API.
     void Alambre.IconstTypes;
+    // @ts-expect-error AnimadoTypes must not be public API (moved to the application).
+    void Alambre.AnimadoTypes;
+    // @ts-expect-error AnimadoView must not be public API (moved to the application).
+    void Alambre.AnimadoView;
   });
 });

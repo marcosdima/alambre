@@ -48,7 +48,8 @@ Following `docs/architecture.md` section 6, the framework no longer ships opinio
 * `DefaultToastBody` was removed. `ToastProvider` already requires a client-provided `ToastComponent`; a canned, branded toast body shipped in the framework was application presentation. The demo owns its toast body (`apps/demo/src/providers/toast.tsx`).
 * `NavigatorBody` was moved to the application: the demo owns its navigation chrome (`apps/demo/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
 * `ToggleLightDark` was moved to the application: the demo owns its light/dark switch (`apps/demo/src/components/ToggleLightDark.tsx`).
-* `AnimadoText` was removed (dead export with no consumers). `AnimadoView` remains for now; its animation scope is reviewed separately.
+* `AnimadoText` was removed (dead export with no consumers).
+* `AnimadoView` was moved to the application: it had a single demo consumer and no second demonstrated need, and animating colors is application presentation (`apps/demo/src/components/AnimadoView.tsx`). Its review is closed; it is not part of the framework's public API.
 
 ### Icons: kept in the framework, decoupled from hard-coded presentation
 
@@ -75,10 +76,4 @@ The graphic primitives (`base/Circle` and `base/Line`, plus the animated utiliti
 
 `Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
 
-`DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the modules, `animado`, the icons, and the navigator.
-
----
-
-## 4. Open questions
-
-* The scope of the `AnimadoView` animation primitive (single consumer, transitional) is still open; it will be reviewed when a second demonstrated need exists.
+`DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the modules, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.

@@ -1,20 +1,37 @@
-import type { State, PosibleColor, AnimadoStyle } from '../../../types/animado';
+import type { ComponentProps, ReactNode } from 'react';
+import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
+import type { ColorValue, StyleProp, Text, View } from 'react-native';
+import Animated, {
   interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 
-const filterTargets = (state: State) => {
+type AnimadoStyle = {
+  backgroundColor?: ColorValue;
+  borderColor?: ColorValue;
+  color?: ColorValue;
+};
+
+type Animation = (value: number) => number;
+type PosibleColor = ColorValue | undefined;
+type AnimadoState = StyleProp<AnimadoStyle>;
+
+type AnimadoProps = ComponentProps<typeof View> & ComponentProps<typeof Text> & {
+  animation?: Animation;
+  children?: ReactNode;
+};
+
+const filterTargets = (state: AnimadoState) => {
   const flat = StyleSheet.flatten(state);
   const { backgroundColor, borderColor, color } = flat;
   return { backgroundColor, borderColor, color } as AnimadoStyle;
 };
 
-export default (initialState: State) => {
-  const targets = filterTargets(initialState);
+export default ({ style, animation, children, ...props }: AnimadoProps) => {
+  const targets = filterTargets(style);
 
   const prevState = useSharedValue<AnimadoStyle>(targets);
   const nextState = useSharedValue(targets);
@@ -23,7 +40,7 @@ export default (initialState: State) => {
   const defaultAnimation = (v: number) => withTiming(v, { duration: 300 });
 
   const animateTo = (
-    setNextState: State,
+    setNextState: AnimadoState,
     animation: (value: number) => number = defaultAnimation,
   ) => {
     prevState.value = nextState.value;
@@ -32,6 +49,10 @@ export default (initialState: State) => {
     progress.value = 0;
     progress.value = animation(1);
   };
+
+  useEffect(() => {
+    animateTo(style, animation);
+  }, [animateTo, animation, style]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const from = prevState.value;
@@ -55,8 +76,9 @@ export default (initialState: State) => {
     };
   });
 
-  return {
-    animatedStyle,
-    animateTo,
-  };
+  return (
+    <Animated.View style={[style, animatedStyle]} {...props}>
+      {children}
+    </Animated.View>
+  );
 };

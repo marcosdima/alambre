@@ -140,7 +140,6 @@ Intentional public type contracts:
 * `ButtonProps`, `ButtonState` — the `Button` primitive contract.
 * `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
 * `NavigatorTypes` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
-* `AnimadoTypes` — retained for the current `AnimadoView` type surface; its future scope is a separate, unsettled decision and does not imply a commitment.
 * `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, and `createLightDarkProvider`.
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
@@ -151,6 +150,8 @@ Intentional public type contracts:
 
 The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namespaces are no longer part of the public API. They were blanket re-exports of internal type modules; their members that constitute genuine public contracts now have first-class names (`Storage`, `IconAnimationConfig`, `IconProps`).
 
-Any consumer importing those namespaces is affected by this change. The known consumers in this repository only use retained types and are unaffected.
+`AnimadoView` and its `AnimadoTypes` type surface were moved to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the only known consumer was the demo, which now owns the implementation.
+
+Any consumer importing those types is affected by this change. The known consumers in this repository only use retained types and are unaffected.
 
 No versioning decision is made in this milestone; no explicit versioning policy currently requires one.

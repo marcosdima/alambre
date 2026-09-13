@@ -5,7 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import ToggleLightDark from '../../components/ToggleLightDark';
-import { AnimadoView } from 'alambre';
+import AnimadoView from '../../components/AnimadoView';
 import { withTiming } from 'react-native-reanimated';
 
 export default () => {
