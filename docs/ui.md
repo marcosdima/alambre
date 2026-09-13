@@ -62,7 +62,7 @@ The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre
 
 * `Arrow` honours the full `iconAnimation`/`strokeOffset` contract like the other concrete icons (a regression where it swallowed those props was surfaced and fixed during test coverage).
 
-* The icon layer (base primitives and concrete icons) is covered by contract tests in `packages/alambre/tests/icons-base.test.tsx` and `packages/alambre/tests/icons.test.tsx` (draw/reset, `strokeOffset`, `rotation`, `iconAnimation`, geometry and fill).
+* The icon layer (base primitives and concrete icons) is covered by contract tests in `packages/alambre/tests/components/icons-base.test.tsx` and `packages/alambre/tests/components/icons.test.tsx` (draw/reset, `strokeOffset`, `rotation`, `iconAnimation`, geometry and fill).
 
 The graphic primitives (`base/Circle` and `base/Line`, plus the animated utilities used by them) remain as generic drawing infrastructure.
 
@@ -76,4 +76,4 @@ The graphic primitives (`base/Circle` and `base/Line`, plus the animated utiliti
 
 `Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
 
-`DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the modules, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.
+`DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the core provider wiring, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.

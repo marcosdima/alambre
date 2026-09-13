@@ -4,7 +4,7 @@ pnpm workspace monorepo for the `alambre` React Native framework and its applica
 
 ## Structure
 
-- `packages/alambre` — the reusable framework/library. Published to npm as `alambre`. Contains the module factories (`createLightDarkProvider`, `createConfigProvider`, `createLangProvider`, `createApiProvider`), the toast system, navigator components, base UI components, icons and animations. Must never depend on application code.
+- `packages/alambre` — the reusable framework/library. Published to npm as `alambre`. Contains the capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`), behaviors (`createApiProvider`, `NavigatorProvider`, `ToastProvider`), base UI components, icons and animations. Must never depend on application code.
 - `apps/demo` — the framework demo and manual QA playground. Consumes the library via the `workspace:*` protocol. Ships with an Expo app configuration and an Android prebuild.
 - `apps/base-template` — the canonical application template (to be integrated).
 

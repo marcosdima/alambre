@@ -88,7 +88,7 @@ An agent may independently:
 * improve implementations
 * simplify internal code
 * refactor implementation details
-* improve providers or modules
+* improve providers or capabilities
 * reorganize internal code when appropriate
 * improve tests
 * remove unnecessary complexity

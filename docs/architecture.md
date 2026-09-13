@@ -133,7 +133,7 @@ Otherwise, implementation details may be freely simplified, reorganized, replace
 
 The public type surface of `alambre` is defined exclusively by the type exports of `src/index.ts`.
 
-Only the types exported there are part of the public contract. Everything else in `src/types/` and under `src/modules/` is implementation detail and must not be relied upon by consumers.
+Only the types exported there are part of the public contract. Every other type is implementation detail and must not be relied upon by consumers: internal type modules live in `src/types/`, and a type exported from `src/core/`, `src/capabilities/`, or `src/behaviors/` is public only when re-exported by `src/index.ts`.
 
 Intentional public type contracts:
 
@@ -150,8 +150,10 @@ Intentional public type contracts:
 
 The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namespaces are no longer part of the public API. They were blanket re-exports of internal type modules; their members that constitute genuine public contracts now have first-class names (`Storage`, `IconAnimationConfig`, `IconProps`).
 
+`BaseModule` and `createModuleProvider` are no longer part of the public API (Q1 restructure). The shared module machinery was replaced by an internal `core` (`createStore` + `createProvider`); the public surface is the concrete capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`) and behaviors (`createApiProvider`, `NavigatorProvider`/`useNavigator`, `ToastProvider`/`useToast`). This is breaking for any consumer relying on the module machinery directly.
+
 `AnimadoView` and its `AnimadoTypes` type surface were moved to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the only known consumer was the demo, which now owns the implementation.
 
-Any consumer importing those types is affected by this change. The known consumers in this repository only use retained types and are unaffected.
+Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
 No versioning decision is made in this milestone; no explicit versioning policy currently requires one.
