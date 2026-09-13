@@ -20,13 +20,12 @@ The main conceptual boundaries are:
 * `apps/*` — example, validation, and prototype applications used to exercise and evolve the framework.
 * `docs/` — project documentation and architectural knowledge.
 
-The project also has a separate application template repository:
+The repository also contains:
 
-* `base-native` — the reference application template built on top of `alambre`. It is intended to provide a solid, opinionated starting point for future applications.
+* `apps/colguetti` — the reference application: a real product built on `alambre` that exercises the framework, exposes weaknesses, and guides its evolution. Prototyping for potential framework capability happens here first.
+* `apps/base-template` — the application template: a generic, product-free skeleton on top of `alambre`, intended to provide a solid, opinionated starting point for future applications. It is rebuilt when lessons from the reference application make the wiring worth updating.
 
-`base-native` is intentionally maintained outside this repository. It represents an application built **using** the framework rather than part of the framework itself.
-
-A future application created from the template should be able to evolve independently from `base-native` and from this repository.
+An application created from the template should be able to evolve independently from `apps/base-template` and from this repository.
 
 ---
 

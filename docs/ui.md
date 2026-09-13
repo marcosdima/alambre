@@ -33,7 +33,7 @@ Global principles live in `docs/architecture.md` (section 6 covers the general U
 
 ### Intended usage pattern
 
-An application composes its own presentation component on top of `alambre.Button` (for example `AppButton`) to define variants, sizes, and identity. The reference application (base-template) validates this pattern with `apps/base-template/src/components/AppButton.tsx`.
+An application composes its own presentation component on top of `alambre.Button` (for example `AppButton`) to define variants, sizes, and identity. The reference application (apps/colguetti) validates this pattern with `apps/colguetti/src/components/AppButton.tsx`.
 
 ---
 
@@ -43,13 +43,13 @@ Following `docs/architecture.md` section 6, the framework no longer ships opinio
 
 ### Resolved fates
 
-* `Title` and `SubTitle` were removed from the framework (hard-coded typography). The application owns typography: the reference app implements `AppTitle` (`apps/base-template/src/components/AppTitle.tsx`). `SubTitle` had no consumers and was dead code.
+* `Title` and `SubTitle` were removed from the framework (hard-coded typography). The application owns typography: the reference app implements `AppTitle` (`apps/colguetti/src/components/AppTitle.tsx`). `SubTitle` had no consumers and was dead code.
 * `SafeAreaView` was removed from the framework. Safe areas are an ecosystem concern solved by `react-native-safe-area-context` (ecosystem-first); the reference app uses it directly. The dependency was dropped from `alambre`'s peer and dev dependencies.
-* `DefaultToastBody` was removed. `ToastProvider` already requires a client-provided `ToastComponent`; a canned, branded toast body shipped in the framework was application presentation. The reference app owns its toast body (`apps/base-template/src/providers/toast.tsx`).
-* `NavigatorBody` was moved to the application: the reference app owns its navigation chrome (`apps/base-template/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
-* `ToggleLightDark` was moved to the application: the reference app owns its light/dark switch (`apps/base-template/src/components/ToggleLightDark.tsx`).
+* `DefaultToastBody` was removed. `ToastProvider` already requires a client-provided `ToastComponent`; a canned, branded toast body shipped in the framework was application presentation. The reference app owns its toast body (`apps/colguetti/src/providers/toast.tsx`).
+* `NavigatorBody` was moved to the application: the reference app owns its navigation chrome (`apps/colguetti/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
+* `ToggleLightDark` was moved to the application: the reference app owns its light/dark switch (`apps/colguetti/src/components/ToggleLightDark.tsx`).
 * `AnimadoText` was removed (dead export with no consumers).
-* `AnimadoView` was moved to the application: it had a single demo consumer and no second demonstrated need, and animating colors is application presentation (`apps/base-template/src/components/AnimadoView.tsx`). Its review is closed; it is not part of the framework's public API.
+* `AnimadoView` was moved to the application: it had a single demo consumer and no second demonstrated need, and animating colors is application presentation (`apps/colguetti/src/components/AnimadoView.tsx`). Its review is closed; it is not part of the framework's public API.
 
 ### Icons: kept in the framework, decoupled from hard-coded presentation
 

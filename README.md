@@ -5,7 +5,8 @@ pnpm workspace monorepo for the `alambre` React Native framework and its applica
 ## Structure
 
 - `packages/alambre` — the reusable framework/library. Published to npm as `alambre`. Contains the capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`), behaviors (`createApiProvider`, `NavigatorProvider`, `ToastProvider`), base UI components, icons and animations. Must never depend on application code.
-- `apps/base-template` — the canonical application template, currently showcasing the reference app **Colguetti** (reminders for the things to carry when leaving home). Consumes the library via the `workspace:*` protocol. Ships with an Expo app configuration and an Android prebuild.
+- `apps/colguetti` — the reference application (reminders for the things to carry when leaving home). It is a real product that exercises and validates `alambre`. Consumes the library via the `workspace:*` protocol. Ships with an Expo app configuration and an Android prebuild.
+- `apps/base-template` — the canonical application **template**: a generic, product-free skeleton to bootstrap new apps on top of `alambre` (capabilities wired, navigator with subpages, toast, storage adapters, validation setup).
 
 Dependency direction is one-way: `apps/* -> packages/alambre`.
 
@@ -19,10 +20,10 @@ pnpm build                       # build all packages
 pnpm lint                        # lint all packages
 pnpm typecheck                   # typecheck all packages
 pnpm --filter alambre build      # build the library only
-pnpm --filter @alambre/base-template ios  # run the Colguetti app
+pnpm --filter @alambre/colguetti ios  # run the Colguetti app
 ```
 
-Library changes are immediately available to the Colguetti app through the workspace link; the app bundles the library source via Metro with no extra configuration.
+Apps resolve the library through its `exports` (`dist/module`), so rebuild the library after a change: `pnpm --filter alambre build`.
 
 ## Publishing
 
@@ -41,4 +42,4 @@ The package is built with `react-native-builder-bob` (ESM `module` target + Type
 - Package manager: pnpm (workspace scopes `packages/*`, `apps/*`).
 - Library build: `react-native-builder-bob`.
 - Lint: shared ESLint 9 flat config, duplicated per package (each package resolves its own plugin deps under pnpm's strict node_modules layout).
-- Demo app: Expo SDK 54 / React Native 0.81.
+- Lint/typecheck/test run per package; the reference app (Colguetti) is Expo SDK 54 / React Native 0.81.

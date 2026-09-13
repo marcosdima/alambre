@@ -1,6 +1,6 @@
 # Discoveries
 
-Register of reusable patterns observed while building the reference application (base-template / Colguetti) that could be rescued into `alambre`.
+Register of reusable patterns observed while building the reference application Colguetti (`apps/colguetti`) that could be rescued into `alambre`.
 
 Each entry captures the pattern, where it appeared, and the candidate abstraction (if any). Nothing here is an adopted decision until it is validated and discussed in a design review.
 
@@ -8,7 +8,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Pattern:** the app needs persisted collections of typed records (items, later alarms) with add/update/remove, plus plain JSON get/set/remove helpers.
 
-**Where it appears:** `apps/base-template/src/storage/` (json-storage, collection), `apps/base-template/src/items/` (items-context, items-model).
+**Where it appears:** `apps/colguetti/src/storage/` (json-storage, collection), `apps/colguetti/src/items/` (items-context, items-model).
 
 **Current alambre surface is a poor fit:** `Storage` only supports string get/set (`packages/alambre/src/types/actions.ts`); there is no remove and no JSON handling. The config capability is flat string fields, not typed lists.
 
@@ -24,7 +24,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Pattern:** edit screens need to know which record they are editing, but the navigator behavior does not carry params.
 
-**Where it appears:** `apps/base-template/src/views/items/ItemForm.tsx` uses a `RouteIntent` context (`apps/base-template/src/navigator/RouteIntent.tsx`) to pass `itemId` from the list into the form subpage.
+**Where it appears:** `apps/colguetti/src/views/items/ItemForm.tsx` uses a `RouteIntent` context (`apps/colguetti/src/navigator/RouteIntent.tsx`) to pass `itemId` from the list into the form subpage.
 
 **Candidate for alambre:** the navigator `navigate(target, { subpage })` settings could accept arbitrary params carried by the page path, or expose an optional `params` on the navigation settings. The `RouteIntent` context is the app-level prototype.
 
@@ -32,7 +32,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 ## The app re-implements the capability pattern with React context (discovered in I2)
 
-**Pattern:** `ItemsProvider` (`apps/base-template/src/items/items-context.tsx`) is essentially a content-driven provider: load on mount, typed actions, persist, context + hook. It reads like a manual rewrite of `createConfigProvider` with a richer (non-string) payload and async load.
+**Pattern:** `ItemsProvider` (`apps/colguetti/src/items/items-context.tsx`) is essentially a content-driven provider: load on mount, typed actions, persist, context + hook. It reads like a manual rewrite of `createConfigProvider` with a richer (non-string) payload and async load.
 
 **Candidate for alambre:** feeds into the `createCollectionProvider` idea above; also suggests a generic "async-loading provider" shape. If a `createCollectionProvider` lands in alambre, Colguetti's items and alarms both become its consumers.
 
@@ -42,7 +42,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Pattern:** recurring alarms must produce one repeating notification per selected weekday, with a persisted scheduling plan that is diffed against storage on every change (`ambos keys: schedule plan + reminders`).
 
-**Where it appears:** `apps/base-template/src/notifications/` (schedule, sync, NotificationsWatcher) and `apps/base-template/src/checklist/checklist-model.ts` (pending detection, resend cadence).
+**Where it appears:** `apps/colguetti/src/notifications/` (schedule, sync, NotificationsWatcher) and `apps/colguetti/src/checklist/checklist-model.ts` (pending detection, resend cadence).
 
 **Assessment:** the scheduling/diff logic is lean and reusable, but it sits inside the `expo-notifications` ecosystem the app owns (ecosystem-first). The `Storage` contract (`remove`) + `createCollectionProvider` candidates remain the framework takeaways. Not planned for extraction without a second consumer.
 
@@ -50,6 +50,6 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 
 **Pattern:** checkbox strikes through item names; confirmed routine flashes a drawn tick (`AlambreIcons.Tick` + `iconAnimation`) before navigating; reminders re-alert only while within the resend window so the app never spams.
 
-**Where it appears:** `apps/base-template/src/views/home/Home.tsx`.
+**Where it appears:** `apps/colguetti/src/views/home/Home.tsx`.
 
 **Assessment:** presentation and identity stay in the app per §2/§6. No alambre surface change needed.
