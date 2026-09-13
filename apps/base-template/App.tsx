@@ -8,6 +8,7 @@ import navigator from './src/navigator/navigator';
 import { ColguettiToast } from './src/providers/toast';
 import { RouteIntentProvider } from './src/navigator/RouteIntent';
 import { ItemsProvider } from './src/items/items-context';
+import { AlarmsProvider } from './src/alarms/alarms-context';
 
 export default function App() {
   return (
@@ -17,11 +18,13 @@ export default function App() {
           <GestureHandlerRootView>
             <RouteIntentProvider>
               <ItemsProvider>
-                <NavigatorProvider pages={navigator}>
-                  <ToastProvider ToastComponent={ColguettiToast}>
-                    <Root />
-                  </ToastProvider>
-                </NavigatorProvider>
+                <AlarmsProvider>
+                  <NavigatorProvider pages={navigator}>
+                    <ToastProvider ToastComponent={ColguettiToast}>
+                      <Root />
+                    </ToastProvider>
+                  </NavigatorProvider>
+                </AlarmsProvider>
               </ItemsProvider>
             </RouteIntentProvider>
           </GestureHandlerRootView>

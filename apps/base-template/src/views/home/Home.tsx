@@ -2,13 +2,27 @@ import { Text, View, StyleSheet } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
+import { useAlarms } from '../../alarms/alarms-context';
+import { nextUpcoming } from '../../alarms/alarms-model';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 
+const weekdayNames = (weekdays: readonly number[], locale: string): string => {
+  const names = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  const byIndex = Array.from({ length: 7 }, (_, i) => names.format(new Date(2000, 0, 3 + i)));
+  return weekdays.map((d) => byIndex[d]).join(' ');
+};
+
 export default () => {
   const { theme } = useLightDark();
-  const { lang } = useLang();
+  const { lang, currentLang } = useLang();
+  const { alarms } = useAlarms();
   const { navigate } = useNavigator();
+
+  const upcoming = nextUpcoming(alarms, new Date());
+  const nextLabel = upcoming
+    ? `${upcoming.alarm.label} · ${upcoming.date.toLocaleDateString()} ${upcoming.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : lang.home.noNextAlarms;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -18,7 +32,12 @@ export default () => {
       </View>
 
       <View style={[styles.nextRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-        <Text style={{ color: theme.muted }}>{lang.home.noNextAlarms}</Text>
+        <Text style={[styles.nextLabel, { color: theme.color }]}>{nextLabel}</Text>
+        {upcoming && (
+          <Text style={{ color: theme.muted, fontSize: 13 }}>
+            {weekdayNames(upcoming.alarm.weekdays, currentLang)}
+          </Text>
+        )}
       </View>
 
       <AppButton style={styles.leaveButton} onPress={() => navigate('alarms')}>
@@ -62,6 +81,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 18,
     paddingHorizontal: 16,
+    gap: 4,
+  },
+  nextLabel: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   leaveButton: {
     marginTop: 4,

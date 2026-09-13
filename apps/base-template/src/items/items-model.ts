@@ -1,3 +1,4 @@
+import { createId } from '../utils/id';
 import type { Item, ItemInput } from './item-types';
 
 export const itemColors = [
@@ -11,9 +12,7 @@ export const itemColors = [
   '#ec4899',
 ] as const;
 
-export const createItemId = (): string => (
-  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-);
+export const createItemId = (): string => createId();
 
 export const createItem = (input: ItemInput): Item => ({
   ...input,
