@@ -37,3 +37,19 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 **Candidate for alambre:** feeds into the `createCollectionProvider` idea above; also suggests a generic "async-loading provider" shape. If a `createCollectionProvider` lands in alambre, Colguetti's items and alarms both become its consumers.
 
 **Not adopted:** app-level prototype.
+
+## Local-notification plan differs structurally from framework value (I4)
+
+**Pattern:** recurring alarms must produce one repeating notification per selected weekday, with a persisted scheduling plan that is diffed against storage on every change (`ambos keys: schedule plan + reminders`).
+
+**Where it appears:** `apps/base-template/src/notifications/` (schedule, sync, NotificationsWatcher) and `apps/base-template/src/checklist/checklist-model.ts` (pending detection, resend cadence).
+
+**Assessment:** the scheduling/diff logic is lean and reusable, but it sits inside the `expo-notifications` ecosystem the app owns (ecosystem-first). The `Storage` contract (`remove`) + `createCollectionProvider` candidates remain the framework takeaways. Not planned for extraction without a second consumer.
+
+## Delight kept in the app (I4-I5)
+
+**Pattern:** checkbox strikes through item names; confirmed routine flashes a drawn tick (`AlambreIcons.Tick` + `iconAnimation`) before navigating; reminders re-alert only while within the resend window so the app never spams.
+
+**Where it appears:** `apps/base-template/src/views/home/Home.tsx`.
+
+**Assessment:** presentation and identity stay in the app per §2/§6. No alambre surface change needed.

@@ -9,6 +9,7 @@ import { ColguettiToast } from './src/providers/toast';
 import { RouteIntentProvider } from './src/navigator/RouteIntent';
 import { ItemsProvider } from './src/items/items-context';
 import { AlarmsProvider } from './src/alarms/alarms-context';
+import { ConfirmationsProvider } from './src/checklist/confirmations-context';
 
 export default function App() {
   return (
@@ -19,11 +20,13 @@ export default function App() {
             <RouteIntentProvider>
               <ItemsProvider>
                 <AlarmsProvider>
-                  <NavigatorProvider pages={navigator}>
-                    <ToastProvider ToastComponent={ColguettiToast}>
-                      <Root />
-                    </ToastProvider>
-                  </NavigatorProvider>
+                  <ConfirmationsProvider>
+                    <NavigatorProvider pages={navigator}>
+                      <ToastProvider ToastComponent={ColguettiToast}>
+                        <Root />
+                      </ToastProvider>
+                    </NavigatorProvider>
+                  </ConfirmationsProvider>
                 </AlarmsProvider>
               </ItemsProvider>
             </RouteIntentProvider>

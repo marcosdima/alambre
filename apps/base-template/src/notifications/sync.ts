@@ -29,6 +29,11 @@ const reschedule = async (entry: StoredScheduleEntry, body: string): Promise<voi
   });
 };
 
+export const cancelReminder = async (alarmId: string): Promise<void> => {
+  await Notifications.cancelScheduledNotificationAsync(`colguetti-reminder-${alarmId}`)
+    .catch(() => undefined);
+};
+
 export const syncSchedule = async (alarms: Alarm[], body: string): Promise<void> => {
   const stored = await readCollection<StoredScheduleEntry>(asyncStorageRaw, SCHEDULE_KEY);
   const desired = buildDesiredSchedule(alarms);
