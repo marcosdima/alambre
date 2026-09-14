@@ -73,7 +73,11 @@ export default (delay: number = 0, options: ValueOptions = {}) => {
   }, [currentToast, queue]);
 
   useEffect(() => {
-    if (!currentToast || currentToast.data.persistent) return;
+    if (
+      !currentToast
+      || currentToast.data.persistent
+      || currentToast.data.actions?.length
+    ) return;
 
     clearTimer();
     const duration = currentToast.data.duration ?? defaultDuration;

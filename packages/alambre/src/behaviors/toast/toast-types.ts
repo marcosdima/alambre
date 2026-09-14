@@ -1,10 +1,17 @@
 import type { ReactNode } from 'react';
 import type { DefaultReact } from '../../types';
 
+export type ToastAction = {
+  label: string;
+  onPress: () => void;
+  tone?: 'primary' | 'danger';
+};
+
 export type RegisterToast = {
   id?: string;
   duration?: number;
   persistent?: boolean;
+  actions?: ToastAction[];
   payload?: unknown;
 };
 

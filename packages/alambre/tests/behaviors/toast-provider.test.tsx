@@ -105,7 +105,28 @@ describe('ToastProvider', () => {
     });
 
     expect(getApi().toast).not.toBeNull();
-    expect(calls[calls.length - 1]!.toast?.data.persistent).toBe(true);
+    expect(calls[calls.length - 1]!.toast!.data.persistent).toBe(true);
+  });
+
+  it('keeps a toast with actions active until acted on or dismissed', () => {
+    const { calls, getApi } = setup();
+    const onAction = vi.fn();
+
+    act(() => getApi().show({
+      payload: 'Are you sure?',
+      actions: [{ label: 'Cancel', tone: 'primary', onPress: onAction }],
+    }));
+
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+
+    expect(getApi().toast).not.toBeNull();
+    expect(getApi().toast!.data.actions).toHaveLength(1);
+
+    act(() => getApi().dismiss());
+
+    expect(getApi().toast).toBeNull();
   });
 
   it('replaces the pending queue in replace mode without hiding the current toast', () => {
