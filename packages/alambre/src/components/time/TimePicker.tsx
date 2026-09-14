@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ColorValue, LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import type { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
@@ -43,29 +43,36 @@ const Wheel = ({
   testID: prefix,
 }: WheelProps) => {
   const scrollRef = useRef<ScrollView>(null);
-  const containerRef = useRef<View>(null);
+  const layoutRef = useRef(0);
   const [ready, setReady] = useState(false);
 
   const padding = (containerHeight - itemHeight) / 2;
 
-  const scrollToIndex = (index: number, animated: boolean) => {
-    scrollRef.current?.scrollTo({ y: index * itemHeight, animated });
+  const snapToOffsets = useMemo(
+    () => data.map((_, index) => padding + index * itemHeight),
+    [data, padding, itemHeight],
+  );
+
+  const scrollToIndex = (index: number) => {
+    scrollRef.current?.scrollTo({ y: padding + index * itemHeight, animated: false });
   };
 
   useLayoutEffect(() => {
     if (!ready) return;
-    scrollToIndex(selectedIndex, false);
+    scrollToIndex(selectedIndex);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
   const onLayout = (event: LayoutChangeEvent) => {
-    containerRef.current = event.target as unknown as View;
+    const y = event?.nativeEvent?.layout?.y;
+    if (typeof y !== 'number') return;
+    layoutRef.current = y;
     setReady(true);
   };
 
-  const onMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const settle = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = clampIndex(
-      indexFromOffset(event.nativeEvent.contentOffset.y, itemHeight),
+      indexFromOffset(event.nativeEvent.contentOffset.y, itemHeight, padding),
       data.length,
     );
     onSelect(index);
@@ -79,10 +86,12 @@ const Wheel = ({
     >
       <ScrollView
         ref={scrollRef}
-        snapToInterval={itemHeight}
+        snapToOffsets={snapToOffsets}
         decelerationRate="fast"
+        nestedScrollEnabled
         showsVerticalScrollIndicator={false}
-        onMomentumScrollEnd={onMomentumEnd}
+        onMomentumScrollEnd={settle}
+        onScrollEndDrag={settle}
         contentContainerStyle={{ paddingVertical: padding }}
         style={styles.scroll}
         testID={prefix ? `${prefix}-scroll` : undefined}
@@ -116,8 +125,8 @@ export default function TimePicker({
   value,
   onChange,
   accentColor = DEFAULT_ACCENT,
-  itemHeight = 38,
-  visibleCount = 7,
+  itemHeight = 34,
+  visibleCount = 5,
   style,
   testID,
 }: TimePickerProps) {
@@ -213,19 +222,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: 22,
+    fontSize: 20,
   },
   inactive: {
     color: '#9aa3b2',
     fontWeight: '400',
   },
   separator: {
-    width: 32,
+    width: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   separatorText: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
   },
   highlight: {
@@ -238,11 +247,11 @@ const styles = StyleSheet.create({
   highlightFill: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   highlightTint: {
     ...StyleSheet.absoluteFillObject,
     opacity: 0.15,
-    borderRadius: 13,
+    borderRadius: 11,
   },
 });

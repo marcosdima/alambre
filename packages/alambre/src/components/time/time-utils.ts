@@ -22,5 +22,8 @@ export const formatTimeValue = (parts: TimeParts): string =>
 export const clampIndex = (index: number, length: number): number =>
   Math.min(length - 1, Math.max(0, index));
 
-export const indexFromOffset = (offsetY: number, itemHeight: number): number =>
-  Math.round(offsetY / itemHeight);
+export const indexFromOffset = (
+  offsetY: number,
+  itemHeight: number,
+  leadingPadding = 0,
+): number => Math.round((offsetY - leadingPadding) / itemHeight);

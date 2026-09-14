@@ -51,4 +51,13 @@ describe('time-utils', () => {
     expect(indexFromOffset(189, 38)).toBe(5);
     expect(indexFromOffset(191, 38)).toBe(5);
   });
+
+  it('accounts for leading padding when deriving the index', () => {
+    const pad = 68;
+    expect(indexFromOffset(pad, 34, pad)).toBe(0);
+    expect(indexFromOffset(pad + 20 * 34, 34, pad)).toBe(20);
+    expect(indexFromOffset(pad + 20 * 34 - 16, 34, pad)).toBe(20);
+    expect(indexFromOffset(pad + 20 * 34 + 16, 34, pad)).toBe(20);
+    expect(indexFromOffset(pad + 20 * 34 + 17, 34, pad)).toBe(21);
+  });
 });
