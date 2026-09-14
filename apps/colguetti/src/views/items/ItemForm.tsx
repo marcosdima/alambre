@@ -7,7 +7,6 @@ import { useItems } from '../../items/items-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import { itemColors } from '../../items/items-model';
 import { itemIconKeys, type ItemIconKey } from '../../items/item-types';
-import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
@@ -45,10 +44,6 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <AppTitle style={{ color: theme.color }}>
-        {editing ? lang.items.editTitle : lang.items.addTitle}
-      </AppTitle>
-
       <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.label, { color: theme.muted }]}>{lang.items.nameLabel}</Text>
         <TextInput
@@ -67,10 +62,11 @@ export default () => {
             <Pressable
               key={c}
               onPress={() => setColor(c)}
-              style={[
+              style={({ pressed }) => [
                 styles.colorDot,
-                { backgroundColor: c, borderColor: theme.border },
+                { backgroundColor: c, borderColor: color === c ? theme.primary : theme.border },
                 color === c && styles.colorDotActive,
+                pressed && styles.selectionPressed,
               ]}
             />
           ))}
@@ -84,10 +80,10 @@ export default () => {
             <Pressable
               key={key}
               onPress={() => setIcon(key)}
-              style={[
+              style={({ pressed }) => [
                 styles.iconCell,
-                { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-                icon === key && { borderColor: theme.primary, backgroundColor: theme.primarySoft },
+                { borderColor: icon === key ? theme.primary : theme.border, backgroundColor: icon === key ? theme.primarySoft : theme.surfaceAlt },
+                pressed && styles.selectionPressed,
               ]}
             >
               <ItemIcon icon={key} color={color} lineWidth={5} />
@@ -146,6 +142,10 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#ffffff',
   },
+  selectionPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.94 }],
+  },
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 28,
     borderRadius: 10,
-    borderWidth: 1,
+    borderWidth: 2,
     paddingHorizontal: 4,
   },
   actions: {

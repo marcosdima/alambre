@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
+  FadeIn,
   FadeInDown,
   FadeOutUp,
   useAnimatedStyle,
@@ -26,6 +27,9 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   arrowBackgroundColor?: ColorValue;
   width?: number;
   pressStyle?: StyleProp<ViewStyle>;
+  headerTitle?: string;
+  titleColor?: ColorValue;
+  headerStyle?: StyleProp<ViewStyle>;
   animations?: {
     go?: AppNavigatorAnimations;
     return?: AppNavigatorAnimations;
@@ -39,6 +43,9 @@ export default ({
   arrowColor = 'black',
   arrowBackgroundColor = 'rgba(15, 23, 42, 0.16)',
   width = 4,
+  headerTitle,
+  titleColor = 'black',
+  headerStyle,
   useNavigator,
   ...props
 }: AppNavigatorBodyProps) => {
@@ -56,7 +63,9 @@ export default ({
   const detailsVisible = useSharedValue(0);
   const [isReturning, setIsReturning] = useState(false);
   const [drawArrow, setDrawArrow] = useState(false);
-  const canShowArrow = !noPreviousPages && scrollTop <= 4;
+
+  const headerMode = headerTitle !== undefined && !noPreviousPages;
+  const canShowArrow = headerMode || (!noPreviousPages && scrollTop <= 4);
 
   useEffect(() => {
     if (canShowArrow) {
@@ -114,6 +123,34 @@ export default ({
     setTimeout(previous, 10);
   };
 
+  const arrowButton = (
+    <Pressable
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      disabled={!canShowArrow}
+      hitSlop={12}
+    >
+      <Animated.View style={[styles.iconBody, iconStyle]}>
+        <AlambreIcons.Arrow
+          drawIt={drawArrow}
+          iconAnimation={{
+            drawAnimation: (value: number) => withTiming(value, {
+              duration: 320,
+              easing: Easing.out(Easing.exp),
+            }),
+            resetAnimation: (value: number) => withTiming(value, {
+              duration: 160,
+              easing: Easing.in(Easing.quad),
+            }),
+          }}
+          color={arrowColor}
+          lineWidth={width}
+          rotation={180}
+        />
+      </Animated.View>
+    </Pressable>
+  );
+
   const {
     pressStyle = {
       position: 'absolute',
@@ -141,6 +178,25 @@ export default ({
       style={[{ position: 'relative', flex: 1 }, style]}
       {...props}
     >
+      {headerMode && (
+        <View style={[styles.header, headerStyle]} pointerEvents="box-none">
+          <Animated.View
+            style={[styles.arrowSlot, animatedStyle]}
+            pointerEvents={noPreviousPages ? 'none' : 'auto'}
+          >
+            {arrowButton}
+          </Animated.View>
+          <Animated.Text
+            key={headerTitle}
+            style={[styles.headerTitle, { color: titleColor }]}
+            entering={FadeIn.duration(200)}
+            numberOfLines={1}
+          >
+            {headerTitle}
+          </Animated.Text>
+        </View>
+      )}
+
       <ScrollView
         style={styles.pageScroll}
         contentContainerStyle={styles.pageScrollContent}
@@ -157,44 +213,43 @@ export default ({
         </Animated.View>
       </ScrollView>
 
-      <Animated.View
-        style={[
-          pressStyle,
-          animatedStyle,
-        ]}
-        pointerEvents={canShowArrow ? 'auto' : 'none'}
-      >
-        <Pressable
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          disabled={!canShowArrow}
-          hitSlop={12}
+      {!headerMode && (
+        <Animated.View
+          style={[
+            pressStyle,
+            animatedStyle,
+          ]}
+          pointerEvents={canShowArrow ? 'auto' : 'none'}
         >
-          <Animated.View style={[styles.iconBody, iconStyle]}>
-            <AlambreIcons.Arrow
-              drawIt={drawArrow}
-              iconAnimation={{
-                drawAnimation: (value: number) => withTiming(value, {
-                  duration: 320,
-                  easing: Easing.out(Easing.exp),
-                }),
-                resetAnimation: (value: number) => withTiming(value, {
-                  duration: 160,
-                  easing: Easing.in(Easing.quad),
-                }),
-              }}
-              color={arrowColor}
-              lineWidth={width}
-              rotation={180}
-            />
-          </Animated.View>
-        </Pressable>
-      </Animated.View>
+          {arrowButton}
+        </Animated.View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 56,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  arrowSlot: {
+    minWidth: 44,
+    height: 34,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    backgroundColor: 'rgba(15, 23, 42, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '700',
+  },
   pageScroll: {
     flex: 1,
     width: '100%',

@@ -1,7 +1,6 @@
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
-import AppTitle from '../../components/AppTitle';
 import ToggleLightDark from '../../components/ToggleLightDark';
 
 export default () => {
@@ -10,8 +9,6 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>{lang.settings.title}</AppTitle>
-
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
         <View style={styles.row}>
@@ -21,13 +18,13 @@ export default () => {
               <Pressable
                 key={code}
                 onPress={() => changeLang(code)}
-                style={[
+                style={({ pressed }) => [
                   styles.langChip,
-                  { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-                  active && { borderColor: theme.primary, backgroundColor: theme.primarySoft },
+                  { borderColor: active ? theme.primary : theme.border, backgroundColor: active ? theme.primarySoft : theme.surfaceAlt },
+                  pressed && styles.langChipPressed,
                 ]}
               >
-                <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase' }}>
+                <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase', fontWeight: active ? '800' : '600' }}>
                   {code}
                 </Text>
               </Pressable>
@@ -69,7 +66,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
+  },
+  langChipPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
   toggle: {
     height: 64,

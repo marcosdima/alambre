@@ -1,12 +1,14 @@
 import { createLangProvider } from 'alambre';
 import { getItem, saveItem } from '../utils/storage';
 
-const langs = {
+export const langs = {
   es: {
     common: {
       back: 'Volver',
       save: 'Guardar',
       cancel: 'Cancelar',
+      confirm: 'Borrar',
+      confirmDeleteTitle: '¿Seguro?',
     },
     home: {
       title: 'Colguetti',
@@ -37,6 +39,7 @@ const langs = {
       iconLabel: 'Ícono',
       add: 'Agregar',
       delete: 'Borrar',
+      confirmDeleteMessage: 'Se borrará el ítem "{name}". Esta acción no se puede deshacer.',
     },
     alarms: {
       title: 'Alarmas',
@@ -47,11 +50,14 @@ const langs = {
       labelPlaceholder: 'Ej.: Trabajo',
       timeLabel: 'Hora',
       timePlaceholder: 'HH:MM',
+      hourPlaceholder: 'HH',
+      minutePlaceholder: 'MM',
       timeInvalid: 'Formato inválido (HH:MM)',
       weekdaysLabel: 'Días',
       itemsLabel: 'Qué llevar',
       enabledLabel: 'Activada',
       add: 'Agregar',
+      confirmDeleteMessage: 'Se borrará la alarma "{name}". Esta acción no se puede deshacer.',
       weekdays: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
     },
     settings: {
@@ -65,6 +71,8 @@ const langs = {
       back: 'Back',
       save: 'Save',
       cancel: 'Cancel',
+      confirm: 'Delete',
+      confirmDeleteTitle: 'Are you sure?',
     },
     home: {
       title: 'Colguetti',
@@ -95,6 +103,7 @@ const langs = {
       iconLabel: 'Icon',
       add: 'Add',
       delete: 'Delete',
+      confirmDeleteMessage: 'This will delete the item "{name}". This action cannot be undone.',
     },
     alarms: {
       title: 'Alarms',
@@ -105,11 +114,14 @@ const langs = {
       labelPlaceholder: 'E.g.: Work',
       timeLabel: 'Time',
       timePlaceholder: 'HH:MM',
+      hourPlaceholder: 'HH',
+      minutePlaceholder: 'MM',
       timeInvalid: 'Invalid format (HH:MM)',
       weekdaysLabel: 'Days',
       itemsLabel: 'What to carry',
       enabledLabel: 'Enabled',
       add: 'Add',
+      confirmDeleteMessage: 'This will delete the alarm "{name}". This action cannot be undone.',
       weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
     },
     settings: {
