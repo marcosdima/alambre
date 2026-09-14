@@ -32,7 +32,7 @@ export const dark = {
   warning: '#ffc266',
   danger: '#ff7b7b',
   overlay: 'rgba(2, 6, 14, 0.6)',
-  overlayBar: 'rgba(148, 180, 255, 0.12)',
+  overlayBar: 'rgba(148, 180, 255, 0.22)',
 };
 
 const storage = {

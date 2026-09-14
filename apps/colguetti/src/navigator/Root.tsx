@@ -52,17 +52,18 @@ export default () => {
         style={styles.container}
         arrowColor={theme.primary}
         arrowBackgroundColor={theme.overlayBar}
+        arrowBorderColor={theme.border}
         headerStyle={{ backgroundColor: theme.overlayBar }}
         titleColor={theme.color}
         headerTitle={headerTitle}
         animations={{
           go: {
-            pageEntering: FadeInRight.duration(240).easing(Easing.out(Easing.cubic)),
             pageExiting: FadeOutLeft.duration(180).easing(Easing.in(Easing.cubic)),
+            pageEntering: FadeInRight.duration(260).delay(180).easing(Easing.out(Easing.cubic)),
           },
           return: {
-            pageEntering: FadeInLeft.duration(240).easing(Easing.out(Easing.cubic)),
             pageExiting: FadeOutRight.duration(180).easing(Easing.in(Easing.cubic)),
+            pageEntering: FadeInLeft.duration(260).delay(180).easing(Easing.out(Easing.cubic)),
           },
         }}
         useNavigator={useNavigator}

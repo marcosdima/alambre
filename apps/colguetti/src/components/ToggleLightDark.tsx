@@ -3,30 +3,29 @@ import type { ColorValue, LayoutChangeEvent } from 'react-native';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedProps,
   useAnimatedStyle,
   withTiming,
-  interpolateColor,
   withSpring,
+  interpolateColor,
 } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 import { AlambreIcons } from 'alambre';
 import type { ComponentProps } from 'react';
 import type { View as AlambreView } from 'react-native';
 
-const RADIUS = 13;
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const BORDER = 2;
 
 type Colors = {
   background?: ColorValue;
   border?: ColorValue;
   circle?: ColorValue;
-}
+  sun?: ColorValue;
+  moon?: ColorValue;
+};
 
 type ThemeColors = {
-  light?: Colors,
-  dark?: Colors,
-}
+  light?: Colors;
+  dark?: Colors;
+};
 
 type ToggleProps = ComponentProps<typeof AlambreView> & {
   toggle: () => void;
@@ -42,16 +41,25 @@ const getColorConfig = (colors?: ThemeColors) => {
 
   return {
     light: {
-      background: safe(light.background, '#fff'),
-      border: safe(light.border, '#222'),
-      circle: safe(light.circle, '#222'),
+      background: safe(light.background, '#e6edf7'),
+      border: safe(light.border, '#c9d6ea'),
+      circle: safe(light.circle, '#0f7b6c'),
+      sun: safe(light.sun, '#f59e0b'),
+      moon: safe(light.moon, '#6b7280'),
     },
     dark: {
-      background: safe(dark.background, '#222'),
-      border: safe(dark.border, '#fff'),
-      circle: safe(dark.circle, '#fff'),
+      background: safe(dark.background, '#1c2a42'),
+      border: safe(dark.border, '#2b3d5c'),
+      circle: safe(dark.circle, '#3dc8b4'),
+      sun: safe(dark.sun, '#ffc266'),
+      moon: safe(dark.moon, '#9eb0c8'),
     },
   };
+};
+
+const measure = (event: LayoutChangeEvent): number => {
+  const { x, width } = event.nativeEvent.layout;
+  return x + width / 2;
 };
 
 export default (
@@ -62,17 +70,15 @@ export default (
     ...props
   }: ToggleProps,
 ) => {
-  // Default colors.
   const { light, dark } = getColorConfig(colors);
 
-  // Hooks.
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [side, setSide] = useState(setLeft ? 1 : 0);
+  const [side, setSide] = useState(setLeft ? 0 : 1);
+  const [centers, setCenters] = useState({ left: 0, right: 0 });
 
-  // Animation values.
-  const cx = useSharedValue(0);
-  const r = useSharedValue(0);
   const progress = useSharedValue(setLeft ? 1 : 0);
+  const centerX = useSharedValue(0);
+  const radius = useSharedValue(0);
 
   useEffect(() => {
     setSide(setLeft ? 0 : 1);
@@ -80,39 +86,38 @@ export default (
 
   useEffect(() => {
     progress.value = withSpring(side);
-    const offset = 73;
-    const leftOffset = offset;
-    const rightOffset = 300 - offset;
-    const { width, height } = size;
+    const target = side === 0 ? centers.left : centers.right;
+    if (target > 0) {
+      centerX.value = withSpring(target);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [side, centers, progress]);
 
-    cx.value = withTiming(side === 0 ? leftOffset : rightOffset, { duration: 400 });
-    r.value = withTiming((width / height) * RADIUS, { duration: 300 });
-  }, [cx, progress, r, side, size]);
+  useEffect(() => {
+    const max = Math.min(size.width, size.height) / 2 - BORDER;
+    if (max <= 0) return;
+    radius.value = max * 0.85;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [size]);
 
-  // Set width and circle variables.
-  const onLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
+  const onLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
     setSize({ width, height });
   };
 
-  // On press events.
-  const onBegin = () => (r.value = withTiming(r.value * 1.25, { duration: 200 }));
+  const onBegin = () => {
+    const max = Math.min(size.width, size.height) / 2 - BORDER;
+    if (max <= 0) return;
+    radius.value = withTiming(Math.min(radius.value * 1.2, max), { duration: 200 });
+  };
+
   const onFinalize = () => {
     const change = side === 0 ? 1 : 0;
     setSide(change);
     toggle();
+    const max = Math.min(size.width, size.height) / 2 - BORDER;
+    if (max > 0) radius.value = withTiming(max * 0.85, { duration: 200 });
   };
-
-  // Animated props.
-  const circleAnimatedProps = useAnimatedProps(() => ({
-    cx: cx.value,
-    r: r.value,
-    fill: interpolateColor(
-      progress.value,
-      [0, 1],
-      [light.circle, dark.circle],
-    ),
-  }));
 
   const containerStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
@@ -127,7 +132,21 @@ export default (
     ),
   }));
 
-  const drawAnimation = (v: number) => withTiming(v, { duration: 1700 });
+  const circleStyle = useAnimatedStyle(() => ({
+    width: radius.value * 2,
+    height: radius.value * 2,
+    borderRadius: radius.value,
+    left: centerX.value - radius.value,
+    top: size.height / 2 - radius.value,
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [light.circle, dark.circle],
+    ),
+    opacity: 0.4,
+  }));
+
+  const drawAnimation = (v: number) => withTiming(v, { duration: 500 });
 
   return (
     <Pressable
@@ -139,29 +158,34 @@ export default (
         onLayout={onLayout}
         style={[styles.container, containerStyle]}
       >
-        <Svg width="100%" height="100%" viewBox={'0 0 300 100'} style={styles.svg}>
-          <AnimatedCircle
-            animatedProps={circleAnimatedProps}
-            cy={50}
-            opacity={0.4}
-            fill={setLeft ? light.circle : dark.circle}
-          />
-        </Svg>
+        <Animated.View style={[styles.circle, circleStyle]} />
         <View style={styles.row}>
-          <AlambreIcons.Sun
-            drawIt={side === 0}
-            style={styles.icon}
-            color={light.border}
-            lineWidth={3}
-            iconAnimation={{ drawAnimation }}
-          />
-          <AlambreIcons.Moon
-            drawIt={side === 1}
-            style={styles.icon}
-            color={light.border}
-            lineWidth={3}
-            iconAnimation={{ drawAnimation }}
-          />
+          <View
+            onLayout={(e) => setCenters((c) => ({ ...c, left: measure(e) }))}
+            collapsable={false}
+            style={styles.iconWrap}
+          >
+            <AlambreIcons.Sun
+              drawIt={side === 0}
+              style={styles.icon}
+              color={light.sun}
+              lineWidth={3}
+              iconAnimation={{ drawAnimation }}
+            />
+          </View>
+          <View
+            onLayout={(e) => setCenters((c) => ({ ...c, right: measure(e) }))}
+            collapsable={false}
+            style={styles.iconWrap}
+          >
+            <AlambreIcons.Moon
+              drawIt={side === 1}
+              style={styles.icon}
+              color={light.moon}
+              lineWidth={3}
+              iconAnimation={{ drawAnimation }}
+            />
+          </View>
         </View>
       </Animated.View>
     </Pressable>
@@ -173,12 +197,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 25,
-    borderWidth: 2,
+    borderWidth: BORDER,
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  svg: {
-    ...StyleSheet.absoluteFillObject,
+  circle: {
+    position: 'absolute',
     zIndex: 0,
   },
   row: {
@@ -188,8 +212,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  icon: {
+  iconWrap: {
     height: '60%',
+    aspectRatio: 1,
+  },
+  icon: {
+    height: '100%',
     aspectRatio: 1,
   },
 });

@@ -25,6 +25,7 @@ type AppNavigatorAnimations = {
 type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   arrowColor?: ColorValue;
   arrowBackgroundColor?: ColorValue;
+  arrowBorderColor?: ColorValue;
   width?: number;
   pressStyle?: StyleProp<ViewStyle>;
   headerTitle?: string;
@@ -42,6 +43,7 @@ export default ({
   animations,
   arrowColor = 'black',
   arrowBackgroundColor = 'rgba(15, 23, 42, 0.16)',
+  arrowBorderColor,
   width = 4,
   headerTitle,
   titleColor = 'black',
@@ -151,6 +153,10 @@ export default ({
     </Pressable>
   );
 
+  const pillBorder = arrowBorderColor
+    ? { borderColor: arrowBorderColor, borderWidth: StyleSheet.hairlineWidth }
+    : null;
+
   const {
     pressStyle = {
       position: 'absolute',
@@ -164,6 +170,7 @@ export default ({
       backgroundColor: arrowBackgroundColor,
       justifyContent: 'center',
       alignItems: 'center',
+      ...pillBorder,
     },
   } = props;
 
@@ -181,7 +188,7 @@ export default ({
       {headerMode && (
         <View style={[styles.header, headerStyle]} pointerEvents="box-none">
           <Animated.View
-            style={[styles.arrowSlot, animatedStyle]}
+            style={[styles.arrowSlot, pillBorder, animatedStyle]}
             pointerEvents={noPreviousPages ? 'none' : 'auto'}
           >
             {arrowButton}

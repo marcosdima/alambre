@@ -35,7 +35,27 @@ export default () => {
 
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
-        <ToggleLightDark toggle={toggleTheme} setLeft={currThemeName === 'light'} style={styles.toggle} />
+        <ToggleLightDark
+          toggle={toggleTheme}
+          setLeft={currThemeName === 'light'}
+          style={styles.toggle}
+          colors={{
+            light: {
+              background: theme.surfaceAlt,
+              border: theme.border,
+              circle: theme.success,
+              sun: theme.warning,
+              moon: theme.muted,
+            },
+            dark: {
+              background: theme.surface,
+              border: theme.border,
+              circle: theme.success,
+              sun: theme.warning,
+              moon: theme.muted,
+            },
+          }}
+        />
       </View>
     </View>
   );
