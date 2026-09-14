@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Text, TextInput, View, StyleSheet, Pressable, Switch, ScrollView } from 'react-native';
-import { useNavigator, TimePicker } from 'alambre';
+import { useNavigator, useToast, TimePicker } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -16,6 +16,7 @@ export default () => {
   const { alarms, addAlarm, updateAlarm } = useAlarms();
   const { items } = useItems();
   const { previous } = useNavigator();
+  const { show } = useToast();
   const { intent, setIntent } = useRouteIntent();
 
   const editing = alarms.find((a) => a.id === intent.alarmId);
@@ -47,8 +48,10 @@ export default () => {
     const input = { label: label.trim() || lang.alarms.labelPlaceholder, time, weekdays, itemIds, enabled };
     if (editing) {
       await updateAlarm(editing.id, input);
+      show({ payload: { title: lang.alarms.updated, tone: 'success' }, duration: 3000 });
     } else {
       await addAlarm(input);
+      show({ payload: { title: lang.alarms.created, tone: 'success' }, duration: 3000 });
     }
     close();
   };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ScrollView, Text, TextInput, View, StyleSheet, Pressable } from 'react-native';
-import { useNavigator } from 'alambre';
+import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -16,6 +16,7 @@ export default () => {
   const { items, addItem, updateItem } = useItems();
   const { intent, setIntent } = useRouteIntent();
   const { previous } = useNavigator();
+  const { show } = useToast();
 
   const editing = items.find((item) => item.id === intent.itemId);
 
@@ -32,8 +33,10 @@ export default () => {
     if (!name.trim()) return;
     if (editing) {
       await updateItem(editing.id, { name: name.trim(), color, icon });
+      show({ payload: { title: lang.items.updated, tone: 'success' }, duration: 3000 });
     } else {
       await addItem({ name: name.trim(), color, icon });
+      show({ payload: { title: lang.items.created, tone: 'success' }, duration: 3000 });
     }
     close();
   };

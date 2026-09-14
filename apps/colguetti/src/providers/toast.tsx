@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { Text, View } from 'react-native';
 import type { ToastComponentProps } from 'alambre';
+import { useNavigator } from 'alambre';
 import { useLightDark } from './theme';
 import { AlambreIcons } from 'alambre';
 import AppTitle from '../components/AppTitle';
@@ -23,8 +24,8 @@ type DemoToastPayload = {
 };
 
 const DEFAULT_DURATION = 4000;
-const ANIMATION_DELAY = 220;
-const ANIMATION_TIME = 280;
+const ANIMATION_DELAY = 180;
+const ANIMATION_TIME = 260;
 
 const isTone = (value: unknown): value is DemoTone => (
   value === 'info'
@@ -53,6 +54,14 @@ const toneStyles: Record<DemoTone, string> = {
   error: '#b91c1c',
 };
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const value = hex.replace('#', '');
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const iconAnimation = {
   drawAnimation: (value: number) => withTiming(value, {
     duration: 460,
@@ -64,8 +73,9 @@ const iconAnimation = {
   }),
 };
 
-export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentProps) {
+export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
   const { theme } = useLightDark();
+  const { noPreviousPages } = useNavigator();
   const { data, startedAt } = toast;
   const payload = parsePayload(data.payload);
   const tone = payload.tone ?? 'info';
@@ -73,6 +83,7 @@ export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentPr
   const content = payload.content ?? '';
   const progress = useSharedValue(0);
   const [shouldDrawIcon, setShouldDrawIcon] = useState(false);
+  const toneColor = toneStyles[tone];
 
   const remaining = useMemo(() => {
     const duration = data.duration ?? DEFAULT_DURATION;
@@ -110,16 +121,26 @@ export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentPr
   const iconProps = {
     drawIt: shouldDrawIcon,
     iconAnimation,
-    color: toneStyles[tone],
+    color: toneColor,
   };
 
   return (
-    <View style={styles.root} pointerEvents='box-none'>
+    <View
+      style={[styles.root, { top: noPreviousPages ? 12 : 72 }]}
+      pointerEvents='box-none'
+    >
       <Animated.View
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: toneStyles[tone] }]}
-        entering={FadeInDown.duration(ANIMATION_TIME).delay(ANIMATION_DELAY).easing(Easing.out(Easing.cubic))}
+        style={[
+          styles.card,
+          {
+            backgroundColor: hexToRgba(toneColor, 0.08),
+            borderColor: toneColor,
+          },
+        ]}
+        entering={FadeInDown.duration(ANIMATION_TIME).delay(ANIMATION_DELAY).springify().damping(16).stiffness(180)}
         exiting={FadeOutUp.duration(ANIMATION_TIME).easing(Easing.in(Easing.cubic))}
       >
+        <View style={[styles.accentBar, { backgroundColor: toneColor }]} />
         <View style={styles.header}>
           <View style={styles.titleRow}>
             <View style={styles.iconWrap}>
@@ -134,7 +155,7 @@ export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentPr
               }
             </View>
 
-            <AppTitle style={[styles.title, { color: toneStyles[tone] }]}>{title}</AppTitle>
+            <AppTitle style={[styles.title, { color: toneColor }]}>{title}</AppTitle>
           </View>
 
           <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>
@@ -150,15 +171,16 @@ export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentPr
           </Pressable>
         </View>
 
-        <Text style={[styles.content, { color: theme.color }]}>{content}</Text>
-        <Text style={[styles.meta, { color: theme.muted }]}>Queue: {queueLength}</Text>
+        {content ? (
+          <Text style={[styles.content, { color: theme.color }]}>{content}</Text>
+        ) : null}
 
         {
           data.persistent
             ? undefined
             : (
-              <View style={[styles.progressTrack, { backgroundColor: theme.border }]}>
-                <Animated.View style={[styles.progressBar, progressStyle, { backgroundColor: toneStyles[tone] }]} />
+              <View style={[styles.progressTrack, { backgroundColor: hexToRgba(toneColor, 0.18) }]}>
+                <Animated.View style={[styles.progressBar, progressStyle, { backgroundColor: toneColor }]} />
               </View>
             )
         }
@@ -170,7 +192,6 @@ export function ColguettiToast({ toast, dismiss, queueLength }: ToastComponentPr
 const styles = StyleSheet.create({
   root: {
     position: 'absolute',
-    top: 12,
     width: '100%',
     alignItems: 'center',
     zIndex: 999,
@@ -178,9 +199,24 @@ const styles = StyleSheet.create({
   card: {
     width: '94%',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
     gap: 6,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  accentBar: {
+    position: 'absolute',
+    top: 8,
+    bottom: 8,
+    left: 0,
+    width: 4,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
   },
   header: {
     flexDirection: 'row',
@@ -215,9 +251,6 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 13,
     lineHeight: 18,
-  },
-  meta: {
-    fontSize: 12,
   },
   progressTrack: {
     width: '100%',

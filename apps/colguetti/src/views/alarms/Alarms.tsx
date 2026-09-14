@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable, Switch } from 'react-native';
-import { useNavigator } from 'alambre';
+import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -18,6 +18,7 @@ export default () => {
   const { lang } = useLang();
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
   const { navigate } = useNavigator();
+  const { show } = useToast();
   const { setIntent } = useRouteIntent();
   const [toBeDeleted, setToBeDeleted] = useState<Alarm | null>(null);
   const now = new Date();
@@ -31,6 +32,7 @@ export default () => {
     if (!toBeDeleted) return;
     await removeAlarm(toBeDeleted.id);
     void cancelReminder(toBeDeleted.id);
+    show({ payload: { title: lang.alarms.deleted, tone: 'success' }, duration: 3000 });
     setToBeDeleted(null);
   };
 

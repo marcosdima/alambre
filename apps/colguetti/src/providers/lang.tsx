@@ -40,6 +40,9 @@ export const langs = {
       add: 'Agregar',
       delete: 'Borrar',
       confirmDeleteMessage: 'Se borrará el ítem "{name}". Esta acción no se puede deshacer.',
+      created: 'Ítem agregado',
+      updated: 'Ítem actualizado',
+      deleted: 'Ítem borrado',
     },
     alarms: {
       title: 'Alarmas',
@@ -54,6 +57,9 @@ export const langs = {
       enabledLabel: 'Activada',
       add: 'Agregar',
       confirmDeleteMessage: 'Se borrará la alarma "{name}". Esta acción no se puede deshacer.',
+      created: 'Alarma creada',
+      updated: 'Alarma actualizada',
+      deleted: 'Alarma borrada',
       weekdays: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
     },
     settings: {
@@ -100,6 +106,9 @@ export const langs = {
       add: 'Add',
       delete: 'Delete',
       confirmDeleteMessage: 'This will delete the item "{name}". This action cannot be undone.',
+      created: 'Item added',
+      updated: 'Item updated',
+      deleted: 'Item deleted',
     },
     alarms: {
       title: 'Alarms',
@@ -114,6 +123,9 @@ export const langs = {
       enabledLabel: 'Enabled',
       add: 'Add',
       confirmDeleteMessage: 'This will delete the alarm "{name}". This action cannot be undone.',
+      created: 'Alarm created',
+      updated: 'Alarm updated',
+      deleted: 'Alarm deleted',
       weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
     },
     settings: {

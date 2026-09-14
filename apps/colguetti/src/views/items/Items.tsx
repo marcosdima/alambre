@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
-import { useNavigator } from 'alambre';
+import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -15,6 +15,7 @@ export default () => {
   const { lang } = useLang();
   const { items, removeItem } = useItems();
   const { navigate } = useNavigator();
+  const { show } = useToast();
   const { setIntent } = useRouteIntent();
   const [toBeDeleted, setToBeDeleted] = useState<Item | null>(null);
 
@@ -26,6 +27,7 @@ export default () => {
   const confirmDelete = async () => {
     if (!toBeDeleted) return;
     await removeItem(toBeDeleted.id);
+    show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
     setToBeDeleted(null);
   };
 
