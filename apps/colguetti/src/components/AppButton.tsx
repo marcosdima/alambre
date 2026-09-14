@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ButtonProps } from 'alambre';
 import { Button } from 'alambre';
 import { StyleSheet } from 'react-native';
@@ -13,13 +13,11 @@ import { useLightDark } from '../providers/theme';
 export default function AppButton({ style, children, ...props }: ButtonProps) {
   const { theme } = useLightDark();
   const progress = useSharedValue(0);
-  const lastPressed = useRef(false);
+  const pressedRef = useRef(false);
 
-  const syncPress = (pressed: boolean) => {
-    if (pressed === lastPressed.current) return;
-    lastPressed.current = pressed;
-    progress.value = withTiming(pressed ? 1 : 0, { duration: 120 });
-  };
+  useEffect(() => {
+    progress.value = withTiming(pressedRef.current ? 1 : 0, { duration: 120 });
+  });
 
   const shellStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 - 0.04 * progress.value }],
@@ -34,7 +32,7 @@ export default function AppButton({ style, children, ...props }: ButtonProps) {
   return (
     <Button {...props} style={style}>
       {({ pressed, disabled, loading }) => {
-        syncPress(pressed);
+        pressedRef.current = pressed;
         return (
           <Animated.View
             style={[

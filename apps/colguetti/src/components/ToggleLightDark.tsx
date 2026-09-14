@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ColorValue, LayoutChangeEvent } from 'react-native';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
@@ -57,11 +57,6 @@ const getColorConfig = (colors?: ThemeColors) => {
   };
 };
 
-const measure = (event: LayoutChangeEvent): number => {
-  const { x, width } = event.nativeEvent.layout;
-  return x + width / 2;
-};
-
 export default (
   {
     setLeft = true,
@@ -74,7 +69,6 @@ export default (
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [side, setSide] = useState(setLeft ? 0 : 1);
-  const [centers, setCenters] = useState({ left: 0, right: 0 });
 
   const progress = useSharedValue(setLeft ? 1 : 0);
   const centerX = useSharedValue(0);
@@ -84,25 +78,35 @@ export default (
     setSide(setLeft ? 0 : 1);
   }, [setLeft]);
 
+  const { leftCenter, rightCenter } = useMemo(() => {
+    const { width, height } = size;
+    if (height <= 0) return { leftCenter: 0, rightCenter: 0 };
+    const icon = height * 0.6;
+    const pad = (width - 2 * icon) / 3;
+    return {
+      leftCenter: pad + icon / 2,
+      rightCenter: 2 * pad + (3 * icon) / 2,
+    };
+  }, [size]);
+
   useEffect(() => {
     progress.value = withSpring(side);
-    const target = side === 0 ? centers.left : centers.right;
+    const target = side === 0 ? leftCenter : rightCenter;
     if (target > 0) {
       centerX.value = withSpring(target);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [side, centers, progress]);
+  }, [progress, side, leftCenter, rightCenter, centerX]);
 
   useEffect(() => {
     const max = Math.min(size.width, size.height) / 2 - BORDER;
     if (max <= 0) return;
     radius.value = max * 0.85;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size]);
+  }, [radius, size]);
 
   const onLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    setSize({ width, height });
+    const layout = event?.nativeEvent?.layout;
+    if (!layout) return;
+    setSize({ width: layout.width, height: layout.height });
   };
 
   const onBegin = () => {
@@ -160,11 +164,7 @@ export default (
       >
         <Animated.View style={[styles.circle, circleStyle]} />
         <View style={styles.row}>
-          <View
-            onLayout={(e) => setCenters((c) => ({ ...c, left: measure(e) }))}
-            collapsable={false}
-            style={styles.iconWrap}
-          >
+          <View style={styles.iconWrap}>
             <AlambreIcons.Sun
               drawIt={side === 0}
               style={styles.icon}
@@ -173,11 +173,7 @@ export default (
               iconAnimation={{ drawAnimation }}
             />
           </View>
-          <View
-            onLayout={(e) => setCenters((c) => ({ ...c, right: measure(e) }))}
-            collapsable={false}
-            style={styles.iconWrap}
-          >
+          <View style={styles.iconWrap}>
             <AlambreIcons.Moon
               drawIt={side === 1}
               style={styles.icon}
