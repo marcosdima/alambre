@@ -180,6 +180,8 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter, demonstrated in the reference app (Colguetti items and alarms). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
 
+`TimePicker` is an additive input component: a 24h hour/minute wheel built on plain `ScrollView` snapping (no native dependencies), exposed with `value`/`onChange` as an `HH:MM` string and a themeable accent. Its pure time math (`components/time/time-utils`) is unit-tested, and the component is covered by `tests/components/time-picker.test.tsx`. It is validated in the reference app's alarm form (Colguetti).
+
 Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/discoveries.md`).
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.

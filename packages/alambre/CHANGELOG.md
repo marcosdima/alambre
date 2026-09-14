@@ -15,3 +15,4 @@ Breaking and structural changes recorded while the contract was being defined, k
 - [test] Reorganize the test suite to mirror the `src` tree (`core`/`capabilities`/`behaviors`/`components`).
 - [add] Add `createCollectionProvider` capability: a content-driven, persisted, typed collection (add/update/remove) built on `createStore`/`createProvider` and the `Storage` adapter (validated in the base-template reference app: items and alarms are now consumers).
 - [add] Extend the `Storage` contract with an optional `remove` (additive; existing adapters remain valid).
+- [add] Add `TimePicker` input component: a 24h hour/minute wheel built on plain `ScrollView` snapping (no native dependencies), with `value`/`onChange` as an `HH:MM` string and themeable accent. Pure time math lives in `components/time/time-utils` (validated in colguetti's alarm form).

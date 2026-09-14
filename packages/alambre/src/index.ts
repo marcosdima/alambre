@@ -31,3 +31,7 @@ export {
 
 // Icons.
 export * as AlambreIcons from './components/icons';
+
+// Input components.
+export { TimePicker } from './components/time';
+export type { TimePickerProps } from './components/time';
