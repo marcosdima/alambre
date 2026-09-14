@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
@@ -5,8 +6,8 @@ import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
-import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -15,16 +16,21 @@ export default () => {
   const { items, removeItem } = useItems();
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
+  const [toBeDeleted, setToBeDeleted] = useState<Item | null>(null);
 
   const openForm = (item?: Item) => {
     setIntent({ itemId: item?.id });
     navigate('items', { subpage: 'item-form' });
   };
 
+  const confirmDelete = async () => {
+    if (!toBeDeleted) return;
+    await removeItem(toBeDeleted.id);
+    setToBeDeleted(null);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>{lang.items.title}</AppTitle>
-
       {items.length === 0 ? (
         <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
       ) : (
@@ -32,16 +38,24 @@ export default () => {
           <Pressable
             key={item.id}
             onPress={() => openForm(item)}
-            style={[styles.row, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            style={({ pressed }) => [
+              styles.row,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+              pressed && styles.rowPressed,
+            ]}
           >
             <View style={styles.iconBox}>
               <ItemIcon icon={item.icon} color={item.color} lineWidth={5} />
             </View>
             <Text style={[styles.name, { color: theme.color }]}>{item.name}</Text>
             <Pressable
-              onPress={() => removeItem(item.id)}
+              onPress={() => setToBeDeleted(item)}
               hitSlop={10}
-              style={[styles.delete, { borderColor: theme.border }]}
+              style={({ pressed }) => [
+                styles.delete,
+                { borderColor: theme.border },
+                pressed && styles.rowPressed,
+              ]}
             >
               <Text style={{ color: theme.danger, fontWeight: '700' }}>{lang.items.delete}</Text>
             </Pressable>
@@ -54,6 +68,16 @@ export default () => {
           <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.items.add}</Text>
         </AppButton>
       </View>
+
+      <ConfirmDialog
+        visible={toBeDeleted !== null}
+        title={lang.common.confirmDeleteTitle}
+        message={lang.items.confirmDeleteMessage.replace('{name}', toBeDeleted?.name ?? '')}
+        confirmLabel={lang.common.confirm}
+        cancelLabel={lang.common.cancel}
+        onConfirm={confirmDelete}
+        onCancel={() => setToBeDeleted(null)}
+      />
     </View>
   );
 };
@@ -76,6 +100,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
+  },
+  rowPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   iconBox: {
     width: 40,

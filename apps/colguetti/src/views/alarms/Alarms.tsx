@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable, Switch } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { nextOccurrence } from '../../alarms/alarms-model';
+import { cancelReminder } from '../../notifications/sync';
 import type { Alarm } from '../../alarms/alarm-types';
-import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 const formatTime = (time: string) => time;
@@ -17,6 +19,7 @@ export default () => {
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
+  const [toBeDeleted, setToBeDeleted] = useState<Alarm | null>(null);
   const now = new Date();
 
   const openForm = (alarm?: Alarm) => {
@@ -24,12 +27,17 @@ export default () => {
     navigate('alarms', { subpage: 'alarm-form' });
   };
 
+  const confirmDelete = async () => {
+    if (!toBeDeleted) return;
+    await removeAlarm(toBeDeleted.id);
+    void cancelReminder(toBeDeleted.id);
+    setToBeDeleted(null);
+  };
+
   const weekdayLabels = lang.alarms.weekdays;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>{lang.alarms.title}</AppTitle>
-
       {alarms.length === 0 ? (
         <Text style={[styles.empty, { color: theme.muted }]}>{lang.alarms.empty}</Text>
       ) : (
@@ -59,7 +67,15 @@ export default () => {
                   onValueChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                   trackColor={{ true: theme.success, false: theme.border }}
                 />
-                <Pressable onPress={() => removeAlarm(alarm.id)} hitSlop={10} style={[styles.delete, { borderColor: theme.border }]}>
+                <Pressable
+                  onPress={() => setToBeDeleted(alarm)}
+                  hitSlop={10}
+                  style={({ pressed }) => [
+                    styles.delete,
+                    { borderColor: theme.border },
+                    pressed && styles.deletePressed,
+                  ]}
+                >
                   <Text style={{ color: theme.danger, fontWeight: '700' }}>{lang.items.delete}</Text>
                 </Pressable>
               </View>
@@ -73,6 +89,16 @@ export default () => {
           <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.alarms.add}</Text>
         </AppButton>
       </View>
+
+      <ConfirmDialog
+        visible={toBeDeleted !== null}
+        title={lang.common.confirmDeleteTitle}
+        message={lang.alarms.confirmDeleteMessage.replace('{name}', toBeDeleted?.label ?? '')}
+        confirmLabel={lang.common.confirm}
+        cancelLabel={lang.common.cancel}
+        onConfirm={confirmDelete}
+        onCancel={() => setToBeDeleted(null)}
+      />
     </View>
   );
 };
@@ -116,6 +142,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
+  },
+  deletePressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.97 }],
   },
   footer: {
     marginTop: 'auto',
