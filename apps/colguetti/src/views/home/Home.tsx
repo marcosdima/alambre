@@ -14,6 +14,7 @@ import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
+import { ItemIcon } from '../../items/icon-catalog';
 
 const iconAnimation = {
   drawAnimation: (value: number) => withTiming(value, {
@@ -178,7 +179,9 @@ export default () => {
                 onPress={() => toggleItem(item.id)}
                 style={[styles.itemRow, { borderColor: theme.border, backgroundColor: checked ? theme.surfaceAlt : 'transparent' }]}
               >
-                <View style={[styles.itemDot, { backgroundColor: item.color }]} />
+                <View style={styles.itemIcon}>
+                  <ItemIcon icon={item.icon} color={checked ? theme.success : theme.muted} lineWidth={5} />
+                </View>
                 <Text style={[styles.itemName, { color: theme.color, textDecorationLine: checked ? 'line-through' : 'none' }]}>
                   {item.name}
                 </Text>
@@ -354,10 +357,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  itemDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  itemIcon: {
+    width: 48,
+    height: 32,
   },
   itemName: {
     flex: 1,

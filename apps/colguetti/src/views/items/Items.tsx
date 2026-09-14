@@ -34,33 +34,35 @@ export default () => {
       {items.length === 0 ? (
         <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
       ) : (
-        items.map((item) => (
-          <Pressable
-            key={item.id}
-            onPress={() => openForm(item)}
-            style={({ pressed }) => [
-              styles.row,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-              pressed && styles.rowPressed,
-            ]}
-          >
-            <View style={styles.iconBox}>
-              <ItemIcon icon={item.icon} color={item.color} lineWidth={5} />
-            </View>
-            <Text style={[styles.name, { color: theme.color }]}>{item.name}</Text>
+        <View style={styles.grid}>
+          {items.map((item) => (
             <Pressable
-              onPress={() => setToBeDeleted(item)}
-              hitSlop={10}
+              key={item.id}
+              onPress={() => openForm(item)}
               style={({ pressed }) => [
-                styles.delete,
-                { borderColor: theme.border },
-                pressed && styles.rowPressed,
+                styles.card,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+                pressed && styles.cardPressed,
               ]}
             >
-              <Text style={{ color: theme.danger, fontWeight: '700' }}>{lang.items.delete}</Text>
+              <View style={styles.cardIcon}>
+                <ItemIcon icon={item.icon} color={item.color} lineWidth={5} />
+              </View>
+              <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>{item.name}</Text>
+              <Pressable
+                onPress={() => setToBeDeleted(item)}
+                hitSlop={10}
+                style={({ pressed }) => [
+                  styles.delete,
+                  { borderColor: theme.border },
+                  pressed && styles.cardPressed,
+                ]}
+              >
+                <Text style={{ color: theme.danger, fontWeight: '700' }}>×</Text>
+              </Pressable>
             </Pressable>
-          </Pressable>
-        ))
+          ))}
+        </View>
       )}
 
       <View style={styles.footer}>
@@ -92,33 +94,39 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  row: {
+  grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  card: {
+    width: '48%',
     alignItems: 'center',
-    gap: 12,
+    gap: 6,
     borderWidth: 1,
     borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
   },
-  rowPressed: {
+  cardIcon: {
+    width: 56,
+    height: 36,
+  },
+  cardName: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  cardPressed: {
     opacity: 0.85,
     transform: [{ scale: 0.98 }],
-  },
-  iconBox: {
-    width: 40,
-    height: 28,
-  },
-  name: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
   },
   delete: {
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 2,
+    marginTop: 2,
   },
   footer: {
     marginTop: 'auto',
