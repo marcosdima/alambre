@@ -1,24 +1,23 @@
 import { useState } from 'react';
-import { Text, View, StyleSheet, TextInput, Pressable, Switch, ScrollView } from 'react-native';
+import { Text, TextInput, View, StyleSheet, Pressable, Switch, ScrollView } from 'react-native';
 import { useNavigator } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
 import { useRouteIntent } from '../../navigator/RouteIntent';
-import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
+import TimeInput from '../../components/TimeInput';
+import { isValidTime } from '../../utils/time';
 import type { Weekday } from '../../alarms/alarm-types';
-
-const timeRe = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
   const { alarms, addAlarm, updateAlarm } = useAlarms();
   const { items } = useItems();
-  const { navigate } = useNavigator();
-  const { intent } = useRouteIntent();
+  const { previous } = useNavigator();
+  const { intent, setIntent } = useRouteIntent();
 
   const editing = alarms.find((a) => a.id === intent.alarmId);
 
@@ -28,6 +27,11 @@ export default () => {
   const [itemIds, setItemIds] = useState<string[]>(editing?.itemIds ?? []);
   const [enabled, setEnabled] = useState(editing?.enabled ?? true);
   const [timeError, setTimeError] = useState(false);
+
+  const close = () => {
+    setIntent({});
+    previous();
+  };
 
   const toggleWeekday = (day: Weekday) => {
     setWeekdays((current) => (
@@ -42,7 +46,7 @@ export default () => {
   };
 
   const onSave = async () => {
-    if (!timeRe.test(time)) {
+    if (!isValidTime(time)) {
       setTimeError(true);
       return;
     }
@@ -53,15 +57,11 @@ export default () => {
     } else {
       await addAlarm(input);
     }
-    navigate('alarms');
+    close();
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>
-        {editing ? lang.alarms.editTitle : lang.alarms.addTitle}
-      </AppTitle>
-
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.labelLabel}</Text>
         <TextInput
@@ -73,13 +73,10 @@ export default () => {
         />
 
         <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.timeLabel}</Text>
-        <TextInput
+        <TimeInput
           value={time}
-          onChangeText={setTime}
-          placeholder={lang.alarms.timePlaceholder}
-          placeholderTextColor={theme.muted}
-          autoCapitalize="none"
-          style={[styles.input, { color: theme.color, borderColor: timeError ? theme.danger : theme.border }]}
+          onChange={setTime}
+          onValidityChange={(valid) => setTimeError(!valid)}
         />
         {timeError && <Text style={{ color: theme.danger, fontSize: 12 }}>{lang.alarms.timeInvalid}</Text>}
 
@@ -92,12 +89,16 @@ export default () => {
               <Pressable
                 key={day}
                 onPress={() => toggleWeekday(day)}
-                style={[styles.dayChip, {
-                  borderColor: theme.border,
-                  backgroundColor: active ? theme.success : 'transparent',
-                }]}
+                style={({ pressed }) => [
+                  styles.dayChip,
+                  {
+                    borderColor: active ? theme.primary : theme.border,
+                    backgroundColor: active ? theme.primary : 'transparent',
+                  },
+                  pressed && styles.pressed,
+                ]}
               >
-                <Text style={{ color: active ? '#fff' : theme.color, fontWeight: '700' }}>{letter}</Text>
+                <Text style={{ color: active ? theme.onPrimary : theme.color, fontWeight: '700' }}>{letter}</Text>
               </Pressable>
             );
           })}
@@ -113,10 +114,18 @@ export default () => {
               <Pressable
                 key={item.id}
                 onPress={() => toggleItem(item.id)}
-                style={[styles.itemRow, { borderColor: theme.border, backgroundColor: active ? theme.surfaceAlt : 'transparent' }]}
+                style={({ pressed }) => [
+                  styles.itemRow,
+                  {
+                    borderColor: active ? theme.primary : theme.border,
+                    backgroundColor: active ? theme.primarySoft : 'transparent',
+                  },
+                  pressed && styles.pressed,
+                ]}
               >
                 <View style={[styles.itemDot, { backgroundColor: item.color }]} />
                 <Text style={{ color: theme.color }}>{item.name}</Text>
+                {active && <Text style={[styles.itemCheck, { color: theme.primary }]}>✓</Text>}
               </Pressable>
             );
           })
@@ -133,7 +142,7 @@ export default () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <AppButton style={styles.footerButton} onPress={() => navigate('alarms')}>
+        <AppButton style={styles.footerButton} onPress={close}>
           <Text style={{ color: theme.muted, fontWeight: '700' }}>{lang.common.cancel}</Text>
         </AppButton>
         <AppButton style={styles.footerButton} onPress={onSave}>
@@ -147,7 +156,8 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   body: {
     gap: 10,
@@ -189,6 +199,15 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
   },
+  itemCheck: {
+    marginLeft: 'auto',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
+  },
   enabledRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -199,6 +218,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginTop: 16,
+    marginBottom: 4,
   },
   footerButton: {
     flex: 1,
