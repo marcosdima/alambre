@@ -32,7 +32,7 @@ export default () => {
     if (!toBeDeleted) return;
     await removeAlarm(toBeDeleted.id);
     void cancelReminder(toBeDeleted.id);
-    show({ payload: { title: lang.alarms.deleted, tone: 'success' }, duration: 3000 });
+    show({ payload: { title: lang.alarms.deleted, content: toBeDeleted.label, tone: 'success' }, duration: 3000 });
     setToBeDeleted(null);
   };
 

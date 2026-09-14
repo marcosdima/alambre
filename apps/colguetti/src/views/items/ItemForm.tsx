@@ -31,12 +31,13 @@ export default () => {
 
   const save = async () => {
     if (!name.trim()) return;
+    const value = name.trim();
     if (editing) {
-      await updateItem(editing.id, { name: name.trim(), color, icon });
-      show({ payload: { title: lang.items.updated, tone: 'success' }, duration: 3000 });
+      await updateItem(editing.id, { name: value, color, icon });
+      show({ payload: { title: lang.items.updated, content: value, tone: 'success' }, duration: 3000 });
     } else {
-      await addItem({ name: name.trim(), color, icon });
-      show({ payload: { title: lang.items.created, tone: 'success' }, duration: 3000 });
+      await addItem({ name: value, color, icon });
+      show({ payload: { title: lang.items.created, content: value, tone: 'success' }, duration: 3000 });
     }
     close();
   };

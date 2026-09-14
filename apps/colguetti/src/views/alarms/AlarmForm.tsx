@@ -45,13 +45,15 @@ export default () => {
   };
 
   const onSave = async () => {
-    const input = { label: label.trim() || lang.alarms.labelPlaceholder, time, weekdays, itemIds, enabled };
+    const labelValue = label.trim() || lang.alarms.labelPlaceholder;
+    const input = { label: labelValue, time, weekdays, itemIds, enabled };
+    const content = `${labelValue} · ${time}`;
     if (editing) {
       await updateAlarm(editing.id, input);
-      show({ payload: { title: lang.alarms.updated, tone: 'success' }, duration: 3000 });
+      show({ payload: { title: lang.alarms.updated, content, tone: 'success' }, duration: 3000 });
     } else {
       await addAlarm(input);
-      show({ payload: { title: lang.alarms.created, tone: 'success' }, duration: 3000 });
+      show({ payload: { title: lang.alarms.created, content, tone: 'success' }, duration: 3000 });
     }
     close();
   };

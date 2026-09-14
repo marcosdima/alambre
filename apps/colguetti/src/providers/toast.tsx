@@ -7,10 +7,10 @@ import { AlambreIcons } from 'alambre';
 import AppTitle from '../components/AppTitle';
 import Animated, {
   Easing,
-  FadeInDown,
   FadeOutUp,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useEffect, useMemo, useState } from 'react';
@@ -25,7 +25,7 @@ type DemoToastPayload = {
 
 const DEFAULT_DURATION = 4000;
 const ANIMATION_DELAY = 180;
-const ANIMATION_TIME = 260;
+const SLIDE_FROM = -140;
 
 const isTone = (value: unknown): value is DemoTone => (
   value === 'info'
@@ -82,6 +82,7 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
   const title = payload.title ?? tone.toUpperCase();
   const content = payload.content ?? '';
   const progress = useSharedValue(0);
+  const entrance = useSharedValue(0);
   const [shouldDrawIcon, setShouldDrawIcon] = useState(false);
   const toneColor = toneStyles[tone];
 
@@ -114,8 +115,22 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
     return () => clearTimeout(timer);
   }, [data.id]);
 
+  useEffect(() => {
+    entrance.value = 0;
+    entrance.value = withSpring(1, {
+      damping: 15,
+      stiffness: 140,
+      mass: 0.6,
+    });
+  }, [data.id, entrance]);
+
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
+  }));
+
+  const entranceStyle = useAnimatedStyle(() => ({
+    opacity: entrance.value,
+    transform: [{ translateY: (1 - entrance.value) * SLIDE_FROM }],
   }));
 
   const iconProps = {
@@ -132,13 +147,13 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
       <Animated.View
         style={[
           styles.card,
+          entranceStyle,
           {
-            backgroundColor: hexToRgba(toneColor, 0.08),
+            backgroundColor: theme.surface,
             borderColor: toneColor,
           },
         ]}
-        entering={FadeInDown.duration(ANIMATION_TIME).delay(ANIMATION_DELAY).springify().damping(16).stiffness(180)}
-        exiting={FadeOutUp.duration(ANIMATION_TIME).easing(Easing.in(Easing.cubic))}
+        exiting={FadeOutUp.duration(240).easing(Easing.in(Easing.cubic))}
       >
         <View style={[styles.accentBar, { backgroundColor: toneColor }]} />
         <View style={styles.header}>
@@ -179,7 +194,7 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
           data.persistent
             ? undefined
             : (
-              <View style={[styles.progressTrack, { backgroundColor: hexToRgba(toneColor, 0.18) }]}>
+              <View style={[styles.progressTrack, { backgroundColor: hexToRgba(toneColor, 0.2) }]}>
                 <Animated.View style={[styles.progressBar, progressStyle, { backgroundColor: toneColor }]} />
               </View>
             )
@@ -204,10 +219,10 @@ const styles = StyleSheet.create({
     gap: 6,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5,
   },
   accentBar: {
     position: 'absolute',
