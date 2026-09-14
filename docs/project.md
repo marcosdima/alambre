@@ -231,3 +231,12 @@ Agents should challenge existing implementations when there is a concrete reason
 The first is part of autonomous development.
 
 The second requires discussion.
+
+---
+
+## 11. Deferred Work
+
+Items intentionally left for a future implementation, kept here so they are not lost:
+
+* **Alarm applies without awaiting "I'm leaving"** — an alarm scheduled today should fire and apply its routine without requiring the "I'm leaving" confirmation first. Deferred to a future implementation (product behavior, not a bug).
+* **Toast with actions in `alambre`** — confirmation-by-toast would require adding action buttons (e.g. confirm/cancel) to the framework's `ToastProvider`. Deferred as an additive `alambre` capability, to be validated when a reusable need appears. In the meantime, destructive confirmations use an in-app dialog in `apps/colguetti`.
