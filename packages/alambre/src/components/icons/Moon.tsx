@@ -37,11 +37,14 @@ export default (
     fillOpacity: 0,
   };
 
+  const fillProps = fill
+    ? { fill, fillOpacity: !drawIt ? 0 : 1 }
+    : {};
+
   const bigCircle = {
     circle: {
       ...baseCircle,
-      fillOpacity: !drawIt ? 0 : 1,
-      fill,
+      ...fillProps,
     },
     drawIt,
     iconAnimation,

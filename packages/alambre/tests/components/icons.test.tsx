@@ -226,7 +226,8 @@ describe('Sun', () => {
 
     const circles = circlesOf(toJSON());
     expect(circles).toHaveLength(1);
-    expect(circles[0]).toMatchObject({ cx: 50, cy: 50, r: 23, fillOpacity: 1 });
+    expect(circles[0]).toMatchObject({ cx: 50, cy: 50, r: 23 });
+    expect(circles[0].fill).toBeUndefined();
 
     const rays = linesOf(toJSON());
     expect(rays).toHaveLength(8);
@@ -286,7 +287,7 @@ describe('Moon', () => {
   });
 
   it('honours fillOpacity states: main drawn, decorations hidden', async () => {
-    const { toJSON } = await renderIcon(<Moon color="#000" lineWidth={2} />);
+    const { toJSON } = await renderIcon(<Moon color="#000" lineWidth={2} fill="#ddd" />);
 
     const circles = circlesOf(toJSON());
     expect(circles[0].fillOpacity).toBe(1);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ColorValue, LayoutChangeEvent } from 'react-native';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
@@ -69,33 +69,18 @@ export default (
 
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [side, setSide] = useState(setLeft ? 0 : 1);
+  const [iconCenters, setIconCenters] = useState({ left: 0, right: 0 });
 
   const progress = useSharedValue(setLeft ? 1 : 0);
-  const centerX = useSharedValue(0);
   const radius = useSharedValue(0);
 
   useEffect(() => {
     setSide(setLeft ? 0 : 1);
   }, [setLeft]);
 
-  const { leftCenter, rightCenter } = useMemo(() => {
-    const { width, height } = size;
-    if (height <= 0) return { leftCenter: 0, rightCenter: 0 };
-    const icon = height * 0.6;
-    const pad = (width - 2 * icon) / 3;
-    return {
-      leftCenter: pad + icon / 2,
-      rightCenter: 2 * pad + (3 * icon) / 2,
-    };
-  }, [size]);
-
   useEffect(() => {
     progress.value = withSpring(side);
-    const target = side === 0 ? leftCenter : rightCenter;
-    if (target > 0) {
-      centerX.value = withSpring(target);
-    }
-  }, [progress, side, leftCenter, rightCenter, centerX]);
+  }, [progress, side]);
 
   useEffect(() => {
     const max = Math.min(size.width, size.height) / 2 - BORDER;
@@ -107,6 +92,18 @@ export default (
     const layout = event?.nativeEvent?.layout;
     if (!layout) return;
     setSize({ width: layout.width, height: layout.height });
+  };
+
+  const onIconLayout = (
+    side: 'left' | 'right',
+  ) => (event: LayoutChangeEvent) => {
+    const layout = event?.nativeEvent?.layout;
+    if (!layout) return;
+    setIconCenters((current) => {
+      const center = layout.x + layout.width / 2;
+      if (current[side] === center) return current;
+      return { ...current, [side]: center };
+    });
   };
 
   const onBegin = () => {
@@ -136,19 +133,22 @@ export default (
     ),
   }));
 
-  const circleStyle = useAnimatedStyle(() => ({
-    width: radius.value * 2,
-    height: radius.value * 2,
-    borderRadius: radius.value,
-    left: centerX.value - radius.value,
-    top: size.height / 2 - radius.value,
-    backgroundColor: interpolateColor(
-      progress.value,
-      [0, 1],
-      [light.circle, dark.circle],
-    ),
-    opacity: 0.4,
-  }));
+  const circleStyle = useAnimatedStyle(() => {
+    const center = iconCenters.left + (iconCenters.right - iconCenters.left) * progress.value;
+    return {
+      width: radius.value * 2,
+      height: radius.value * 2,
+      borderRadius: radius.value,
+      left: center - radius.value,
+      top: (size.height - 2 * BORDER) / 2 - radius.value,
+      backgroundColor: interpolateColor(
+        progress.value,
+        [0, 1],
+        [light.circle, dark.circle],
+      ),
+      opacity: 0.4,
+    };
+  });
 
   const drawAnimation = (v: number) => withTiming(v, { duration: 500 });
 
@@ -164,7 +164,7 @@ export default (
       >
         <Animated.View style={[styles.circle, circleStyle]} />
         <View style={styles.row}>
-          <View style={styles.iconWrap}>
+          <View style={styles.iconWrap} onLayout={onIconLayout('left')}>
             <AlambreIcons.Sun
               drawIt={side === 0}
               style={styles.icon}
@@ -173,7 +173,7 @@ export default (
               iconAnimation={{ drawAnimation }}
             />
           </View>
-          <View style={styles.iconWrap}>
+          <View style={styles.iconWrap} onLayout={onIconLayout('right')}>
             <AlambreIcons.Moon
               drawIt={side === 1}
               style={styles.icon}

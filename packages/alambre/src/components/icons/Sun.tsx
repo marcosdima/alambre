@@ -32,14 +32,17 @@ export default (
     strokeWidth: lineWidth,
   };
 
+  const fillProps = fill
+    ? { fill, fillOpacity: drawIt ? 1 : 0 }
+    : {};
+
   const circle = {
     circle: {
       cx: 50,
       cy: 50,
       r: 23,
       ...strokeConfig,
-      fill,
-      fillOpacity: drawIt ? 1 : 0,
+      ...fillProps,
     },
     drawIt,
     strokeOffset: 20,

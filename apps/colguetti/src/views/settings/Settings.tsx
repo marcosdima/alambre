@@ -44,15 +44,15 @@ export default () => {
               background: theme.surfaceAlt,
               border: theme.border,
               circle: theme.success,
-              sun: theme.warning,
-              moon: theme.muted,
+              sun: '#f59e0b',
+              moon: '#5b6572',
             },
             dark: {
               background: theme.surface,
               border: theme.border,
               circle: theme.success,
-              sun: theme.warning,
-              moon: theme.muted,
+              sun: '#ffc266',
+              moon: '#9eb0c8',
             },
           }}
         />
