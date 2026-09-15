@@ -4,8 +4,6 @@ import {
   Easing,
   FadeInLeft,
   FadeInRight,
-  FadeOutLeft,
-  FadeOutRight,
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
 import type { NavigatorTypes } from 'alambre';
@@ -58,12 +56,10 @@ export default () => {
         headerTitle={headerTitle}
         animations={{
           go: {
-            pageExiting: FadeOutLeft.duration(200).easing(Easing.in(Easing.cubic)),
-            pageEntering: FadeInRight.duration(280).delay(90).easing(Easing.out(Easing.cubic)),
+            pageEntering: FadeInRight.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
           },
           return: {
-            pageExiting: FadeOutRight.duration(200).easing(Easing.in(Easing.cubic)),
-            pageEntering: FadeInLeft.duration(280).delay(90).easing(Easing.out(Easing.cubic)),
+            pageEntering: FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
           },
         }}
         useNavigator={useNavigator}

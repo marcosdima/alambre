@@ -1,5 +1,5 @@
-import type { ComponentProps } from 'react';
-import { useEffect, useState } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import type { NavigatorTypes } from 'alambre';
@@ -12,8 +12,9 @@ import Animated, {
   FadeOutUp,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
+  withSpring,
+  runOnJS,
 } from 'react-native-reanimated';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 
@@ -37,6 +38,9 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   };
   useNavigator: () => NavigatorTypes.NavigatorReturn;
 };
+
+const EXIT_DURATION = 200;
+const EXIT_SLIDE = 40;
 
 export default ({
   style,
@@ -63,7 +67,6 @@ export default ({
   const scale = useSharedValue(1);
   const iconVisible = useSharedValue(0);
   const detailsVisible = useSharedValue(0);
-  const [isReturning, setIsReturning] = useState(false);
   const [drawArrow, setDrawArrow] = useState(false);
 
   const headerMode = headerTitle !== undefined && !noPreviousPages;
@@ -93,11 +96,6 @@ export default ({
     iconVisible.value = withTiming(0, { duration: 120 });
   }, [canShowArrow, detailsVisible, iconVisible]);
 
-  useEffect(() => {
-    if (isReturning) setIsReturning(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
-
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: iconVisible.value * (0.55 + detailsVisible.value * 0.45),
     transform: [
@@ -111,17 +109,15 @@ export default ({
     transform: [{ scale: scale.value }],
   }));
 
+  const isReturningRef = useRef(false);
+
   const onPressIn = () => {
     scale.value = withTiming(0.85, { duration: 300 });
   };
 
   const onPressOut = () => {
-    scale.value = withSpring(1, {
-      damping: 6,
-      stiffness: 250,
-      mass: 1,
-    });
-    setIsReturning(true);
+    scale.value = withSpring(1, { damping: 6, stiffness: 250, mass: 1 });
+    isReturningRef.current = true;
     setTimeout(previous, 10);
   };
 
@@ -174,11 +170,46 @@ export default ({
     },
   } = props;
 
-  const animationsSelected = isReturning ? animations?.return : animations?.go;
-  const animationConfig = {
-    entering: animationsSelected?.pageEntering ?? FadeInDown.duration(500).delay(350).easing(Easing.ease),
-    exiting: animationsSelected?.pageExiting ?? FadeOutUp.duration(500).easing(Easing.ease),
-  };
+  const direction = isReturningRef.current ? 'return' : 'go';
+  const animationsSelected = direction === 'return' ? animations?.return : animations?.go;
+
+  const enterAnimation = animationsSelected?.pageEntering
+    ?? FadeInDown.duration(500).delay(350).easing(Easing.ease);
+
+  const prevPageKeyRef = useRef(pageKey);
+  const prevComponentRef = useRef<ReactNode>(currentPage.component);
+  const exitProgress = useSharedValue(0);
+  const exitMultiplier = useSharedValue(0);
+  const [transitioningPage, setTransitioningPage] = useState<ReactNode | null>(null);
+
+  const prevPageKey = prevPageKeyRef.current;
+  const prevComponent = prevComponentRef.current;
+  const navigationDetected = prevPageKey !== pageKey;
+
+  useEffect(() => {
+    if (!navigationDetected) return;
+    const dir = isReturningRef.current ? 'return' : 'go';
+    isReturningRef.current = false;
+    setTransitioningPage(prevComponent);
+    exitMultiplier.value = dir === 'go' ? -1 : 1;
+    exitProgress.value = 0;
+    exitProgress.value = withTiming(
+      1,
+      { duration: EXIT_DURATION, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(setTransitioningPage)(null);
+      },
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageKey]);
+
+  prevPageKeyRef.current = pageKey;
+  prevComponentRef.current = currentPage.component;
+
+  const exitOverlayStyle = useAnimatedStyle(() => ({
+    opacity: 1 - exitProgress.value,
+    transform: [{ translateX: exitMultiplier.value * EXIT_SLIDE * exitProgress.value }],
+  }));
 
   return (
     <View
@@ -215,12 +246,12 @@ export default ({
         contentContainerStyle={styles.pageScrollContent}
         onScroll={(event) => setScrollTop(Math.max(0, event.nativeEvent.contentOffset.y))}
         scrollEventThrottle={16}
-        keyboardShouldPersistTaps='handled'
+        keyboardShouldPersistTaps="handled"
       >
         <Animated.View
           key={pageKey}
           style={styles.pageContainer}
-          {...animationConfig}
+          entering={enterAnimation}
         >
           {currentPage.component}
         </Animated.View>
@@ -228,13 +259,19 @@ export default ({
 
       {!headerMode && (
         <Animated.View
-          style={[
-            pressStyle,
-            animatedStyle,
-          ]}
+          style={[pressStyle, animatedStyle]}
           pointerEvents={canShowArrow ? 'auto' : 'none'}
         >
           {arrowButton}
+        </Animated.View>
+      )}
+
+      {transitioningPage && (
+        <Animated.View
+          style={[styles.exitOverlay, exitOverlayStyle]}
+          pointerEvents="none"
+        >
+          {transitioningPage}
         </Animated.View>
       )}
     </View>
@@ -278,5 +315,12 @@ const styles = StyleSheet.create({
   iconBody: {
     width: 28,
     height: 28,
+  },
+  exitOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
