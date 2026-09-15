@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import type { GestureResponderEvent } from 'react-native';
 import type { ButtonProps } from 'alambre';
 import { Button } from 'alambre';
 import { StyleSheet } from 'react-native';
@@ -10,14 +10,29 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
 
-export default function AppButton({ style, children, ...props }: ButtonProps) {
+export default function AppButton({
+  style,
+  children,
+  onPressIn,
+  onPressOut,
+  ...props
+}: ButtonProps) {
   const { theme } = useLightDark();
   const progress = useSharedValue(0);
-  const pressedRef = useRef(false);
 
-  useEffect(() => {
-    progress.value = withTiming(pressedRef.current ? 1 : 0, { duration: 120 });
-  });
+  const pressTo = (pressed: boolean) => {
+    progress.value = withTiming(pressed ? 1 : 0, { duration: 120 });
+  };
+
+  const handlePressIn = (event: GestureResponderEvent) => {
+    pressTo(true);
+    onPressIn?.(event);
+  };
+
+  const handlePressOut = (event: GestureResponderEvent) => {
+    pressTo(false);
+    onPressOut?.(event);
+  };
 
   const shellStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 - 0.04 * progress.value }],
@@ -30,23 +45,25 @@ export default function AppButton({ style, children, ...props }: ButtonProps) {
   }));
 
   return (
-    <Button {...props} style={style}>
-      {({ pressed, disabled, loading }) => {
-        pressedRef.current = pressed;
-        return (
-          <Animated.View
-            style={[
-              styles.shell,
-              shellStyle,
-              (disabled || loading) && styles.muted,
-            ]}
-          >
-            {typeof children === 'function'
-              ? children({ pressed, disabled, loading })
-              : children}
-          </Animated.View>
-        );
-      }}
+    <Button
+      {...props}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={style}
+    >
+      {({ pressed, disabled, loading }) => (
+        <Animated.View
+          style={[
+            styles.shell,
+            shellStyle,
+            (disabled || loading) && styles.muted,
+          ]}
+        >
+          {typeof children === 'function'
+            ? children({ pressed, disabled, loading })
+            : children}
+        </Animated.View>
+      )}
     </Button>
   );
 }
