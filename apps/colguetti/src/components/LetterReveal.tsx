@@ -1,6 +1,6 @@
 import type { StyleProp, TextStyle } from 'react-native';
 import { Text } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -12,7 +12,7 @@ export default function LetterReveal({ text, style }: { text: string; style?: St
           key={`${index}-${char}`}
           entering={FadeInDown.duration(280)
             .delay(index * 16)
-            .easing((easing) => Math.pow(easing, 2))}
+            .easing(Easing.out(Easing.exp))}
           style={[{ fontSize: 24, fontWeight: 'bold' }, style]}
         >
           {char === ' ' ? '\u00A0' : char}
