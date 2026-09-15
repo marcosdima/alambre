@@ -101,7 +101,7 @@ export default () => {
         {items.length === 0 ? (
           <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
         ) : (
-          <View style={styles.itemsGrid}>
+          <View style={styles.itemsList}>
             {items.map((item) => {
               const active = itemIds.includes(item.id);
               return (
@@ -123,7 +123,9 @@ export default () => {
                   <Text style={[styles.itemName, { color: active ? theme.primary : theme.color }]} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  {active && <Text style={[styles.itemCheck, { color: theme.primary }]}>✓</Text>}
+                  <View style={[styles.itemCheck, { borderColor: active ? theme.primary : theme.border }]}>
+                    {active && <Text style={[styles.itemCheckMark, { color: theme.primary }]}>✓</Text>}
+                  </View>
                 </Pressable>
               );
             })}
@@ -184,32 +186,40 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
   },
-  itemsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  itemsList: {
+    flexDirection: 'column',
     gap: 8,
   },
   itemCell: {
-    width: '48%',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
   },
   itemIcon: {
-    width: 48,
-    height: 32,
+    width: 40,
+    height: 26,
   },
   itemName: {
-    fontSize: 13,
+    flex: 1,
+    fontSize: 14,
     fontWeight: '600',
-    textAlign: 'center',
   },
   itemCheck: {
-    fontSize: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemCheckMark: {
+    fontSize: 13,
     fontWeight: '800',
+    lineHeight: 16,
   },
   pressed: {
     opacity: 0.85,

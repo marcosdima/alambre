@@ -36,7 +36,7 @@ export default () => {
       {items.length === 0 ? (
         <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
       ) : (
-        <View style={styles.grid}>
+        <View style={styles.list}>
           {items.map((item) => (
             <Pressable
               key={item.id}
@@ -57,7 +57,7 @@ export default () => {
                 style={({ pressed }) => [
                   styles.delete,
                   { borderColor: theme.border },
-                  pressed && styles.cardPressed,
+                  pressed && styles.deletePressed,
                 ]}
               >
                 <Text style={{ color: theme.danger, fontWeight: '700' }}>×</Text>
@@ -96,39 +96,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  list: {
+    flexDirection: 'column',
     gap: 10,
   },
   card: {
-    width: '48%',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 12,
     borderWidth: 1,
     borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
   cardIcon: {
-    width: 56,
-    height: 36,
+    width: 44,
+    height: 28,
   },
   cardName: {
-    fontSize: 13,
+    flex: 1,
+    fontSize: 14,
     fontWeight: '600',
-    textAlign: 'center',
   },
   cardPressed: {
     opacity: 0.85,
-    transform: [{ scale: 0.98 }],
+    transform: [{ scale: 0.99 }],
   },
   delete: {
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 2,
-    marginTop: 2,
+  },
+  deletePressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.9 }],
   },
   footer: {
     marginTop: 'auto',
