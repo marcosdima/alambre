@@ -10,8 +10,8 @@ export default function LetterReveal({ text, style }: { text: string; style?: St
       {text.split('').map((char, index) => (
         <AnimatedText
           key={`${index}-${char}`}
-          entering={FadeInDown.duration(280)
-            .delay(index * 16)
+          entering={FadeInDown.duration(500)
+            .delay(index * 22)
             .easing(Easing.out(Easing.exp))}
           style={[{ fontSize: 24, fontWeight: 'bold' }, style]}
         >

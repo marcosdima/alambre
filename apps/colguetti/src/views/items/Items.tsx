@@ -4,6 +4,7 @@ import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
+import { useAlarms } from '../../alarms/alarms-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
@@ -14,6 +15,7 @@ export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
   const { items, removeItem } = useItems();
+  const { alarms, updateAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { setIntent } = useRouteIntent();
@@ -24,12 +26,32 @@ export default () => {
     navigate('items', { subpage: 'item-form' });
   };
 
+  const affectedAlarms = toBeDeleted
+    ? alarms.filter((alarm) => alarm.itemIds.includes(toBeDeleted.id))
+    : [];
+
   const confirmDelete = async () => {
     if (!toBeDeleted) return;
-    await removeItem(toBeDeleted.id);
+    const target = toBeDeleted;
+    await Promise.all(
+      alarms
+        .filter((alarm) => alarm.itemIds.includes(target.id))
+        .map((alarm) =>
+          updateAlarm(alarm.id, {
+            itemIds: alarm.itemIds.filter((id) => id !== target.id),
+          }),
+        ),
+    );
+    await removeItem(target.id);
     show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
     setToBeDeleted(null);
   };
+
+  const deleteMessage = affectedAlarms.length > 0
+    ? lang.items.confirmDeleteWithAlarms
+      .replace('{name}', toBeDeleted?.name ?? '')
+      .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
+    : lang.items.confirmDeleteMessage.replace('{name}', toBeDeleted?.name ?? '');
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -76,7 +98,7 @@ export default () => {
       <ConfirmDialog
         visible={toBeDeleted !== null}
         title={lang.common.confirmDeleteTitle}
-        message={lang.items.confirmDeleteMessage.replace('{name}', toBeDeleted?.name ?? '')}
+        message={deleteMessage}
         confirmLabel={lang.common.confirm}
         cancelLabel={lang.common.cancel}
         onConfirm={confirmDelete}
