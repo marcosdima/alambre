@@ -11,8 +11,6 @@ import AppButton from '../../components/AppButton';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
-const formatTime = (time: string) => time;
-
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
@@ -46,8 +44,8 @@ export default () => {
         alarms.map((alarm) => {
           const next = nextOccurrence(alarm, now);
           const display = next
-            ? `${formatTime(alarm.time)} · ${next.toLocaleDateString()}`
-            : formatTime(alarm.time);
+            ? `${alarm.time} · ${next.toLocaleDateString()}`
+            : alarm.time;
 
           return (
             <View
