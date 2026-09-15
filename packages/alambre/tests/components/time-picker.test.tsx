@@ -47,4 +47,17 @@ describe('TimePicker', () => {
 
     expect(onChange).toHaveBeenCalledWith('17:30');
   });
+
+  it('selects a value when a wheel item is tapped', async () => {
+    const onChange = vi.fn();
+    const { getByTestId } = await render(
+      <TimePicker value="08:30" onChange={onChange} testID="tp" />,
+    );
+
+    await fireEvent.press(getByTestId('tp-hour-item-17'));
+    expect(onChange).toHaveBeenCalledWith('17:30');
+
+    await fireEvent.press(getByTestId('tp-minute-item-5'));
+    expect(onChange).toHaveBeenCalledWith('17:05');
+  });
 });

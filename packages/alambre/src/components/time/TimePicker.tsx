@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ColorValue, LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import type { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import {
@@ -44,6 +44,7 @@ const Wheel = ({
 }: WheelProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const layoutRef = useRef(0);
+  const offsetRef = useRef(0);
   const [ready, setReady] = useState(false);
 
   const padding = (containerHeight - itemHeight) / 2;
@@ -53,15 +54,23 @@ const Wheel = ({
     [data, padding, itemHeight],
   );
 
-  const scrollToIndex = (index: number) => {
-    scrollRef.current?.scrollTo({ y: padding + index * itemHeight, animated: false });
+  const targetOffset = (index: number) => padding + index * itemHeight;
+
+  const scrollToIndex = (index: number, animated = false) => {
+    scrollRef.current?.scrollTo({ y: targetOffset(index), animated });
   };
 
   useLayoutEffect(() => {
     if (!ready) return;
+    if (Math.abs(offsetRef.current - targetOffset(selectedIndex)) < itemHeight / 2) return;
     scrollToIndex(selectedIndex);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
+  }, [ready, selectedIndex, padding, itemHeight, data.length]);
+
+  const selectAt = (index: number) => {
+    scrollToIndex(index, true);
+    onSelect(index);
+  };
 
   const onLayout = (event: LayoutChangeEvent) => {
     const y = event?.nativeEvent?.layout?.y;
@@ -70,9 +79,15 @@ const Wheel = ({
     setReady(true);
   };
 
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    offsetRef.current = event.nativeEvent.contentOffset.y;
+  };
+
   const settle = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offset = event.nativeEvent.contentOffset.y;
+    offsetRef.current = offset;
     const index = clampIndex(
-      indexFromOffset(event.nativeEvent.contentOffset.y, itemHeight, padding),
+      indexFromOffset(offset, itemHeight, padding),
       data.length,
     );
     onSelect(index);
@@ -90,6 +105,7 @@ const Wheel = ({
         decelerationRate="fast"
         nestedScrollEnabled
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
         onMomentumScrollEnd={settle}
         onScrollEndDrag={settle}
         contentContainerStyle={{ paddingVertical: padding }}
@@ -99,9 +115,11 @@ const Wheel = ({
         {data.map((label, index) => {
           const selected = index === selectedIndex;
           return (
-            <View
+            <Pressable
               key={label}
+              onPress={() => selectAt(index)}
               style={[styles.item, { height: itemHeight }]}
+              testID={prefix ? `${prefix}-item-${index}` : undefined}
             >
               <Text
                 style={[
@@ -113,7 +131,7 @@ const Wheel = ({
               >
                 {label}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>
