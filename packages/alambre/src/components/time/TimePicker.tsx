@@ -1,15 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { ColorValue, LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
-import type { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
-import {
-  HOUR_RANGE,
-  MINUTE_RANGE,
-  clampIndex,
-  formatTimeValue,
-  indexFromOffset,
-  parseTimeValue,
-} from './time-utils';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
+import { HOUR_RANGE, MINUTE_RANGE, parseTimeValue, formatTimeValue } from './time-utils';
 
 export type TimePickerProps = {
   value: string;
@@ -22,119 +14,97 @@ export type TimePickerProps = {
 };
 
 const DEFAULT_ACCENT = '#0057d8';
+const ARROW_HEIGHT = 26;
 
 type WheelProps = {
   data: readonly string[];
   testID?: string;
   accentColor: ColorValue;
   itemHeight: number;
-  containerHeight: number;
+  visibleCount: number;
   selectedIndex: number;
   onSelect: (index: number) => void;
+};
+
+const wrapIndex = (index: number, length: number): number => {
+  const wrapped = index % length;
+  return wrapped < 0 ? wrapped + length : wrapped;
 };
 
 const Wheel = ({
   data,
   accentColor,
   itemHeight,
-  containerHeight,
+  visibleCount,
   selectedIndex,
   onSelect,
   testID: prefix,
 }: WheelProps) => {
-  const scrollRef = useRef<ScrollView>(null);
-  const layoutRef = useRef(0);
-  const offsetRef = useRef(0);
-  const [ready, setReady] = useState(false);
-
-  const padding = (containerHeight - itemHeight) / 2;
-
-  const snapToOffsets = useMemo(
-    () => data.map((_, index) => padding + index * itemHeight),
-    [data, padding, itemHeight],
+  const center = Math.floor(visibleCount / 2);
+  const stripHeight = itemHeight * visibleCount;
+  const visible = Array.from({ length: visibleCount }, (_, offset) =>
+    wrapIndex(selectedIndex - center + offset, data.length),
   );
-
-  const targetOffset = (index: number) => padding + index * itemHeight;
-
-  const scrollToIndex = (index: number, animated = false) => {
-    scrollRef.current?.scrollTo({ y: targetOffset(index), animated });
-  };
-
-  useLayoutEffect(() => {
-    if (!ready) return;
-    if (Math.abs(offsetRef.current - targetOffset(selectedIndex)) < itemHeight / 2) return;
-    scrollToIndex(selectedIndex);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, selectedIndex, padding, itemHeight, data.length]);
-
-  const selectAt = (index: number) => {
-    scrollToIndex(index, true);
-    onSelect(index);
-  };
-
-  const onLayout = (event: LayoutChangeEvent) => {
-    const y = event?.nativeEvent?.layout?.y;
-    if (typeof y !== 'number') return;
-    layoutRef.current = y;
-    setReady(true);
-  };
-
-  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    offsetRef.current = event.nativeEvent.contentOffset.y;
-  };
-
-  const settle = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = event.nativeEvent.contentOffset.y;
-    offsetRef.current = offset;
-    const index = clampIndex(
-      indexFromOffset(offset, itemHeight, padding),
-      data.length,
-    );
-    onSelect(index);
-  };
 
   return (
     <View
-      style={[styles.wheel, { height: containerHeight }]}
-      onLayout={onLayout}
+      style={[styles.wheel, { height: stripHeight + ARROW_HEIGHT * 2 }]}
       testID={prefix ? `${prefix}-wheel` : undefined}
     >
-      <ScrollView
-        ref={scrollRef}
-        snapToOffsets={snapToOffsets}
-        decelerationRate="fast"
-        nestedScrollEnabled
-        showsVerticalScrollIndicator={false}
-        onScroll={onScroll}
-        onMomentumScrollEnd={settle}
-        onScrollEndDrag={settle}
-        contentContainerStyle={{ paddingVertical: padding }}
-        style={styles.scroll}
-        testID={prefix ? `${prefix}-scroll` : undefined}
+      <Pressable
+        onPress={() => onSelect(Math.min(selectedIndex + 1, data.length - 1))}
+        disabled={selectedIndex >= data.length - 1}
+        hitSlop={8}
+        style={({ pressed }) => [
+          styles.arrow,
+          { height: ARROW_HEIGHT },
+          pressed && styles.arrowPressed,
+        ]}
+        testID={prefix ? `${prefix}-inc` : undefined}
       >
-        {data.map((label, index) => {
+        <Text style={[styles.arrowLabel, { color: accentColor }]}>▲</Text>
+      </Pressable>
+
+      <View style={[styles.strip, { height: stripHeight }]}>
+        {visible.map((index) => {
           const selected = index === selectedIndex;
           return (
             <Pressable
-              key={label}
-              onPress={() => selectAt(index)}
-              style={[styles.item, { height: itemHeight }]}
+              key={index}
+              onPress={() => onSelect(index)}
+              style={({ pressed }) => [
+                styles.item,
+                { height: itemHeight },
+                pressed && styles.itemPressed,
+              ]}
               testID={prefix ? `${prefix}-item-${index}` : undefined}
             >
               <Text
                 style={[
                   styles.label,
-                  selected
-                    ? { color: accentColor, fontWeight: '800' }
-                    : styles.inactive,
+                  selected ? { color: accentColor, fontWeight: '800' } : styles.inactive,
                 ]}
               >
-                {label}
+                {data[index]}
               </Text>
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
+
+      <Pressable
+        onPress={() => onSelect(Math.max(selectedIndex - 1, 0))}
+        disabled={selectedIndex <= 0}
+        hitSlop={8}
+        style={({ pressed }) => [
+          styles.arrow,
+          { height: ARROW_HEIGHT },
+          pressed && styles.arrowPressed,
+        ]}
+        testID={prefix ? `${prefix}-dec` : undefined}
+      >
+        <Text style={[styles.arrowLabel, { color: accentColor }]}>▼</Text>
+      </Pressable>
     </View>
   );
 };
@@ -149,41 +119,44 @@ export default function TimePicker({
   testID,
 }: TimePickerProps) {
   const parsed = parseTimeValue(value);
-  const containerHeight = itemHeight * visibleCount;
-
-  const [hourIndex, setHourIndex] = useState(parsed.hours);
-  const [minuteIndex, setMinuteIndex] = useState(parsed.minutes);
+  const [parts, setParts] = useState(parsed);
   const lastValueRef = useRef(value);
+  const stripHeight = itemHeight * visibleCount;
+  const rowHeight = stripHeight + ARROW_HEIGHT * 2;
 
   useEffect(() => {
     if (value === lastValueRef.current) return;
-    const next = parseTimeValue(value);
-    setHourIndex(next.hours);
-    setMinuteIndex(next.minutes);
+    lastValueRef.current = value;
+    setParts(parseTimeValue(value));
   }, [value]);
 
-  const emit = useCallback(
-    (hours: number, minutes: number) => {
-      const next = formatTimeValue({ hours, minutes });
-      lastValueRef.current = next;
-      onChange(next);
-    },
-    [onChange],
-  );
+  const emit = (hours: number, minutes: number) => {
+    const next = formatTimeValue({ hours, minutes });
+    lastValueRef.current = next;
+    onChange(next);
+  };
 
   const selectHour = (index: number) => {
-    setHourIndex(index);
-    emit(index, minuteIndex);
+    if (index === parts.hours) return;
+    emit(index, parts.minutes);
+    setParts({ hours: index, minutes: parts.minutes });
   };
 
   const selectMinute = (index: number) => {
-    setMinuteIndex(index);
-    emit(hourIndex, index);
+    if (index === parts.minutes) return;
+    emit(parts.hours, index);
+    setParts({ hours: parts.hours, minutes: index });
   };
 
   return (
-    <View style={[styles.row, { height: containerHeight }, style]} testID={testID}>
-      <View style={[styles.highlight, { top: (containerHeight - itemHeight) / 2 }]}>
+    <View style={[styles.row, { height: rowHeight }, style]} testID={testID}>
+      <View
+        style={[
+          styles.highlight,
+          { top: ARROW_HEIGHT + (stripHeight - itemHeight) / 2 },
+          { height: itemHeight },
+        ]}
+      >
         <View
           style={[
             styles.highlightFill,
@@ -201,8 +174,8 @@ export default function TimePicker({
         data={HOUR_RANGE}
         accentColor={accentColor}
         itemHeight={itemHeight}
-        containerHeight={containerHeight}
-        selectedIndex={hourIndex}
+        visibleCount={visibleCount}
+        selectedIndex={parts.hours}
         onSelect={selectHour}
         testID={testID ? `${testID}-hour` : undefined}
       />
@@ -215,8 +188,8 @@ export default function TimePicker({
         data={MINUTE_RANGE}
         accentColor={accentColor}
         itemHeight={itemHeight}
-        containerHeight={containerHeight}
-        selectedIndex={minuteIndex}
+        visibleCount={visibleCount}
+        selectedIndex={parts.minutes}
         onSelect={selectMinute}
         testID={testID ? `${testID}-minute` : undefined}
       />
@@ -232,12 +205,25 @@ const styles = StyleSheet.create({
   wheel: {
     flex: 1,
   },
-  scroll: {
-    flex: 1,
+  arrow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowPressed: {
+    opacity: 0.6,
+  },
+  arrowLabel: {
+    fontSize: 12,
+  },
+  strip: {
+    justifyContent: 'center',
   },
   item: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  itemPressed: {
+    opacity: 0.8,
   },
   label: {
     fontSize: 20,
@@ -260,10 +246,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 0,
-    justifyContent: 'center',
   },
   highlightFill: {
-    flex: 1,
     borderWidth: 1,
     borderRadius: 12,
   },
