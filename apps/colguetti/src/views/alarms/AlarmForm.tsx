@@ -22,6 +22,7 @@ export default () => {
   const editing = alarms.find((a) => a.id === intent.alarmId);
 
   const [label, setLabel] = useState(editing?.label ?? '');
+  const [labelError, setLabelError] = useState(false);
   const [time, setTime] = useState(editing?.time ?? '08:00');
   const [weekdays, setWeekdays] = useState<Weekday[]>(editing?.weekdays ?? [1, 2, 3, 4, 5]);
   const [itemIds, setItemIds] = useState<string[]>(editing?.itemIds ?? []);
@@ -45,7 +46,12 @@ export default () => {
   };
 
   const onSave = async () => {
-    const labelValue = label.trim() || lang.alarms.labelPlaceholder;
+    const labelValue = label.trim();
+    if (!labelValue) {
+      setLabelError(true);
+      return;
+    }
+    setLabelError(false);
     const input = { label: labelValue, time, weekdays, itemIds, enabled };
     const content = `${labelValue} · ${time}`;
     if (editing) {
@@ -64,12 +70,15 @@ export default () => {
         <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.labelLabel}</Text>
         <TextInput
           value={label}
-          onChangeText={setLabel}
+          onChangeText={(value) => {
+            setLabel(value);
+            if (labelError && value.trim()) setLabelError(false);
+          }}
           placeholder={lang.alarms.labelPlaceholder}
           placeholderTextColor={theme.muted}
-          style={[styles.input, { color: theme.color, borderColor: theme.border }]}
+          style={[styles.input, { color: theme.color, borderColor: labelError ? theme.danger : theme.border }]}
         />
-
+        {labelError && <Text style={[styles.errorText, { color: theme.danger }]}>{lang.alarms.labelRequired}</Text>}
         <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.timeLabel}</Text>
         <TimePicker value={time} onChange={setTime} accentColor={theme.primary} testID="alarm-time" />
 
@@ -174,6 +183,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: -2,
   },
   weekdays: {
     flexDirection: 'row',

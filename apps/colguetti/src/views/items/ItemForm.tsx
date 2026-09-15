@@ -21,6 +21,7 @@ export default () => {
   const editing = items.find((item) => item.id === intent.itemId);
 
   const [name, setName] = useState(editing?.name ?? '');
+  const [nameError, setNameError] = useState(false);
   const [color, setColor] = useState(editing?.color ?? itemColors[0]);
   const [icon, setIcon] = useState<ItemIconKey>(editing?.icon ?? 'keys');
 
@@ -30,8 +31,12 @@ export default () => {
   };
 
   const save = async () => {
-    if (!name.trim()) return;
     const value = name.trim();
+    if (!value) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
     if (editing) {
       await updateItem(editing.id, { name: value, color, icon });
       show({ payload: { title: lang.items.updated, content: value, tone: 'success' }, duration: 3000 });
@@ -48,15 +53,19 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <View style={[styles.field, { backgroundColor: theme.surface, borderColor: nameError ? theme.danger : theme.border }]}>
         <Text style={[styles.label, { color: theme.muted }]}>{lang.items.nameLabel}</Text>
         <TextInput
           value={name}
-          onChangeText={setName}
+          onChangeText={(value) => {
+            setName(value);
+            if (nameError && value.trim()) setNameError(false);
+          }}
           placeholder={lang.items.namePlaceholder}
           placeholderTextColor={theme.muted}
           style={[styles.input, { color: theme.color }]}
         />
+        {nameError && <Text style={[styles.error, { color: theme.danger }]}>{lang.items.nameRequired}</Text>}
       </View>
 
       <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -130,6 +139,10 @@ const styles = StyleSheet.create({
   input: {
     fontSize: 16,
     paddingVertical: 4,
+  },
+  error: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   colorRow: {
     flexDirection: 'row',
