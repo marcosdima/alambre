@@ -70,6 +70,10 @@ The graphic primitives (`base/Circle` and `base/Line`, plus the animated utiliti
 
 > Forward note: a future layer of common defaults and styling may live in a "Base Native"/"Base Template" layer once that layer is definitively defined. This decision does not introduce it.
 
+### `TimePicker`: provisional presentation exception
+
+`TimePicker` ships as a framework input with a **themeable `accentColor`** (the application controls the accent exactly like other themable surfaces) but its remaining presentation — arrow glyphs, row typography and sizes, wheel dimensions and spacing, the inactive-label color, and the default accent hex — is **hardcoded in the framework**. This is a provisional exception while the input's design discipline is settled; the default accent currently mirrors the reference app's primary color, which is application presentation leaking in and should be revisited when the input becomes presentation-agnostic (e.g. presentation moved to the consumer via style/theme props or a composed wrapper).
+
 ---
 
 ## 3. Base contracts: passthroughs were not retained
