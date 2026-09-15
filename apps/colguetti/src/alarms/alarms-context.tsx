@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { createCollectionProvider, type UseCollectionType } from 'alambre';
+import { createCollectionProvider } from 'alambre';
 import { asyncStorageRaw } from '../storage/async';
 import { toAlambreStorage } from '../storage/alambre-storage';
 import { createId } from '../utils/id';
@@ -24,7 +24,7 @@ export const AlarmsProvider = ({ children }: { children: ReactNode }) => (
 );
 
 export const useAlarms = (): UseAlarmsReturn => {
-  const value = useValue() as unknown as UseCollectionType<Alarm>;
+  const value = useValue();
 
   return useMemo(
     () => ({

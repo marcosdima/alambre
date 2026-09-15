@@ -10,7 +10,7 @@ import type { NavigatorTypes } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from './RouteIntent';
-import { pages, type AppPage, type PageTitle } from './navigator';
+import { pages, type PageTitle } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 
@@ -18,9 +18,7 @@ const resolvePageTitle = (
   page: NavigatorTypes.Page,
   editing: boolean,
 ): PageTitle | undefined => {
-  const appPages = pages as unknown as Record<string, AppPage>;
-
-  for (const entry of Object.values(appPages)) {
+  for (const entry of Object.values(pages)) {
     if (entry === page) return entry.title;
     if (entry.subpages) {
       for (const sub of Object.values(entry.subpages)) {
