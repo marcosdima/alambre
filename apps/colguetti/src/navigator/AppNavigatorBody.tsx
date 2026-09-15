@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
@@ -9,18 +9,15 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  FadeOutUp,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   withSpring,
-  runOnJS,
 } from 'react-native-reanimated';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 
 type AppNavigatorAnimations = {
   pageEntering?: EntryOrExitLayoutType;
-  pageExiting?: EntryOrExitLayoutType;
 };
 
 type AppNavigatorBodyProps = ComponentProps<typeof View> & {
@@ -38,9 +35,6 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   };
   useNavigator: () => NavigatorTypes.NavigatorReturn;
 };
-
-const EXIT_DURATION = 200;
-const EXIT_SLIDE = 40;
 
 export default ({
   style,
@@ -176,40 +170,9 @@ export default ({
   const enterAnimation = animationsSelected?.pageEntering
     ?? FadeInDown.duration(500).delay(350).easing(Easing.ease);
 
-  const prevPageKeyRef = useRef(pageKey);
-  const prevComponentRef = useRef<ReactNode>(currentPage.component);
-  const exitProgress = useSharedValue(0);
-  const exitMultiplier = useSharedValue(0);
-  const [transitioningPage, setTransitioningPage] = useState<ReactNode | null>(null);
-
-  const prevPageKey = prevPageKeyRef.current;
-  const prevComponent = prevComponentRef.current;
-  const navigationDetected = prevPageKey !== pageKey;
-
   useEffect(() => {
-    if (!navigationDetected) return;
-    const dir = isReturningRef.current ? 'return' : 'go';
     isReturningRef.current = false;
-    setTransitioningPage(prevComponent);
-    exitMultiplier.value = dir === 'go' ? -1 : 1;
-    exitProgress.value = 0;
-    exitProgress.value = withTiming(
-      1,
-      { duration: EXIT_DURATION, easing: Easing.in(Easing.cubic) },
-      (finished) => {
-        if (finished) runOnJS(setTransitioningPage)(null);
-      },
-    );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageKey]);
-
-  prevPageKeyRef.current = pageKey;
-  prevComponentRef.current = currentPage.component;
-
-  const exitOverlayStyle = useAnimatedStyle(() => ({
-    opacity: 1 - exitProgress.value,
-    transform: [{ translateX: exitMultiplier.value * EXIT_SLIDE * exitProgress.value }],
-  }));
 
   return (
     <View
@@ -220,7 +183,6 @@ export default ({
         <Animated.View
           key="page-header"
           entering={FadeInDown.duration(240).delay(60).easing(Easing.out(Easing.cubic))}
-          exiting={FadeOutUp.duration(200).easing(Easing.in(Easing.cubic))}
           style={[styles.header, headerStyle]}
           pointerEvents="box-none"
         >
@@ -265,15 +227,6 @@ export default ({
           {arrowButton}
         </Animated.View>
       )}
-
-      {transitioningPage && (
-        <Animated.View
-          style={[styles.exitOverlay, exitOverlayStyle]}
-          pointerEvents="none"
-        >
-          {transitioningPage}
-        </Animated.View>
-      )}
     </View>
   );
 };
@@ -315,12 +268,5 @@ const styles = StyleSheet.create({
   iconBody: {
     width: 28,
     height: 28,
-  },
-  exitOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
 });
