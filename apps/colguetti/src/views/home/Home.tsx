@@ -15,6 +15,7 @@ import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import { ItemIcon } from '../../items/icon-catalog';
+import LetterReveal from '../../components/LetterReveal';
 
 const iconAnimation = {
   drawAnimation: (value: number) => withTiming(value, {
@@ -215,7 +216,7 @@ export default () => {
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.hero, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
+        <LetterReveal key={lang.home.title} text={lang.home.title} style={{ color: theme.color }} />
         <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
       </View>
 
