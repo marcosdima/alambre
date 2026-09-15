@@ -186,7 +186,13 @@ export default ({
       {...props}
     >
       {headerMode && (
-        <View style={[styles.header, headerStyle]} pointerEvents="box-none">
+        <Animated.View
+          key="page-header"
+          entering={FadeInDown.duration(240).delay(60).easing(Easing.out(Easing.cubic))}
+          exiting={FadeOutUp.duration(200).easing(Easing.in(Easing.cubic))}
+          style={[styles.header, headerStyle]}
+          pointerEvents="box-none"
+        >
           <Animated.View
             style={[styles.arrowSlot, pillBorder, animatedStyle]}
             pointerEvents={noPreviousPages ? 'none' : 'auto'}
@@ -196,12 +202,12 @@ export default ({
           <Animated.Text
             key={headerTitle}
             style={[styles.headerTitle, { color: titleColor }]}
-            entering={FadeIn.duration(200)}
+            entering={FadeIn.duration(180)}
             numberOfLines={1}
           >
             {headerTitle}
           </Animated.Text>
-        </View>
+        </Animated.View>
       )}
 
       <ScrollView

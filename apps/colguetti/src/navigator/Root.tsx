@@ -58,12 +58,12 @@ export default () => {
         headerTitle={headerTitle}
         animations={{
           go: {
-            pageExiting: FadeOutLeft.duration(180).easing(Easing.in(Easing.cubic)),
-            pageEntering: FadeInRight.duration(260).delay(180).easing(Easing.out(Easing.cubic)),
+            pageExiting: FadeOutLeft.duration(200).easing(Easing.in(Easing.cubic)),
+            pageEntering: FadeInRight.duration(280).delay(90).easing(Easing.out(Easing.cubic)),
           },
           return: {
-            pageExiting: FadeOutRight.duration(180).easing(Easing.in(Easing.cubic)),
-            pageEntering: FadeInLeft.duration(260).delay(180).easing(Easing.out(Easing.cubic)),
+            pageExiting: FadeOutRight.duration(200).easing(Easing.in(Easing.cubic)),
+            pageEntering: FadeInLeft.duration(280).delay(90).easing(Easing.out(Easing.cubic)),
           },
         }}
         useNavigator={useNavigator}
