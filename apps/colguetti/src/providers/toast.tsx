@@ -4,7 +4,6 @@ import type { ToastComponentProps } from 'alambre';
 import { useNavigator } from 'alambre';
 import { useLightDark } from './theme';
 import { AlambreIcons } from 'alambre';
-import AppTitle from '../components/AppTitle';
 import Animated, {
   Easing,
   FadeInDown,
@@ -161,7 +160,7 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
               }
             </View>
 
-            <AppTitle style={[styles.title, { color: toneColor }]}>{title}</AppTitle>
+            <Text numberOfLines={1} style={[styles.title, { color: toneColor }]}>{title}</Text>
           </View>
 
           <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>
@@ -241,6 +240,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
+    lineHeight: 24,
   },
   closeButton: {
     width: 28,
@@ -257,6 +257,7 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 13,
     lineHeight: 18,
+    marginLeft: 32,
   },
   progressTrack: {
     width: '100%',
