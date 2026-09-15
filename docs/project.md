@@ -239,7 +239,4 @@ The second requires discussion.
 Items intentionally left for a future implementation, kept here so they are not lost:
 
 * **Alarm applies without awaiting "I'm leaving"** — an alarm scheduled today should fire and apply its routine without requiring the "I'm leaving" confirmation first. Deferred to a future implementation (product behavior, not a bug).
-
-Resolved:
-
-* **Toast with actions in `alambre`** — implemented as an additive capability (`ToastProvider` + `RegisterToast.actions`), shipped in commit `77b4efe` and validated by `apps/colguetti`: destructive confirmations now use a persistent confirmation toast instead of the in-app `ConfirmDialog` (which was removed).
+* **Toast with actions in `alambre`** — confirmation-by-toast would require adding action buttons (e.g. confirm/cancel) to the framework's `ToastProvider`. Deferred as an additive `alambre` capability, to be validated when a reusable need appears. In the meantime, destructive confirmations use an in-app dialog in `apps/colguetti`.
