@@ -7,10 +7,10 @@ import { AlambreIcons } from 'alambre';
 import AppTitle from '../components/AppTitle';
 import Animated, {
   Easing,
+  FadeInDown,
   FadeOutUp,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { useEffect, useMemo, useState } from 'react';
@@ -82,7 +82,6 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
   const title = payload.title ?? tone.toUpperCase();
   const content = payload.content ?? '';
   const progress = useSharedValue(0);
-  const entrance = useSharedValue(0);
   const [shouldDrawIcon, setShouldDrawIcon] = useState(false);
   const toneColor = toneStyles[tone];
 
@@ -115,22 +114,8 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
     return () => clearTimeout(timer);
   }, [data.id]);
 
-  useEffect(() => {
-    entrance.value = 0;
-    entrance.value = withSpring(1, {
-      damping: 15,
-      stiffness: 140,
-      mass: 0.6,
-    });
-  }, [data.id, entrance]);
-
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
-  }));
-
-  const entranceStyle = useAnimatedStyle(() => ({
-    opacity: entrance.value,
-    transform: [{ translateY: (1 - entrance.value) * SLIDE_FROM }],
   }));
 
   const iconProps = {
@@ -145,14 +130,20 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
       pointerEvents='box-none'
     >
       <Animated.View
+        key={data.id}
         style={[
           styles.card,
-          entranceStyle,
           {
             backgroundColor: theme.surface,
             borderColor: toneColor,
           },
         ]}
+        entering={FadeInDown
+          .springify()
+          .damping(15)
+          .stiffness(140)
+          .mass(0.6)
+          .withInitialValues({ opacity: 0, transform: [{ translateY: SLIDE_FROM }] })}
         exiting={FadeOutUp.duration(240).easing(Easing.in(Easing.cubic))}
       >
         <View style={[styles.accentBar, { backgroundColor: toneColor }]} />
