@@ -18,12 +18,3 @@ export const parseTimeValue = (value: string): TimeParts => {
 
 export const formatTimeValue = (parts: TimeParts): string =>
   `${pad2(parts.hours)}:${pad2(parts.minutes)}`;
-
-export const clampIndex = (index: number, length: number): number =>
-  Math.min(length - 1, Math.max(0, index));
-
-export const indexFromOffset = (
-  offsetY: number,
-  itemHeight: number,
-  leadingPadding = 0,
-): number => Math.round((offsetY - leadingPadding) / itemHeight);

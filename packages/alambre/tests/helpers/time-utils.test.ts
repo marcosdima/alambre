@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   HOUR_RANGE,
   MINUTE_RANGE,
-  clampIndex,
   formatTimeValue,
-  indexFromOffset,
   pad2,
   parseTimeValue,
 } from '../../src/components/time/time-utils';
@@ -37,27 +35,5 @@ describe('time-utils', () => {
 
   it('formats parts back to a clock value', () => {
     expect(formatTimeValue({ hours: 8, minutes: 5 })).toBe('08:05');
-  });
-
-  it('clamps indexes to the range', () => {
-    expect(clampIndex(-3, 24)).toBe(0);
-    expect(clampIndex(40, 24)).toBe(23);
-    expect(clampIndex(5, 24)).toBe(5);
-  });
-
-  it('derives the index from an offset', () => {
-    expect(indexFromOffset(0, 38)).toBe(0);
-    expect(indexFromOffset(190, 38)).toBe(5);
-    expect(indexFromOffset(189, 38)).toBe(5);
-    expect(indexFromOffset(191, 38)).toBe(5);
-  });
-
-  it('accounts for leading padding when deriving the index', () => {
-    const pad = 68;
-    expect(indexFromOffset(pad, 34, pad)).toBe(0);
-    expect(indexFromOffset(pad + 20 * 34, 34, pad)).toBe(20);
-    expect(indexFromOffset(pad + 20 * 34 - 16, 34, pad)).toBe(20);
-    expect(indexFromOffset(pad + 20 * 34 + 16, 34, pad)).toBe(20);
-    expect(indexFromOffset(pad + 20 * 34 + 17, 34, pad)).toBe(21);
   });
 });
