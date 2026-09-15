@@ -109,7 +109,7 @@ describe('ToastProvider', () => {
   });
 
   it('keeps a toast with actions active until acted on or dismissed', () => {
-    const { calls, getApi } = setup();
+    const { getApi } = setup();
     const onAction = vi.fn();
 
     act(() => getApi().show({
