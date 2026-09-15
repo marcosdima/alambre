@@ -16,6 +16,7 @@ import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import { ItemIcon } from '../../items/icon-catalog';
 import LetterReveal from '../../components/LetterReveal';
+import { weekdayNames } from '../../utils/weekday-names';
 
 const iconAnimation = {
   drawAnimation: (value: number) => withTiming(value, {
@@ -27,14 +28,6 @@ const iconAnimation = {
     easing: Easing.in(Easing.quad),
   }),
 };
-
-const weekdayNames = (weekdays: readonly number[], locale: string): string => {
-  const names = new Intl.DateTimeFormat(locale, { weekday: 'short' });
-  const byIndex = Array.from({ length: 7 }, (_, i) => names.format(new Date(2000, 0, 3 + i)));
-  return weekdays.map((d) => byIndex[d]).join(' ');
-};
-
-const formatTime = (time: string) => time;
 
 export default () => {
   const { theme } = useLightDark();
@@ -110,7 +103,7 @@ export default () => {
         style={[styles.pendingRow, { backgroundColor: theme.warning, borderColor: theme.warning }]}
       >
         <Text style={[styles.pendingLabel, { color: '#fff' }]}>
-          {lang.home.routinePendingTitle}: {pending.alarm.label} ({formatTime(pending.alarm.time)})
+          {lang.home.routinePendingTitle}: {pending.alarm.label} ({pending.alarm.time})
         </Text>
         <Text style={{ color: '#fff', fontWeight: '800' }}>{lang.home.routinePendingCta}</Text>
       </Pressable>
@@ -137,7 +130,7 @@ export default () => {
             style={[styles.routineOption, { borderColor: theme.border }]}
           >
             <Text style={[styles.routineOptionLabel, { color: theme.color }]}>{alarm.label}</Text>
-            <Text style={{ color: theme.muted }}>{formatTime(alarm.time)} · {lang.home.routineNow}</Text>
+            <Text style={{ color: theme.muted }}>{alarm.time} · {lang.home.routineNow}</Text>
           </Pressable>
         ))}
       </View>
@@ -154,7 +147,7 @@ export default () => {
         <View style={styles.routineHeader}>
           <View style={{ flex: 1 }}>
             <AppTitle style={[styles.routineTitle, { color: theme.color }]}>{routine.label}</AppTitle>
-            <Text style={{ color: theme.muted }}>{formatTime(routine.time)}</Text>
+            <Text style={{ color: theme.muted }}>{routine.time}</Text>
           </View>
           {success && (
             <View style={styles.tickBox}>
