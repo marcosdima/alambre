@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
@@ -7,7 +6,6 @@ import { useItems } from '../../items/items-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -15,20 +13,30 @@ export default () => {
   const { lang } = useLang();
   const { items, removeItem } = useItems();
   const { navigate } = useNavigator();
-  const { show } = useToast();
+  const { show, dismiss } = useToast();
   const { setIntent } = useRouteIntent();
-  const [toBeDeleted, setToBeDeleted] = useState<Item | null>(null);
 
   const openForm = (item?: Item) => {
     setIntent({ itemId: item?.id });
     navigate('items', { subpage: 'item-form' });
   };
 
-  const confirmDelete = async () => {
-    if (!toBeDeleted) return;
-    await removeItem(toBeDeleted.id);
+  const performDelete = async (item: Item) => {
+    await removeItem(item.id);
     show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
-    setToBeDeleted(null);
+  };
+
+  const requestDelete = (item: Item) => {
+    show({
+      payload: {
+        title: lang.common.confirmDeleteTitle,
+        content: lang.items.confirmDeleteMessage.replace('{name}', item.name),
+      },
+      actions: [
+        { label: lang.common.cancel, tone: 'primary', onPress: () => dismiss() },
+        { label: lang.common.confirm, tone: 'danger', onPress: () => void performDelete(item) },
+      ],
+    });
   };
 
   return (
@@ -52,7 +60,7 @@ export default () => {
               </View>
               <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>{item.name}</Text>
               <Pressable
-                onPress={() => setToBeDeleted(item)}
+                onPress={() => requestDelete(item)}
                 hitSlop={10}
                 style={({ pressed }) => [
                   styles.delete,
@@ -72,16 +80,6 @@ export default () => {
           <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.items.add}</Text>
         </AppButton>
       </View>
-
-      <ConfirmDialog
-        visible={toBeDeleted !== null}
-        title={lang.common.confirmDeleteTitle}
-        message={lang.items.confirmDeleteMessage.replace('{name}', toBeDeleted?.name ?? '')}
-        confirmLabel={lang.common.confirm}
-        cancelLabel={lang.common.cancel}
-        onConfirm={confirmDelete}
-        onCancel={() => setToBeDeleted(null)}
-      />
     </View>
   );
 };

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable, Switch } from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
@@ -8,7 +7,6 @@ import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelReminder } from '../../notifications/sync';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 const formatTime = (time: string) => time;
@@ -18,9 +16,8 @@ export default () => {
   const { lang } = useLang();
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
   const { navigate } = useNavigator();
-  const { show } = useToast();
+  const { show, dismiss } = useToast();
   const { setIntent } = useRouteIntent();
-  const [toBeDeleted, setToBeDeleted] = useState<Alarm | null>(null);
   const now = new Date();
 
   const openForm = (alarm?: Alarm) => {
@@ -28,12 +25,23 @@ export default () => {
     navigate('alarms', { subpage: 'alarm-form' });
   };
 
-  const confirmDelete = async () => {
-    if (!toBeDeleted) return;
-    await removeAlarm(toBeDeleted.id);
-    void cancelReminder(toBeDeleted.id);
-    show({ payload: { title: lang.alarms.deleted, content: toBeDeleted.label, tone: 'success' }, duration: 3000 });
-    setToBeDeleted(null);
+  const performDelete = async (alarm: Alarm) => {
+    await removeAlarm(alarm.id);
+    void cancelReminder(alarm.id);
+    show({ payload: { title: lang.alarms.deleted, tone: 'success' }, duration: 3000 });
+  };
+
+  const requestDelete = (alarm: Alarm) => {
+    show({
+      payload: {
+        title: lang.common.confirmDeleteTitle,
+        content: lang.alarms.confirmDeleteMessage.replace('{name}', alarm.label),
+      },
+      actions: [
+        { label: lang.common.cancel, tone: 'primary', onPress: () => dismiss() },
+        { label: lang.common.confirm, tone: 'danger', onPress: () => void performDelete(alarm) },
+      ],
+    });
   };
 
   const weekdayLabels = lang.alarms.weekdays;
@@ -70,7 +78,7 @@ export default () => {
                   trackColor={{ true: theme.success, false: theme.border }}
                 />
                 <Pressable
-                  onPress={() => setToBeDeleted(alarm)}
+                  onPress={() => requestDelete(alarm)}
                   hitSlop={10}
                   style={({ pressed }) => [
                     styles.delete,
@@ -92,15 +100,6 @@ export default () => {
         </AppButton>
       </View>
 
-      <ConfirmDialog
-        visible={toBeDeleted !== null}
-        title={lang.common.confirmDeleteTitle}
-        message={lang.alarms.confirmDeleteMessage.replace('{name}', toBeDeleted?.label ?? '')}
-        confirmLabel={lang.common.confirm}
-        cancelLabel={lang.common.cancel}
-        onConfirm={confirmDelete}
-        onCancel={() => setToBeDeleted(null)}
-      />
     </View>
   );
 };

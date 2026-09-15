@@ -190,6 +190,40 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
           <Text style={[styles.content, { color: theme.color }]}>{content}</Text>
         ) : null}
 
+        {data.actions?.length ? (
+          <View style={styles.actions}>
+            {data.actions.map((action) => (
+              <Pressable
+                key={action.label}
+                onPress={() => {
+                  action.onPress?.();
+                  dismiss();
+                }}
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  {
+                    borderColor: action.tone === 'danger' ? theme.danger : theme.primary,
+                  },
+                  action.tone === 'danger' && { backgroundColor: theme.danger },
+                  pressed && styles.actionPressed,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.actionLabel,
+                    {
+                      color: action.tone === 'danger' ? theme.onPrimary : theme.primary,
+                      fontWeight: '700',
+                    },
+                  ]}
+                >
+                  {action.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
         {
           data.persistent
             ? undefined
@@ -266,6 +300,26 @@ const styles = StyleSheet.create({
   content: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 2,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  actionPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  actionLabel: {
+    fontSize: 14,
   },
   progressTrack: {
     width: '100%',
