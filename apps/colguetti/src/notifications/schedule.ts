@@ -55,19 +55,8 @@ export const buildDesiredSchedule = (alarms: Alarm[]): ScheduledAlarm[] => {
   return desired;
 };
 
-export const toEntries = (desired: ScheduledAlarm[]): StoredScheduleEntry[] => (
-  desired.map(({ alarmId, weekday, hour, minute, label }) => ({
-    id: scheduleId(alarmId, weekday),
-    alarmId,
-    weekday,
-    hour,
-    minute,
-    label,
-  }))
-);
-
-const sameTime = (entry: StoredScheduleEntry, d: ScheduledAlarm): boolean => (
-  entry.hour === d.hour && entry.minute === d.minute
+const sameSchedule = (entry: StoredScheduleEntry, d: ScheduledAlarm): boolean => (
+  entry.hour === d.hour && entry.minute === d.minute && entry.label === d.label
 );
 
 export type ScheduleDiff = {
@@ -86,7 +75,7 @@ export const diffSchedules = (
   for (const d of desired) {
     const id = scheduleId(d.alarmId, d.weekday);
     const current = storedById.get(id);
-    if (!current || !sameTime(current, d)) {
+    if (!current || !sameSchedule(current, d)) {
       toSchedule.push({ id, alarmId: d.alarmId, weekday: d.weekday, hour: d.hour, minute: d.minute, label: d.label });
     }
     storedById.delete(id);
