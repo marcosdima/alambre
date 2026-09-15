@@ -7,7 +7,7 @@ import reactNative from 'eslint-plugin-react-native';
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/android/**', '**/.expo/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', '**/android/**', '**/.expo/**', '**/metro.config.js'],
   },
 
   js.configs.recommended,
@@ -57,7 +57,7 @@ export default [
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
 
       'react/jsx-uses-vars': 'error',
