@@ -5,7 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
-import { ItemIcon } from '../../items/icon-catalog';
+import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppButton from '../../components/AppButton';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
@@ -122,7 +122,7 @@ export default () => {
           <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
         ) : (
           <View style={styles.itemsList}>
-            {items.map((item) => {
+            {items.map((item, index) => {
               const active = itemIds.includes(item.id);
               return (
                 <Pressable
@@ -138,7 +138,7 @@ export default () => {
                   ]}
                 >
                   <View style={styles.itemIcon}>
-                    <ItemIcon icon={item.icon} color={active ? theme.primary : theme.muted} lineWidth={5} />
+                    <ItemIcon icon={item.icon} color={active ? theme.primary : theme.muted} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
                   </View>
                   <Text style={[styles.itemName, { color: active ? theme.primary : theme.color }]} numberOfLines={1}>
                     {item.name}
