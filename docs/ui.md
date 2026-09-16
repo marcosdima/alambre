@@ -55,7 +55,7 @@ Following `docs/architecture.md` section 6, the framework no longer ships opinio
 
 The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre**, but no longer impose a concrete application's presentation:
 
-* `color` is required (no hard-coded `black`/`orange`/`gray` strokes and fills); optional `fill` is accepted where the shape supports it.
+* `color` is required (no hard-coded `black`/`orange`/`gray` strokes and fills); optional `fill` is accepted where the shape supports it. The base `Circle` defaults to `fill: 'none'` so strokes always stay outlines, and `Sun` defaults its fill to amber `#fbbf24` — both are overridable via `fill`, never baked into the framework as identity.
 * Animation timing and behavior are driven by the `iconAnimation` configuration (the same `drawAnimation`/`resetAnimation` contract used by the base primitives), not by fixed durations inside the icon.
 * Removed non-reproducible randomness (e.g. `Moon`'s random stroke offsets) and fixed viewport defaults that were presentation choices.
 * Geometry (the shape itself) stays: a tick is a tick. Shapes are a concept, not application identity.
@@ -64,15 +64,15 @@ The concrete icons (`Sun`, `Moon`, `Arrow`, `Cross`, `Tick`) **remain in alambre
 
 * The icon layer (base primitives and concrete icons) is covered by contract tests in `packages/alambre/tests/components/icons-base.test.tsx` and `packages/alambre/tests/components/icons.test.tsx` (draw/reset, `strokeOffset`, `rotation`, `iconAnimation`, geometry and fill).
 
-The graphic primitives (`base/Circle` and `base/Line`, plus the animated utilities used by them) remain as generic drawing infrastructure.
-
-> `base/Path` was removed from the framework: it was an orphaned public primitive with no internal or external consumer, never validated, and its implementation did not follow the shared drawing contract used by `Circle` and `Line` (it hard-coded its own timing and relied on native path measurement). Removing it is consistent with the abstraction criteria (no artificial consumer, no unvalidated public surface).
+The graphic primitives (`base/Circle`, `base/Line` and `base/Path`, plus the animated utilities used by them) remain as generic drawing infrastructure. `base/Path` was re-introduced to draw curved shapes (catalog icons) with the same drawing contract as the other primitives: `pathLength` is normalized to `1` with `strokeDasharray: 1` so the draw animation follows the shared `useIconAnimation` contract instead of native path measurement; `strokeDasharray` scales with `rotation` around the origin exactly like `Circle`/`Line`.
 
 > Forward note: a future layer of common defaults and styling may live in a "Base Native"/"Base Template" layer once that layer is definitively defined. This decision does not introduce it.
 
 ### `TimePicker`: provisional presentation exception
 
 `TimePicker` ships as a framework input with a **themeable `accentColor`** (the application controls the accent exactly like other themable surfaces) but its remaining presentation — arrow glyphs, row typography and sizes, wheel dimensions and spacing, the inactive-label color, and the default accent hex — is **hardcoded in the framework**. This is a provisional exception while the input's design discipline is settled; the default accent currently mirrors the reference app's primary color, which is application presentation leaking in and should be revisited when the input becomes presentation-agnostic (e.g. presentation moved to the consumer via style/theme props or a composed wrapper).
+
+`visibleCount` currently defaults to `3` (previous / current / next value visible) with increment/decrement arrows and wrap-around at range edges. A scroll wheel with momentum and snap is deferred; the fixed-tap viewport avoids nested-scroll and layout-jump issues with a reasonable UX while the scroll contract is understood.
 
 ---
 
