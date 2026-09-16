@@ -39,6 +39,8 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
+    expect(typeof Alambre.ConfirmProvider).toBe('function');
+    expect(typeof Alambre.useConfirm).toBe('function');
     expect(typeof Alambre.createStorage).toBe('function');
     expect(typeof Alambre.getJson).toBe('function');
     expect(typeof Alambre.setJson).toBe('function');
@@ -111,11 +113,17 @@ describe('public API — type surface', () => {
       next: () => undefined,
       queueLength: 0,
     };
+    const confirmComponentProps: Alambre.ConfirmComponentProps = {
+      confirm: { title: 'Sure?', confirmLabel: 'Delete' },
+      onConfirm: () => undefined,
+      onCancel: () => undefined,
+    };
     const page: Alambre.NavigatorTypes.Page = { component: null };
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
     expect(toastComponentProps).toBeDefined();
+    expect(confirmComponentProps).toBeDefined();
     expect(page).toBeDefined();
   });
 

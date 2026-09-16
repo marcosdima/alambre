@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
-import { useNavigator, useToast } from 'alambre';
+import { useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -8,7 +7,6 @@ import { useAlarms } from '../../alarms/alarms-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
-import ConfirmDialog from '../../components/ConfirmDialog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -18,40 +16,43 @@ export default () => {
   const { alarms, updateAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { show } = useToast();
+  const { confirm } = useConfirm();
   const { setIntent } = useRouteIntent();
-  const [toBeDeleted, setToBeDeleted] = useState<Item | null>(null);
 
   const openForm = (item?: Item) => {
     setIntent({ itemId: item?.id });
     navigate('items', { subpage: 'item-form' });
   };
 
-  const affectedAlarms = toBeDeleted
-    ? alarms.filter((alarm) => alarm.itemIds.includes(toBeDeleted.id))
-    : [];
+  const tryDelete = async (item: Item) => {
+    const affectedAlarms = alarms.filter((alarm) => alarm.itemIds.includes(item.id));
+    const message = affectedAlarms.length > 0
+      ? lang.items.confirmDeleteWithAlarms
+        .replace('{name}', item.name)
+        .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
+      : lang.items.confirmDeleteMessage.replace('{name}', item.name);
 
-  const confirmDelete = async () => {
-    if (!toBeDeleted) return;
-    const target = toBeDeleted;
+    const ok = await confirm({
+      title: lang.common.confirmDeleteTitle,
+      message,
+      confirmLabel: lang.common.confirm,
+      cancelLabel: lang.common.cancel,
+      tone: 'danger',
+    });
+    if (!ok) return;
+
     await Promise.all(
       alarms
-        .filter((alarm) => alarm.itemIds.includes(target.id))
+        .filter((alarm) => alarm.itemIds.includes(item.id))
         .map((alarm) =>
           updateAlarm(alarm.id, {
-            itemIds: alarm.itemIds.filter((id) => id !== target.id),
+            itemIds: alarm.itemIds.filter((id) => id !== item.id),
           }),
         ),
     );
-    await removeItem(target.id);
+    await removeItem(item.id);
     show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
-    setToBeDeleted(null);
   };
-
-  const deleteMessage = affectedAlarms.length > 0
-    ? lang.items.confirmDeleteWithAlarms
-      .replace('{name}', toBeDeleted?.name ?? '')
-      .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
-    : lang.items.confirmDeleteMessage.replace('{name}', toBeDeleted?.name ?? '');
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -74,7 +75,7 @@ export default () => {
               </View>
               <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>{item.name}</Text>
               <Pressable
-                onPress={() => setToBeDeleted(item)}
+                onPress={() => void tryDelete(item)}
                 hitSlop={10}
                 style={({ pressed }) => [
                   styles.delete,
@@ -94,16 +95,6 @@ export default () => {
           <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.items.add}</Text>
         </AppButton>
       </View>
-
-      <ConfirmDialog
-        visible={toBeDeleted !== null}
-        title={lang.common.confirmDeleteTitle}
-        message={deleteMessage}
-        confirmLabel={lang.common.confirm}
-        cancelLabel={lang.common.cancel}
-        onConfirm={confirmDelete}
-        onCancel={() => setToBeDeleted(null)}
-      />
     </View>
   );
 };

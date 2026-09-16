@@ -3,9 +3,10 @@ import { ConfigProvider } from './src/providers/config';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LangProvider } from './src/providers/lang';
 import Root from './src/navigator/Root';
-import { NavigatorProvider, ToastProvider } from 'alambre';
+import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { ColguettiToast } from './src/providers/toast';
+import ConfirmDialog from './src/components/ConfirmDialog';
 import { RouteIntentProvider } from './src/navigator/RouteIntent';
 import { ItemsProvider } from './src/items/items-context';
 import { AlarmsProvider } from './src/alarms/alarms-context';
@@ -24,9 +25,11 @@ export default function App() {
                   <ConfirmationsProvider>
                     <ActivationProvider>
                       <NavigatorProvider pages={navigator}>
-                        <ToastProvider ToastComponent={ColguettiToast}>
-                          <Root />
-                        </ToastProvider>
+                        <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                          <ToastProvider ToastComponent={ColguettiToast}>
+                            <Root />
+                          </ToastProvider>
+                        </ConfirmProvider>
                       </NavigatorProvider>
                     </ActivationProvider>
                   </ConfirmationsProvider>

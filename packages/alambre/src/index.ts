@@ -11,6 +11,7 @@ export type { IconProps } from './types/icons';
 export type { UseCollectionType } from './capabilities/collection';
 
 export type { ToastComponentProps } from './behaviors';
+export type { ConfirmComponentProps } from './behaviors';
 
 // Capabilities.
 export {
@@ -23,7 +24,9 @@ export {
 // Behaviors.
 export {
   createApiProvider,
+  ConfirmProvider,
   NavigatorProvider,
+  useConfirm,
   useNavigator,
   ToastProvider,
   useToast,

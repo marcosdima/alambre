@@ -1,36 +1,29 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ConfirmComponentProps } from 'alambre';
 import { useLightDark } from '../providers/theme';
-
-type ConfirmDialogProps = {
-  visible: boolean;
-  title: string;
-  message: string;
-  confirmLabel: string;
-  cancelLabel: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-};
+import { useLang } from '../providers/lang';
 
 export default function ConfirmDialog({
-  visible,
-  title,
-  message,
-  confirmLabel,
-  cancelLabel,
+  confirm,
   onConfirm,
   onCancel,
-}: ConfirmDialogProps) {
+}: ConfirmComponentProps) {
   const { theme } = useLightDark();
+  const { lang } = useLang();
+  const danger = confirm.tone === 'danger';
+  const cancelLabel = confirm.cancelLabel ?? lang.common.cancel;
 
   return (
-    <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
+    <Modal transparent animationType="fade" visible onRequestClose={onCancel}>
       <Pressable style={[styles.backdrop, { backgroundColor: theme.overlay }]} onPress={onCancel}>
         <Pressable
           style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
           onPress={() => undefined}
         >
-          <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
-          <Text style={[styles.message, { color: theme.muted }]}>{message}</Text>
+          <Text style={[styles.title, { color: theme.color }]}>{confirm.title}</Text>
+          {confirm.message ? (
+            <Text style={[styles.message, { color: theme.muted }]}>{confirm.message}</Text>
+          ) : null}
           <View style={styles.actions}>
             <Pressable
               onPress={onCancel}
@@ -47,12 +40,11 @@ export default function ConfirmDialog({
               onPress={onConfirm}
               style={({ pressed }) => [
                 styles.button,
-                styles.danger,
-                { backgroundColor: theme.danger },
+                { backgroundColor: danger ? theme.danger : theme.primary },
                 pressed && styles.buttonPressed,
               ]}
             >
-              <Text style={{ color: theme.onPrimary, fontWeight: '700' }}>{confirmLabel}</Text>
+              <Text style={{ color: theme.onPrimary, fontWeight: '700' }}>{confirm.confirmLabel}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -98,9 +90,6 @@ const styles = StyleSheet.create({
   },
   ghost: {
     backgroundColor: 'transparent',
-  },
-  danger: {
-    borderWidth: 0,
   },
   buttonPressed: {
     opacity: 0.85,
