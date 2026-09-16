@@ -7,6 +7,7 @@ import { useLang } from '../providers/lang';
 import { useRouteIntent } from '../navigator/RouteIntent';
 import { useActivation } from '../checklist/activation-context';
 import { ACTIVATION_CATEGORY, syncSchedule } from './sync';
+import { EXPIRY_CATEGORY, SNOOZE_ACTION, SNOOZE_MINUTES } from './expiry';
 
 type AlarmIdData = { alarmId?: unknown; missing?: unknown };
 
@@ -18,9 +19,11 @@ export const NotificationsWatcher = () => {
   const { lang } = useLang();
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
-  const { activate } = useActivation();
+  const { active, activate, snooze } = useActivation();
 
   const alarmsRef = useRef(alarms);
+  const activeRef = useRef(active);
+  const processedRef = useRef(new Set<string>());
   const bodyForRef = useRef<(label: string) => string>(
     () => lang.home.activateBody,
   );
@@ -28,6 +31,9 @@ export const NotificationsWatcher = () => {
   useEffect(() => {
     alarmsRef.current = alarms;
   }, [alarms]);
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
   useEffect(() => {
     bodyForRef.current = (label: string) =>
       lang.home.activateBody.replace(INVITE_BODY, label);
@@ -48,10 +54,28 @@ export const NotificationsWatcher = () => {
       const { missing } = data;
       const { alarmId } = data;
 
+      const responseKey = `${response.notification.request.identifier}:${response.actionIdentifier}`;
+      if (processedRef.current.has(responseKey)) return;
+      processedRef.current.add(responseKey);
+
       if (response.actionIdentifier === ACTIVATE_ACTION && typeof alarmId === 'string') {
         const alarm = alarmsRef.current.find((current) => current.id === alarmId);
         if (alarm) {
           void activate(alarm);
+        }
+        dismiss(response);
+        navigate('home');
+        return;
+      }
+
+      if (response.actionIdentifier === SNOOZE_ACTION && typeof alarmId === 'string') {
+        const alarm = alarmsRef.current.find((current) => current.id === alarmId);
+        if (alarm) {
+          if (activeRef.current?.alarmId === alarmId) {
+            void snooze(SNOOZE_MINUTES);
+          } else {
+            void activate(alarm);
+          }
         }
         dismiss(response);
         navigate('home');
@@ -64,7 +88,7 @@ export const NotificationsWatcher = () => {
         navigate('home');
       }
     },
-    [navigate, setIntent, activate, dismiss],
+    [navigate, setIntent, activate, snooze, dismiss],
   );
 
   useEffect(() => {
@@ -84,6 +108,14 @@ export const NotificationsWatcher = () => {
         {
           identifier: ACTIVATE_ACTION,
           buttonTitle: lang.home.activate,
+          options: { opensAppToForeground: true },
+        },
+      ]).catch(() => undefined);
+
+      await Notifications.setNotificationCategoryAsync(EXPIRY_CATEGORY, [
+        {
+          identifier: SNOOZE_ACTION,
+          buttonTitle: lang.home.snoozeCta,
           options: { opensAppToForeground: true },
         },
       ]).catch(() => undefined);

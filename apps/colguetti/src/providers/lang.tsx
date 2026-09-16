@@ -30,6 +30,9 @@ export const langs = {
       routineNoItems: 'Esta rutina no tiene ítems. ¡Nada que olvidar!',
       routineCta: 'Todo listo, me voy',
       routineConfirmed: '¡Listo! No olvidaste nada.',
+      snooze: 'Posponer',
+      snoozeCta: 'Posponer 10 min',
+      snoozed: 'Ventana extendida 10 min',
     },
     items: {
       title: 'Mis ítems',
@@ -104,6 +107,9 @@ export const langs = {
       routineNoItems: 'This routine has no items. Nothing to forget!',
       routineCta: 'All set, I\'m leaving',
       routineConfirmed: 'All set! You forgot nothing.',
+      snooze: 'Snooze',
+      snoozeCta: 'Snooze 10 min',
+      snoozed: 'Window extended 10 min',
     },
     items: {
       title: 'My items',

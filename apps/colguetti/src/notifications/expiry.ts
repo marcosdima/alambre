@@ -2,6 +2,10 @@ import * as Notifications from 'expo-notifications';
 
 export const expiryNotificationId = (alarmId: string): string => `colguetti-expiry-${alarmId}`;
 
+export const SNOOZE_MINUTES = 10;
+export const SNOOZE_ACTION = 'snooze';
+export const EXPIRY_CATEGORY = 'expiry';
+
 export const scheduleExpiryReminder = async (
   alarmId: string,
   at: Date,
@@ -18,6 +22,7 @@ export const scheduleExpiryReminder = async (
       title,
       body,
       data: { alarmId, kind: 'expiry', missing },
+      categoryIdentifier: EXPIRY_CATEGORY,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,

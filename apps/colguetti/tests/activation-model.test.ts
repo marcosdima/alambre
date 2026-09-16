@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createActiveRoutine,
+  extendExpiry,
   isExpired,
   missingItemNames,
   remainingMs,
@@ -63,6 +64,21 @@ describe('remainingMs', () => {
 
   it('clamps to zero once expired', () => {
     expect(remainingMs(active, new Date(2026, 8, 14, 9, 0))).toBe(0);
+  });
+});
+
+describe('extendExpiry', () => {
+  it('pushes the deadline forward by the given minutes', () => {
+    const active: ActiveRoutine = {
+      alarmId: 'a1',
+      activatedAt: new Date(2026, 8, 14, 8, 30).toISOString(),
+      expiresAt: new Date(2026, 8, 14, 8, 40).toISOString(),
+    };
+
+    const extended = extendExpiry(active, 10);
+    expect(extended.expiresAt).toBe(new Date(2026, 8, 14, 8, 50).toISOString());
+    expect(extended.alarmId).toBe(active.alarmId);
+    expect(extended.activatedAt).toBe(active.activatedAt);
   });
 });
 

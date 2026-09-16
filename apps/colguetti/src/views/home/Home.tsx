@@ -11,7 +11,7 @@ import { useActivation } from '../../checklist/activation-context';
 import { isExpired, missingItemNames, remainingMs } from '../../checklist/activation-model';
 import { dayMatches, nextOccurrence, nextUpcoming } from '../../alarms/alarms-model';
 import { isConfirmedAfter } from '../../checklist/checklist-model';
-import { cancelAlarmAlerts, cancelExpiryReminder, cancelSuccessReminder, scheduleExpiryReminder, scheduleSuccessReminder } from '../../notifications/expiry';
+import { cancelAlarmAlerts, cancelExpiryReminder, cancelSuccessReminder, scheduleExpiryReminder, scheduleSuccessReminder, SNOOZE_MINUTES } from '../../notifications/expiry';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
@@ -55,7 +55,7 @@ export default () => {
   const { alarms } = useAlarms();
   const { items } = useItems();
   const { confirmations, confirm } = useConfirmations();
-  const { active, activate, deactivate } = useActivation();
+  const { active, activate, deactivate, snooze } = useActivation();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { intent, setIntent } = useRouteIntent();
@@ -202,6 +202,11 @@ export default () => {
     if (routine) setSuccess(true);
   };
 
+  const onSnooze = () => {
+    void snooze(SNOOZE_MINUTES);
+    show({ payload: { title: lang.home.snoozed }, duration: 2000 });
+  };
+
   const renderMissed = () => {
     if (!missed) return null;
     return (
@@ -302,9 +307,14 @@ export default () => {
         </AppButton>
 
         {!success && (
-          <Pressable onPress={closeRoutine} style={{ alignSelf: 'center', paddingVertical: 6 }}>
-            <Text style={{ color: theme.muted }}>{lang.common.cancel}</Text>
-          </Pressable>
+          <View style={styles.routineActions}>
+            <Pressable onPress={onSnooze} style={styles.routineAction}>
+              <Text style={{ color: theme.primary }}>{lang.home.snooze}</Text>
+            </Pressable>
+            <Pressable onPress={closeRoutine} style={styles.routineAction}>
+              <Text style={{ color: theme.muted }}>{lang.common.cancel}</Text>
+            </Pressable>
+          </View>
         )}
       </View>
     );
@@ -473,5 +483,13 @@ const styles = StyleSheet.create({
   confirmLabel: {
     fontWeight: '800',
     fontSize: 16,
+  },
+  routineActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+  },
+  routineAction: {
+    paddingVertical: 6,
   },
 });
