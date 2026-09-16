@@ -112,7 +112,7 @@ export default function TimePicker({
   onChange,
   accentColor = DEFAULT_ACCENT,
   itemHeight = 34,
-  visibleCount = 5,
+  visibleCount = 3,
   style,
   testID,
 }: TimePickerProps) {
