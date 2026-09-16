@@ -4,7 +4,7 @@ import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
-import { ItemIcon } from '../../items/icon-catalog';
+import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { itemColors } from '../../items/items-model';
 import { itemIconKeys, type ItemIconKey } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
@@ -89,7 +89,7 @@ export default () => {
       <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.label, { color: theme.muted }]}>{lang.items.iconLabel}</Text>
         <View style={styles.iconGrid}>
-          {itemIconKeys.map((key) => (
+          {itemIconKeys.map((key, index) => (
             <Pressable
               key={key}
               onPress={() => setIcon(key)}
@@ -99,7 +99,7 @@ export default () => {
                 pressed && styles.selectionPressed,
               ]}
             >
-              <ItemIcon icon={key} color={color} lineWidth={5} />
+              <ItemIcon icon={key} color={color} lineWidth={2} delay={380 + index * 60} iconAnimation={catalogDrawAnimation} />
             </Pressable>
           ))}
         </View>

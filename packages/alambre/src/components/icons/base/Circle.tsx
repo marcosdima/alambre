@@ -33,6 +33,7 @@ export default (
   }, [draw, drawIt, reset, strokeOffset]);
 
   const modCircle: CircleProps = {
+    fill: 'none',
     ...circle,
     transform: `rotate(${rotation}, ${circle.cx}, ${circle.cy})`,
   };

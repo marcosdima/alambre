@@ -146,7 +146,7 @@ export default (
         [0, 1],
         [light.circle, dark.circle],
       ),
-      opacity: 0.4,
+      opacity: 0.22,
     };
   });
 

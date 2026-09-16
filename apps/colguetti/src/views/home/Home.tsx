@@ -16,7 +16,7 @@ import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
-import { ItemIcon } from '../../items/icon-catalog';
+import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import LetterReveal from '../../components/LetterReveal';
 import { weekdayNames } from '../../utils/weekday-names';
 
@@ -277,7 +277,7 @@ export default () => {
         {allItems === 0 ? (
           <Text style={{ color: theme.muted }}>{lang.home.routineNoItems}</Text>
         ) : (
-          routineItems.map((item) => {
+          routineItems.map((item, index) => {
             const checked = ticked[item.id];
             return (
               <Pressable
@@ -286,7 +286,7 @@ export default () => {
                 style={[styles.itemRow, { borderColor: theme.border, backgroundColor: checked ? theme.surfaceAlt : 'transparent' }]}
               >
                 <View style={styles.itemIcon}>
-                  <ItemIcon icon={item.icon} color={checked ? theme.success : theme.muted} lineWidth={5} />
+                  <ItemIcon icon={item.icon} color={checked ? theme.success : theme.muted} lineWidth={2} delay={index * 80} iconAnimation={catalogDrawAnimation} />
                 </View>
                 <Text style={[styles.itemName, { color: theme.color, textDecorationLine: checked ? 'line-through' : 'none' }]}>
                   {item.name}

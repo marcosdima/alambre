@@ -4,7 +4,7 @@ import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { useAlarms } from '../../alarms/alarms-context';
-import { ItemIcon } from '../../items/icon-catalog';
+import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
 import { useRouteIntent } from '../../navigator/RouteIntent';
@@ -60,7 +60,7 @@ export default () => {
         <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
       ) : (
         <View style={styles.list}>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <Pressable
               key={item.id}
               onPress={() => openForm(item)}
@@ -71,7 +71,7 @@ export default () => {
               ]}
             >
               <View style={styles.cardIcon}>
-                <ItemIcon icon={item.icon} color={item.color} lineWidth={5} />
+                <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
               </View>
               <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>{item.name}</Text>
               <Pressable

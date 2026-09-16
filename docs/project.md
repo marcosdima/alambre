@@ -271,3 +271,37 @@ Two capabilities were extracted from the reference application into `alambre`, o
 * **Confirm dialog behavior** — `ConfirmProvider`/`useConfirm` mirror the `ToastProvider` pattern: `confirm(request)` returns a promise resolved by the app-registered `ConfirmComponent` (`onConfirm` → `true`, `onCancel`/`dismiss` → `false`). `alambre` ships the blocking-confirmation concept; the look & feel stays in the app (`apps/colguetti/src/components/ConfirmDialog.tsx`), which also defaults the cancel label from the app language. This replaces the previous in-app `ConfirmDialog` wiring (one `useState` target + `visible` prop per view) in the delete flows of `Alarms` and `Items`.
 
 `apps/base-template` was rebuilt on these lessons (§2), removing its copies of the storage layer.
+
+---
+
+## 14. Aesthetic Cleanup Lot (feature/aesthetic-cleanup)
+
+A batch of visual refinements carried out on `feature/aesthetic-cleanup` before merging into `main`. The decisions are shared across the framework and both apps.
+
+### Sun fills amber, shapes stop filling black
+
+`base/` `Circle` defaults to `fill: 'none'` so strokes stay outlines; the SVG default (black fill) was leaking into composed shapes like the catalog icons. `Sun` now defaults `fill` to amber `#fbbf24` (overridable); a consumer can still supply `fill` to change it, but the framework no longer identity-paints.
+
+### `Path` primitive re-introduced with a shared drawing contract
+
+`base/` `Path` is restored as a valid icon primitive: `pathLength` is normalized to `1` and the draw animation uses `strokeDasharray: 1` via `useIconAnimation` — the same contract as `Circle` and `Line`. Rotation is relative to `(0, 0)` (consistent with the other primitives). This enables the catalog icons to draw arcs and smooth curves without native path measurement.
+
+### Catalog icons redesigned
+
+The nine catalog icons in `apps/colguetti/src/items/icon-catalog.tsx` were rewritten with `Circle`, `Line` and the new `Path` primitives, following the user-provided descriptions (argolla diagonal + perforated key, bifold wallet, smartphone with notch, folded document, umbrella + J-hook, water bottle with droplet, meds composition, charger with USB-C loop, backpack dome + pocket + straps).
+
+### TimePicker: `visibleCount` defaults to 3
+
+`visibleCount` changed from `5` to `3` (previous / current / next value visible) to keep the viewport compact while the increment/decrement arrows and wrap-around at range edges still cover all values. A scroll wheel with momentum and snap is deferred; the fixed-tap viewport avoids nested-scroll and layout-jump issues.
+
+### Toggle disc: per-theme colors, lower opacity
+
+The light/dark switcher's disc sits over a fixed-position background circle; its opacity was lowered to `0.22` so it no longer draws attention away from the icon underneath. The circle color is now **owned by the app** via a per-theme mapping: light `#0b525b`, dark `#9eebce`. Both `apps/colguetti/src/components/ToggleLightDark.tsx` and `apps/base-template/src/components/ToggleLightDark.tsx` share this presentation; `Settings.tsx` provides the per-theme circle hex. The framework has no opinion on the toggle's look.
+
+### Alarm count i18n
+
+The hard-coded `"{count} ítems"` string in `Alarms.tsx` moved into `lang.alarms.count` (with a fallback to `lang.alarms.itemsLabel` when the count is zero), keeping alarm rows fully localised.
+
+### Confirm: dead `resolve` field removed
+
+`Confirm` no longer carries the `resolve` callback: the state owns it in a ref. The public type stays `{ data: RegisterConfirm }`; `data` is the only visible field. This eliminates the unused leakage introduced when the confirm behavior was extracted.

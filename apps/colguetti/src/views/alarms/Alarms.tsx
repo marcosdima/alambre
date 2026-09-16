@@ -62,7 +62,9 @@ export default () => {
                   {display} · {alarm.weekdays.map((d) => weekdayLabels[d]).join(' ')}
                 </Text>
                 <Text style={[styles.meta, { color: theme.muted }]}>
-                  {alarm.itemIds.length ? `${alarm.itemIds.length} ítems` : lang.alarms.itemsLabel}
+                  {alarm.itemIds.length
+                    ? lang.alarms.count.replace('{count}', String(alarm.itemIds.length))
+                    : lang.alarms.itemsLabel}
                 </Text>
               </Pressable>
               <View style={styles.rowActions}>

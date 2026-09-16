@@ -8,6 +8,15 @@ export const itemIconKeys = [
   'meds',
   'charger',
   'backpack',
+  'laptop',
+  'headphones',
+  'glasses',
+  'book',
+  'shopping-bag',
+  'coffee',
+  'watch',
+  'gift',
+  'credit-card',
 ] as const;
 
 export type ItemIconKey = (typeof itemIconKeys)[number];
