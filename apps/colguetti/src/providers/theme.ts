@@ -1,5 +1,5 @@
 import { createLightDarkProvider } from 'alambre';
-import { getItem, saveItem } from '../utils/storage';
+import { storage } from '../storage';
 
 export const light = {
   color: '#1f2937',
@@ -33,11 +33,6 @@ export const dark = {
   danger: '#ff7b7b',
   overlay: 'rgba(2, 6, 14, 0.6)',
   overlayBar: 'rgba(148, 180, 255, 0.22)',
-};
-
-const storage = {
-  set: saveItem,
-  get: getItem,
 };
 
 export const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);

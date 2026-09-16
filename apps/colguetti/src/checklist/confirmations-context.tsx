@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { asyncStorageRaw } from '../storage/async';
-import { getJson, setJson } from '../storage/json-storage';
+import { storage } from '../storage';
+import { getJson, setJson } from 'alambre';
 import type { Confirmations } from './checklist-model';
 
 const CONFIRMATIONS_KEY = 'colguetti.confirmations';
@@ -25,7 +25,7 @@ export const ConfirmationsProvider = ({ children }: { children: ReactNode }) => 
 
   useEffect(() => {
     let mounted = true;
-    void getJson<Confirmations>(asyncStorageRaw, CONFIRMATIONS_KEY).then((stored) => {
+    void getJson<Confirmations>(storage, CONFIRMATIONS_KEY).then((stored) => {
       if (mounted) setConfirmations(stored ?? {});
     });
     return () => { mounted = false; };
@@ -34,7 +34,7 @@ export const ConfirmationsProvider = ({ children }: { children: ReactNode }) => 
   const confirm = useCallback(async (alarmId: string, at: Date = new Date()) => {
     setConfirmations((current) => {
       const next = { ...current, [alarmId]: at.toISOString() };
-      void setJson(asyncStorageRaw, CONFIRMATIONS_KEY, next);
+      void setJson(storage, CONFIRMATIONS_KEY, next);
       return next;
     });
   }, []);

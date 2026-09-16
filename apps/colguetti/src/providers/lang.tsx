@@ -1,5 +1,5 @@
 import { createLangProvider } from 'alambre';
-import { getItem, saveItem } from '../utils/storage';
+import { storage } from '../storage';
 
 export const langs = {
   es: {
@@ -156,11 +156,6 @@ export const langs = {
       theme: 'Theme',
     },
   },
-};
-
-const storage = {
-  set: saveItem,
-  get: getItem,
 };
 
 export const { LangProvider, useLang } = createLangProvider(langs, storage);

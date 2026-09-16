@@ -35,3 +35,14 @@ export * as AlambreIcons from './components/icons';
 // Input components.
 export { TimePicker } from './components/time';
 export type { TimePickerProps } from './components/time';
+
+// Storage.
+export { createStorage } from './storage';
+export type { RawStorage } from './storage';
+export {
+  getJson,
+  setJson,
+  removeJson,
+  readCollection,
+  writeCollection,
+} from './storage';

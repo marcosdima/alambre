@@ -1,13 +1,12 @@
 import { useMemo, type ReactNode } from 'react';
 import { createCollectionProvider } from 'alambre';
-import { asyncStorageRaw } from '../storage/async';
-import { toAlambreStorage } from '../storage/alambre-storage';
+import { storage } from '../storage';
 import { createId } from '../utils/id';
 import { withActiveWindowDefault } from './alarms-model';
 import type { Alarm, AlarmInput } from './alarm-types';
 
 const { Provider: AlarmsCollectionProvider, useValue } = createCollectionProvider<Alarm>({
-  storage: toAlambreStorage(asyncStorageRaw),
+  storage,
   storageKey: 'colguetti.alarms',
   hookName: 'Alarms',
 });

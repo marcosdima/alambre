@@ -1,37 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { createJsonStorage, getJson, setJson, removeJson } from '../src/storage/json-storage';
-import type { RawStorage } from '../src/storage/types';
+import { createStorage, getJson, setJson } from 'alambre';
 
-const createMemoryStorage = (): RawStorage => {
-  const store = new Map<string, string>();
-  return {
-    getItem: async (key) => store.get(key) ?? null,
-    setItem: async (key, value) => void store.set(key, value),
-    removeItem: async (key) => void store.delete(key),
-  };
-};
+describe('base-template storage wiring', () => {
+  it('boots a Storage from AsyncStorage-shaped bindings', async () => {
+    const map = new Map<string, string>();
+    const storage = createStorage({
+      getItem: async (key) => map.get(key) ?? null,
+      setItem: async (key, value) => { map.set(key, value); },
+      removeItem: async (key) => { map.delete(key); },
+    });
 
-describe('json-storage', () => {
-  it('round-trips JSON values', async () => {
-    const raw = createMemoryStorage();
-    const storage = createJsonStorage(raw);
-
-    await setJson(raw, 'todos', [{ id: '1', done: false }]);
-    expect(await getJson<Array<{ id: string; done: boolean }>>(raw, 'todos')).toEqual([
-      { id: '1', done: false },
-    ]);
-    expect(storage.getJson('todos')).resolves.toEqual([{ id: '1', done: false }]);
-  });
-
-  it('returns null for missing keys', async () => {
-    const raw = createMemoryStorage();
-    expect(await getJson(raw, 'missing')).toBeNull();
-  });
-
-  it('removes keys', async () => {
-    const raw = createMemoryStorage();
-    await setJson(raw, 'flag', true);
-    await removeJson(raw, 'flag');
-    expect(await getJson(raw, 'flag')).toBeNull();
+    await setJson(storage, 'todo', { ok: true });
+    await expect(getJson(storage, 'todo')).resolves.toEqual({ ok: true });
+    await expect(getJson(storage, 'missing')).resolves.toBeNull();
   });
 });

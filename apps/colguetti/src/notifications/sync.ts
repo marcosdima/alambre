@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
+import { readCollection, writeCollection } from 'alambre';
 import type { Alarm } from '../alarms/alarm-types';
-import { asyncStorageRaw } from '../storage/async';
-import { readCollection, writeCollection } from '../storage/collection';
+import { storage } from '../storage';
 import {
   buildDesiredSchedule,
   diffSchedules,
@@ -35,7 +35,7 @@ export const syncSchedule = async (
   alarms: Alarm[],
   bodyFor: (label: string) => string,
 ): Promise<void> => {
-  const stored = await readCollection<StoredScheduleEntry>(asyncStorageRaw, SCHEDULE_KEY);
+  const stored = await readCollection<StoredScheduleEntry>(storage, SCHEDULE_KEY);
   const desired = buildDesiredSchedule(alarms);
   const { toSchedule, toCancel } = diffSchedules(desired, stored);
 
@@ -54,9 +54,9 @@ export const syncSchedule = async (
     await Notifications.cancelScheduledNotificationAsync(entry.id).catch(() => undefined);
   }
 
-  const storedEntries = await readCollection<StoredScheduleEntry>(asyncStorageRaw, SCHEDULE_KEY);
+  const storedEntries = await readCollection<StoredScheduleEntry>(storage, SCHEDULE_KEY);
   await writeCollection(
-    asyncStorageRaw,
+    storage,
     SCHEDULE_KEY,
     mergeSchedule(storedEntries, actuallyScheduled, toCancel),
   );

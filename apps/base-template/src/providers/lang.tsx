@@ -1,6 +1,5 @@
 import { createLangProvider } from 'alambre';
-import { toAlambreStorage } from '../storage/alambre-storage';
-import { asyncStorageRaw } from '../storage/async';
+import { storage } from '../storage';
 
 const langs = {
   es: {
@@ -49,5 +48,5 @@ const langs = {
 
 export const { LangProvider, useLang } = createLangProvider(
   langs,
-  toAlambreStorage(asyncStorageRaw),
+  storage,
 );

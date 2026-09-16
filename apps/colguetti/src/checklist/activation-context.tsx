@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { asyncStorageRaw } from '../storage/async';
-import { getJson, removeJson, setJson } from '../storage/json-storage';
+import { storage } from '../storage';
+import { getJson, removeJson, setJson } from 'alambre';
 import { createActiveRoutine, extendExpiry, isExpired, type ActiveRoutine } from './activation-model';
 import type { Alarm } from '../alarms/alarm-types';
 
@@ -28,7 +28,7 @@ export const ActivationProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    void getJson<ActiveRoutine>(asyncStorageRaw, ACTIVE_ROUTINE_KEY).then((stored) => {
+    void getJson<ActiveRoutine>(storage, ACTIVE_ROUTINE_KEY).then((stored) => {
       if (!mounted) return;
       setActive(stored && !isExpired(stored) ? stored : null);
     });
@@ -38,19 +38,19 @@ export const ActivationProvider = ({ children }: { children: ReactNode }) => {
   const activate = useCallback(async (alarm: Alarm) => {
     const next = createActiveRoutine(alarm);
     setActive(next);
-    await setJson(asyncStorageRaw, ACTIVE_ROUTINE_KEY, next);
+    await setJson(storage, ACTIVE_ROUTINE_KEY, next);
   }, []);
 
   const deactivate = useCallback(async () => {
     setActive(null);
-    await removeJson(asyncStorageRaw, ACTIVE_ROUTINE_KEY);
+    await removeJson(storage, ACTIVE_ROUTINE_KEY);
   }, []);
 
   const snooze = useCallback(async (minutes: number) => {
     setActive((current) => {
       if (!current) return current;
       const next = extendExpiry(current, minutes);
-      void setJson(asyncStorageRaw, ACTIVE_ROUTINE_KEY, next);
+      void setJson(storage, ACTIVE_ROUTINE_KEY, next);
       return next;
     });
   }, []);

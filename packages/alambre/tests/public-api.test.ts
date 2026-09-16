@@ -39,6 +39,12 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
+    expect(typeof Alambre.createStorage).toBe('function');
+    expect(typeof Alambre.getJson).toBe('function');
+    expect(typeof Alambre.setJson).toBe('function');
+    expect(typeof Alambre.removeJson).toBe('function');
+    expect(typeof Alambre.readCollection).toBe('function');
+    expect(typeof Alambre.writeCollection).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 

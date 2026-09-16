@@ -1,6 +1,5 @@
 import { createLightDarkProvider } from 'alambre';
-import { toAlambreStorage } from '../storage/alambre-storage';
-import { asyncStorageRaw } from '../storage/async';
+import { storage } from '../storage';
 
 export const light = {
   color: '#1f2937',
@@ -29,5 +28,5 @@ export const dark = {
 export const { LightDarkProvider, useLightDark } = createLightDarkProvider(
   light,
   dark,
-  toAlambreStorage(asyncStorageRaw),
+  storage,
 );

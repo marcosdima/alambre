@@ -23,5 +23,8 @@ export const createMemoryStorage = (initial: Record<string, string> = {}): Stora
       setCalls.push([key, value]);
       data[key] = value;
     },
+    remove: async (key) => {
+      delete data[key];
+    },
   };
 };

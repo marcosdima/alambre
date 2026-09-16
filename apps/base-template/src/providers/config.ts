@@ -1,6 +1,5 @@
 import { createConfigProvider } from 'alambre';
-import { toAlambreStorage } from '../storage/alambre-storage';
-import { asyncStorageRaw } from '../storage/async';
+import { storage } from '../storage';
 
 const config = {
   greeting: 'Hello from alambre',
@@ -8,5 +7,5 @@ const config = {
 
 export const { ConfigProvider, useConfig } = createConfigProvider(
   config,
-  toAlambreStorage(asyncStorageRaw),
+  storage,
 );
