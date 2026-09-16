@@ -9,6 +9,8 @@ import type { IconProps } from '../../types/icons';
 
 const RAYS = 8;
 
+const DEFAULT_FILL = '#fbbf24';
+
 type SunProps = IconProps & {
   color: ColorValue;
   lineWidth: number;
@@ -32,9 +34,10 @@ export default (
     strokeWidth: lineWidth,
   };
 
-  const fillProps = fill
-    ? { fill, fillOpacity: drawIt ? 1 : 0 }
-    : {};
+  const fillProps = {
+    fill: fill ?? DEFAULT_FILL,
+    fillOpacity: drawIt ? 1 : 0,
+  };
 
   const circle = {
     circle: {

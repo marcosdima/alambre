@@ -227,7 +227,7 @@ describe('Sun', () => {
     const circles = circlesOf(toJSON());
     expect(circles).toHaveLength(1);
     expect(circles[0]).toMatchObject({ cx: 50, cy: 50, r: 23 });
-    expect(circles[0].fill).toBeUndefined();
+    expect(circles[0].fill).toBe('#fbbf24');
 
     const rays = linesOf(toJSON());
     expect(rays).toHaveLength(8);
@@ -256,10 +256,10 @@ describe('Sun', () => {
     expect(circlesOf(toJSON())[0].fill).toBe('gold');
   });
 
-  it('leaves fill undefined when not provided', async () => {
+  it('defaults the fill to a warm yellow', async () => {
     const { toJSON } = await renderIcon(<Sun color="#000" lineWidth={2} />);
 
-    expect(circlesOf(toJSON())[0].fill).toBeUndefined();
+    expect(circlesOf(toJSON())[0].fill).toBe('#fbbf24');
   });
 });
 
