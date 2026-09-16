@@ -37,6 +37,29 @@ export const NotificationsWatcher = () => {
     await syncSchedule(alarmsRef.current, bodyForRef.current);
   }, []);
 
+  const handleResponse = useCallback(
+    (response: Notifications.NotificationResponse) => {
+      const data = response.notification.request.content.data as AlarmIdData;
+      const { missing } = data;
+      const { alarmId } = data;
+
+      if (response.actionIdentifier === ACTIVATE_ACTION && typeof alarmId === 'string') {
+        const alarm = alarmsRef.current.find((current) => current.id === alarmId);
+        if (alarm) {
+          void activate(alarm);
+        }
+        navigate('home');
+        return;
+      }
+
+      if (typeof alarmId === 'string') {
+        setIntent(Array.isArray(missing) ? { alarmId, missing } : { alarmId });
+        navigate('home');
+      }
+    },
+    [navigate, setIntent, activate],
+  );
+
   useEffect(() => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -54,7 +77,7 @@ export const NotificationsWatcher = () => {
         {
           identifier: ACTIVATE_ACTION,
           buttonTitle: lang.home.activate,
-          options: { opensAppToForeground: false },
+          options: { opensAppToForeground: true },
         },
       ]).catch(() => undefined);
 
@@ -81,35 +104,13 @@ export const NotificationsWatcher = () => {
 
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const data = response.notification.request.content.data as AlarmIdData;
-        const { missing } = data;
-        const { alarmId } = data;
-
-        if (
-          response.actionIdentifier === ACTIVATE_ACTION &&
-          typeof alarmId === 'string'
-        ) {
-          const alarm = alarmsRef.current.find(
-            (current) => current.id === alarmId,
-          );
-          if (alarm) {
-            void activate(alarm);
-            navigate('home');
-          }
-          return;
-        }
-
-        if (typeof alarmId === 'string') {
-          setIntent(
-            Array.isArray(missing) ? { alarmId, missing } : { alarmId },
-          );
-          navigate('home');
-        }
-      },
+      handleResponse,
     );
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) handleResponse(response);
+    });
     return () => sub.remove();
-  }, [navigate, setIntent, activate]);
+  }, [handleResponse]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
