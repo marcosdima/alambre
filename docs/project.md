@@ -238,6 +238,24 @@ The second requires discussion.
 
 Items intentionally left for a future implementation, kept here so they are not lost:
 
-* **Alarm activation flow** — supersedes the old behavior where a scheduled alarm auto-applied its routine (the "I'm leaving" confirmation). Alarms now *propose* activation: the app offers the scheduled alarm with an explicit "Activate" button, starting a per-alarm activation window (default 10 min, 1–60, configured in the alarm form). The routine runs inside that window with a countdown and is closed when it expires. Persisted as `colguetti.activeRoutine`; confirmed routines still write a `confirmations` entry. In-app part is done (Phase 1); the notification layer (invitation text "¿Querés activarla?", tap-to-activate, and a "faltan objetos" expiry notification with a snapshot of unchecked items) is deferred (Phase 2+).
 * **Toast with actions in `alambre` (rejected for destructive confirmations)** — `ToastProvider` supports action buttons (`RegisterToast.actions`, added in commit `77b4efe`), but using them as a replacement for destructive confirmations in `apps/colguetti` was rejected: a confirmation is a blocking decision, while a toast is a transient, non-blocking affordance (progress bar, close button, non-modal overlay do not fit a decision the user must take). Destructive confirmations use the in-app `ConfirmDialog`. Revisit the capability only for non-destructive quick actions (e.g. undo).
 * **Alarm with no weekdays selected** — the alarm form treats weekdays as optional (validation only requires a name). The intended semantics for an alarm without days is a one-time alarm: it fires today and auto-disables after confirming. Not implemented yet because it touches the alarm model and the scheduler. Until decided and built, an alarm with no days simply never fires.
+
+---
+
+## 12. Reference App: Alarm Activation Flow
+
+`colguetti` alarms do not auto-start a routine when they fire. A scheduled alarm *proposes* activation: Home offers the day's pending alarms with an explicit "Activate" button, and the weekly notification only invites the user to open the app ("¿Querés activarla?").
+
+Activating starts a per-alarm activation window (default 10 min, 1–60, editable in the alarm form). The routine runs inside that window with a live countdown. The missing-items set is a snapshot of the items unchecked at activation; while the app is open, ticking items re-agendas the alert, and with the app closed the last snapshot stands.
+
+On expiry the routine closes and does not return until the next scheduled occurrence; confirming a closed routine no longer counts.
+
+The notification layer mirrors this:
+
+* Weekly invites carry an "Activar" action that opens the app onto the running routine.
+* When items are missing at expiry, an alert with the unchecked snapshot fires; its "Posponer 10 min" action extends the window (or re-opens the routine if it was already closed) and opens the app.
+* When everything was checked, a success alert fires instead.
+* Tapping an invite lands on the proposal; tapping the missed alert lands on the missed result so it can be re-activated.
+
+Routines persist as `colguetti.activeRoutine`; confirmed routines still write a `confirmations` entry. The snooze interval is fixed at 10 minutes and is not per-alarm.
