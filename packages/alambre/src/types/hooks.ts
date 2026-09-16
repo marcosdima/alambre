@@ -14,6 +14,7 @@ export type IconAnimationConfig = {
 
 export type UseIconAnimationReturn = {
   strokeOffestStyle: Partial<DashStyle>;
+  strokeOffsetStyle?: Partial<DashStyle>;
   reset: () => void;
   draw: (v: number) => void;
 };

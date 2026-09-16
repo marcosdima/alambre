@@ -142,7 +142,18 @@ describe('concrete icons — common contract', () => {
     );
     expect(drawAnimation).toHaveBeenCalledWith(expect.closeTo(42 * 0.2, 4));
   });
+
+  it('drives progress using drawAnimation during draw', async () => {
+    const drawAnimation = vi.fn((v: number) => v);
+    const resetAnimation = vi.fn((v: number) => v);
+
+    await renderIcon(
+      <Tick color="#000" lineWidth={2} iconAnimation={{ drawAnimation, resetAnimation }} />,
+    );
+    expect(drawAnimation).toHaveBeenCalledWith(1);
+  });
 });
+
 
 describe('Arrow', () => {
   beforeEach(clearBoxes);
@@ -198,6 +209,15 @@ describe('Cross', () => {
     expectStrokeState(pairs[0], Math.hypot(80, 80), 0, true);
     expectStrokeState(pairs[1], Math.hypot(80, 80), 0, true);
   });
+
+  it('forwards strokeOffset when provided', async () => {
+    await renderIcon(<Cross color="#000" lineWidth={2} strokeOffset={50} />);
+
+    const pairs = strokePairs();
+    expect(pairs).toHaveLength(2);
+    expectStrokeState(pairs[0], Math.hypot(80, 80), 50, true);
+    expectStrokeState(pairs[1], Math.hypot(80, 80), 50, true);
+  });
 });
 
 describe('Tick', () => {
@@ -217,6 +237,15 @@ describe('Tick', () => {
     expect(pairs).toHaveLength(2);
     expectStrokeState(pairs[0], Math.hypot(25, 30), 0, true);
     expectStrokeState(pairs[1], Math.hypot(55, 60), 0, true);
+  });
+
+  it('forwards strokeOffset when provided', async () => {
+    await renderIcon(<Tick color="#000" lineWidth={2} strokeOffset={30} />);
+
+    const pairs = strokePairs();
+    expect(pairs).toHaveLength(2);
+    expectStrokeState(pairs[0], Math.hypot(25, 30), 30, true);
+    expectStrokeState(pairs[1], Math.hypot(55, 60), 30, true);
   });
 });
 

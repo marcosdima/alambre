@@ -138,7 +138,7 @@ export default () => {
                   ]}
                 >
                   <View style={styles.itemIcon}>
-                    <ItemIcon icon={item.icon} color={active ? theme.primary : theme.muted} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
+                    <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
                   </View>
                   <Text style={[styles.itemName, { color: active ? theme.primary : theme.color }]} numberOfLines={1}>
                     {item.name}

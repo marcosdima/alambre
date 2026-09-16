@@ -19,6 +19,7 @@ export default (
     lineWidth,
     rotation = 0,
     iconAnimation,
+    strokeOffset = 0,
     style,
     ...props
   }: CrossProps,
@@ -36,6 +37,7 @@ export default (
     },
     drawIt,
     iconAnimation,
+    strokeOffset,
   };
 
   const bottomLeft = {
@@ -46,6 +48,7 @@ export default (
     },
     drawIt,
     iconAnimation,
+    strokeOffset,
   };
 
   const rotationTransform = {

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import type { IconAnimationConfig, UseIconAnimationReturn } from '../types/hooks';
 
@@ -18,23 +19,26 @@ export default (
     () => ({
       strokeDasharray,
       strokeDashoffset: strokeOffsetProgress.value,
-      fillOpacity: fillOpacity ? progress.value : undefined,
+      fillOpacity: fillOpacity !== undefined ? fillOpacity * progress.value : undefined,
     }),
+    [fillOpacity, strokeDasharray],
   );
 
-  const reset = () => {
+  const reset = useCallback(() => {
     strokeOffsetProgress.value = resetAnimation(strokeDasharray);
     progress.value = resetAnimation(0);
-  };
+  }, [resetAnimation, strokeDasharray, strokeOffsetProgress, progress]);
 
-  const draw = (p: number) => {
+  const draw = useCallback((p: number) => {
     strokeOffsetProgress.value = drawAnimation(strokeDasharray * (p / 100));
-    progress.value = resetAnimation(1);
-  };
+    progress.value = drawAnimation(1);
+  }, [drawAnimation, strokeDasharray, strokeOffsetProgress, progress]);
 
   return {
     strokeOffestStyle: animatedProps,
+    strokeOffsetStyle: animatedProps,
     reset,
     draw,
   } as UseIconAnimationReturn;
 };
+

@@ -286,7 +286,7 @@ export default () => {
                 style={[styles.itemRow, { borderColor: theme.border, backgroundColor: checked ? theme.surfaceAlt : 'transparent' }]}
               >
                 <View style={styles.itemIcon}>
-                  <ItemIcon icon={item.icon} color={checked ? theme.success : theme.muted} lineWidth={2} delay={index * 80} iconAnimation={catalogDrawAnimation} />
+                  <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={index * 80} iconAnimation={catalogDrawAnimation} />
                 </View>
                 <Text style={[styles.itemName, { color: theme.color, textDecorationLine: checked ? 'line-through' : 'none' }]}>
                   {item.name}

@@ -6,7 +6,7 @@ import { useIconAnimation } from '../../../hooks';
 
 export default (
   {
-    drawIt,
+    drawIt = true,
     path,
     iconAnimation,
     rotation = 0,
@@ -16,6 +16,7 @@ export default (
   const strokeDasharray = 1;
 
   const {
+    strokeOffsetStyle,
     strokeOffestStyle,
     reset,
     draw,
@@ -29,15 +30,18 @@ export default (
     else reset();
   }, [draw, drawIt, reset, strokeOffset]);
 
+  const targetDasharray = iconAnimation?.strokeDasharray ?? strokeDasharray;
   const modPath: PathProps & { pathLength: number } = {
     ...path,
     pathLength: 1,
+    strokeDasharray: targetDasharray,
+    strokeDashoffset: targetDasharray,
     transform: `rotate(${rotation}, 0, 0)`,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
   };
 
   return (
-    <AnimatedPath animatedProps={strokeOffestStyle} {...modPath}/>
+    <AnimatedPath animatedProps={strokeOffsetStyle ?? strokeOffestStyle} {...modPath}/>
   );
 };

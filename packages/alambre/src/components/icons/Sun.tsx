@@ -25,6 +25,7 @@ export default (
     lineWidth,
     fill,
     rotation = 0,
+    strokeOffset: _strokeOffset = 0,
     style,
     ...props
   }: SunProps,

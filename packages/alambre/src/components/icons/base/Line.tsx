@@ -6,19 +6,21 @@ import { useIconAnimation } from '../../../hooks';
 
 export default (
   {
-    drawIt,
+    drawIt = true,
     line,
     iconAnimation,
     rotation = 0,
     strokeOffset = 0,
   }: CustomLineProps,
 ) => {
-  const length = Math.hypot(
-    (line.x2 as number) -(line.x1 as number),
-    (line.y2 as number) - (line.y1 as number),
-  );
+  const x1 = Number(line.x1) || 0;
+  const y1 = Number(line.y1) || 0;
+  const x2 = Number(line.x2) || 0;
+  const y2 = Number(line.y2) || 0;
+  const length = Math.hypot(x2 - x1, y2 - y1);
 
   const {
+    strokeOffsetStyle,
     strokeOffestStyle,
     reset,
     draw,
@@ -32,14 +34,17 @@ export default (
     else reset();
   }, [draw, drawIt, reset, strokeOffset]);
 
+  const targetDasharray = iconAnimation?.strokeDasharray ?? length;
   const modLine: LineProps = {
     ...line,
+    strokeDasharray: targetDasharray,
+    strokeDashoffset: targetDasharray,
     transform: `rotate(${rotation}, ${line.x2}, ${line.y2})`,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
   };
 
   return (
-    <AnimatedLine animatedProps={strokeOffestStyle} {...modLine}/>
+    <AnimatedLine animatedProps={strokeOffsetStyle ?? strokeOffestStyle} {...modLine}/>
   );
 };

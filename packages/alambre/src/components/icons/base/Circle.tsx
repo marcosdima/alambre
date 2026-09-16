@@ -13,12 +13,14 @@ export default (
     strokeOffset = 0,
   }: CustomCircleProps,
 ) => {
+  const r = Number(circle.r) || 0;
   const strokeDasharray = useMemo(
-    () => 2 * Math.PI * (circle.r as number),
-    [circle.r],
+    () => 2 * Math.PI * r,
+    [r],
   );
 
   const {
+    strokeOffsetStyle,
     strokeOffestStyle,
     reset,
     draw,
@@ -32,11 +34,14 @@ export default (
     else reset();
   }, [draw, drawIt, reset, strokeOffset]);
 
+  const targetDasharray = iconAnimation?.strokeDasharray ?? strokeDasharray;
   const modCircle: CircleProps = {
     fill: 'none',
     ...circle,
+    strokeDasharray: targetDasharray,
+    strokeDashoffset: targetDasharray,
     transform: `rotate(${rotation}, ${circle.cx}, ${circle.cy})`,
   };
 
-  return <AnimatedCircle animatedProps={strokeOffestStyle} {...modCircle} />;
+  return <AnimatedCircle animatedProps={strokeOffsetStyle ?? strokeOffestStyle} {...modCircle} />;
 };

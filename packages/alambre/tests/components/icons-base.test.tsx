@@ -4,6 +4,8 @@ import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Circle from '../../src/components/icons/base/Circle';
 import Line from '../../src/components/icons/base/Line';
+import Path from '../../src/components/icons/base/Path';
+import * as BaseIcons from '../../src/components/icons/base';
 import {
   clearBoxes,
   expectStrokeState,
@@ -200,3 +202,12 @@ describe('base Circle', () => {
     expect(drawAnimation).toHaveBeenCalledWith((2 * Math.PI * 5) * 0.2);
   });
 });
+
+describe('base primitives barrel', () => {
+  it('exports Line, Circle and Path', () => {
+    expect(BaseIcons.Line).toBe(Line);
+    expect(BaseIcons.Circle).toBe(Circle);
+    expect(BaseIcons.Path).toBe(Path);
+  });
+});
+
