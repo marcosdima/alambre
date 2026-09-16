@@ -37,6 +37,11 @@ export const NotificationsWatcher = () => {
     await syncSchedule(alarmsRef.current, bodyForRef.current);
   }, []);
 
+  const dismiss = useCallback((response: Notifications.NotificationResponse) => {
+    void Notifications.dismissNotificationAsync(response.notification.request.identifier)
+      .catch(() => undefined);
+  }, []);
+
   const handleResponse = useCallback(
     (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data as AlarmIdData;
@@ -48,16 +53,18 @@ export const NotificationsWatcher = () => {
         if (alarm) {
           void activate(alarm);
         }
+        dismiss(response);
         navigate('home');
         return;
       }
 
       if (typeof alarmId === 'string') {
+        dismiss(response);
         setIntent(Array.isArray(missing) ? { alarmId, missing } : { alarmId });
         navigate('home');
       }
     },
-    [navigate, setIntent, activate],
+    [navigate, setIntent, activate, dismiss],
   );
 
   useEffect(() => {

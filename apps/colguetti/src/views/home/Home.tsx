@@ -11,7 +11,7 @@ import { useActivation } from '../../checklist/activation-context';
 import { isExpired, missingItemNames, remainingMs } from '../../checklist/activation-model';
 import { dayMatches, nextOccurrence, nextUpcoming } from '../../alarms/alarms-model';
 import { isConfirmedAfter } from '../../checklist/checklist-model';
-import { cancelAlarmAlerts, cancelExpiryReminder, scheduleExpiryReminder } from '../../notifications/expiry';
+import { cancelAlarmAlerts, cancelExpiryReminder, cancelSuccessReminder, scheduleExpiryReminder, scheduleSuccessReminder } from '../../notifications/expiry';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
@@ -145,9 +145,16 @@ export default () => {
     const unchecked = missingItemNames(alarm.itemIds, items, ticked);
     if (unchecked.length === 0) {
       void cancelExpiryReminder(active.alarmId);
+      void scheduleSuccessReminder(
+        active.alarmId,
+        new Date(active.expiresAt),
+        lang.home.successTitle,
+        lang.home.successBody,
+      );
       return;
     }
 
+    void cancelSuccessReminder(active.alarmId);
     const body = lang.home.missingBody.replace(MISSING_ITEMS_BODY, unchecked.join(', '));
     void scheduleExpiryReminder(
       active.alarmId,
