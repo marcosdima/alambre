@@ -68,17 +68,28 @@ describe('remainingMs', () => {
 });
 
 describe('extendExpiry', () => {
-  it('pushes the deadline forward by the given minutes', () => {
+  it('pushes the deadline to at least now plus the given minutes', () => {
     const active: ActiveRoutine = {
       alarmId: 'a1',
       activatedAt: new Date(2026, 8, 14, 8, 30).toISOString(),
       expiresAt: new Date(2026, 8, 14, 8, 40).toISOString(),
     };
 
-    const extended = extendExpiry(active, 10);
-    expect(extended.expiresAt).toBe(new Date(2026, 8, 14, 8, 50).toISOString());
+    const extended = extendExpiry(active, 10, new Date(2026, 8, 14, 8, 41));
+    expect(extended.expiresAt).toBe(new Date(2026, 8, 14, 8, 51).toISOString());
     expect(extended.alarmId).toBe(active.alarmId);
     expect(extended.activatedAt).toBe(active.activatedAt);
+  });
+
+  it('never shortens a window that still has more time left', () => {
+    const active: ActiveRoutine = {
+      alarmId: 'a1',
+      activatedAt: new Date(2026, 8, 14, 8, 30).toISOString(),
+      expiresAt: new Date(2026, 8, 14, 9, 5).toISOString(),
+    };
+
+    const extended = extendExpiry(active, 10, new Date(2026, 8, 14, 8, 41));
+    expect(extended.expiresAt).toBe(new Date(2026, 8, 14, 9, 5).toISOString());
   });
 });
 

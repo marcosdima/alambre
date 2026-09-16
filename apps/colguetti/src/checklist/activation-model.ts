@@ -47,7 +47,10 @@ export const remainingMs = (active: ActiveRoutine, now: Date = new Date()): numb
 export const extendExpiry = (
   active: ActiveRoutine,
   minutes: number,
+  at: Date = new Date(),
 ): ActiveRoutine => {
-  const expiresAt = new Date(new Date(active.expiresAt).getTime() + minutes * 60_000);
+  const fromNow = new Date(at.getTime() + minutes * 60_000);
+  const current = new Date(active.expiresAt);
+  const expiresAt = new Date(Math.max(fromNow.getTime(), current.getTime()));
   return { ...active, expiresAt: expiresAt.toISOString() };
 };
