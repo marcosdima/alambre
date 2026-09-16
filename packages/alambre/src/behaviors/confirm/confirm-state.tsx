@@ -16,7 +16,7 @@ export default (): ConfirmStateType => {
     new Promise<boolean>((resolve) => {
       if (resolveRef.current) resolveRef.current(false);
       resolveRef.current = resolve;
-      setCurrent({ data: request, resolve });
+      setCurrent({ data: request });
     })
   ), []);
 

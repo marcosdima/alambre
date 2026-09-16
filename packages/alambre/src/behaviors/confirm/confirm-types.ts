@@ -11,7 +11,6 @@ export type RegisterConfirm = {
 
 export type Confirm = {
   data: RegisterConfirm;
-  resolve: (ok: boolean) => void;
 };
 
 export type UseConfirmType = {
