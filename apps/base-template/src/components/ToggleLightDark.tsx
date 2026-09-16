@@ -44,12 +44,12 @@ const getColorConfig = (colors?: ThemeColors) => {
     light: {
       background: safe(light.background, '#fff'),
       border: safe(light.border, '#222'),
-      circle: safe(light.circle, '#222'),
+      circle: safe(light.circle, '#0b525b'),
     },
     dark: {
       background: safe(dark.background, '#222'),
       border: safe(dark.border, '#fff'),
-      circle: safe(dark.circle, '#fff'),
+      circle: safe(dark.circle, '#9eebce'),
     },
   };
 };
@@ -143,7 +143,7 @@ export default (
           <AnimatedCircle
             animatedProps={circleAnimatedProps}
             cy={50}
-            opacity={0.4}
+            opacity={0.22}
             fill={setLeft ? light.circle : dark.circle}
           />
         </Svg>

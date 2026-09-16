@@ -43,14 +43,14 @@ export default () => {
             light: {
               background: theme.surfaceAlt,
               border: theme.border,
-              circle: theme.success,
+              circle: '#0b525b',
               sun: '#f59e0b',
               moon: '#5b6572',
             },
             dark: {
               background: theme.surface,
               border: theme.border,
-              circle: theme.success,
+              circle: '#9eebce',
               sun: '#ffc266',
               moon: '#9eb0c8',
             },
