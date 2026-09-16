@@ -10,6 +10,7 @@ import { RouteIntentProvider } from './src/navigator/RouteIntent';
 import { ItemsProvider } from './src/items/items-context';
 import { AlarmsProvider } from './src/alarms/alarms-context';
 import { ConfirmationsProvider } from './src/checklist/confirmations-context';
+import { ActivationProvider } from './src/checklist/activation-context';
 
 export default function App() {
   return (
@@ -21,11 +22,13 @@ export default function App() {
               <ItemsProvider>
                 <AlarmsProvider>
                   <ConfirmationsProvider>
-                    <NavigatorProvider pages={navigator}>
-                      <ToastProvider ToastComponent={ColguettiToast}>
-                        <Root />
-                      </ToastProvider>
-                    </NavigatorProvider>
+                    <ActivationProvider>
+                      <NavigatorProvider pages={navigator}>
+                        <ToastProvider ToastComponent={ColguettiToast}>
+                          <Root />
+                        </ToastProvider>
+                      </NavigatorProvider>
+                    </ActivationProvider>
                   </ConfirmationsProvider>
                 </AlarmsProvider>
               </ItemsProvider>
