@@ -238,7 +238,7 @@ The second requires discussion.
 
 Items intentionally left for a future implementation, kept here so they are not lost:
 
-* **Toast with actions in `alambre` (rejected for destructive confirmations)** — `ToastProvider` supports action buttons (`RegisterToast.actions`, added in commit `77b4efe`), but using them as a replacement for destructive confirmations in `apps/colguetti` was rejected: a confirmation is a blocking decision, while a toast is a transient, non-blocking affordance (progress bar, close button, non-modal overlay do not fit a decision the user must take). Destructive confirmations use the in-app `ConfirmDialog`. Revisit the capability only for non-destructive quick actions (e.g. undo).
+* **Toast with actions in `alambre` (rejected for destructive confirmations)** — `ToastProvider` supports action buttons (`RegisterToast.actions`, added in commit `77b4efe`), but using them as a replacement for destructive confirmations in `apps/colguetti` was rejected: a confirmation is a blocking decision, while a toast is a transient, non-blocking affordance (progress bar, close button, non-modal overlay do not fit a decision the user must take). Destructive confirmations now use the `ConfirmProvider`/`useConfirm` behavior (extracted from colguetti's `ConfirmDialog`). Revisit toast actions only for non-destructive quick actions (e.g. undo).
 * **Alarm with no weekdays selected** — the alarm form treats weekdays as optional (validation only requires a name). The intended semantics for an alarm without days is a one-time alarm: it fires today and auto-disables after confirming. Not implemented yet because it touches the alarm model and the scheduler. Until decided and built, an alarm with no days simply never fires.
 
 ---
@@ -259,3 +259,15 @@ The notification layer mirrors this:
 * Tapping an invite lands on the proposal; tapping the missed alert lands on the missed result so it can be re-activated.
 
 Routines persist as `colguetti.activeRoutine`; confirmed routines still write a `confirmations` entry. The snooze interval is fixed at 10 minutes and is not per-alarm.
+
+---
+
+## 13. Framework Evolution: Storage and Confirm
+
+Two capabilities were extracted from the reference application into `alambre`, once validated by the apps:
+
+* **Storage layer** — `createStorage({ getItem, setItem, removeItem })` adapts an app's key-value binding to the framework `Storage` contract, and `getJson`/`setJson`/`removeJson`/`readCollection`/`writeCollection` provide JSON access over it. The storage bootstrap (`RawStorage`/`JsonStorage` types, json helpers, `toAlambreStorage`) was duplicated byte-for-byte across `apps/colguetti` and `apps/base-template`; both now build a single `app/src/storage/index.ts` from `createStorage` and keep only the AsyncStorage binding (`utils/storage.ts`) app-side, since `alambre` stays agnostic of React Native modules. Cross-cutting reads outside React (the notification scheduler) use `readCollection`/`writeCollection` directly.
+
+* **Confirm dialog behavior** — `ConfirmProvider`/`useConfirm` mirror the `ToastProvider` pattern: `confirm(request)` returns a promise resolved by the app-registered `ConfirmComponent` (`onConfirm` → `true`, `onCancel`/`dismiss` → `false`). `alambre` ships the blocking-confirmation concept; the look & feel stays in the app (`apps/colguetti/src/components/ConfirmDialog.tsx`), which also defaults the cancel label from the app language. This replaces the previous in-app `ConfirmDialog` wiring (one `useState` target + `visible` prop per view) in the delete flows of `Alarms` and `Items`.
+
+`apps/base-template` was rebuilt on these lessons (§2), removing its copies of the storage layer.
