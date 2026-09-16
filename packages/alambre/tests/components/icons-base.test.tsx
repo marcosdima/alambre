@@ -34,7 +34,7 @@ vi.mock('react-native-svg', async () => {
   const React = await import('react');
   const { View } = await import('react-native');
   const host = (props: Record<string, unknown>) => React.createElement(View, props);
-  return { default: host, Svg: host, Circle: host, Line: host };
+  return { default: host, Svg: host, Circle: host, Line: host, Path: host };
 });
 
 const line = { x1: 0, y1: 0, x2: 3, y2: 4, stroke: '#fff', strokeWidth: 2 };

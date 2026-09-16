@@ -1,4 +1,4 @@
-import type { CircleProps, LineProps } from 'react-native-svg';
+import type { CircleProps, LineProps, PathProps } from 'react-native-svg';
 import type { IconAnimationConfig } from './hooks';
 import type { ViewProps } from './default-react';
 
@@ -15,4 +15,8 @@ export type CustomCircleProps = IconProps & {
 
 export type CustomLineProps = IconProps & {
   line: LineProps;
+};
+
+export type CustomPathProps = IconProps & {
+  path: PathProps;
 };

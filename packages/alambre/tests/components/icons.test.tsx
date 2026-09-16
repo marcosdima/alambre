@@ -8,12 +8,14 @@ import Tick from '../../src/components/icons/Tick';
 import Sun from '../../src/components/icons/Sun';
 import Moon from '../../src/components/icons/Moon';
 import * as AlambreIcons from '../../src/components/icons';
+import Path from '../../src/components/icons/base/Path';
 import {
   clearBoxes,
   expectRotation,
   expectStrokeState,
   linesOf,
   circlesOf,
+  pathsOf,
   svgOf,
   strokePairs,
 } from '../helpers/icons-helpers';
@@ -40,7 +42,7 @@ vi.mock('react-native-svg', async () => {
   const React = await import('react');
   const { View } = await import('react-native');
   const host = (props: Record<string, unknown>) => React.createElement(View, props);
-  return { default: host, Svg: host, Circle: host, Line: host };
+  return { default: host, Svg: host, Circle: host, Line: host, Path: host };
 });
 
 const icons = [
@@ -301,9 +303,30 @@ describe('Moon', () => {
   });
 });
 
+describe('Path', () => {
+  beforeEach(clearBoxes);
+
+  it('renders with pathLength=1 and the given d attribute', async () => {
+    const { toJSON } = await render(
+      <Path path={{ d: 'M 0 50 Q 50 0 100 50' }} drawIt={false} />,
+    );
+
+    const paths = pathsOf(toJSON());
+    expect(paths).toHaveLength(1);
+    expect(paths[0]).toMatchObject({ pathLength: 1, d: 'M 0 50 Q 50 0 100 50' });
+  });
+
+  it('draws the path at 0% when drawIt is true', async () => {
+    await render(<Path path={{ d: 'M 0 0 L 100 100' }} drawIt />);
+
+    const pair = strokePairs();
+    expectStrokeState(pair[0], 1, 0, true);
+  });
+});
+
 describe('public icon API', () => {
-  it('keeps exposing the five concrete icons and both base primitives', () => {
-    for (const name of ['Arrow', 'Cross', 'Tick', 'Sun', 'Moon', 'Circle', 'Line']) {
+  it('keeps exposing the concrete icons and base primitives', () => {
+    for (const name of ['Arrow', 'Cross', 'Tick', 'Sun', 'Moon', 'Circle', 'Line', 'Path']) {
       expect(AlambreIcons).toHaveProperty(name);
     }
   });

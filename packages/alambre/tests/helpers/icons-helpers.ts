@@ -61,6 +61,9 @@ export const linesOf = (root: unknown): JsonProps[] =>
 export const circlesOf = (root: unknown): JsonProps[] =>
   findAllHost(root, (p) => 'cx' in p && 'cy' in p && 'r' in p);
 
+export const pathsOf = (root: unknown): JsonProps[] =>
+  findAllHost(root, (p) => 'd' in p && 'pathLength' in p);
+
 export const flatten = (style: unknown): JsonProps[] => {
   if (!style) return [];
   if (Array.isArray(style)) return style.flatMap(flatten);
