@@ -1,43 +1,61 @@
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CircleProps, LineProps, PathProps } from 'react-native-svg';
 import Svg from 'react-native-svg';
+import { Easing, withTiming } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
+import type { IconAnimationConfig } from 'alambre';
 import type { ItemIconKey } from './item-types';
 
 export type CatalogIconProps = {
   color: string;
   lineWidth?: number;
   drawIt?: boolean;
+  iconAnimation?: IconAnimationConfig;
 };
 
 type PrimitiveProps = Partial<CircleProps> & Partial<LineProps> & Partial<PathProps>;
 
-const circle = (c: CircleProps, stroke: PrimitiveProps, drawIt: boolean) => (
+export const catalogDrawAnimation: IconAnimationConfig = {
+  drawAnimation: (value: number) => withTiming(value, {
+    duration: 520,
+    easing: Easing.out(Easing.exp),
+  }),
+  resetAnimation: (value: number) => withTiming(value, {
+    duration: 180,
+    easing: Easing.in(Easing.quad),
+  }),
+};
+
+const circle = (c: CircleProps, stroke: PrimitiveProps, drawIt: boolean, iconAnimation?: IconAnimationConfig) => (
   <AlambreIcons.Circle
     key={`c-${c.cx}-${c.cy}-${c.r}`}
     circle={{ ...c, ...stroke }}
     drawIt={drawIt}
+    iconAnimation={iconAnimation}
   />
 );
 
-const line = (l: LineProps, stroke: PrimitiveProps, drawIt: boolean) => (
+const line = (l: LineProps, stroke: PrimitiveProps, drawIt: boolean, iconAnimation?: IconAnimationConfig) => (
   <AlambreIcons.Line
     key={`l-${l.x1}-${l.y1}-${l.x2}-${l.y2}`}
     line={{ ...l, ...stroke }}
     drawIt={drawIt}
+    iconAnimation={iconAnimation}
   />
 );
 
-const path = (d: string, stroke: PrimitiveProps, drawIt: boolean) => (
+const path = (d: string, stroke: PrimitiveProps, drawIt: boolean, iconAnimation?: IconAnimationConfig) => (
   <AlambreIcons.Path
     key={`p-${d}`}
     path={{ d, ...stroke }}
     drawIt={drawIt}
+    iconAnimation={iconAnimation}
   />
 );
 
-const makeIcon = (elements: (stroke: PrimitiveProps, drawIt: boolean) => ReactNode) => (
-  ({ color, lineWidth = 5, drawIt = true }: CatalogIconProps) => {
+const makeIcon = (elements: (s: PrimitiveProps, drawIt: boolean, anim?: IconAnimationConfig) => ReactNode) => (
+  ({ color, lineWidth = 2, drawIt = true, iconAnimation }: CatalogIconProps) => {
     const stroke: PrimitiveProps = {
       stroke: color,
       strokeWidth: lineWidth,
@@ -45,105 +63,169 @@ const makeIcon = (elements: (stroke: PrimitiveProps, drawIt: boolean) => ReactNo
       strokeLinejoin: 'round',
     };
     return (
-      <Svg height="100%" width="100%" viewBox="0 0 200 100">
-        {elements(stroke, drawIt)}
+      <Svg height="100%" width="100%" viewBox="0 0 24 24">
+        {elements(stroke, drawIt, iconAnimation)}
       </Svg>
     );
   }
 );
 
 export const iconCatalog: Record<ItemIconKey, (props: CatalogIconProps) => ReactNode> = {
-  keys: makeIcon((s, drawIt) => (
+  keys: makeIcon((s, drawIt, anim) => (
     <>
-      {circle({ cx: 38, cy: 26, r: 11 }, s, drawIt)}
-      {line({ x1: 47, y1: 34, x2: 66, y2: 53 }, s, drawIt)}
-      {circle({ cx: 70, cy: 56, r: 7 }, s, drawIt)}
-      {circle({ cx: 70, cy: 56, r: 3 }, s, drawIt)}
-      {path('M 77 56 H 120 L 120 62 L 112 62 L 112 68 L 120 68 L 120 74 L 110 74 L 110 80 L 116 80 L 116 84 L 77 84', s, drawIt)}
+      {path('M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z', s, drawIt, anim)}
     </>
   )),
 
-  wallet: makeIcon((s, drawIt) => (
+  wallet: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 58 35 H 142 A 8 8 0 0 1 150 43 V 67 A 8 8 0 0 1 142 75 H 58 A 8 8 0 0 1 50 67 V 43 A 8 8 0 0 1 58 35 Z', s, drawIt)}
-      {line({ x1: 50, y1: 55, x2: 150, y2: 55 }, s, drawIt)}
-      {path('M 63 24 H 104 A 6 6 0 0 1 110 30 V 34 A 6 6 0 0 1 104 40 H 63 A 6 6 0 0 1 57 34 V 30 A 6 6 0 0 1 63 24 Z', s, drawIt)}
-      {line({ x1: 62, y1: 32, x2: 105, y2: 32 }, s, drawIt)}
+      {path('M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1', s, drawIt, anim)}
+      {path('M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4', s, drawIt, anim)}
     </>
   )),
 
-  phone: makeIcon((s, drawIt) => (
+  phone: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 74 20 H 126 A 14 14 0 0 1 140 34 V 66 A 14 14 0 0 1 126 80 H 74 A 14 14 0 0 1 60 66 V 34 A 14 14 0 0 1 74 20 Z', s, drawIt)}
-      {path('M 76 26 H 124 A 8 8 0 0 1 132 34 V 66 A 8 8 0 0 1 124 74 H 76 A 8 8 0 0 1 68 66 V 34 A 8 8 0 0 1 76 26 Z', s, drawIt)}
-      {circle({ cx: 100, cy: 32, r: 3 }, s, drawIt)}
-      {line({ x1: 86, y1: 72, x2: 114, y2: 72 }, s, drawIt)}
+      {path('M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z', s, drawIt, anim)}
+      {line({ x1: 11.7, y1: 18, x2: 12.3, y2: 18 }, s, drawIt, anim)}
     </>
   )),
 
-  documents: makeIcon((s, drawIt) => (
+  documents: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 60 30 H 128 L 140 42 V 82 H 60 V 30 Z', s, drawIt)}
-      {line({ x1: 68, y1: 46, x2: 132, y2: 46 }, s, drawIt)}
-      {line({ x1: 68, y1: 56, x2: 124, y2: 56 }, s, drawIt)}
-      {line({ x1: 68, y1: 66, x2: 128, y2: 66 }, s, drawIt)}
-      {path('M 120 68 H 132 A 4 4 0 0 1 136 72 V 74 A 4 4 0 0 1 132 78 H 120 A 4 4 0 0 1 116 74 V 72 A 4 4 0 0 1 120 68 Z', s, drawIt)}
+      {path('M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z', s, drawIt, anim)}
+      {path('M14 2v5a1 1 0 0 0 1 1h5', s, drawIt, anim)}
+      {path('M16 13H8', s, drawIt, anim)}
+      {path('M16 17H8', s, drawIt, anim)}
+      {path('M10 9H8', s, drawIt, anim)}
     </>
   )),
 
-  umbrella: makeIcon((s, drawIt) => (
+  umbrella: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 52 62 A 48 48 0 0 1 148 62', s, drawIt)}
-      {line({ x1: 100, y1: 14, x2: 100, y2: 6 }, s, drawIt)}
-      {line({ x1: 100, y1: 62, x2: 100, y2: 82 }, s, drawIt)}
-      {path('M 100 82 L 100 90 A 12 12 0 0 1 118 90', s, drawIt)}
+      {path('M12 13v7a2 2 0 0 0 4 0', s, drawIt, anim)}
+      {path('M12 2v2', s, drawIt, anim)}
+      {path('M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z', s, drawIt, anim)}
     </>
   )),
 
-  water: makeIcon((s, drawIt) => (
+  water: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 90 20 H 110 A 4 4 0 0 1 114 24 V 30 A 4 4 0 0 1 110 34 H 90 A 4 4 0 0 1 86 30 V 24 A 4 4 0 0 1 90 20 Z', s, drawIt)}
-      {path('M 94 34 L 94 42 L 84 46 L 84 76 A 8 8 0 0 0 92 84 H 108 A 8 8 0 0 0 116 76 L 116 46 L 106 42 L 106 34 Z', s, drawIt)}
-      {path('M 100 52 Q 106 58 106 62 A 6 6 0 1 1 94 62 Q 94 58 100 52 Z', s, drawIt)}
-      {line({ x1: 88, y1: 66, x2: 112, y2: 66 }, s, drawIt)}
-      {line({ x1: 88, y1: 72, x2: 112, y2: 72 }, s, drawIt)}
+      {path('M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z', s, drawIt, anim)}
+      {path('M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0', s, drawIt, anim)}
     </>
   )),
 
-  meds: makeIcon((s, drawIt) => (
+  meds: makeIcon((s, drawIt, anim) => (
     <>
-      {circle({ cx: 46, cy: 42, r: 4 }, s, drawIt)}
-      {path('M 44 50 L 60 52 L 58 74 Q 57 82 50 82 L 44 80 Q 42 72 44 50 Z', s, drawIt)}
-      {path('M 88 56 H 118 A 7 7 0 0 1 125 63 A 7 7 0 0 1 118 70 H 88 A 7 7 0 0 1 81 63 A 7 7 0 0 1 88 56 Z', s, drawIt)}
-      {line({ x1: 103, y1: 56, x2: 103, y2: 70 }, s, drawIt)}
-      {circle({ cx: 152, cy: 44, r: 9 }, s, drawIt)}
-      {line({ x1: 152, y1: 35, x2: 152, y2: 53 }, s, drawIt)}
+      {path('m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z', s, drawIt, anim)}
+      {path('m8.5 8.5 7 7', s, drawIt, anim)}
     </>
   )),
 
-  charger: makeIcon((s, drawIt) => (
+  charger: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 78 30 H 122 A 6 6 0 0 1 128 36 V 52 A 6 6 0 0 1 122 58 H 78 A 6 6 0 0 1 72 52 V 36 A 6 6 0 0 1 78 30 Z', s, drawIt)}
-      {line({ x1: 88, y1: 30, x2: 88, y2: 22 }, s, drawIt)}
-      {line({ x1: 112, y1: 30, x2: 112, y2: 22 }, s, drawIt)}
-      {path('M 100 58 Q 116 66 129 71', s, drawIt)}
-      {path('M 132 64 H 146 A 6 6 0 0 1 152 70 V 78 A 6 6 0 0 1 146 84 H 132 A 6 6 0 0 1 126 78 V 70 A 6 6 0 0 1 132 64 Z', s, drawIt)}
+      {path('m11 7-3 5h4l-3 5', s, drawIt, anim)}
+      {path('M14.856 6H16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.935', s, drawIt, anim)}
+      {path('M22 14v-4', s, drawIt, anim)}
+      {path('M5.14 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.936', s, drawIt, anim)}
     </>
   )),
 
-  backpack: makeIcon((s, drawIt) => (
+  backpack: makeIcon((s, drawIt, anim) => (
     <>
-      {path('M 72 70 L 72 52 Q 72 26 100 26 Q 128 26 128 52 L 128 70 H 72 Z', s, drawIt)}
-      {path('M 92 26 Q 100 13 108 26', s, drawIt)}
-      {path('M 88 42 H 112 Q 116 42 116 46 V 58 Q 116 62 112 62 H 88 Q 84 62 84 58 V 46 Q 84 42 88 42 Z', s, drawIt)}
-      {line({ x1: 84, y1: 52, x2: 116, y2: 52 }, s, drawIt)}
-      {line({ x1: 72, y1: 40, x2: 62, y2: 56 }, s, drawIt)}
-      {line({ x1: 128, y1: 40, x2: 138, y2: 56 }, s, drawIt)}
+      {path('M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', s, drawIt, anim)}
+      {path('M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6', s, drawIt, anim)}
+      {path('M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2', s, drawIt, anim)}
+      {path('M8 10h8', s, drawIt, anim)}
+      {path('M8 18h8', s, drawIt, anim)}
+    </>
+  )),
+
+  laptop: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z', s, drawIt, anim)}
+      {path('M20.054 15.987H3.946', s, drawIt, anim)}
+    </>
+  )),
+
+  headphones: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3', s, drawIt, anim)}
+    </>
+  )),
+
+  glasses: makeIcon((s, drawIt, anim) => (
+    <>
+      {circle({ cx: 6, cy: 15, r: 4 }, s, drawIt, anim)}
+      {circle({ cx: 18, cy: 15, r: 4 }, s, drawIt, anim)}
+      {path('M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2', s, drawIt, anim)}
+      {path('M2.5 13 5 7c.7-1.3 1.4-2 3-2', s, drawIt, anim)}
+      {path('M21.5 13 19 7c-.7-1.3-1.5-2-3-2', s, drawIt, anim)}
+    </>
+  )),
+
+  book: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20', s, drawIt, anim)}
+    </>
+  )),
+
+  'shopping-bag': makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M16 10a4 4 0 0 1-8 0', s, drawIt, anim)}
+      {path('M3.103 6.034h17.794', s, drawIt, anim)}
+      {path('M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z', s, drawIt, anim)}
+    </>
+  )),
+
+  coffee: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M10 2v2', s, drawIt, anim)}
+      {path('M14 2v2', s, drawIt, anim)}
+      {path('M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1', s, drawIt, anim)}
+      {path('M6 2v2', s, drawIt, anim)}
+    </>
+  )),
+
+  watch: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M12 10v2.2l1.6 1', s, drawIt, anim)}
+      {path('m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05', s, drawIt, anim)}
+      {path('m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05', s, drawIt, anim)}
+      {circle({ cx: 12, cy: 12, r: 6 }, s, drawIt, anim)}
+    </>
+  )),
+
+  gift: makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M12 7v14', s, drawIt, anim)}
+      {path('M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8', s, drawIt, anim)}
+      {path('M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5', s, drawIt, anim)}
+      {path('M4 7h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z', s, drawIt, anim)}
+    </>
+  )),
+
+  'credit-card': makeIcon((s, drawIt, anim) => (
+    <>
+      {path('M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z', s, drawIt, anim)}
+      {line({ x1: 2, y1: 10, x2: 22, y2: 10 }, s, drawIt, anim)}
+      {line({ x1: 6, y1: 14, x2: 8, y2: 14 }, s, drawIt, anim)}
     </>
   )),
 };
 
-export const ItemIcon = ({ icon, ...props }: CatalogIconProps & { icon: ItemIconKey }) => {
+type ItemIconProps = CatalogIconProps & { icon: ItemIconKey; delay?: number };
+
+export const ItemIcon = ({ icon, delay = 0, drawIt = true, ...props }: ItemIconProps) => {
+  const [ready, setReady] = useState(delay <= 0);
+
+  useEffect(() => {
+    if (delay <= 0) return;
+    const timer = setTimeout(() => setReady(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
   const Component = iconCatalog[icon];
-  return <Component {...props} />;
+  return <Component {...props} drawIt={drawIt && ready} />;
 };
