@@ -1,6 +1,18 @@
 import { createId } from '../utils/id';
 import type { Alarm, AlarmInput, Weekday } from './alarm-types';
 
+export const DEFAULT_ACTIVE_WINDOW_MINUTES = 10;
+export const MIN_ACTIVE_WINDOW_MINUTES = 1;
+export const MAX_ACTIVE_WINDOW_MINUTES = 60;
+
+export const clampActiveWindowMinutes = (minutes: number): number => (
+  Math.min(MAX_ACTIVE_WINDOW_MINUTES, Math.max(MIN_ACTIVE_WINDOW_MINUTES, minutes))
+);
+
+export const withActiveWindowDefault = (minutes?: number): number => (
+  clampActiveWindowMinutes(minutes ?? DEFAULT_ACTIVE_WINDOW_MINUTES)
+);
+
 export const createAlarm = (input: AlarmInput): Alarm => ({
   ...input,
   id: createId(),

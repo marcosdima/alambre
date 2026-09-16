@@ -15,6 +15,7 @@ const base: AlarmInput = {
   weekdays: [1, 2, 3, 4, 5], // Mon..Fri
   enabled: true,
   itemIds: [],
+  activeWindowMinutes: 10,
 };
 
 const alarm = (patch: Partial<AlarmInput> = {}): Alarm => createAlarm({ ...base, ...patch });

@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   addAlarm,
+  clampActiveWindowMinutes,
   createAlarm,
+  DEFAULT_ACTIVE_WINDOW_MINUTES,
+  MAX_ACTIVE_WINDOW_MINUTES,
+  MIN_ACTIVE_WINDOW_MINUTES,
   nextOccurrence,
   nextUpcoming,
   occurrencesOn,
@@ -10,6 +14,7 @@ import {
   removeAlarm,
   toMinutes,
   updateAlarm,
+  withActiveWindowDefault,
 } from '../src/alarms/alarms-model';
 import type { Alarm, AlarmInput, Weekday } from '../src/alarms/alarm-types';
 
@@ -19,6 +24,7 @@ const base: AlarmInput = {
   weekdays: [1, 2, 3, 4, 5],
   enabled: true,
   itemIds: [],
+  activeWindowMinutes: 10,
 };
 
 const alarmAt = (
@@ -70,6 +76,25 @@ describe('alarms-model CRUD', () => {
     const next = removeAlarm(alarms, alarms[0].id);
     expect(next).toHaveLength(1);
     expect(next[0].label).toBe('Trabajo');
+  });
+});
+
+describe('alarms-model activation window', () => {
+  it('exposes the default window and the allowed range', () => {
+    expect(DEFAULT_ACTIVE_WINDOW_MINUTES).toBe(10);
+    expect(MIN_ACTIVE_WINDOW_MINUTES).toBe(1);
+    expect(MAX_ACTIVE_WINDOW_MINUTES).toBe(60);
+  });
+
+  it('clamps minutes to the allowed range', () => {
+    expect(clampActiveWindowMinutes(0)).toBe(1);
+    expect(clampActiveWindowMinutes(120)).toBe(60);
+    expect(clampActiveWindowMinutes(25)).toBe(25);
+  });
+
+  it('falls back to the default when the field is missing', () => {
+    expect(withActiveWindowDefault(undefined)).toBe(10);
+    expect(withActiveWindowDefault(30)).toBe(30);
   });
 });
 

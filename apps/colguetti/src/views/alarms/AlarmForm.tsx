@@ -8,6 +8,7 @@ import { useItems } from '../../items/items-context';
 import { ItemIcon } from '../../items/icon-catalog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppButton from '../../components/AppButton';
+import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
 import type { Weekday } from '../../alarms/alarm-types';
 
 export default () => {
@@ -27,6 +28,9 @@ export default () => {
   const [weekdays, setWeekdays] = useState<Weekday[]>(editing?.weekdays ?? [1, 2, 3, 4, 5]);
   const [itemIds, setItemIds] = useState<string[]>(editing?.itemIds ?? []);
   const [enabled, setEnabled] = useState(editing?.enabled ?? true);
+  const [activeWindowMinutes, setActiveWindowMinutes] = useState(
+    withActiveWindowDefault(editing?.activeWindowMinutes),
+  );
 
   const close = () => {
     setIntent({});
@@ -52,7 +56,14 @@ export default () => {
       return;
     }
     setLabelError(false);
-    const input = { label: labelValue, time, weekdays, itemIds, enabled };
+    const input = {
+      label: labelValue,
+      time,
+      weekdays,
+      itemIds,
+      enabled,
+      activeWindowMinutes: clampActiveWindowMinutes(activeWindowMinutes),
+    };
     const content = `${labelValue} · ${time}`;
     if (editing) {
       await updateAlarm(editing.id, input);
@@ -140,6 +151,27 @@ export default () => {
             })}
           </View>
         )}
+
+        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.windowLabel}</Text>
+        <View style={styles.windowRow}>
+          <Pressable
+            onPress={() => setActiveWindowMinutes((minutes) => clampActiveWindowMinutes(minutes - 1))}
+            style={[styles.windowButton, { borderColor: theme.border }]}
+            hitSlop={8}
+          >
+            <Text style={{ color: theme.color, fontSize: 18, fontWeight: '800', lineHeight: 22 }}>−</Text>
+          </Pressable>
+          <Text style={{ color: theme.color, fontWeight: '700' }}>
+            {activeWindowMinutes} {lang.alarms.minutes}
+          </Text>
+          <Pressable
+            onPress={() => setActiveWindowMinutes((minutes) => clampActiveWindowMinutes(minutes + 1))}
+            style={[styles.windowButton, { borderColor: theme.border }]}
+            hitSlop={8}
+          >
+            <Text style={{ color: theme.color, fontSize: 18, fontWeight: '800', lineHeight: 22 }}>+</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.enabledRow}>
           <Text style={{ color: theme.color }}>{lang.alarms.enabledLabel}</Text>
@@ -234,6 +266,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     lineHeight: 16,
+  },
+  windowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 4,
+  },
+  windowButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pressed: {
     opacity: 0.85,

@@ -7,6 +7,7 @@ export type Alarm = {
   weekdays: Weekday[];
   enabled: boolean;
   itemIds: string[];
+  activeWindowMinutes: number;
 };
 
 export type AlarmInput = Omit<Alarm, 'id'>;

@@ -3,6 +3,7 @@ import { createCollectionProvider } from 'alambre';
 import { asyncStorageRaw } from '../storage/async';
 import { toAlambreStorage } from '../storage/alambre-storage';
 import { createId } from '../utils/id';
+import { withActiveWindowDefault } from './alarms-model';
 import type { Alarm, AlarmInput } from './alarm-types';
 
 const { Provider: AlarmsCollectionProvider, useValue } = createCollectionProvider<Alarm>({
@@ -28,7 +29,10 @@ export const useAlarms = (): UseAlarmsReturn => {
 
   return useMemo(
     () => ({
-      alarms: value.records,
+      alarms: value.records.map((alarm) => ({
+        ...alarm,
+        activeWindowMinutes: withActiveWindowDefault(alarm.activeWindowMinutes),
+      })),
       loading: value.loading,
       addAlarm: (input) => value.add({ ...input, id: createId() }),
       updateAlarm: value.update,
