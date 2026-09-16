@@ -10,6 +10,7 @@ import {
 } from './schedule';
 
 export const SCHEDULE_KEY = 'colguetti.schedule';
+export const ACTIVATION_CATEGORY = 'activation';
 
 const reschedule = async (entry: StoredScheduleEntry, bodyFor: (label: string) => string): Promise<void> => {
   const trigger: Notifications.NotificationTriggerInput = {
@@ -24,6 +25,7 @@ const reschedule = async (entry: StoredScheduleEntry, bodyFor: (label: string) =
       title: entry.label,
       body: bodyFor(entry.label),
       data: { alarmId: entry.alarmId },
+      categoryIdentifier: ACTIVATION_CATEGORY,
     },
     trigger,
   });

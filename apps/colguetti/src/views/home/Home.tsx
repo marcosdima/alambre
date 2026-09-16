@@ -86,11 +86,19 @@ export default () => {
   }, [active]);
 
   useEffect(() => {
-    if (intent.alarmId) {
-      setSelectedId(intent.alarmId);
-      setIntent({});
+    if (!intent.alarmId) return;
+    setSelectedId(intent.alarmId);
+    if (intent.missing) {
+      const alarm = alarms.find((current) => current.id === intent.alarmId);
+      setMissed({
+        alarmId: intent.alarmId,
+        label: alarm?.label ?? '',
+        time: alarm?.time ?? '',
+        items: intent.missing,
+      });
     }
-  }, [intent.alarmId, setIntent]);
+    setIntent({});
+  }, [intent.alarmId, intent.missing, alarms, setIntent]);
 
   const proposals = useMemo(() => {
     const today = new Date();
@@ -141,7 +149,13 @@ export default () => {
     }
 
     const body = lang.home.missingBody.replace(MISSING_ITEMS_BODY, unchecked.join(', '));
-    void scheduleExpiryReminder(active.alarmId, new Date(active.expiresAt), lang.home.missingTitle, body);
+    void scheduleExpiryReminder(
+      active.alarmId,
+      new Date(active.expiresAt),
+      lang.home.missingTitle,
+      body,
+      unchecked,
+    );
   }, [active, alarms, items, ticked, lang]);
 
   const toggleItem = (id: string) => {

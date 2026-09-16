@@ -7,6 +7,7 @@ export const scheduleExpiryReminder = async (
   at: Date,
   title: string,
   body: string,
+  missing: string[] = [],
 ): Promise<void> => {
   const remainingSeconds = Math.ceil((at.getTime() - Date.now()) / 1000);
   if (remainingSeconds <= 0) return;
@@ -16,7 +17,7 @@ export const scheduleExpiryReminder = async (
     content: {
       title,
       body,
-      data: { alarmId, kind: 'expiry' },
+      data: { alarmId, kind: 'expiry', missing },
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,

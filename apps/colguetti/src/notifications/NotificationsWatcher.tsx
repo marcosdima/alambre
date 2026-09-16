@@ -5,24 +5,32 @@ import { useNavigator } from 'alambre';
 import { useAlarms } from '../alarms/alarms-context';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from '../navigator/RouteIntent';
-import { syncSchedule } from './sync';
+import { useActivation } from '../checklist/activation-context';
+import { ACTIVATION_CATEGORY, syncSchedule } from './sync';
 
-type AlarmIdData = { alarmId?: unknown };
+type AlarmIdData = { alarmId?: unknown; missing?: unknown };
 
 const INVITE_BODY = /\{label\}/g;
+const ACTIVATE_ACTION = 'activate';
 
 export const NotificationsWatcher = () => {
   const { alarms } = useAlarms();
   const { lang } = useLang();
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
+  const { activate } = useActivation();
 
   const alarmsRef = useRef(alarms);
-  const bodyForRef = useRef<(label: string) => string>(() => lang.home.activateBody);
+  const bodyForRef = useRef<(label: string) => string>(
+    () => lang.home.activateBody,
+  );
 
-  useEffect(() => { alarmsRef.current = alarms; }, [alarms]);
   useEffect(() => {
-    bodyForRef.current = (label: string) => lang.home.activateBody.replace(INVITE_BODY, label);
+    alarmsRef.current = alarms;
+  }, [alarms]);
+  useEffect(() => {
+    bodyForRef.current = (label: string) =>
+      lang.home.activateBody.replace(INVITE_BODY, label);
   }, [lang]);
 
   const sync = useCallback(async () => {
@@ -42,35 +50,66 @@ export const NotificationsWatcher = () => {
 
   useEffect(() => {
     const setup = async () => {
+      await Notifications.setNotificationCategoryAsync(ACTIVATION_CATEGORY, [
+        {
+          identifier: ACTIVATE_ACTION,
+          buttonTitle: lang.home.activate,
+          options: { opensAppToForeground: false },
+        },
+      ]).catch(() => undefined);
+
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'Default',
           importance: Notifications.AndroidImportance.DEFAULT,
         }).catch(() => undefined);
       }
-      const existing = await Notifications.getPermissionsAsync().catch(() => null);
+      const existing = await Notifications.getPermissionsAsync().catch(
+        () => null,
+      );
       if (!existing?.granted) {
         await Notifications.requestPermissionsAsync().catch(() => undefined);
       }
       void sync();
     };
     void setup();
-  }, [sync]);
+  }, [lang, sync]);
 
   useEffect(() => {
     void syncSchedule(alarms, bodyForRef.current);
   }, [alarms, lang]);
 
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const { alarmId } = response.notification.request.content.data as AlarmIdData;
-      if (typeof alarmId === 'string') {
-        setIntent({ alarmId });
-        navigate('home');
-      }
-    });
+    const sub = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data as AlarmIdData;
+        const { missing } = data;
+        const { alarmId } = data;
+
+        if (
+          response.actionIdentifier === ACTIVATE_ACTION &&
+          typeof alarmId === 'string'
+        ) {
+          const alarm = alarmsRef.current.find(
+            (current) => current.id === alarmId,
+          );
+          if (alarm) {
+            void activate(alarm);
+            navigate('home');
+          }
+          return;
+        }
+
+        if (typeof alarmId === 'string') {
+          setIntent(
+            Array.isArray(missing) ? { alarmId, missing } : { alarmId },
+          );
+          navigate('home');
+        }
+      },
+    );
     return () => sub.remove();
-  }, [navigate, setIntent]);
+  }, [navigate, setIntent, activate]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {

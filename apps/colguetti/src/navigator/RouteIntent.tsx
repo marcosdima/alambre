@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 export type RouteIntent = {
   itemId?: string;
   alarmId?: string;
+  missing?: string[];
 };
 
 type RouteIntentValue = {
