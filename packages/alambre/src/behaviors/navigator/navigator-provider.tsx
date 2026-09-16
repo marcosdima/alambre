@@ -23,6 +23,7 @@ const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
     const aux = subpage
       ? `${target},${subpage}`
       : String(target);
+    if (aux === currentPage) return;
     stack.current.push(currentPage);
     setScrollTop(0);
     updatePage(aux);
