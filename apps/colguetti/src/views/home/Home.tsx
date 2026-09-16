@@ -7,8 +7,10 @@ import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
 import { useConfirmations } from '../../checklist/confirmations-context';
-import { nextUpcoming, occurrencesOn } from '../../alarms/alarms-model';
-import { pendingAlarm } from '../../checklist/checklist-model';
+import { useActivation } from '../../checklist/activation-context';
+import { isExpired, remainingMs } from '../../checklist/activation-model';
+import { dayMatches, nextOccurrence, nextUpcoming } from '../../alarms/alarms-model';
+import { isConfirmedAfter } from '../../checklist/checklist-model';
 import { cancelReminder } from '../../notifications/sync';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
@@ -29,110 +31,172 @@ const iconAnimation = {
   }),
 };
 
+type ProposalEntry = { alarm: Alarm; due: Date };
+
+type MissedRoutine = {
+  alarmId: string;
+  label: string;
+  time: string;
+  items: string[];
+};
+
+const formatCountdown = (ms: number): string => {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
 export default () => {
   const { theme } = useLightDark();
   const { lang, currentLang } = useLang();
   const { alarms } = useAlarms();
   const { items } = useItems();
   const { confirmations, confirm } = useConfirmations();
+  const { active, activate, deactivate } = useActivation();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { intent, setIntent } = useRouteIntent();
 
-  const [routine, setRoutine] = useState<Alarm | null>(null);
-  const [chooserOpen, setChooserOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [success, setSuccess] = useState(false);
+  const [missed, setMissed] = useState<MissedRoutine | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
-  const upcoming = nextUpcoming(alarms, new Date());
-  const todaysAlarms = occurrencesOn(alarms, new Date());
-  const pending = pendingAlarm(alarms, confirmations, new Date(), 10);
-
-  useEffect(() => {
-    if (intent.alarmId) {
-      const target = alarms.find((a) => a.id === intent.alarmId);
-      if (target) setRoutine(target);
-      else setRoutine(null);
-      setIntent({});
-    }
-  }, [intent.alarmId, alarms, setIntent]);
+  const routine = useMemo(
+    () => (active ? alarms.find((alarm) => alarm.id === active.alarmId) ?? null : null),
+    [active, alarms],
+  );
 
   const routineItems = useMemo(
     () => (routine ? items.filter((item) => routine.itemIds.includes(item.id)) : []),
     [routine, items],
   );
 
+  const upcoming = nextUpcoming(alarms, new Date());
+  const remaining = active ? remainingMs(active, new Date(now)) : 0;
+
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [active]);
+
+  useEffect(() => {
+    if (intent.alarmId) {
+      setSelectedId(intent.alarmId);
+      setIntent({});
+    }
+  }, [intent.alarmId, setIntent]);
+
+  const proposals = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const entries: ProposalEntry[] = alarms
+      .filter((alarm) => alarm.enabled && dayMatches(alarm.weekdays, today))
+      .flatMap((alarm) => {
+        const due = nextOccurrence(alarm, today);
+        return due ? [{ alarm, due }] : [];
+      })
+      .filter(({ alarm, due }) => !isConfirmedAfter(confirmations, alarm.id, due))
+      .sort((a, b) => a.due.getTime() - b.due.getTime());
+
+    if (selectedId && !entries.some((entry) => entry.alarm.id === selectedId)) {
+      const target = alarms.find((alarm) => alarm.id === selectedId);
+      if (target) entries.unshift({ alarm: target, due: nextOccurrence(target, today) ?? today });
+    }
+
+    return entries;
+  }, [alarms, confirmations, selectedId]);
+
+  useEffect(() => {
+    if (!active || !isExpired(active)) return;
+    const alarm = alarms.find((a) => a.id === active.alarmId);
+    const unchecked = alarm
+      ? items.filter((item) => alarm.itemIds.includes(item.id) && !ticked[item.id]).map((item) => item.name)
+      : [];
+    setMissed({
+      alarmId: active.alarmId,
+      label: alarm?.label ?? '',
+      time: alarm?.time ?? '',
+      items: unchecked,
+    });
+    setTicked({});
+    setSuccess(false);
+    void deactivate();
+  }, [active, alarms, items, ticked, deactivate]);
+
   const toggleItem = (id: string) => {
     setTicked((current) => ({ ...current, [id]: !current[id] }));
   };
 
-  const startRoutine = (alarm: Alarm) => {
-    setRoutine(alarm);
-    setChooserOpen(false);
+  const activateAlarm = async (alarm: Alarm) => {
+    await activate(alarm);
     setTicked({});
     setSuccess(false);
+    setMissed(null);
   };
 
   const closeRoutine = useCallback(() => {
-    setRoutine(null);
+    setTicked({});
     setSuccess(false);
-  }, []);
+    void deactivate();
+  }, [deactivate]);
 
   useEffect(() => {
-    if (!success || !routine) return;
+    if (!success || !routine || !active) return;
     const timer = setTimeout(() => {
       void (async () => {
         await confirm(routine.id, new Date());
         await cancelReminder(routine.id);
+        await deactivate();
       })();
       show({ payload: { title: lang.home.routineConfirmed, tone: 'success' }, duration: 3000 });
-      closeRoutine();
+      setTicked({});
+      setSuccess(false);
     }, 1500);
     return () => clearTimeout(timer);
-  }, [success, routine, confirm, show, closeRoutine, lang]);
+  }, [success, routine, active, confirm, deactivate, show, lang]);
 
   const onConfirm = () => {
     if (routine) setSuccess(true);
   };
 
-  const renderPendingBanner = () => {
-    if (!pending || routine) return null;
+  const renderMissed = () => {
+    if (!missed) return null;
     return (
-      <Pressable
-        onPress={() => startRoutine(pending.alarm)}
-        style={[styles.pendingRow, { backgroundColor: theme.warning, borderColor: theme.warning }]}
-      >
-        <Text style={[styles.pendingLabel, { color: '#fff' }]}>
-          {lang.home.routinePendingTitle}: {pending.alarm.label} ({pending.alarm.time})
+      <View style={[styles.missedCard, { backgroundColor: theme.warning, borderColor: theme.warning }]}>
+        <Text style={[styles.missedTitle, { color: '#fff' }]}>
+          {lang.home.missedTitle}: {missed.label} ({missed.time})
         </Text>
-        <Text style={{ color: '#fff', fontWeight: '800' }}>{lang.home.routinePendingCta}</Text>
-      </Pressable>
+        {missed.items.length > 0 && (
+          <Text style={{ color: '#fff', fontWeight: '600' }}>
+            {lang.home.missedItems}: {missed.items.join(', ')}
+          </Text>
+        )}
+      </View>
     );
   };
 
-  const renderChooser = () => {
-    if (!chooserOpen) return null;
-    if (todaysAlarms.length === 0) {
-      return (
-        <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.panelTitle, { color: theme.color }]}>{lang.home.routineChooserTitle}</Text>
-          <Text style={{ color: theme.muted }}>{lang.home.routineNoneToday}</Text>
-        </View>
-      );
-    }
+  const renderProposal = (alarm: Alarm, due: Date) => {
+    const alreadyConfirmed = isConfirmedAfter(confirmations, alarm.id, due);
     return (
-      <View style={[styles.panel, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.panelTitle, { color: theme.color }]}>{lang.home.routineChooserTitle}</Text>
-        {todaysAlarms.map((alarm) => (
-          <Pressable
-            key={alarm.id}
-            onPress={() => startRoutine(alarm)}
-            style={[styles.routineOption, { borderColor: theme.border }]}
-          >
-            <Text style={[styles.routineOptionLabel, { color: theme.color }]}>{alarm.label}</Text>
-            <Text style={{ color: theme.muted }}>{alarm.time} · {lang.home.routineNow}</Text>
-          </Pressable>
-        ))}
+      <View key={alarm.id} style={[styles.proposalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <View style={styles.proposalInfo}>
+          <Text style={[styles.proposalTitle, { color: theme.color }]}>{alarm.label}</Text>
+          <Text style={{ color: theme.muted }}>{alarm.time}</Text>
+        </View>
+        <AppButton
+          style={styles.activateButton}
+          disabled={alreadyConfirmed}
+          onPress={() => void activateAlarm(alarm)}
+        >
+          <Text style={[styles.activateLabel, { color: alreadyConfirmed ? theme.muted : theme.success }]}>
+            {lang.home.activate}
+          </Text>
+        </AppButton>
       </View>
     );
   };
@@ -149,7 +213,7 @@ export default () => {
             <AppTitle style={[styles.routineTitle, { color: theme.color }]}>{routine.label}</AppTitle>
             <Text style={{ color: theme.muted }}>{routine.time}</Text>
           </View>
-          {success && (
+          {success ? (
             <View style={styles.tickBox}>
               <AlambreIcons.Tick
                 key={`ok-${routine.id}`}
@@ -159,6 +223,10 @@ export default () => {
                 lineWidth={5}
               />
             </View>
+          ) : (
+            <Text style={{ color: theme.warning, fontWeight: '800' }}>
+              {lang.home.expiresIn} {formatCountdown(remaining)}
+            </Text>
           )}
         </View>
 
@@ -195,9 +263,11 @@ export default () => {
           <Text style={[styles.confirmLabel, { color: theme.success }]}>{lang.home.routineCta}</Text>
         </AppButton>
 
-        <Pressable onPress={closeRoutine} style={{ alignSelf: 'center', paddingVertical: 6 }}>
-          <Text style={{ color: theme.muted }}>{lang.common.cancel}</Text>
-        </Pressable>
+        {!success && (
+          <Pressable onPress={closeRoutine} style={{ alignSelf: 'center', paddingVertical: 6 }}>
+            <Text style={{ color: theme.muted }}>{lang.common.cancel}</Text>
+          </Pressable>
+        )}
       </View>
     );
   };
@@ -213,7 +283,7 @@ export default () => {
         <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
       </View>
 
-      {renderPendingBanner()}
+      {renderMissed()}
 
       {routine ? renderRoutine() : (
         <>
@@ -226,11 +296,13 @@ export default () => {
             )}
           </View>
 
-          <AppButton style={styles.leaveButton} onPress={() => setChooserOpen((open) => !open)}>
-            <Text style={[styles.leaveLabel, { color: theme.success }]}>{lang.home.leaveNow}</Text>
-          </AppButton>
-
-          {renderChooser()}
+          {proposals.length === 0 ? (
+            <View style={[styles.proposalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.proposalTitle, { color: theme.color }]}>{lang.home.noProposals}</Text>
+            </View>
+          ) : (
+            proposals.map(({ alarm, due }) => renderProposal(alarm, due))
+          )}
 
           <View style={styles.guideRow}>
             <AppButton style={styles.ghost} onPress={() => navigate('items')}>
@@ -276,12 +348,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  leaveButton: {
-    marginTop: 4,
+  missedCard: {
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 6,
+    borderWidth: 1,
   },
-  leaveLabel: {
+  missedTitle: {
+    fontWeight: '800',
+  },
+  proposalCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  proposalInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  proposalTitle: {
     fontWeight: '700',
     fontSize: 16,
+  },
+  activateButton: {
+    paddingHorizontal: 18,
+  },
+  activateLabel: {
+    fontWeight: '800',
+    fontSize: 15,
   },
   guideRow: {
     flexDirection: 'row',
@@ -290,40 +389,6 @@ const styles = StyleSheet.create({
   },
   ghost: {
     flexGrow: 1,
-  },
-  pendingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  pendingLabel: {
-    flex: 1,
-    fontWeight: '600',
-  },
-  panel: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-    gap: 10,
-  },
-  panelTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  routineOption: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  routineOptionLabel: {
-    fontWeight: '700',
   },
   routineCard: {
     borderRadius: 18,
