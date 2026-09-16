@@ -37,6 +37,8 @@ npm publish
 
 The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`. The package is currently in a frozen pre-baseline versioning phase — see the versioning policy in `docs/architecture.md` §9 before changing versions.
 
+> The standalone template repo pins the exact published version, so a fresh publish must exist before exporting the template. `scripts/export-template.sh` verifies that the standalone compiles against the `alambre` version on the npm registry and aborts with instructions when the registry copy is stale or missing.
+
 ## Bootstrapping a new app
 
 The template also lives as a standalone GitHub template repository:
@@ -50,7 +52,7 @@ Regenerate the standalone template repo from `apps/base-template` after template
 bash scripts/export-template.sh
 ```
 
-The script checks the working tree, builds the library, seeds the remote with `git subtree split` on first run, and then overlays the standalone-specific files (registry `alambre` pin, `.gitignore`, fresh `pnpm-lock.yaml`, license) and pushes to the template repo.
+The script checks the working tree, builds the library, seeds the remote with `git subtree split` on first run, and then overlays the standalone-specific files (registry `alambre` pin, `.gitignore`, fresh `pnpm-lock.yaml`, license) and pushes to the template repo. Before pushing, it verifies the exported app installs, typechecks and tests against the published `alambre` (set `SKIP_VERIFY=1` to bypass).
 
 ## Tooling
 

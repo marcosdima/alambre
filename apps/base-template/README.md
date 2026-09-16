@@ -28,7 +28,7 @@ The canonical standalone copy is published as a GitHub template repository (**`m
 
 ### Staying connected to alambre
 
-The template depends on the **published** `alambre` package from the npm registry (`"alambre": "1.0.4"`, pinned to the exact version at export time — the public contract is still pre-baseline, see `docs/architecture.md` §9). The app is independent from the alambre repository; updates flow through npm/pnpm:
+The template depends on the **published** `alambre` package from the npm registry (pinned to the exact version at export time — the public contract is still pre-baseline, see `docs/architecture.md` §9). The app is independent from the alambre repository; updates flow through npm/pnpm:
 
 ```bash
 pnpm add alambre@latest     # or: npm install alambre@latest
@@ -45,4 +45,4 @@ pnpm --filter @alambre/base-template typecheck
 pnpm --filter @alambre/base-template test
 ```
 
-The standalone template repo is regenerated from this folder with `bash scripts/export-template.sh` (run from the monorepo root).
+The standalone template repo is regenerated from this folder with `bash scripts/export-template.sh` (run from the monorepo root). The script verifies the exported app against the `alambre` version on npm and stops with publishing instructions if the registry copy is stale, so a fresh `npm publish` of `alambre` is required before the template can bootstrap working apps.
