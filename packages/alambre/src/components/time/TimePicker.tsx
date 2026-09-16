@@ -52,15 +52,14 @@ const Wheel = ({
       testID={prefix ? `${prefix}-wheel` : undefined}
     >
       <Pressable
-        onPress={() => onSelect(Math.min(selectedIndex + 1, data.length - 1))}
-        disabled={selectedIndex >= data.length - 1}
+        onPress={() => onSelect(wrapIndex(selectedIndex - 1, data.length))}
         hitSlop={8}
         style={({ pressed }) => [
           styles.arrow,
           { height: ARROW_HEIGHT },
           pressed && styles.arrowPressed,
         ]}
-        testID={prefix ? `${prefix}-inc` : undefined}
+        testID={prefix ? `${prefix}-up` : undefined}
       >
         <Text style={[styles.arrowLabel, { color: accentColor }]}>▲</Text>
       </Pressable>
@@ -93,15 +92,14 @@ const Wheel = ({
       </View>
 
       <Pressable
-        onPress={() => onSelect(Math.max(selectedIndex - 1, 0))}
-        disabled={selectedIndex <= 0}
+        onPress={() => onSelect(wrapIndex(selectedIndex + 1, data.length))}
         hitSlop={8}
         style={({ pressed }) => [
           styles.arrow,
           { height: ARROW_HEIGHT },
           pressed && styles.arrowPressed,
         ]}
-        testID={prefix ? `${prefix}-dec` : undefined}
+        testID={prefix ? `${prefix}-down` : undefined}
       >
         <Text style={[styles.arrowLabel, { color: accentColor }]}>▼</Text>
       </Pressable>

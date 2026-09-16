@@ -12,43 +12,65 @@ describe('TimePicker', () => {
     expect(getAllByText('30')).toBeTruthy();
   });
 
-  it('increments and decrements minutes with the arrows', async () => {
+  it('moves the selection up and down the minutes with the arrows', async () => {
     const onChange = vi.fn();
     const { getByTestId } = await render(
       <TimePicker value="08:00" onChange={onChange} testID="tp" />,
     );
 
-    await fireEvent.press(getByTestId('tp-minute-inc'));
+    await fireEvent.press(getByTestId('tp-minute-down'));
     expect(onChange).toHaveBeenLastCalledWith('08:01');
 
-    await fireEvent.press(getByTestId('tp-minute-dec'));
-    await fireEvent.press(getByTestId('tp-minute-dec'));
-    expect(onChange).toHaveBeenLastCalledWith('08:00');
+    await fireEvent.press(getByTestId('tp-minute-up'));
+    await fireEvent.press(getByTestId('tp-minute-up'));
+    expect(onChange).toHaveBeenLastCalledWith('08:59');
   });
 
-  it('increments and decrements hours with the arrows', async () => {
+  it('moves the selection up and down the hours with the arrows', async () => {
     const onChange = vi.fn();
     const { getByTestId } = await render(
       <TimePicker value="08:30" onChange={onChange} testID="tp" />,
     );
 
-    await fireEvent.press(getByTestId('tp-hour-inc'));
+    await fireEvent.press(getByTestId('tp-hour-down'));
     expect(onChange).toHaveBeenLastCalledWith('09:30');
 
-    await fireEvent.press(getByTestId('tp-hour-dec'));
-    await fireEvent.press(getByTestId('tp-hour-dec'));
+    await fireEvent.press(getByTestId('tp-hour-up'));
+    await fireEvent.press(getByTestId('tp-hour-up'));
     expect(onChange).toHaveBeenLastCalledWith('07:30');
   });
 
-  it('does not step past the value bounds', async () => {
+  it('up arrow wraps minutes backward across zero', async () => {
+    const onChange = vi.fn();
+    const { getByTestId } = await render(
+      <TimePicker value="00:00" onChange={onChange} testID="tp" />,
+    );
+
+    await fireEvent.press(getByTestId('tp-minute-up'));
+    expect(onChange).toHaveBeenLastCalledWith('00:59');
+  });
+
+  it('down arrow wraps minutes forward across 59', async () => {
     const onChange = vi.fn();
     const { getByTestId } = await render(
       <TimePicker value="23:59" onChange={onChange} testID="tp" />,
     );
 
-    await fireEvent.press(getByTestId('tp-hour-inc'));
-    await fireEvent.press(getByTestId('tp-minute-inc'));
-    expect(onChange).not.toHaveBeenCalled();
+    await fireEvent.press(getByTestId('tp-minute-down'));
+    expect(onChange).toHaveBeenLastCalledWith('23:00');
+  });
+
+  it('arrows wrap hours across midnight', async () => {
+    const onChange = vi.fn();
+    const { getByTestId } = await render(
+      <TimePicker value="23:00" onChange={onChange} testID="tp" />,
+    );
+
+    await fireEvent.press(getByTestId('tp-hour-down'));
+    expect(onChange).toHaveBeenLastCalledWith('00:00');
+
+    await fireEvent.press(getByTestId('tp-hour-up'));
+    expect(onChange).toHaveBeenLastCalledWith('23:00');
   });
 
   it('selects a value when a visible wheel item is tapped', async () => {
