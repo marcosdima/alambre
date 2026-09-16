@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createActiveRoutine,
   isExpired,
+  missingItemNames,
   remainingMs,
   type ActiveRoutine,
 } from '../src/checklist/activation-model';
@@ -62,5 +63,29 @@ describe('remainingMs', () => {
 
   it('clamps to zero once expired', () => {
     expect(remainingMs(active, new Date(2026, 8, 14, 9, 0))).toBe(0);
+  });
+});
+
+describe('missingItemNames', () => {
+  const items = [
+    { id: 'i1', name: 'llaves' },
+    { id: 'i2', name: 'billetera' },
+    { id: 'i3', name: 'celular' },
+  ];
+
+  it('lists every alarm item when nothing is ticked', () => {
+    expect(missingItemNames(['i1', 'i2', 'i3'], items, {})).toEqual(['llaves', 'billetera', 'celular']);
+  });
+
+  it('drops ticked items and keeps the order of the alarm', () => {
+    expect(missingItemNames(['i1', 'i2', 'i3'], items, { i2: true })).toEqual(['llaves', 'celular']);
+  });
+
+  it('ignores ticked items that are not part of the alarm', () => {
+    expect(missingItemNames(['i1', 'i2'], items, { i3: true, i2: true })).toEqual(['llaves']);
+  });
+
+  it('skips item ids without a matching item', () => {
+    expect(missingItemNames(['i1', 'ghost'], items, {})).toEqual(['llaves']);
   });
 });

@@ -11,7 +11,7 @@ import {
 
 export const SCHEDULE_KEY = 'colguetti.schedule';
 
-const reschedule = async (entry: StoredScheduleEntry, body: string): Promise<void> => {
+const reschedule = async (entry: StoredScheduleEntry, bodyFor: (label: string) => string): Promise<void> => {
   const trigger: Notifications.NotificationTriggerInput = {
     type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
     weekday: entry.weekday,
@@ -22,19 +22,17 @@ const reschedule = async (entry: StoredScheduleEntry, body: string): Promise<voi
     identifier: entry.id,
     content: {
       title: entry.label,
-      body,
+      body: bodyFor(entry.label),
       data: { alarmId: entry.alarmId },
     },
     trigger,
   });
 };
 
-export const cancelReminder = async (alarmId: string): Promise<void> => {
-  await Notifications.cancelScheduledNotificationAsync(`colguetti-reminder-${alarmId}`)
-    .catch(() => undefined);
-};
-
-export const syncSchedule = async (alarms: Alarm[], body: string): Promise<void> => {
+export const syncSchedule = async (
+  alarms: Alarm[],
+  bodyFor: (label: string) => string,
+): Promise<void> => {
   const stored = await readCollection<StoredScheduleEntry>(asyncStorageRaw, SCHEDULE_KEY);
   const desired = buildDesiredSchedule(alarms);
   const { toSchedule, toCancel } = diffSchedules(desired, stored);
@@ -46,7 +44,7 @@ export const syncSchedule = async (alarms: Alarm[], body: string): Promise<void>
 
   for (const entry of toSchedule) {
     if (!osId?.granted) break;
-    await reschedule(entry, body);
+    await reschedule(entry, bodyFor);
     actuallyScheduled.push(entry);
   }
 

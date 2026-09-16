@@ -5,7 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { nextOccurrence } from '../../alarms/alarms-model';
-import { cancelReminder } from '../../notifications/sync';
+import { cancelAlarmAlerts } from '../../notifications/expiry';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -29,7 +29,7 @@ export default () => {
   const confirmDelete = async () => {
     if (!toBeDeleted) return;
     await removeAlarm(toBeDeleted.id);
-    void cancelReminder(toBeDeleted.id);
+    void cancelAlarmAlerts(toBeDeleted.id);
     show({ payload: { title: lang.alarms.deleted, content: toBeDeleted.label, tone: 'success' }, duration: 3000 });
     setToBeDeleted(null);
   };

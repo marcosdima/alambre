@@ -6,6 +6,23 @@ export type ActiveRoutine = {
   expiresAt: string;
 };
 
+export type Ticks = Record<string, boolean>;
+
+type Nameable = { id: string; name: string };
+
+export const missingItemNames = (
+  itemIds: string[],
+  items: Nameable[],
+  ticked: Ticks,
+): string[] =>
+  itemIds
+    .map((id) => items.find((item) => item.id === id))
+    .filter((item): item is Nameable => {
+      if (!item) return false;
+      return !ticked[item.id];
+    })
+    .map((item) => item.name);
+
 export const createActiveRoutine = (
   alarm: Pick<Alarm, 'id' | 'activeWindowMinutes'>,
   at: Date = new Date(),

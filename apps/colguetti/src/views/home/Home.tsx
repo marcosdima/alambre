@@ -8,10 +8,10 @@ import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
 import { useConfirmations } from '../../checklist/confirmations-context';
 import { useActivation } from '../../checklist/activation-context';
-import { isExpired, remainingMs } from '../../checklist/activation-model';
+import { isExpired, missingItemNames, remainingMs } from '../../checklist/activation-model';
 import { dayMatches, nextOccurrence, nextUpcoming } from '../../alarms/alarms-model';
 import { isConfirmedAfter } from '../../checklist/checklist-model';
-import { cancelReminder } from '../../notifications/sync';
+import { cancelAlarmAlerts, cancelExpiryReminder, scheduleExpiryReminder } from '../../notifications/expiry';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppTitle from '../../components/AppTitle';
@@ -19,6 +19,8 @@ import AppButton from '../../components/AppButton';
 import { ItemIcon } from '../../items/icon-catalog';
 import LetterReveal from '../../components/LetterReveal';
 import { weekdayNames } from '../../utils/weekday-names';
+
+const MISSING_ITEMS_BODY = /\{items\}/g;
 
 const iconAnimation = {
   drawAnimation: (value: number) => withTiming(value, {
@@ -114,9 +116,8 @@ export default () => {
   useEffect(() => {
     if (!active || !isExpired(active)) return;
     const alarm = alarms.find((a) => a.id === active.alarmId);
-    const unchecked = alarm
-      ? items.filter((item) => alarm.itemIds.includes(item.id) && !ticked[item.id]).map((item) => item.name)
-      : [];
+    const unchecked = alarm ? missingItemNames(alarm.itemIds, items, ticked) : [];
+    void cancelAlarmAlerts(active.alarmId);
     setMissed({
       alarmId: active.alarmId,
       label: alarm?.label ?? '',
@@ -127,6 +128,21 @@ export default () => {
     setSuccess(false);
     void deactivate();
   }, [active, alarms, items, ticked, deactivate]);
+
+  useEffect(() => {
+    if (!active) return;
+    const alarm = alarms.find((current) => current.id === active.alarmId);
+    if (!alarm) return;
+
+    const unchecked = missingItemNames(alarm.itemIds, items, ticked);
+    if (unchecked.length === 0) {
+      void cancelExpiryReminder(active.alarmId);
+      return;
+    }
+
+    const body = lang.home.missingBody.replace(MISSING_ITEMS_BODY, unchecked.join(', '));
+    void scheduleExpiryReminder(active.alarmId, new Date(active.expiresAt), lang.home.missingTitle, body);
+  }, [active, alarms, items, ticked, lang]);
 
   const toggleItem = (id: string) => {
     setTicked((current) => ({ ...current, [id]: !current[id] }));
@@ -140,17 +156,18 @@ export default () => {
   };
 
   const closeRoutine = useCallback(() => {
+    if (active) void cancelAlarmAlerts(active.alarmId);
     setTicked({});
     setSuccess(false);
     void deactivate();
-  }, [deactivate]);
+  }, [active, deactivate]);
 
   useEffect(() => {
     if (!success || !routine || !active) return;
     const timer = setTimeout(() => {
       void (async () => {
         await confirm(routine.id, new Date());
-        await cancelReminder(routine.id);
+        await cancelAlarmAlerts(routine.id);
         await deactivate();
       })();
       show({ payload: { title: lang.home.routineConfirmed, tone: 'success' }, duration: 3000 });

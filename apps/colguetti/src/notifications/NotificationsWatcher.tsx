@@ -5,52 +5,29 @@ import { useNavigator } from 'alambre';
 import { useAlarms } from '../alarms/alarms-context';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from '../navigator/RouteIntent';
-import { useConfirmations } from '../checklist/confirmations-context';
-import { pendingAlarm, shouldResendReminder } from '../checklist/checklist-model';
 import { syncSchedule } from './sync';
 
 type AlarmIdData = { alarmId?: unknown };
 
-const rescheduleReminder = async (alarmId: string, body: string): Promise<void> => {
-  await Notifications.scheduleNotificationAsync({
-    identifier: `colguetti-reminder-${alarmId}`,
-    content: {
-      title: 'Colguetti',
-      body,
-      data: { alarmId },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: 600,
-      repeats: false,
-    },
-  });
-};
+const INVITE_BODY = /\{label\}/g;
 
 export const NotificationsWatcher = () => {
   const { alarms } = useAlarms();
-  const { lang, currentLang } = useLang();
+  const { lang } = useLang();
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
-  const { confirmations, reminders, markReminder } = useConfirmations();
 
   const alarmsRef = useRef(alarms);
-  const bodyRef = useRef(lang.home.notificationBody);
-  const stateRef = useRef({ confirmations, reminders });
+  const bodyForRef = useRef<(label: string) => string>(() => lang.home.activateBody);
 
   useEffect(() => { alarmsRef.current = alarms; }, [alarms]);
-  useEffect(() => { bodyRef.current = lang.home.notificationBody; }, [lang]);
-  useEffect(() => { stateRef.current = { confirmations, reminders }; }, [confirmations, reminders]);
+  useEffect(() => {
+    bodyForRef.current = (label: string) => lang.home.activateBody.replace(INVITE_BODY, label);
+  }, [lang]);
 
-  const reconcile = useCallback(async () => {
-    const { confirmations: conf, reminders: rem } = stateRef.current;
-    const now = new Date();
-    const pending = pendingAlarm(alarmsRef.current, conf, now, 10);
-    if (pending && shouldResendReminder(rem, pending, now, 10)) {
-      await rescheduleReminder(pending.alarm.id, bodyRef.current);
-      await markReminder(pending.alarm.id, now);
-    }
-  }, [markReminder]);
+  const sync = useCallback(async () => {
+    await syncSchedule(alarmsRef.current, bodyForRef.current);
+  }, []);
 
   useEffect(() => {
     Notifications.setNotificationHandler({
@@ -75,16 +52,14 @@ export const NotificationsWatcher = () => {
       if (!existing?.granted) {
         await Notifications.requestPermissionsAsync().catch(() => undefined);
       }
-      void syncSchedule(alarmsRef.current, bodyRef.current);
-      void reconcile();
+      void sync();
     };
     void setup();
-  }, [currentLang, reconcile]);
+  }, [sync]);
 
   useEffect(() => {
-    void syncSchedule(alarms, lang.home.notificationBody);
-    void reconcile();
-  }, [alarms, lang, reminders, reconcile]);
+    void syncSchedule(alarms, bodyForRef.current);
+  }, [alarms, lang]);
 
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -99,13 +74,10 @@ export const NotificationsWatcher = () => {
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') {
-        void syncSchedule(alarmsRef.current, bodyRef.current);
-        void reconcile();
-      }
+      if (state === 'active') void sync();
     });
     return () => sub.remove();
-  }, [reconcile]);
+  }, [sync]);
 
   return null;
 };
