@@ -61,16 +61,19 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 **Where it appears:** `apps/cross-logic/src/domain/history-model.ts` and `apps/cross-logic/src/session/game-context.tsx`.
 
 **Candidate for alambre:**
-- A pure headless hook `useHistoryState<T>(initialState, options)` or core utility `createHistory<T>`.
+- A pure headless hook `useHistoryState<T>(initialState, options)` and core history helpers `createHistory<T>`, `pushHistory`, `undoHistory`, `redoHistory`, `canUndo`, `canRedo`.
 - Fully decoupled from UI and presentation.
-- Ideal candidate for extraction once reviewed.
+
+**Status: ADOPTED (cross-logic).** Shipped in `alambre` (`src/hooks/use-history-state.ts`) and exported top-level as `useHistoryState` and history helpers. Validated with unit tests in `packages/alambre/tests/hooks/use-history-state.test.ts`.
 
 ## Elapsed time / stopwatch behavior (discovered in cross-logic & colguetti)
 
-**Pattern:** apps require elapsed time tracking, pauses, countdowns or formatted time representations (logic puzzle timer, routine activation windows in Colguetti).
+**Pattern:** apps require elapsed time tracking, pauses, countdowns or formatted time representations (logic puzzle timer in Cross Logic, routine activation windows in Colguetti).
 
 **Where it appears:** `apps/cross-logic/src/session/game-context.tsx` and `apps/colguetti/src/checklist/activation-context.tsx`.
 
 **Candidate for alambre:**
-- A headless `useStopwatch` / `useTimer` hook exposing `{ seconds, isRunning, start, pause, reset, formatTime }`.
+- A headless `useStopwatch` hook exposing `{ seconds, isRunning, start, pause, reset, formattedTime }` and pure helper `formatStopwatchTime`.
 - Presentation remains 100% owned by the application.
+
+**Status: ADOPTED (cross-logic, colguetti).** Shipped in `alambre` (`src/hooks/use-stopwatch.ts`) and exported top-level as `useStopwatch` and `formatStopwatchTime`. Validated with unit tests in `packages/alambre/tests/hooks/use-stopwatch.test.ts`.
