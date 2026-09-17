@@ -71,6 +71,8 @@ export const nextCellState = (current: CellState): CellState => {
       return 'tick';
     case 'tick':
       return 'empty';
+    case 'auto-cross':
+      return 'empty';
     default:
       return 'empty';
   }
@@ -94,7 +96,9 @@ export const applyAutoCross = (
   for (const otherB of catB.items) {
     if (otherB.id !== itemBId) {
       const key = createPairKey(catAId, itemAId, catBId, otherB.id);
-      nextGrid[key] = 'cross';
+      if (nextGrid[key] === 'empty') {
+        nextGrid[key] = 'auto-cross';
+      }
     }
   }
 
@@ -102,7 +106,46 @@ export const applyAutoCross = (
   for (const otherA of catA.items) {
     if (otherA.id !== itemAId) {
       const key = createPairKey(catAId, otherA.id, catBId, itemBId);
-      nextGrid[key] = 'cross';
+      if (nextGrid[key] === 'empty') {
+        nextGrid[key] = 'auto-cross';
+      }
+    }
+  }
+
+  return nextGrid;
+};
+
+export const removeAutoCross = (
+  puzzle: PuzzleDefinition,
+  grid: GridState,
+  catAId: string,
+  itemAId: string,
+  catBId: string,
+  itemBId: string,
+): GridState => {
+  const nextGrid = { ...grid };
+  const catA = puzzle.categories.find((c) => c.id === catAId);
+  const catB = puzzle.categories.find((c) => c.id === catBId);
+
+  if (!catA || !catB) return nextGrid;
+
+  // Clear auto-crosses in catB for itemA
+  for (const otherB of catB.items) {
+    if (otherB.id !== itemBId) {
+      const key = createPairKey(catAId, itemAId, catBId, otherB.id);
+      if (nextGrid[key] === 'auto-cross') {
+        nextGrid[key] = 'empty';
+      }
+    }
+  }
+
+  // Clear auto-crosses in catA for itemB
+  for (const otherA of catA.items) {
+    if (otherA.id !== itemAId) {
+      const key = createPairKey(catAId, otherA.id, catBId, itemBId);
+      if (nextGrid[key] === 'auto-cross') {
+        nextGrid[key] = 'empty';
+      }
     }
   }
 
@@ -129,8 +172,8 @@ export const isCellCorrect = (
   if (state === 'empty') return true;
   const { catAId, itemAId, catBId, itemBId } = parsePairKey(pairKey);
   const isTrue = isPairTrueInSolution(puzzle, catAId, itemAId, catBId, itemBId);
-  const expectedState: CellState = isTrue ? 'tick' : 'cross';
-  return state === expectedState;
+  if (state === 'tick') return isTrue;
+  return !isTrue;
 };
 
 export const checkVictory = (

@@ -4,6 +4,7 @@ import {
   initializeGrid,
   nextCellState,
   applyAutoCross,
+  removeAutoCross,
   checkVictory,
   isCellCorrect,
   getSubgridPairs,
@@ -65,10 +66,11 @@ describe('grid-model', () => {
     expect(Object.values(grid).every((state) => state === 'empty')).toBe(true);
   });
 
-  it('cycles cell state in order: empty -> cross -> tick -> empty', () => {
+  it('cycles cell state in order: empty -> cross -> tick -> empty, and auto-cross -> empty', () => {
     expect(nextCellState('empty')).toBe('cross');
     expect(nextCellState('cross')).toBe('tick');
     expect(nextCellState('tick')).toBe('empty');
+    expect(nextCellState('auto-cross')).toBe('empty');
   });
 
   it('applies auto-cross to row and column in the same subgrid when a tick is placed', () => {
@@ -78,17 +80,32 @@ describe('grid-model', () => {
 
     grid = applyAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
 
-    // Row: other pets for p1 (p1 - pet2) should become 'cross'
+    // Row: other pets for p1 (p1 - pet2) should become 'auto-cross'
     const keyP1Pet2 = createPairKey('persons', 'p1', 'pets', 'pet2');
-    expect(grid[keyP1Pet2]).toBe('cross');
+    expect(grid[keyP1Pet2]).toBe('auto-cross');
 
-    // Column: other persons for pet1 (p2 - pet1) should become 'cross'
+    // Column: other persons for pet1 (p2 - pet1) should become 'auto-cross'
     const keyP2Pet1 = createPairKey('persons', 'p2', 'pets', 'pet1');
-    expect(grid[keyP2Pet1]).toBe('cross');
+    expect(grid[keyP2Pet1]).toBe('auto-cross');
 
     // Diagonal (p2 - pet2) should remain 'empty'
     const keyP2Pet2 = createPairKey('persons', 'p2', 'pets', 'pet2');
     expect(grid[keyP2Pet2]).toBe('empty');
+  });
+
+  it('removes auto-crosses when tick is removed', () => {
+    let grid = initializeGrid(mockPuzzle);
+    grid = applyAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
+    const keyP1Pet2 = createPairKey('persons', 'p1', 'pets', 'pet2');
+    expect(grid[keyP1Pet2]).toBe('auto-cross');
+
+    // Manual cross should NOT be removed by removeAutoCross
+    const keyManual = createPairKey('persons', 'p2', 'pets', 'pet1');
+    grid[keyManual] = 'cross';
+
+    grid = removeAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
+    expect(grid[keyP1Pet2]).toBe('empty');
+    expect(grid[keyManual]).toBe('cross');
   });
 
   it('checks cell correctness against solution', () => {
@@ -99,6 +116,7 @@ describe('grid-model', () => {
     expect(isCellCorrect(mockPuzzle, correctKey, 'cross')).toBe(false);
 
     expect(isCellCorrect(mockPuzzle, incorrectKey, 'cross')).toBe(true);
+    expect(isCellCorrect(mockPuzzle, incorrectKey, 'auto-cross')).toBe(true);
     expect(isCellCorrect(mockPuzzle, incorrectKey, 'tick')).toBe(false);
   });
 

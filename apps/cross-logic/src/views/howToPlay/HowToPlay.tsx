@@ -1,8 +1,6 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
-import AppTitle from '../../components/AppTitle';
-
 export default function HowToPlay() {
   const { theme } = useLightDark();
   const { lang } = useLang();
@@ -18,8 +16,6 @@ export default function HowToPlay() {
       style={[styles.container, { backgroundColor: theme.background }]}
       contentContainerStyle={styles.content}
     >
-      <AppTitle style={{ color: theme.color }}>{lang.howToPlay.title}</AppTitle>
-
       <View style={[styles.introCard, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
         <Text style={[styles.introText, { color: theme.color }]}>
           {lang.howToPlay.intro}

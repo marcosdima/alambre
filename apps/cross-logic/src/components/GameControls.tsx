@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
-import { useConfirm } from 'alambre';
+import { AlambreIcons, useConfirm } from 'alambre';
 import { useGame } from '../session/game-context';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
@@ -40,35 +40,47 @@ export default function GameControls() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-      {/* Status Badges (Time & Mistakes) */}
+      {/* Status Indicators */}
       <View style={styles.statusRow}>
+        {/* Timer */}
         <View style={[styles.badge, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.badgeLabel, { color: theme.muted }]}>
-            {lang.game.time}
-          </Text>
+          <AlambreIcons.Watch
+            color={theme.muted}
+            lineWidth={2}
+            style={{ width: 14, height: 14 }}
+          />
           <Text style={[styles.badgeValue, { color: theme.color }]}>
-            ⏱ {formatTime(elapsedSeconds)}
+            {formatTime(elapsedSeconds)}
           </Text>
         </View>
 
-        {mode === 'challenge' && (
+        {/* Mode / Mistakes */}
+        {mode === 'challenge' ? (
           <View style={[styles.badge, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Text style={[styles.badgeLabel, { color: theme.muted }]}>
-              {lang.game.mistakes}
-            </Text>
-            <Text style={[styles.badgeValue, { color: mistakesCount > 0 ? theme.danger : theme.color }]}>
-              {mistakesCount === 0 && '❤️❤️❤️'}
-              {mistakesCount === 1 && '❤️❤️🖤'}
-              {mistakesCount === 2 && '❤️🖤🖤'}
-              {mistakesCount >= 3 && '🖤🖤🖤'}
-            </Text>
+            <View style={styles.heartsRow}>
+              {[0, 1, 2].map((idx) => {
+                const lost = idx < mistakesCount;
+                return (
+                  <AlambreIcons.Heart
+                    key={idx}
+                    color={lost ? theme.border : theme.danger}
+                    fill={lost ? 'none' : theme.danger}
+                    lineWidth={2}
+                    style={{ width: 15, height: 15 }}
+                  />
+                );
+              })}
+            </View>
           </View>
-        )}
-
-        {mode === 'zen' && (
+        ) : (
           <View style={[styles.badge, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Text style={[styles.badgeValue, { color: theme.primary, fontSize: 12 }]}>
-              🌱 Zen
+            <AlambreIcons.Leaf
+              color={theme.primary}
+              lineWidth={2}
+              style={{ width: 14, height: 14 }}
+            />
+            <Text style={[styles.badgeValue, { color: theme.primary }]}>
+              {lang.home.zenMode}
             </Text>
           </View>
         )}
@@ -84,14 +96,19 @@ export default function GameControls() {
             {
               backgroundColor: theme.surface,
               borderColor: theme.border,
-              opacity: canUndo ? (pressed ? 0.75 : 1) : 0.4,
+              opacity: canUndo ? (pressed ? 0.75 : 1) : 0.35,
             },
           ]}
           accessibilityRole="button"
           accessibilityLabel={lang.game.undo}
         >
+          <AlambreIcons.Undo
+            color={theme.color}
+            lineWidth={2.5}
+            style={{ width: 14, height: 14 }}
+          />
           <Text style={[styles.actionButtonText, { color: theme.color }]}>
-            ↩ {lang.game.undo}
+            {lang.game.undo}
           </Text>
         </Pressable>
 
@@ -103,14 +120,19 @@ export default function GameControls() {
             {
               backgroundColor: theme.surface,
               borderColor: theme.border,
-              opacity: canRedo ? (pressed ? 0.75 : 1) : 0.4,
+              opacity: canRedo ? (pressed ? 0.75 : 1) : 0.35,
             },
           ]}
           accessibilityRole="button"
           accessibilityLabel={lang.game.redo}
         >
+          <AlambreIcons.Redo
+            color={theme.color}
+            lineWidth={2.5}
+            style={{ width: 14, height: 14 }}
+          />
           <Text style={[styles.actionButtonText, { color: theme.color }]}>
-            ↪ {lang.game.redo}
+            {lang.game.redo}
           </Text>
         </Pressable>
 
@@ -127,8 +149,13 @@ export default function GameControls() {
           accessibilityRole="button"
           accessibilityLabel={lang.game.reset}
         >
+          <AlambreIcons.Refresh
+            color={theme.danger}
+            lineWidth={2.5}
+            style={{ width: 14, height: 14 }}
+          />
           <Text style={[styles.actionButtonText, { color: theme.danger }]}>
-            🔄 {lang.game.reset}
+            {lang.game.reset}
           </Text>
         </Pressable>
       </View>
@@ -138,10 +165,11 @@ export default function GameControls() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 12,
-    borderRadius: 14,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    gap: 10,
+    gap: 8,
   },
   statusRow: {
     flexDirection: 'row',
@@ -151,21 +179,23 @@ const styles = StyleSheet.create({
   },
   badge: {
     flex: 1,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
-    alignItems: 'center',
-  },
-  badgeLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    gap: 6,
   },
   badgeValue: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    marginTop: 2,
+  },
+  heartsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   buttonsRow: {
     flexDirection: 'row',
@@ -174,14 +204,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
+    flexDirection: 'row',
+    paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
   },
   actionButtonText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
 });

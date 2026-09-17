@@ -1,4 +1,5 @@
 import { Modal, StyleSheet, Text, View } from 'react-native';
+import { AlambreIcons } from 'alambre';
 import { useGame } from '../session/game-context';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
@@ -26,6 +27,10 @@ export default function VictoryModal({
     return `${mins}m ${secs}s`;
   };
 
+  const diffLabel =
+    (lang.home as Record<string, string>)[activePuzzle.difficulty] ??
+    activePuzzle.difficulty;
+
   return (
     <Modal
       transparent
@@ -41,9 +46,21 @@ export default function VictoryModal({
           ]}
         >
           {/* Header Icon & Title */}
-          <Text style={styles.emojiBadge}>
-            {isCompleted ? '🎉' : '💔'}
-          </Text>
+          <View style={styles.badgeContainer}>
+            {isCompleted ? (
+              <AlambreIcons.Trophy
+                color={theme.warning}
+                lineWidth={2.5}
+                style={{ width: 48, height: 48 }}
+              />
+            ) : (
+              <AlambreIcons.Heart
+                color={theme.danger}
+                lineWidth={2.5}
+                style={{ width: 48, height: 48 }}
+              />
+            )}
+          </View>
 
           <Text style={[styles.title, { color: isCompleted ? theme.success : theme.danger }]}>
             {isCompleted ? lang.game.victoryTitle : lang.game.defeatTitle}
@@ -82,7 +99,7 @@ export default function VictoryModal({
                 {lang.home.selectDifficulty}
               </Text>
               <Text style={[styles.statValue, { color: theme.primary, textTransform: 'capitalize' }]}>
-                {activePuzzle.difficulty}
+                {diffLabel}
               </Text>
             </View>
           </View>
@@ -123,8 +140,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  emojiBadge: {
-    fontSize: 48,
+  badgeContainer: {
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 22,

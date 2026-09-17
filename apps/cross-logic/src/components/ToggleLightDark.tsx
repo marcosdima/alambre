@@ -80,7 +80,7 @@ export default (
 
   useEffect(() => {
     progress.value = withSpring(side);
-    const offset = 73;
+    const offset = 75;
     const leftOffset = offset;
     const rightOffset = 300 - offset;
     const { width, height } = size;

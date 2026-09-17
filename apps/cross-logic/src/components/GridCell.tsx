@@ -20,7 +20,8 @@ export default function GridCell({
 }: GridCellProps) {
   const { theme } = useLightDark();
 
-  const iconSize = Math.max(14, Math.floor(size * 0.55));
+  const iconSize = Math.max(16, Math.floor(size * 0.72));
+  const autoCrossSize = Math.max(14, Math.floor(size * 0.58));
 
   return (
     <Pressable
@@ -38,11 +39,21 @@ export default function GridCell({
         pressed && styles.cellPressed,
       ]}
     >
+      {state === 'auto-cross' && (
+        <View style={{ width: autoCrossSize, height: autoCrossSize, opacity: 0.4 }}>
+          <AlambreIcons.Cross
+            color={theme.color}
+            lineWidth={2.5}
+            drawIt={true}
+          />
+        </View>
+      )}
+
       {state === 'cross' && (
         <View style={{ width: iconSize, height: iconSize }}>
           <AlambreIcons.Cross
             color={theme.danger}
-            lineWidth={2.5}
+            lineWidth={4}
             drawIt={true}
           />
         </View>
@@ -52,7 +63,7 @@ export default function GridCell({
         <View style={{ width: iconSize, height: iconSize }}>
           <AlambreIcons.Tick
             color={theme.success}
-            lineWidth={3}
+            lineWidth={4}
             drawIt={true}
           />
         </View>

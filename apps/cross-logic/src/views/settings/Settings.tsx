@@ -2,7 +2,6 @@ import { Text, View, StyleSheet, Pressable, Switch } from 'react-native';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
-import AppTitle from '../../components/AppTitle';
 import ToggleLightDark from '../../components/ToggleLightDark';
 
 export default () => {
@@ -18,8 +17,6 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>{lang.settings.title}</AppTitle>
-
       {/* Language */}
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
@@ -105,6 +102,7 @@ const styles = StyleSheet.create({
   toggle: {
     height: 64,
     aspectRatio: 3.2,
+    alignSelf: 'center',
   },
   switchRow: {
     flexDirection: 'row',

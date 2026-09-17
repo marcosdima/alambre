@@ -15,6 +15,7 @@ import type {
 } from '../domain/types';
 import {
   applyAutoCross,
+  removeAutoCross,
   checkVictory,
   createPairKey,
   initializeGrid,
@@ -174,8 +175,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const nextState = nextCellState(currentState);
 
     let isMistake = false;
-    if (mode === 'challenge' && nextState !== 'empty') {
-      const correct = isCellCorrect(activePuzzle, pairKey, nextState);
+    if (mode === 'challenge' && nextState === 'tick') {
+      const correct = isCellCorrect(activePuzzle, pairKey, 'tick');
       if (!correct) {
         isMistake = true;
         setMistakesCount((prev) => {
@@ -192,6 +193,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     if (nextState === 'tick' && config.autoCross === 'true') {
       updatedGrid = applyAutoCross(
+        activePuzzle,
+        updatedGrid,
+        catAId,
+        itemAId,
+        catBId,
+        itemBId,
+      );
+    } else if (currentState === 'tick' && nextState === 'empty') {
+      updatedGrid = removeAutoCross(
         activePuzzle,
         updatedGrid,
         catAId,

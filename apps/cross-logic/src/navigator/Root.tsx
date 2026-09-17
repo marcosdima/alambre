@@ -1,32 +1,50 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 import {
-  BounceInLeft,
-  BounceInRight,
-  BounceOutLeft,
-  BounceOutRight,
   Easing,
+  FadeInLeft,
+  FadeInRight,
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
+import type { NavigatorTypes } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import { useLang } from '../providers/lang';
+import { pages, type PageTitle } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
+
+const resolvePageTitle = (
+  page: NavigatorTypes.Page,
+): PageTitle | undefined => {
+  for (const entry of Object.values(pages)) {
+    if (entry === page) return entry.title;
+  }
+  return undefined;
+};
 
 export default () => {
   const { theme } = useLightDark();
+  const { currentLang } = useLang();
+  const { currentPage } = useNavigator();
+
+  const title = resolvePageTitle(currentPage);
+  const headerTitle = title?.[currentLang as 'es' | 'en'];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <AppNavigatorBody
         style={styles.container}
         arrowColor={theme.primary}
+        arrowBackgroundColor={theme.surfaceAlt}
+        arrowBorderColor={theme.border}
+        headerStyle={{ backgroundColor: theme.surfaceAlt }}
+        titleColor={theme.color}
+        headerTitle={headerTitle}
         animations={{
           go: {
-            pageEntering: BounceInRight.duration(800).delay(400).easing(Easing.ease),
-            pageExiting: BounceOutLeft.duration(600).easing(Easing.ease),
+            pageEntering: FadeInRight.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
           },
           return: {
-            pageEntering: BounceInLeft.duration(800).delay(400).easing(Easing.ease),
-            pageExiting: BounceOutRight.duration(800).easing(Easing.ease),
+            pageEntering: FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
           },
         }}
         useNavigator={useNavigator}
@@ -38,6 +56,5 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(95, 95, 74, 0.13)',
   },
 });

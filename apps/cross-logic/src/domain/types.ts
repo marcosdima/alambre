@@ -2,7 +2,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type GameMode = 'zen' | 'challenge';
 
-export type CellState = 'empty' | 'cross' | 'tick';
+export type CellState = 'empty' | 'cross' | 'tick' | 'auto-cross';
 
 export interface CategoryItem {
   id: string;

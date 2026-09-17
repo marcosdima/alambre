@@ -1,7 +1,10 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { useNavigator } from 'alambre';
+import { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
+import { AlambreIcons, useNavigator } from 'alambre';
 import { useGame } from '../../session/game-context';
 import { useLightDark } from '../../providers/theme';
+import { useLang } from '../../providers/lang';
 import LogicGrid from '../../components/LogicGrid';
 import CluesList from '../../components/CluesList';
 import GameControls from '../../components/GameControls';
@@ -10,8 +13,17 @@ import AppButton from '../../components/AppButton';
 
 export default function GameScreen() {
   const { theme } = useLightDark();
+  const { lang } = useLang();
   const { navigate } = useNavigator();
-  const { activePuzzle, startNewGame, difficulty, mode } = useGame();
+  const {
+    activePuzzle,
+    startNewGame,
+    difficulty,
+    mode,
+    strikethroughClues,
+  } = useGame();
+
+  const [cluesExpanded, setCluesExpanded] = useState(true);
 
   if (!activePuzzle) {
     return (
@@ -27,6 +39,10 @@ export default function GameScreen() {
       </View>
     );
   }
+
+  const diffLabel =
+    (lang.home as Record<string, string>)[activePuzzle.difficulty] ??
+    activePuzzle.difficulty;
 
   const handlePlayAnother = () => {
     startNewGame(difficulty, mode);
@@ -45,7 +61,7 @@ export default function GameScreen() {
       >
         {/* Title Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.color }]}>
+          <Text style={[styles.title, { color: theme.color }]} numberOfLines={1}>
             {activePuzzle.title}
           </Text>
           <View
@@ -55,7 +71,7 @@ export default function GameScreen() {
             ]}
           >
             <Text style={[styles.difficultyText, { color: theme.primary }]}>
-              {activePuzzle.difficulty}
+              {diffLabel}
             </Text>
           </View>
         </View>
@@ -68,8 +84,53 @@ export default function GameScreen() {
           <LogicGrid puzzle={activePuzzle} />
         </View>
 
-        {/* Clues & Story */}
-        <CluesList story={activePuzzle.story} clues={activePuzzle.clues} />
+        {/* Retractable Clues Header & Toggle */}
+        <Pressable
+          onPress={() => setCluesExpanded((prev) => !prev)}
+          style={({ pressed }) => [
+            styles.cluesToggleBar,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+            },
+            pressed && { opacity: 0.8 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={lang.game.cluesTitle}
+        >
+          <View style={styles.cluesToggleLeft}>
+            <AlambreIcons.Book
+              color={theme.primary}
+              lineWidth={2}
+              style={{ width: 16, height: 16 }}
+            />
+            <Text style={[styles.cluesToggleTitle, { color: theme.color }]}>
+              {lang.game.cluesTitle}
+            </Text>
+            <View style={[styles.cluesCountBadge, { backgroundColor: theme.primarySoft }]}>
+              <Text style={[styles.cluesCountText, { color: theme.primary }]}>
+                {strikethroughClues.length}/{activePuzzle.clues.length}
+              </Text>
+            </View>
+          </View>
+
+          <AlambreIcons.Arrow
+            color={theme.muted}
+            lineWidth={2}
+            rotation={cluesExpanded ? 90 : 270}
+            style={{ width: 14, height: 14 }}
+          />
+        </Pressable>
+
+        {/* Clues & Story Content */}
+        {cluesExpanded && (
+          <Animated.View
+            entering={FadeInDown.duration(200)}
+            exiting={FadeOutUp.duration(150)}
+          >
+            <CluesList story={activePuzzle.story} clues={activePuzzle.clues} />
+          </Animated.View>
+        )}
       </ScrollView>
 
       {/* Victory / Defeat Modal */}
@@ -89,9 +150,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    gap: 14,
-    paddingBottom: 40,
+    padding: 12,
+    gap: 10,
+    paddingBottom: 30,
   },
   emptyContainer: {
     flex: 1,
@@ -107,16 +168,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 2,
+    gap: 10,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     flex: 1,
   },
   difficultyBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
   },
@@ -126,8 +188,35 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   gridCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
+  },
+  cluesToggleBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  cluesToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cluesToggleTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  cluesCountBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  cluesCountText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
 });
