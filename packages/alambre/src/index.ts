@@ -32,6 +32,26 @@ export {
   useToast,
 } from './behaviors';
 
+// Hooks & state utilities.
+export {
+  useHistoryState,
+  createHistory,
+  pushHistory,
+  undoHistory,
+  redoHistory,
+  canUndo,
+  canRedo,
+  useStopwatch,
+  formatStopwatchTime,
+} from './hooks';
+export type {
+  HistoryState,
+  UseHistoryStateOptions,
+  UseHistoryStateReturn,
+  UseStopwatchOptions,
+  UseStopwatchReturn,
+} from './hooks';
+
 // Icons.
 export * as AlambreIcons from './components/icons';
 

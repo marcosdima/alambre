@@ -47,6 +47,15 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.removeJson).toBe('function');
     expect(typeof Alambre.readCollection).toBe('function');
     expect(typeof Alambre.writeCollection).toBe('function');
+    expect(typeof Alambre.useHistoryState).toBe('function');
+    expect(typeof Alambre.createHistory).toBe('function');
+    expect(typeof Alambre.pushHistory).toBe('function');
+    expect(typeof Alambre.undoHistory).toBe('function');
+    expect(typeof Alambre.redoHistory).toBe('function');
+    expect(typeof Alambre.canUndo).toBe('function');
+    expect(typeof Alambre.canRedo).toBe('function');
+    expect(typeof Alambre.useStopwatch).toBe('function');
+    expect(typeof Alambre.formatStopwatchTime).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 
@@ -127,12 +136,16 @@ describe('public API — type surface', () => {
       onCancel: () => undefined,
     };
     const page: Alambre.NavigatorTypes.Page = { component: null };
+    const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
+    const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
     expect(toastComponentProps).toBeDefined();
     expect(confirmComponentProps).toBeDefined();
     expect(page).toBeDefined();
+    expect(historyState).toBeDefined();
+    expect(stopwatchOptions).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {
