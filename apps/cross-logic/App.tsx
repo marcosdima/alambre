@@ -3,22 +3,32 @@ import { LightDarkProvider } from './src/providers/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LangProvider } from './src/providers/lang';
 import Root from './src/navigator/Root';
-import { NavigatorProvider, ToastProvider } from 'alambre';
+import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { TemplateToast } from './src/providers/toast';
+import ConfirmDialog from './src/components/ConfirmDialog';
+
+import { RecordsProvider } from './src/session/records-context';
+import { GameProvider } from './src/session/game-context';
 
 export default function App() {
   return (
     <ConfigProvider>
       <LightDarkProvider>
         <LangProvider>
-          <GestureHandlerRootView>
-            <NavigatorProvider pages={navigator}>
-              <ToastProvider ToastComponent={TemplateToast}>
-                <Root />
-              </ToastProvider>
-            </NavigatorProvider>
-          </GestureHandlerRootView>
+          <RecordsProvider>
+            <GameProvider>
+              <GestureHandlerRootView>
+                <NavigatorProvider pages={navigator}>
+                  <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                    <ToastProvider ToastComponent={TemplateToast}>
+                      <Root />
+                    </ToastProvider>
+                  </ConfirmProvider>
+                </NavigatorProvider>
+              </GestureHandlerRootView>
+            </GameProvider>
+          </RecordsProvider>
         </LangProvider>
       </LightDarkProvider>
     </ConfigProvider>

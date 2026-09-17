@@ -11,6 +11,10 @@ export const light = {
   onPrimary: '#ffffff',
   border: '#c9d6ea',
   muted: '#5e6a7f',
+  success: '#0f7b6c',
+  warning: '#8a5a00',
+  danger: '#b42318',
+  overlay: 'rgba(15, 23, 42, 0.45)',
 };
 
 export const dark = {
@@ -23,6 +27,10 @@ export const dark = {
   onPrimary: '#081224',
   border: '#32455f',
   muted: '#9eb0c8',
+  success: '#3dc8b4',
+  warning: '#ffc266',
+  danger: '#ff7b7b',
+  overlay: 'rgba(2, 6, 14, 0.6)',
 };
 
 export const { LightDarkProvider, useLightDark } = createLightDarkProvider(

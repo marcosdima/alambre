@@ -2,7 +2,9 @@ import { createConfigProvider } from 'alambre';
 import { storage } from '../storage';
 
 const config = {
-  greeting: 'Hello from alambre',
+  autoCross: 'true',
+  defaultMode: 'zen',
+  defaultDifficulty: 'easy',
 };
 
 export const { ConfigProvider, useConfig } = createConfigProvider(

@@ -1,15 +1,17 @@
 import Home from '../views/home/Home';
-import Details from '../views/home/Details';
+import GameScreen from '../views/game/GameScreen';
+import HowToPlay from '../views/howToPlay/HowToPlay';
 import Settings from '../views/settings/Settings';
 
 export default {
   home: {
     component: <Home />,
-    subpages: {
-      details: {
-        component: <Details />,
-      },
-    },
+  },
+  game: {
+    component: <GameScreen />,
+  },
+  howToPlay: {
+    component: <HowToPlay />,
   },
   settings: {
     component: <Settings />,
