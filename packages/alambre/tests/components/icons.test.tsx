@@ -355,8 +355,27 @@ describe('Path', () => {
 
 describe('public icon API', () => {
   it('keeps exposing the concrete icons and base primitives', () => {
-    for (const name of ['Arrow', 'Cross', 'Tick', 'Sun', 'Moon', 'Circle', 'Line', 'Path']) {
+    const expected = [
+      'Arrow', 'Cross', 'Tick', 'Sun', 'Moon', 'Circle', 'Line', 'Path',
+      'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
+      'Plug', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
+      'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
+    ];
+    for (const name of expected) {
       expect(AlambreIcons).toHaveProperty(name);
+    }
+  });
+
+  it('renders newly added item icons with default fill="none" and forwards stroke', async () => {
+    const { toJSON } = await render(
+      <AlambreIcons.Wallet color="#123456" lineWidth={3} />,
+    );
+    const paths = pathsOf(toJSON());
+    expect(paths.length).toBeGreaterThan(0);
+    for (const path of paths) {
+      expect(path.stroke).toBe('#123456');
+      expect(path.strokeWidth).toBe(3);
+      expect(path.fill).toBe('none');
     }
   });
 });
