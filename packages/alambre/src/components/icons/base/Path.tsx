@@ -32,6 +32,7 @@ export default (
 
   const targetDasharray = iconAnimation?.strokeDasharray ?? strokeDasharray;
   const modPath: PathProps & { pathLength: number } = {
+    fill: 'none',
     ...path,
     pathLength: 1,
     strokeDasharray: targetDasharray,
