@@ -358,7 +358,7 @@ describe('public icon API', () => {
     const expected = [
       'Arrow', 'Cross', 'Tick', 'Sun', 'Moon', 'Circle', 'Line', 'Path',
       'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
-      'Plug', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
+      'Plug', 'Charger', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
       'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
     ];
     for (const name of expected) {

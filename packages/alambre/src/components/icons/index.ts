@@ -16,6 +16,7 @@ export { default as Umbrella } from './Umbrella';
 export { default as Water } from './Water';
 export { default as Meds } from './Meds';
 export { default as Plug } from './Plug';
+export { default as Charger } from './Charger';
 export { default as Backpack } from './Backpack';
 export { default as Laptop } from './Laptop';
 export { default as Headphones } from './Headphones';

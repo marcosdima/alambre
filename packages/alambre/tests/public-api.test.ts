@@ -62,7 +62,7 @@ describe('public API — value surface', () => {
     expect(typeof AlambreIcons.Path).toBe('function');
     for (const name of [
       'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
-      'Plug', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
+      'Plug', 'Charger', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
       'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
     ] as const) {
       expect(typeof AlambreIcons[name]).toBe('function');

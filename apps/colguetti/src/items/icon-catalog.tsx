@@ -33,7 +33,7 @@ export const iconCatalog: Record<ItemIconKey, ComponentType<CatalogIconProps>> =
   umbrella: AlambreIcons.Umbrella as ComponentType<CatalogIconProps>,
   water: AlambreIcons.Water as ComponentType<CatalogIconProps>,
   meds: AlambreIcons.Meds as ComponentType<CatalogIconProps>,
-  charger: AlambreIcons.Plug as ComponentType<CatalogIconProps>,
+  charger: AlambreIcons.Charger as ComponentType<CatalogIconProps>,
   backpack: AlambreIcons.Backpack as ComponentType<CatalogIconProps>,
   laptop: AlambreIcons.Laptop as ComponentType<CatalogIconProps>,
   headphones: AlambreIcons.Headphones as ComponentType<CatalogIconProps>,
