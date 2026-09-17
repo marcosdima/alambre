@@ -33,6 +33,10 @@ import {
 import { getRandomPuzzle, getPuzzleById } from '../domain/puzzles/service';
 import { useConfig } from '../providers/config';
 import { useRecords } from './records-context';
+import { getJson, setJson, removeJson } from 'alambre';
+import { storage } from '../storage';
+
+const ACTIVE_GAME_KEY = 'cross-logic.activeGame';
 
 interface GameContextType {
   activePuzzle: PuzzleDefinition | null;
@@ -93,6 +97,38 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setIsDefeated(false);
   }, [difficulty, mode]);
 
+  // Load active game from storage on mount
+  useEffect(() => {
+    void (async () => {
+      try {
+        const saved = await getJson<{
+          puzzleId: string;
+          grid: GridState;
+          strikethroughClues: string[];
+          mistakesCount: number;
+          elapsedSeconds: number;
+          mode: GameMode;
+          difficulty: Difficulty;
+        }>(storage, ACTIVE_GAME_KEY);
+
+        if (saved) {
+          const puzzle = getPuzzleById(saved.puzzleId);
+          if (puzzle) {
+            setActivePuzzle(puzzle);
+            setHistory(createHistory(saved.grid, 50));
+            setStrikethroughClues(saved.strikethroughClues ?? []);
+            setMistakesCount(saved.mistakesCount ?? 0);
+            setElapsedSeconds(saved.elapsedSeconds ?? 0);
+            setMode(saved.mode ?? 'zen');
+            setDifficulty(saved.difficulty ?? 'easy');
+          }
+        }
+      } catch {
+        // Ignore corrupted storage
+      }
+    })();
+  }, []);
+
   // Timer effect
   useEffect(() => {
     if (!activePuzzle || isCompleted || isDefeated) return;
@@ -103,6 +139,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     return () => clearInterval(timer);
   }, [activePuzzle, isCompleted, isDefeated]);
+
+  // Save active game to storage whenever it updates
+  useEffect(() => {
+    if (!activePuzzle) return;
+
+    if (isCompleted || isDefeated) {
+      void removeJson(storage, ACTIVE_GAME_KEY);
+      return;
+    }
+
+    void setJson(storage, ACTIVE_GAME_KEY, {
+      puzzleId: activePuzzle.id,
+      grid: history.present,
+      strikethroughClues,
+      mistakesCount,
+      elapsedSeconds,
+      mode,
+      difficulty,
+    });
+  }, [activePuzzle, history.present, strikethroughClues, mistakesCount, elapsedSeconds, mode, difficulty, isCompleted, isDefeated]);
 
   const cellTapped = useCallback((
     catAId: string,
