@@ -7,6 +7,15 @@ export { default as Arrow } from './Arrow';
 export { default as Sun } from './Sun';
 export { default as Cross } from './Cross';
 export { default as Tick } from './Tick';
+export { default as Heart } from './Heart';
+export { default as Undo } from './Undo';
+export { default as Redo } from './Redo';
+export { default as Refresh } from './Refresh';
+export { default as Trophy } from './Trophy';
+export { default as Play } from './Play';
+export { default as Gear } from './Gear';
+export { default as Zap } from './Zap';
+export { default as Leaf } from './Leaf';
 
 export { default as Keys } from './Keys';
 export { default as Wallet } from './Wallet';
@@ -27,4 +36,3 @@ export { default as Coffee } from './Coffee';
 export { default as Watch } from './Watch';
 export { default as Gift } from './Gift';
 export { default as CreditCard } from './CreditCard';
-

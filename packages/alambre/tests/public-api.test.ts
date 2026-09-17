@@ -70,6 +70,7 @@ describe('public API — value surface', () => {
     expect(typeof AlambreIcons.Line).toBe('function');
     expect(typeof AlambreIcons.Path).toBe('function');
     for (const name of [
+      'Heart', 'Undo', 'Redo', 'Refresh', 'Trophy', 'Play', 'Gear', 'Zap', 'Leaf',
       'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
       'Plug', 'Charger', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
       'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
