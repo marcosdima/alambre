@@ -1,48 +1,44 @@
-# Base Template
+# Cross Logic
 
-Canonical starting point for a new application on top of `alambre`. This is a **generic skeleton** — it carries no product logic; the reference product is `apps/colguetti` (inside the alambre monorepo).
+A deductive **logic grid puzzle** game (a.k.a. Einstein puzzles): cross out impossible pairings across categories and tick the correct ones until every clue is satisfied.
+
+It is the second application built on `alambre` and a validation surface for framework behavior beyond the reference product (`apps/colguetti`): interactive grid state, headless undo/redo history, automatic crossing rules and session persistence.
+
+## Overview
+
+- **Difficulties:** `easy`, `medium`, `hard` (built-in puzzle catalog in `src/domain/puzzles/`).
+- **Modes:** `zen` (no penalty) and `challenge` (a wrong tick is a mistake; three mistakes defeat the game).
+- **Auto-cross:** a config flag (`autoCross`) that crosses out the pairings excluded by a tick.
+- **Clue strikethrough:** manually mark clues as used.
+- A running timer, best-time tracking and a victory modal close the loop.
 
 ## What is wired in
 
-- Expo SDK 54 (managed, no prebuild committed; run native features with `npx expo run:android`).
-- `alambre` capabilities and behaviors, connected through a `Storage` adapter over AsyncStorage:
-  - `createConfigProvider` (`src/providers/config.ts`)
-  - `createLightDarkProvider` (`src/providers/theme.ts`)
-  - `createLangProvider` (es/en, `src/providers/lang.tsx`)
-  - `NavigatorProvider` + `ToastProvider` with an app-owned toast body (`src/providers/toast.tsx`)
-- Navigator chrome, light/dark toggle and small presentational components live in the app (see `docs/ui.md`): `AppNavigatorBody`, `ToggleLightDark`, `AppButton`, `AppTitle`.
-- Subpage navigation example: `navigate('home', { subpage: 'details' })`.
-- Validation setup: ESLint, `tsc`, Vitest with one example test (`tests/storage.test.ts`).
+- Expo SDK 54 / React Native 0.81 (native run with `expo run:android`).
+- `alambre` capabilities and behaviors over a `Storage` adapter (`src/storage/`):
+  - `createConfigProvider` — `autoCross`, `defaultMode`, `defaultDifficulty` (`src/providers/config.ts`).
+  - `createLightDarkProvider` (`src/providers/theme.ts`).
+  - `createLangProvider` (es/en, `src/providers/lang.tsx`).
+  - `NavigatorProvider` + `ToastProvider` with an app-owned toast body (`src/providers/toast.tsx`).
+  - `createCollectionProvider` for completed-game records (`src/session/records-context.tsx`).
+- Storage helpers `getJson`/`setJson`/`removeJson` to persist and restore the active game (`src/session/game-context.tsx`).
+- App-owned presentation: `AppButton`, `AppTitle`, `ToggleLightDark`, `ConfirmDialog` and the grid components under `src/components/`.
 
-Add persisted collections of typed records with `createCollectionProvider` from `alambre` (see `apps/colguetti/src/items/items-context.tsx` for the adapter pattern).
+## Framework validation
 
-## Start a new app from this template
+This app is where the undo/redo and elapsed-time patterns were first prototyped before being adopted by `alambre` as `useHistoryState` and `useStopwatch` (see `docs/discoveries.md`). The local models still live in `src/domain/history-model.ts`, which is what `packages/alambre` was validated against.
 
-The canonical standalone copy is published as a GitHub template repository (**`marcosdima/base-expo`**):
+## Commands
 
-1. On GitHub, use **"Use this template"** to create a new app repository (or copy this folder and init your own git).
-2. Rename the app identity: `name` in `package.json`, and `name`/`slug` in `app.json`.
-3. `pnpm install` (or `npm install`) and adjust the Expo intro with your own identity.
-4. Replace the placeholder views with your product screens.
-5. Run checks: `pnpm lint`, `pnpm typecheck`, `pnpm test`.
-
-### Staying connected to alambre
-
-The template depends on the **published** `alambre` package from the npm registry (pinned to the exact version at export time — the public contract is still pre-baseline, see `docs/architecture.md` §9). The app is independent from the alambre repository; updates flow through npm/pnpm:
+From the repository root:
 
 ```bash
-pnpm add alambre@latest     # or: npm install alambre@latest
+pnpm --filter @alambre/cross-logic start
+pnpm --filter @alambre/cross-logic android    # expo run:android
+pnpm --filter @alambre/cross-logic ios        # expo run:ios
+pnpm --filter @alambre/cross-logic lint
+pnpm --filter @alambre/cross-logic typecheck
+pnpm --filter @alambre/cross-logic test
 ```
 
-### Working inside the alambre monorepo
-
-`apps/base-template` is the canonical source of the template. Inside the monorepo it consumes `alambre` with the `workspace:*` protocol, and Metro resolves it from the TypeScript source (`metro.config.js` detects the monorepo and aliases the package). Run it and its checks with:
-
-```bash
-pnpm --filter @alambre/base-template start
-pnpm --filter @alambre/base-template lint
-pnpm --filter @alambre/base-template typecheck
-pnpm --filter @alambre/base-template test
-```
-
-The standalone template repo is regenerated from this folder with `bash scripts/export-template.sh` (run from the monorepo root). The script verifies the exported app against the `alambre` version on npm and stops with publishing instructions if the registry copy is stale, so a fresh `npm publish` of `alambre` is required before the template can bootstrap working apps.
+Inside the monorepo the app resolves `alambre` from its TypeScript source through Metro; rebuild the library after a framework change with `pnpm --filter alambre build`.

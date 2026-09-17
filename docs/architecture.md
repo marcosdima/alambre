@@ -139,9 +139,14 @@ Intentional public type contracts:
 
 * `ButtonProps`, `ButtonState` — the `Button` primitive contract.
 * `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
+* `ConfirmComponentProps` — the client `ConfirmComponent` contract of `ConfirmProvider`.
 * `NavigatorTypes` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
 * `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, and `createCollectionProvider`. `remove` is optional and additive.
+* `RawStorage` — the raw key-value binding adapted by `createStorage` (`removeItem` optional).
 * `UseCollectionType` — the `createCollectionProvider` hook contract (`records`, `loading`, `add`, `update`, `remove`).
+* `TimePickerProps` — the `TimePicker` input contract.
+* `HistoryState`, `UseHistoryStateOptions`, `UseHistoryStateReturn` — the `useHistoryState` contract and its pure history helpers.
+* `UseStopwatchOptions`, `UseStopwatchReturn` — the `useStopwatch` contract.
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
 
@@ -168,7 +173,7 @@ A baseline will be declared when the public contract is considered solid enough 
 From the baseline onward:
 
 - SemVer applies: breaking public contract changes require a major version bump; additive changes a minor; fixes a patch. Breaking includes any removal, rename, or signature change of a public export of `src/index.ts`.
-- Agents may bump patch and minor versions autonomously. Any breaking change (and therefore any major bump) requires explicit approval before it is shipped.`
+- Agents may bump patch and minor versions autonomously. Any breaking change (and therefore any major bump) requires explicit approval before it is shipped.
 
 ### Compatibility implications
 
@@ -176,7 +181,7 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `BaseModule` and `createModuleProvider` are no longer part of the public API (Q1 restructure). The shared module machinery was replaced by an internal `core` (`createStore` + `createProvider`); the public surface is the concrete capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`) and behaviors (`createApiProvider`, `NavigatorProvider`/`useNavigator`, `ToastProvider`/`useToast`). This is breaking for any consumer relying on the module machinery directly.
 
-`AnimadoView` and its `AnimadoTypes` type surface were moved to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the only known consumer was the demo, which now owns the implementation.
+`AnimadoView` and its `AnimadoTypes` type surface were moved out of the framework to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the demo was the only known consumer and no implementation remains in the repository.
 
 `createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter, demonstrated in the reference app (Colguetti items and alarms). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
 

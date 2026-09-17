@@ -90,7 +90,7 @@ const handleDelete = async () => {
     message: 'This action cannot be undone.',
     confirmLabel: 'Delete',
     cancelLabel: 'Cancel',
-    tone: 'danger', // 'default' | 'danger'
+    tone: 'danger', // 'primary' | 'danger'
   });
 
   if (confirmed) {
@@ -134,23 +134,55 @@ const { show, dismiss, clear } = useToast();
 // Trigger a toast notification
 show({
   payload: 'Saved successfully!',
-  timeout: 3000, // optional timeout in ms (default 4000)
+  duration: 3000, // optional time in ms (default 4000, overridable via provider `defaultDuration`)
 });
 ```
+
+`RegisterToast` fields: `payload`, `duration`, `persistent` (stays until dismissed), `actions`, `id`. Toasts with `persistent` or `actions` never auto-dismiss. The provider takes `delay`, `defaultDuration` and `queueMode` (`'queue'` | `'replace'`).
 
 ---
 
 ## 4. `createApiProvider`
 
-Integrates TanStack React Query (`QueryClientProvider`) into an application with optional default query options.
+Integrates TanStack React Query (`QueryClientProvider`) into an application and generates typed route/query/mutation helpers around a `fetch`-based request function.
 
 ### Signature
 ```typescript
 import { createApiProvider } from 'alambre';
 
-const { ApiProvider, queryClient } = createApiProvider({
-  defaultOptions: {
-    queries: { retry: 2 },
-  },
+const api = createApiProvider({
+  baseUrl: 'https://api.example.com',
+  getHeaders: async () => ({ Authorization: `Bearer ${token}` }), // optional
+  createQueryClient: () => new QueryClient(),                     // optional
 });
+
+const { ApiProvider, useApi, createRoute, createRoutes,
+        createQueryHook, createMutationHook } = api;
+```
+
+### Options (`CreateApiProviderOptions`)
+* `baseUrl: string`: Base URL prepended to every request path.
+* `getHeaders?(): Promise<RequestHeaders | undefined> | RequestHeaders | undefined`: Per-request headers (typically auth).
+* `createQueryClient?(): QueryClient`: Custom `QueryClient` factory; defaults to `new QueryClient()`.
+
+### Return
+* `ApiProvider`: Wraps the app in `QueryClientProvider` + the API context.
+* `useApi()`: Returns `{ request }`, a typed `fetch` helper.
+* `createRoute` / `createRoutes`: Type helpers to declare an endpoint/catalog (`ApiEndpoint`).
+* `createQueryHook(endpoint)`: Builds a query hook from an `ApiEndpoint`.
+* `createQueryHookFromRoute(route)`: Same, from a typed route.
+* `createMutationHook(endpoint, settings?)`: Builds a mutation hook; `settings.invalidateKeys` invalidates queries on success.
+* `createMutationHookFromRoute(route, settings?)`: Same, from a typed route.
+
+### Endpoint shape (`ApiEndpoint`)
+```typescript
+{
+  key: QueryKey | ((variables) => QueryKey),
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', // GET/POST default per hook
+  path: string | ((variables) => string),
+  query?: (variables) => QueryParams | undefined,
+  body?: (variables) => unknown,
+  headers?: (variables) => RequestHeaders | undefined,
+  transform?: (raw: unknown) => TResponse,
+}
 ```

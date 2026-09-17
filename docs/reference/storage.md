@@ -29,6 +29,19 @@ export const storage = createStorage({
 });
 ```
 
+### Raw Binding (`RawStorage`)
+`createStorage` adapts a raw binding where `removeItem` is optional:
+
+```typescript
+export type RawStorage = {
+  getItem: (key: string) => Promise<string | null>;
+  setItem: (key: string, value: string) => Promise<void>;
+  removeItem?: (key: string) => Promise<void>;
+};
+```
+
+`createStorage` maps `getItem`/`setItem`/`removeItem` to the contract's `get`/`set`/`remove`.
+
 ---
 
 ## 2. JSON Helpers

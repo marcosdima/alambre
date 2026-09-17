@@ -49,7 +49,7 @@ Following `docs/architecture.md` section 6, the framework no longer ships opinio
 * `NavigatorBody` was moved to the application: the reference app owns its navigation chrome (`apps/colguetti/src/navigator/AppNavigatorBody.tsx`). The framework keeps the reusable navigation behavior (`NavigatorProvider` + `useNavigator`).
 * `ToggleLightDark` was moved to the application: the reference app owns its light/dark switch (`apps/colguetti/src/components/ToggleLightDark.tsx`).
 * `AnimadoText` was removed (dead export with no consumers).
-* `AnimadoView` was moved to the application: it had a single demo consumer and no second demonstrated need, and animating colors is application presentation (`apps/colguetti/src/components/AnimadoView.tsx`). Its review is closed; it is not part of the framework's public API.
+* `AnimadoView` was moved out of the framework to the application layer: it had a single demo consumer and no second demonstrated need, and animating colors is application presentation. Its review is closed; the demo no longer exists in the reference app, so no implementation remains in the repository. It is not part of the framework's public API.
 
 ### Icons: kept in the framework, decoupled from hard-coded presentation
 

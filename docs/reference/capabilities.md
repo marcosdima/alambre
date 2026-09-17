@@ -51,10 +51,11 @@ import { createLangProvider } from 'alambre';
 
 const { LangProvider, useLang } = createLangProvider<T>(
   langs: T,
-  storage: Storage,
-  defaultLang?: keyof T
+  storage: Storage
 );
 ```
+
+The default (initial) language is the first key of the `langs` dictionary. There is no `defaultLang` option.
 
 ### Hook Return
 ```typescript
@@ -75,7 +76,7 @@ const langs = {
   en: { welcome: 'Hello', start: 'Start' },
 };
 
-export const { LangProvider, useLang } = createLangProvider(langs, storage, 'es');
+export const { LangProvider, useLang } = createLangProvider(langs, storage);
 ```
 
 ---
@@ -91,19 +92,20 @@ import { createLightDarkProvider } from 'alambre';
 const { LightDarkProvider, useLightDark } = createLightDarkProvider<T>(
   lightTheme: T,
   darkTheme: T,
-  storage: Storage,
-  defaultTheme?: 'light' | 'dark'
+  storage: Storage
 );
 ```
 
+The initial theme is `light` until `setThemeName` persists a preference. There is no `defaultTheme` option.
+
 ### Hook Return
 ```typescript
-const { theme, currThemeName, toggleTheme, setTheme } = useLightDark();
+const { theme, currThemeName, toggleTheme, setThemeName } = useLightDark();
 ```
 * `theme: T`: Active theme tokens (colors, surfaces, borders).
 * `currThemeName`: `'light' | 'dark'`.
 * `toggleTheme(): Promise<void>`: Toggles between light and dark themes.
-* `setTheme(name: 'light' | 'dark'): Promise<void>`: Sets theme explicitly.
+* `setThemeName(name: 'light' | 'dark'): Promise<void>`: Sets theme explicitly.
 
 ### Example
 ```typescript
@@ -130,6 +132,7 @@ import { createCollectionProvider } from 'alambre';
 interface CollectionOptions {
   storage: Storage;
   storageKey: string;
+  initialValue?: T[];
   hookName?: string;
 }
 
@@ -147,6 +150,8 @@ const { records, loading, add, update, remove } = useValue();
 * `add(record: T): Promise<void>`: Adds record to the collection and persists.
 * `update(id: string, patch: Partial<T>): Promise<void>`: Merges patch into item matching `id`.
 * `remove(id: string): Promise<void>`: Removes item matching `id`.
+
+The empty state before hydration is `initialValue` (defaults to `[]`); `hookName` (default `'Collection'`) only customizes the missing-provider error message.
 
 ### Example
 ```typescript

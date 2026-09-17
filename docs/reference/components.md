@@ -78,6 +78,7 @@ Vector icons and geometric drawing primitives built on `react-native-svg` and `r
 Imported via `AlambreIcons.*`:
 * **Utility Shapes**: `AlambreIcons.Cross`, `AlambreIcons.Tick`, `AlambreIcons.Arrow`.
 * **Theme Shapes**: `AlambreIcons.Sun`, `AlambreIcons.Moon`.
+* **Action / UI Shapes**: `Heart`, `Undo`, `Redo`, `Refresh`, `Trophy`, `Play`, `Gear`, `Zap`, `Leaf`.
 * **Catalog Shapes**: `Keys`, `Wallet`, `Phone`, `Documents`, `Umbrella`, `Water`, `Meds`, `Plug`, `Charger`, `Backpack`, `Laptop`, `Headphones`, `Glasses`, `Book`, `ShoppingBag`, `Coffee`, `Watch`, `Gift`, `CreditCard`.
 
 ### Drawing Primitives
