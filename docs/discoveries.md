@@ -53,3 +53,24 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 **Where it appears:** `apps/colguetti/src/views/home/Home.tsx`.
 
 **Assessment:** presentation and identity stay in the app per §2/§6. No alambre surface change needed.
+
+## Undo / Redo history state behavior (discovered in cross-logic)
+
+**Pattern:** interactive stateful experiences (board games, logic puzzles, form editors, canvases) require an undo/redo stack (`past`, `present`, `future`, `undo()`, `redo()`, `canUndo`, `canRedo`, optional `maxLimit`).
+
+**Where it appears:** `apps/cross-logic/src/domain/history-model.ts` and `apps/cross-logic/src/session/game-context.tsx`.
+
+**Candidate for alambre:**
+- A pure headless hook `useHistoryState<T>(initialState, options)` or core utility `createHistory<T>`.
+- Fully decoupled from UI and presentation.
+- Ideal candidate for extraction once reviewed.
+
+## Elapsed time / stopwatch behavior (discovered in cross-logic & colguetti)
+
+**Pattern:** apps require elapsed time tracking, pauses, countdowns or formatted time representations (logic puzzle timer, routine activation windows in Colguetti).
+
+**Where it appears:** `apps/cross-logic/src/session/game-context.tsx` and `apps/colguetti/src/checklist/activation-context.tsx`.
+
+**Candidate for alambre:**
+- A headless `useStopwatch` / `useTimer` hook exposing `{ seconds, isRunning, start, pause, reset, formatTime }`.
+- Presentation remains 100% owned by the application.
