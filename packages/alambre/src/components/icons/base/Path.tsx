@@ -1,8 +1,18 @@
 import type { PathProps } from 'react-native-svg';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { svgPathProperties } from 'svg-path-properties';
 import type { CustomPathProps } from '../../../types/icons';
 import { AnimatedPath } from '../utils';
 import { useIconAnimation } from '../../../hooks';
+
+const getPathLength = (d?: string): number => {
+  if (!d) return 1;
+  try {
+    return Math.max(1, new svgPathProperties(d).getTotalLength());
+  } catch {
+    return 1;
+  }
+};
 
 export default (
   {
@@ -13,7 +23,7 @@ export default (
     strokeOffset = 0,
   }: CustomPathProps,
 ) => {
-  const strokeDasharray = 1;
+  const pathLength = useMemo(() => getPathLength(path?.d), [path?.d]);
 
   const {
     strokeOffsetStyle,
@@ -22,7 +32,7 @@ export default (
     draw,
   } = useIconAnimation({
     ...iconAnimation,
-    strokeDasharray: iconAnimation?.strokeDasharray ?? strokeDasharray,
+    strokeDasharray: iconAnimation?.strokeDasharray ?? pathLength,
   });
 
   useEffect(() => {
@@ -30,8 +40,8 @@ export default (
     else reset();
   }, [draw, drawIt, reset, strokeOffset]);
 
-  const targetDasharray = iconAnimation?.strokeDasharray ?? strokeDasharray;
-  const modPath: PathProps & { pathLength: number } = {
+  const targetDasharray = iconAnimation?.strokeDasharray ?? pathLength;
+  const modPath: PathProps & { pathLength?: number } = {
     fill: 'none',
     ...path,
     pathLength: 1,
