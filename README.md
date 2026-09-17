@@ -25,6 +25,33 @@ pnpm --filter @alambre/colguetti ios  # run the Colguetti app
 
 Inside the monorepo the apps resolve `alambre` from its TypeScript source via Metro (Fast Refresh); standalone apps bootstrapped from the template resolve it from the published package `exports` (`dist/module`). Either way, rebuild the library after a change: `pnpm --filter alambre build`.
 
+## Releasing Colguetti (Google Play)
+
+The reference app ships to Google Play as an Android App Bundle (`.aab`) built with EAS Build, which handles signing automatically. The routine is centralized in pnpm scripts at the repository root:
+
+```bash
+pnpm eas:login          # one-time: connect your Expo account (sign up at expo.dev)
+pnpm eas:build:apk      # internal APK for manual testing (EAS `preview` profile)
+pnpm eas:build:aab      # signed AAB for the Play Store (EAS `production` profile)
+pnpm eas:submit         # upload the latest EAS build to Play (needs a Google Play developer account)
+```
+
+Centralized release routine (bump `version` + `android.versionCode` in `apps/colguetti/app.json`, run typecheck/lint/test, build the AAB):
+
+```bash
+pnpm colguetti:release -- --dry-run            # preview only, writes nothing
+pnpm colguetti:release -- --version=1.0.1      # explicit version
+```
+
+Local APK builds for quick device installs (no EAS needed):
+
+```bash
+pnpm --filter @alambre/colguetti apk           # assembleDebug
+pnpm --filter @alambre/colguetti apk:install   # assemble + adb install
+```
+
+Before the first Play Store submission, `apps/colguetti/app.json` must carry the final `android.package` (`com.alambre.colguetti`), a monotonic `android.versionCode` and the store `version`. The Android package is immutable once published, so decide it before the first release. EAS builds in the cloud from `app.json` and ignores the local, gitignored `apps/*/android` prebuilds (those are only used by local `expo run:android`).
+
 ## Publishing
 
 The library is published from `packages/alambre`:

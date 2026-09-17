@@ -7,6 +7,15 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "eas": "pnpm exec eas",
+    "eas:login": "pnpm exec eas login",
+    "eas:build:apk": "cd apps/colguetti && pnpm exec eas build -p android --profile preview",
+    "eas:build:aab": "cd apps/colguetti && pnpm exec eas build -p android --profile production",
+    "eas:submit": "cd apps/colguetti && pnpm exec eas submit -p android --latest",
+    "colguetti:release": "node scripts/release-colguetti.mjs"
+  },
+  "devDependencies": {
+    "eas-cli": "^24.6.0"
   }
 }
