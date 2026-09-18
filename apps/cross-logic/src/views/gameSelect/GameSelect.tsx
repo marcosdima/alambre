@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { AlambreIcons, useNavigator } from 'alambre';
 import type { Difficulty, GameMode, PuzzleDefinition } from '../../domain/types';
 import { useGame } from '../../session/game-context';
+import { usePuzzles } from '../../session/puzzles-context';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { getPuzzlesByDifficulty } from '../../domain/puzzles/service';
@@ -13,6 +14,7 @@ export default function GameSelect() {
   const { lang } = useLang();
   const { navigate } = useNavigator();
   const { startNewGame } = useGame();
+  const { customPuzzles } = usePuzzles();
 
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [selectedMode, setSelectedMode] = useState<GameMode>('zen');
@@ -36,7 +38,7 @@ export default function GameSelect() {
     },
   ];
 
-  const availablePuzzles = getPuzzlesByDifficulty(selectedDifficulty);
+  const availablePuzzles = getPuzzlesByDifficulty(selectedDifficulty, customPuzzles);
 
   const handleStartRandom = () => {
     startNewGame(selectedDifficulty, selectedMode);

@@ -16,9 +16,20 @@ export interface Category {
   items: CategoryItem[];
 }
 
+export type ClueRelationType = 'is' | 'isNot';
+
+export interface ClueRelation {
+  type: ClueRelationType;
+  catAId: string;
+  itemAId: string;
+  catBId: string;
+  itemBId: string;
+}
+
 export interface Clue {
   id: string;
   text: string;
+  relation?: ClueRelation;
 }
 
 export type SolutionTuple = Record<string, string>; // { [categoryId]: itemId }

@@ -9,6 +9,7 @@ import { TemplateToast } from './src/providers/toast';
 import ConfirmDialog from './src/components/ConfirmDialog';
 
 import { RecordsProvider } from './src/session/records-context';
+import { PuzzlesProvider } from './src/session/puzzles-context';
 import { GameProvider } from './src/session/game-context';
 
 export default function App() {
@@ -17,17 +18,19 @@ export default function App() {
       <LightDarkProvider>
         <LangProvider>
           <RecordsProvider>
-            <GameProvider>
-              <GestureHandlerRootView>
-                <NavigatorProvider pages={navigator}>
-                  <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                    <ToastProvider ToastComponent={TemplateToast}>
-                      <Root />
-                    </ToastProvider>
-                  </ConfirmProvider>
-                </NavigatorProvider>
-              </GestureHandlerRootView>
-            </GameProvider>
+            <PuzzlesProvider>
+              <GameProvider>
+                <GestureHandlerRootView>
+                  <NavigatorProvider pages={navigator}>
+                    <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                      <ToastProvider ToastComponent={TemplateToast}>
+                        <Root />
+                      </ToastProvider>
+                    </ConfirmProvider>
+                  </NavigatorProvider>
+                </GestureHandlerRootView>
+              </GameProvider>
+            </PuzzlesProvider>
           </RecordsProvider>
         </LangProvider>
       </LightDarkProvider>

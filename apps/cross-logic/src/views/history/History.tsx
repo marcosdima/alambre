@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { AlambreIcons, useNavigator } from 'alambre';
 import type { GameMode, CompletedRecord } from '../../domain/types';
 import { useRecords } from '../../session/records-context';
+import { usePuzzles } from '../../session/puzzles-context';
 import { useGame } from '../../session/game-context';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -20,6 +21,7 @@ export default function History() {
   const { lang } = useLang();
   const { navigate } = useNavigator();
   const { records, getBestTime } = useRecords();
+  const { customPuzzles } = usePuzzles();
   const { startNewGame } = useGame();
 
   const [filterMode, setFilterMode] = useState<GameMode | 'all'>('all');
@@ -151,7 +153,7 @@ export default function History() {
       {/* Records List */}
       <View style={styles.recordsList}>
         {filteredRecords.map((record, index) => {
-          const puzzle = getPuzzleById(record.id);
+          const puzzle = getPuzzleById(record.id, customPuzzles);
           const title = puzzle?.title ?? record.id;
           const bestTime = getBestTime(record.id, record.mode);
           const isBest = bestTime !== null && record.elapsedSeconds <= bestTime;

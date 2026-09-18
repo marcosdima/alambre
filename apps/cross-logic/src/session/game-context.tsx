@@ -33,6 +33,7 @@ import {
 import { getRandomPuzzle, getPuzzleById } from '../domain/puzzles/service';
 import { useConfig } from '../providers/config';
 import { useRecords } from './records-context';
+import { usePuzzles } from './puzzles-context';
 import { getJson, setJson, removeJson } from 'alambre';
 import { storage } from '../storage';
 
@@ -63,6 +64,7 @@ const GameContext = createContext<GameContextType | null>(null);
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { config } = useConfig();
   const { addRecord } = useRecords();
+  const { customPuzzles } = usePuzzles();
 
   const [activePuzzle, setActivePuzzle] = useState<PuzzleDefinition | null>(null);
   const [history, setHistory] = useState<HistoryState<GridState>>(() => createHistory<GridState>({}));
@@ -82,8 +84,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const diff = selectedDifficulty ?? difficulty;
     const gMode = selectedMode ?? mode;
     const puzzle = puzzleId
-      ? (getPuzzleById(puzzleId) ?? getRandomPuzzle(diff))
-      : getRandomPuzzle(diff);
+      ? (getPuzzleById(puzzleId, customPuzzles) ?? getRandomPuzzle(diff, customPuzzles))
+      : getRandomPuzzle(diff, customPuzzles);
 
     const initialGrid = initializeGrid(puzzle);
     setActivePuzzle(puzzle);
@@ -95,7 +97,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setElapsedSeconds(0);
     setIsCompleted(false);
     setIsDefeated(false);
-  }, [difficulty, mode]);
+  }, [difficulty, mode, customPuzzles]);
 
   // Load active game from storage on mount
   useEffect(() => {
@@ -112,7 +114,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         }>(storage, ACTIVE_GAME_KEY);
 
         if (saved) {
-          const puzzle = getPuzzleById(saved.puzzleId);
+          const puzzle = getPuzzleById(saved.puzzleId, customPuzzles);
           if (puzzle) {
             setActivePuzzle(puzzle);
             setHistory(createHistory(saved.grid, 50));
@@ -127,7 +129,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         // Ignore corrupted storage
       }
     })();
-  }, []);
+  }, [customPuzzles]);
 
   // Timer effect
   useEffect(() => {
