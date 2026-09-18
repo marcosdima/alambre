@@ -3,8 +3,7 @@ import {
   createPairKey,
   initializeGrid,
   nextCellState,
-  applyAutoCross,
-  removeAutoCross,
+  recomputeAutoCross,
   checkVictory,
   isCellCorrect,
   getSubgridPairs,
@@ -66,11 +65,11 @@ describe('grid-model', () => {
     expect(Object.values(grid).every((state) => state === 'empty')).toBe(true);
   });
 
-  it('cycles cell state in order: empty -> cross -> tick -> empty, and auto-cross -> empty', () => {
+  it('cycles cell state for interactive states and keeps auto-cross non-interactive', () => {
     expect(nextCellState('empty')).toBe('cross');
     expect(nextCellState('cross')).toBe('tick');
     expect(nextCellState('tick')).toBe('empty');
-    expect(nextCellState('auto-cross')).toBe('empty');
+    expect(nextCellState('auto-cross')).toBe('auto-cross');
   });
 
   it('applies auto-cross to row and column in the same subgrid when a tick is placed', () => {
@@ -78,7 +77,7 @@ describe('grid-model', () => {
     const keyP1Pet1 = createPairKey('persons', 'p1', 'pets', 'pet1');
     grid[keyP1Pet1] = 'tick';
 
-    grid = applyAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
+    grid = recomputeAutoCross(mockPuzzle, grid);
 
     // Row: other pets for p1 (p1 - pet2) should become 'auto-cross'
     const keyP1Pet2 = createPairKey('persons', 'p1', 'pets', 'pet2');
@@ -93,19 +92,60 @@ describe('grid-model', () => {
     expect(grid[keyP2Pet2]).toBe('empty');
   });
 
-  it('removes auto-crosses when tick is removed', () => {
+  it('preserves manual crosses when recomputing auto-cross', () => {
     let grid = initializeGrid(mockPuzzle);
-    grid = applyAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
-    const keyP1Pet2 = createPairKey('persons', 'p1', 'pets', 'pet2');
-    expect(grid[keyP1Pet2]).toBe('auto-cross');
-
-    // Manual cross should NOT be removed by removeAutoCross
+    const keyP1Pet1 = createPairKey('persons', 'p1', 'pets', 'pet1');
     const keyManual = createPairKey('persons', 'p2', 'pets', 'pet1');
     grid[keyManual] = 'cross';
+    grid[keyP1Pet1] = 'tick';
 
-    grid = removeAutoCross(mockPuzzle, grid, 'persons', 'p1', 'pets', 'pet1');
-    expect(grid[keyP1Pet2]).toBe('empty');
+    grid = recomputeAutoCross(mockPuzzle, grid);
     expect(grid[keyManual]).toBe('cross');
+
+    // If tick is removed, manual cross still stays
+    grid[keyP1Pet1] = 'empty';
+    grid = recomputeAutoCross(mockPuzzle, grid);
+    expect(grid[keyManual]).toBe('cross');
+  });
+
+  it('regression: tick 00 -> tick 11 -> untick 11 leaves 01 crossed', () => {
+    // 00: persons.p1 - pets.pet1
+    // 01: persons.p1 - pets.pet2
+    // 10: persons.p2 - pets.pet1
+    // 11: persons.p2 - pets.pet2
+    const key00 = createPairKey('persons', 'p1', 'pets', 'pet1');
+    const key01 = createPairKey('persons', 'p1', 'pets', 'pet2');
+    const key10 = createPairKey('persons', 'p2', 'pets', 'pet1');
+    const key11 = createPairKey('persons', 'p2', 'pets', 'pet2');
+
+    let grid = initializeGrid(mockPuzzle);
+
+    // Step 1: tick 00
+    grid[key00] = 'tick';
+    grid = recomputeAutoCross(mockPuzzle, grid);
+    expect(grid[key00]).toBe('tick');
+    expect(grid[key01]).toBe('auto-cross');
+    expect(grid[key10]).toBe('auto-cross');
+    expect(grid[key11]).toBe('empty');
+
+    // Step 2: tick 11
+    grid[key11] = 'tick';
+    grid = recomputeAutoCross(mockPuzzle, grid);
+    expect(grid[key00]).toBe('tick');
+    expect(grid[key11]).toBe('tick');
+    expect(grid[key01]).toBe('auto-cross');
+    expect(grid[key10]).toBe('auto-cross');
+
+    // Step 3: untick 11 => 01 remains crossed because 00 justifies it!
+    grid[key11] = 'empty';
+    grid = recomputeAutoCross(mockPuzzle, grid);
+    expect(grid[key01]).toBe('auto-cross');
+    expect(grid[key10]).toBe('auto-cross');
+    expect(grid[key11]).toBe('empty');
+    expect(grid[key00]).toBe('tick');
+
+    // Pure & idempotent check
+    expect(recomputeAutoCross(mockPuzzle, grid)).toEqual(grid);
   });
 
   it('checks cell correctness against solution', () => {

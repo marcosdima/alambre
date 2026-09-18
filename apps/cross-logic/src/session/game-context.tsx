@@ -14,8 +14,7 @@ import type {
   PuzzleDefinition,
 } from '../domain/types';
 import {
-  applyAutoCross,
-  removeAutoCross,
+  recomputeAutoCross,
   checkVictory,
   createPairKey,
   initializeGrid,
@@ -172,6 +171,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const pairKey = createPairKey(catAId, itemAId, catBId, itemBId);
     const currentGrid = history.present;
     const currentState = currentGrid[pairKey] ?? 'empty';
+    if (currentState === 'auto-cross') {
+      return { isMistake: false };
+    }
+
     const nextState = nextCellState(currentState);
 
     let isMistake = false;
@@ -191,24 +194,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     let updatedGrid = { ...currentGrid, [pairKey]: nextState };
 
-    if (nextState === 'tick' && config.autoCross === 'true') {
-      updatedGrid = applyAutoCross(
-        activePuzzle,
-        updatedGrid,
-        catAId,
-        itemAId,
-        catBId,
-        itemBId,
-      );
-    } else if (currentState === 'tick' && nextState === 'empty') {
-      updatedGrid = removeAutoCross(
-        activePuzzle,
-        updatedGrid,
-        catAId,
-        itemAId,
-        catBId,
-        itemBId,
-      );
+    if (config.autoCross === 'true') {
+      updatedGrid = recomputeAutoCross(activePuzzle, updatedGrid);
     }
 
     setHistory((prev) => pushHistory(prev, updatedGrid));

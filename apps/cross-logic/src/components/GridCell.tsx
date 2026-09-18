@@ -26,6 +26,7 @@ export default function GridCell({
   return (
     <Pressable
       onPress={onPress}
+      disabled={state === 'auto-cross'}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
