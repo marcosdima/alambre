@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { AlambreIcons, useNavigator } from 'alambre';
-import type { GameMode, CompletedRecord } from '../../domain/types';
+import type { GameMode, CompletedRecord, Difficulty } from '../../domain/types';
 import { useRecords } from '../../session/records-context';
 import { usePuzzles } from '../../session/puzzles-context';
 import { useGame } from '../../session/game-context';
@@ -16,27 +16,78 @@ const formatTime = (totalSecs: number): string => {
   return `${mins}m ${secs}s`;
 };
 
+interface GroupedPuzzleRecord {
+  puzzleId: string;
+  title: string;
+  difficulty: Difficulty;
+  latestCompletedAt: string;
+  attempts: CompletedRecord[]; // sorted: elapsedSeconds ascending (best time first)
+}
+
 export default function History() {
   const { theme } = useLightDark();
   const { lang } = useLang();
   const { navigate } = useNavigator();
-  const { records, getBestTime } = useRecords();
+  const { records } = useRecords();
   const { customPuzzles } = usePuzzles();
   const { startNewGame } = useGame();
 
   const [filterMode, setFilterMode] = useState<GameMode | 'all'>('all');
+  const [expandedPuzzles, setExpandedPuzzles] = useState<Record<string, boolean>>({});
 
-  const filteredRecords = useMemo(() => {
+  const toggleExpanded = (puzzleId: string) => {
+    setExpandedPuzzles((prev) => ({ ...prev, [puzzleId]: !prev[puzzleId] }));
+  };
+
+  const groupedPuzzles = useMemo((): GroupedPuzzleRecord[] => {
     const list = filterMode === 'all'
-      ? [...records]
+      ? records
       : records.filter((r) => r.mode === filterMode);
-    return list.sort(
-      (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
-    );
-  }, [records, filterMode]);
 
-  const handleReplay = (record: CompletedRecord) => {
-    startNewGame(record.difficulty, record.mode, record.id);
+    const map = new Map<string, CompletedRecord[]>();
+    for (const rec of list) {
+      const existing = map.get(rec.id);
+      if (existing) {
+        existing.push(rec);
+      } else {
+        map.set(rec.id, [rec]);
+      }
+    }
+
+    const groups: GroupedPuzzleRecord[] = [];
+    for (const [puzzleId, attempts] of map.entries()) {
+      const puzzle = getPuzzleById(puzzleId, customPuzzles);
+      const title = puzzle?.title ?? puzzleId;
+      const difficulty = puzzle?.difficulty ?? attempts[0]?.difficulty ?? 'easy';
+
+      // Sort attempts strictly from best to worst time (elapsedSeconds ascending)
+      const sortedAttempts = [...attempts].sort(
+        (a, b) => a.elapsedSeconds - b.elapsedSeconds,
+      );
+
+      const latestTime = Math.max(
+        ...attempts.map((a) => new Date(a.completedAt).getTime()),
+      );
+      const latestCompletedAt = new Date(latestTime).toISOString();
+
+      groups.push({
+        puzzleId,
+        title,
+        difficulty,
+        latestCompletedAt,
+        attempts: sortedAttempts,
+      });
+    }
+
+    // Sort puzzle cards: most recently played puzzle first
+    return groups.sort(
+      (a, b) => new Date(b.latestCompletedAt).getTime() - new Date(a.latestCompletedAt).getTime(),
+    );
+  }, [records, filterMode, customPuzzles]);
+
+  const handleReplay = (group: GroupedPuzzleRecord) => {
+    const mode = filterMode === 'all' ? group.attempts[0].mode : filterMode;
+    startNewGame(group.difficulty, mode, group.puzzleId);
     navigate('game');
   };
 
@@ -74,6 +125,19 @@ export default function History() {
 
   const zenCount = records.filter((r) => r.mode === 'zen').length;
   const challengeCount = records.filter((r) => r.mode === 'challenge').length;
+
+  const getDifficultyLabel = (diff: Difficulty) => {
+    switch (diff) {
+      case 'easy':
+        return lang.home.easy.split(' ')[0];
+      case 'medium':
+        return lang.home.medium.split(' ')[0];
+      case 'hard':
+        return lang.home.hard.split(' ')[0];
+      default:
+        return diff;
+    }
+  };
 
   return (
     <ScrollView
@@ -150,115 +214,152 @@ export default function History() {
         })}
       </View>
 
-      {/* Records List */}
+      {/* Grouped Records List */}
       <View style={styles.recordsList}>
-        {filteredRecords.map((record, index) => {
-          const puzzle = getPuzzleById(record.id, customPuzzles);
-          const title = puzzle?.title ?? record.id;
-          const bestTime = getBestTime(record.id, record.mode);
-          const isBest = bestTime !== null && record.elapsedSeconds <= bestTime;
-          const formattedDate = new Date(record.completedAt).toLocaleDateString();
+        {groupedPuzzles.map((group) => {
+          const isExpanded = !!expandedPuzzles[group.puzzleId];
+          const visibleAttempts = isExpanded ? group.attempts : group.attempts.slice(0, 3);
+          const hasMore = group.attempts.length > 3;
 
           return (
             <View
-              key={`${record.id}_${record.completedAt}_${index}`}
+              key={group.puzzleId}
               style={[
                 styles.recordCard,
                 { backgroundColor: theme.surface, borderColor: theme.border },
               ]}
             >
+              {/* Card Header: Title on Left, Difficulty Badge on Right */}
               <View style={styles.recordHeader}>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={[styles.recordTitle, { color: theme.color }]} numberOfLines={1}>
-                    {title}
+                    {group.title}
                   </Text>
-                  <Text style={[styles.recordDate, { color: theme.muted }]}>
-                    {formattedDate}
+                  <Text style={[styles.recordSubtitle, { color: theme.muted }]}>
+                    {group.attempts.length === 1
+                      ? `1 ${lang.history.singlePlay}`
+                      : `${group.attempts.length} ${lang.history.plays}`}
                   </Text>
                 </View>
 
-                <View style={styles.badgesRow}>
-                  <View
-                    style={[
-                      styles.modeBadge,
-                      {
-                        backgroundColor:
-                          record.mode === 'challenge' ? theme.primarySoft : theme.surfaceAlt,
-                        borderColor: record.mode === 'challenge' ? theme.warning : theme.border,
-                      },
-                    ]}
-                  >
-                    {record.mode === 'zen' ? (
-                      <AlambreIcons.Leaf
-                        color={theme.color}
-                        lineWidth={2}
-                        style={{ width: 12, height: 12 }}
-                      />
-                    ) : (
-                      <AlambreIcons.Zap
-                        color={theme.warning}
-                        lineWidth={2}
-                        style={{ width: 12, height: 12 }}
-                      />
-                    )}
-                    <Text
-                      style={[
-                        styles.modeBadgeText,
-                        { color: record.mode === 'challenge' ? theme.warning : theme.color },
-                      ]}
-                    >
-                      {record.mode === 'zen' ? lang.history.zenMode : lang.history.challengeMode}
-                    </Text>
-                  </View>
-
-                  {isBest && (
-                    <View style={[styles.recordBestBadge, { backgroundColor: theme.primarySoft }]}>
-                      <AlambreIcons.Trophy
-                        color={theme.primary}
-                        lineWidth={2}
-                        style={{ width: 11, height: 11 }}
-                      />
-                      <Text style={[styles.recordBestText, { color: theme.primary }]}>
-                        {lang.history.bestTime}
-                      </Text>
-                    </View>
-                  )}
+                {/* Difficulty Badge in Header (replaces redundant best time badge) */}
+                <View
+                  style={[
+                    styles.difficultyBadge,
+                    {
+                      backgroundColor: theme.surfaceAlt,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.difficultyBadgeText, { color: theme.primary }]}>
+                    {getDifficultyLabel(group.difficulty)}
+                  </Text>
                 </View>
               </View>
 
-              <View style={[styles.statsRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-                <View style={styles.statCol}>
-                  <Text style={[styles.statLabel, { color: theme.muted }]}>
-                    {lang.history.recordTime}
-                  </Text>
-                  <Text style={[styles.statValue, { color: theme.color }]}>
-                    {formatTime(record.elapsedSeconds)}
-                  </Text>
-                </View>
+              {/* Attempts List (sorted Best to Worst) */}
+              <View style={[styles.attemptsList, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+                {visibleAttempts.map((attempt, index) => {
+                  const isBest = index === 0;
+                  const formattedDate = new Date(attempt.completedAt).toLocaleDateString();
 
-                {record.mode === 'challenge' && (
-                  <View style={styles.statCol}>
-                    <Text style={[styles.statLabel, { color: theme.muted }]}>
-                      {lang.history.mistakes}
+                  return (
+                    <View
+                      key={`${attempt.completedAt}_${index}`}
+                      style={[
+                        styles.attemptRow,
+                        index > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border },
+                      ]}
+                    >
+                      {/* Rank Indicator */}
+                      <View style={styles.rankCol}>
+                        {isBest ? (
+                          <View style={[styles.trophyPill, { backgroundColor: theme.primarySoft }]}>
+                            <AlambreIcons.Trophy
+                              color={theme.primary}
+                              lineWidth={2.5}
+                              style={{ width: 11, height: 11 }}
+                            />
+                            <Text style={[styles.rankText, { color: theme.primary, fontWeight: '800' }]}>
+                              #1
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={[styles.rankText, { color: theme.muted, fontWeight: '600' }]}>
+                            #{index + 1}
+                          </Text>
+                        )}
+                      </View>
+
+                      {/* Time */}
+                      <View style={styles.timeCol}>
+                        <Text
+                          style={[
+                            styles.timeText,
+                            {
+                              color: isBest ? theme.primary : theme.color,
+                              fontWeight: isBest ? '800' : '600',
+                            },
+                          ]}
+                        >
+                          {formatTime(attempt.elapsedSeconds)}
+                        </Text>
+                      </View>
+
+                      {/* Mode & Mistakes */}
+                      <View style={styles.modeCol}>
+                        {attempt.mode === 'challenge' ? (
+                          <View style={styles.modeBadgeRow}>
+                            <AlambreIcons.Zap
+                              color={theme.warning}
+                              lineWidth={2}
+                              style={{ width: 11, height: 11 }}
+                            />
+                            <Text style={[styles.modeDescText, { color: theme.warning }]}>
+                              {lang.history.challengeMode} • {attempt.mistakesCount} {attempt.mistakesCount === 1 ? 'fallo' : 'fallos'}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={styles.modeBadgeRow}>
+                            <AlambreIcons.Leaf
+                              color={theme.color}
+                              lineWidth={2}
+                              style={{ width: 11, height: 11 }}
+                            />
+                            <Text style={[styles.modeDescText, { color: theme.muted }]}>
+                              {lang.history.zenMode}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Date */}
+                      <Text style={[styles.dateColText, { color: theme.muted }]}>
+                        {formattedDate}
+                      </Text>
+                    </View>
+                  );
+                })}
+
+                {/* Show More / Show Less Toggle */}
+                {hasMore && (
+                  <Pressable
+                    onPress={() => toggleExpanded(group.puzzleId)}
+                    style={[styles.expandBtn, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.border }]}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.expandBtnText, { color: theme.primary }]}>
+                      {isExpanded
+                        ? lang.history.showLess
+                        : `${lang.history.showMore} (${group.attempts.length - 3} ${lang.history.plays})`}
                     </Text>
-                    <Text style={[styles.statValue, { color: theme.color }]}>
-                      {record.mistakesCount}
-                    </Text>
-                  </View>
+                  </Pressable>
                 )}
-
-                <View style={styles.statCol}>
-                  <Text style={[styles.statLabel, { color: theme.muted }]}>
-                    {lang.home.selectDifficulty}
-                  </Text>
-                  <Text style={[styles.statValue, { color: theme.primary, textTransform: 'capitalize' }]}>
-                    {record.difficulty}
-                  </Text>
-                </View>
               </View>
 
               {/* Replay Button */}
-              <AppButton onPress={() => handleReplay(record)}>
+              <AppButton onPress={() => handleReplay(group)}>
                 <View style={styles.buttonInnerRow}>
                   <AlambreIcons.Refresh
                     color={theme.primary}
@@ -365,64 +466,80 @@ const styles = StyleSheet.create({
   recordHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 8,
   },
   recordTitle: {
     fontSize: 15,
     fontWeight: '700',
   },
-  recordDate: {
+  recordSubtitle: {
     fontSize: 11,
   },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  modeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 7,
+  difficultyBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
     borderRadius: 8,
     borderWidth: 1,
   },
-  modeBadgeText: {
+  difficultyBadgeText: {
     fontSize: 11,
     fontWeight: '700',
   },
-  recordBestBadge: {
+  attemptsList: {
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  attemptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  rankCol: {
+    width: 32,
+    alignItems: 'center',
+  },
+  trophyPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
-  recordBestText: {
-    fontSize: 10,
-    fontWeight: '700',
+  rankText: {
+    fontSize: 11,
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
+  timeCol: {
+    minWidth: 55,
   },
-  statCol: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  statValue: {
+  timeText: {
     fontSize: 13,
+  },
+  modeCol: {
+    flex: 1,
+  },
+  modeBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  modeDescText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  dateColText: {
+    fontSize: 10,
+  },
+  expandBtn: {
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  expandBtnText: {
+    fontSize: 11,
     fontWeight: '700',
   },
   buttonInnerRow: {
@@ -436,3 +553,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

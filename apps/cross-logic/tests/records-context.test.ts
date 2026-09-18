@@ -72,4 +72,23 @@ describe('records best time per puzzle and mode', () => {
     expect(isPuzzleCompleted('puzzle-2', 'challenge')).toBe(true);
     expect(isPuzzleCompleted('puzzle-3')).toBe(false);
   });
+
+  it('groups multiple completions of the same puzzle into one entry', () => {
+    const map = new Map<string, CompletedRecord[]>();
+    for (const rec of records) {
+      const existing = map.get(rec.id);
+      if (existing) existing.push(rec);
+      else map.set(rec.id, [rec]);
+    }
+    expect(map.size).toBe(2);
+    expect(map.get('puzzle-1')).toHaveLength(3);
+  });
+
+  it('sorts attempts within each puzzle from best time to worst time', () => {
+    const p1Attempts = records.filter((r) => r.id === 'puzzle-1');
+    const sorted = [...p1Attempts].sort((a, b) => a.elapsedSeconds - b.elapsedSeconds);
+    expect(sorted.map((a) => a.elapsedSeconds)).toEqual([95, 120, 140]);
+    expect(sorted[0].elapsedSeconds).toBe(95);
+  });
 });
+

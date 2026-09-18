@@ -72,6 +72,11 @@ The following architectural and product decisions are closed and not subject to 
   - Replace all emojis and unicode glyphs across `apps/cross-logic` (`PuzzleCreator.tsx`, `lang.tsx`) with the new `AlambreIcons` and primitives.
   - Implement un-drawing animation in `GridCell.tsx`: when marks (cross, tick, auto-cross) are cleared (state transitions to `empty`), maintain the component mounted with `drawIt={false}` for 220ms, allowing `useIconAnimation.reset()` to animate the stroke retraction smoothly before unmounting.
 
+### Unit 8: Redacción Personalizada de Pistas e Historial Agrupado por Puzzle
+- **Changes**:
+  - **Redacción de Pistas (`PuzzleCreator.tsx`)**: Permitir personalizar libremente el texto visible de la pista (`clue.text`) antes de agregarla (pre-rellenada con texto sugerido) y editarla en línea en la lista de pistas. El solver continúa validando estrictamente `clue.relation` sin interferir en la redacción natural elegida por el creador.
+  - **Historial Agrupado (`History.tsx`)**: En lugar de tarjetas duplicadas por cada partida, agrupar las partidas por acertijo. Listar los intentos ordenados estrictamente de mejor tiempo a peor tiempo (el primer intento #1 es inherentemente el mejor tiempo). La insignia de dificultad del puzzle se ubica en el encabezado de la tarjeta, evitando repeticiones innecesarias.
+
 ---
 
 ## 4. Validation Protocol

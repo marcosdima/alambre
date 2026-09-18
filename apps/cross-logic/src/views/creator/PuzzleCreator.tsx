@@ -119,6 +119,9 @@ export default function PuzzleCreator() {
   const [clueRelationType, setClueRelationType] = useState<ClueRelationType>('is');
   const [clueCatBId, setClueCatBId] = useState<string>('');
   const [clueItemBId, setClueItemBId] = useState<string>('');
+  const [customClueText, setCustomClueText] = useState<string>('');
+  const [editingClueId, setEditingClueId] = useState<string | null>(null);
+  const [editingClueText, setEditingClueText] = useState<string>('');
 
   // Set default clue selections
   useEffect(() => {
@@ -185,6 +188,18 @@ export default function PuzzleCreator() {
     setSolutionTuples(defaultTuples);
   };
 
+  const suggestedClueText = useMemo(() => {
+    if (!clueCatAId || !clueItemAId || !clueCatBId || !clueItemBId) return '';
+    const catA = categories.find((c) => c.id === clueCatAId);
+    const itemA = catA?.items.find((i) => i.id === clueItemAId);
+    const catB = categories.find((c) => c.id === clueCatBId);
+    const itemB = catB?.items.find((i) => i.id === clueItemBId);
+    if (!itemA || !itemB) return '';
+    return clueRelationType === 'is'
+      ? `${itemA.name} se relaciona con ${itemB.name}.`
+      : `${itemA.name} NO se relaciona con ${itemB.name}.`;
+  }, [categories, clueCatAId, clueItemAId, clueRelationType, clueCatBId, clueItemBId]);
+
   const handleAddClue = () => {
     if (!clueCatAId || !clueItemAId || !clueCatBId || !clueItemBId) return;
     if (clueCatAId === clueCatBId) return;
@@ -197,9 +212,10 @@ export default function PuzzleCreator() {
     if (!itemA || !itemB) return;
 
     const relationText =
-      clueRelationType === 'is'
+      customClueText.trim() ||
+      (clueRelationType === 'is'
         ? `${itemA.name} se relaciona con ${itemB.name}.`
-        : `${itemA.name} NO se relaciona con ${itemB.name}.`;
+        : `${itemA.name} NO se relaciona con ${itemB.name}.`);
 
     const newClue: Clue = {
       id: `clue-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -214,6 +230,29 @@ export default function PuzzleCreator() {
     };
 
     setClues((prev) => [...prev, newClue]);
+    setCustomClueText('');
+    setClueItemBId('');
+  };
+
+  const handleStartEditClue = (clue: Clue) => {
+    setEditingClueId(clue.id);
+    setEditingClueText(clue.text);
+  };
+
+  const handleSaveEditedClue = (clueId: string) => {
+    const trimmed = editingClueText.trim();
+    if (trimmed) {
+      setClues((prev) =>
+        prev.map((c) => (c.id === clueId ? { ...c, text: trimmed } : c)),
+      );
+    }
+    setEditingClueId(null);
+    setEditingClueText('');
+  };
+
+  const handleCancelEditClue = () => {
+    setEditingClueId(null);
+    setEditingClueText('');
   };
 
   const handleRemoveClue = (clueId: string) => {
@@ -791,6 +830,32 @@ export default function PuzzleCreator() {
               </ScrollView>
             </View>
 
+            {/* Customizable Clue Description */}
+            <View style={styles.builderRow}>
+              <Text style={[styles.builderLabel, { color: theme.muted }]}>
+                {lang.creator.clueTextLabel}:
+              </Text>
+              <TextInput
+                value={customClueText}
+                onChangeText={setCustomClueText}
+                placeholder={suggestedClueText || lang.creator.clueTextPlaceholder}
+                placeholderTextColor={theme.muted}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.color,
+                    borderColor: theme.border,
+                    backgroundColor: theme.surface,
+                    fontSize: 13,
+                    paddingVertical: 8,
+                  },
+                ]}
+              />
+              <Text style={{ color: theme.muted, fontSize: 10, fontStyle: 'italic' }}>
+                {lang.creator.clueTextHint}
+              </Text>
+            </View>
+
             <AppButton onPress={handleAddClue}>
               <Text style={{ color: theme.primary, fontWeight: '700' }}>
                 + {lang.creator.addClue}
@@ -817,24 +882,80 @@ export default function PuzzleCreator() {
                     { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
                   ]}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, gap: 4 }}>
                     <Text style={[styles.clueIndex, { color: theme.primary }]}>
                       Pista #{index + 1}
                     </Text>
-                    <Text style={[styles.clueText, { color: theme.color }]}>
-                      {clue.text}
-                    </Text>
+
+                    {editingClueId === clue.id ? (
+                      <View style={{ gap: 6 }}>
+                        <TextInput
+                          value={editingClueText}
+                          onChangeText={setEditingClueText}
+                          style={[
+                            styles.input,
+                            {
+                              color: theme.color,
+                              borderColor: theme.primary,
+                              backgroundColor: theme.surface,
+                              fontSize: 13,
+                              paddingVertical: 6,
+                            },
+                          ]}
+                          autoFocus
+                        />
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <Pressable
+                            onPress={() => handleSaveEditedClue(clue.id)}
+                            style={[styles.smallBtn, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}
+                          >
+                            <Text style={{ color: theme.primary, fontSize: 11, fontWeight: '700' }}>
+                              {lang.creator.saveClue}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={handleCancelEditClue}
+                            style={[styles.smallBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                          >
+                            <Text style={{ color: theme.muted, fontSize: 11, fontWeight: '600' }}>
+                              {lang.creator.cancelClue}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : (
+                      <Text style={[styles.clueText, { color: theme.color }]}>
+                        {clue.text}
+                      </Text>
+                    )}
                   </View>
-                  <Pressable
-                    onPress={() => handleRemoveClue(clue.id)}
-                    style={styles.clueDeleteBtn}
-                  >
-                    <AlambreIcons.Cross
-                      color={theme.danger}
-                      lineWidth={2.5}
-                      style={{ width: 14, height: 14 }}
-                    />
-                  </Pressable>
+
+                  {editingClueId !== clue.id && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Pressable
+                        onPress={() => handleStartEditClue(clue)}
+                        style={styles.clueActionBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel={lang.creator.editClue}
+                      >
+                        <Text style={{ color: theme.primary, fontSize: 11, fontWeight: '600' }}>
+                          {lang.creator.editClue}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => handleRemoveClue(clue.id)}
+                        style={styles.clueDeleteBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel="Eliminar pista"
+                      >
+                        <AlambreIcons.Cross
+                          color={theme.danger}
+                          lineWidth={2.5}
+                          style={{ width: 14, height: 14 }}
+                        />
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
               ))
             )}
@@ -1178,6 +1299,18 @@ const styles = StyleSheet.create({
   },
   clueDeleteBtn: {
     padding: 6,
+  },
+  clueActionBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+  },
+  smallBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    alignSelf: 'flex-start',
   },
   statusBanner: {
     flexDirection: 'row',
