@@ -1,3 +1,8 @@
+---
+title: Capabilities Reference
+summary: Content-driven provider factories backed by the Storage contract: createConfigProvider, createLangProvider, createLightDarkProvider, and createCollectionProvider.
+---
+
 # Capabilities Reference
 
 Capabilities are content-driven provider factories backed by the [`Storage`](storage.md) contract. They manage persistent application state, reactively updating components across the tree.

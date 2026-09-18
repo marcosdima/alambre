@@ -1,3 +1,8 @@
+---
+title: UI Decisions
+summary: Concrete UI direction and component decisions for alambre, materializing architecture.md §6.
+---
+
 # UI Decisions
 
 This document records decisions that are specific to the UI direction of `alambre` without changing the global architecture boundaries.

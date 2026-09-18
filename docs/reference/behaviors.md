@@ -1,3 +1,8 @@
+---
+title: Behaviors Reference
+summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmProvider, ToastProvider, and createApiProvider.
+---
+
 # Behaviors Reference
 
 Behaviors provide common application interaction patterns decoupled from visual presentation. The framework provides the state machine and contracts; the application provides the concrete visual component.

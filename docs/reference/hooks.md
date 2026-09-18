@@ -1,3 +1,8 @@
+---
+title: Hooks & State Utilities Reference
+summary: Headless hooks and state helpers: useHistoryState, useStopwatch, and useIconAnimation.
+---
+
 # Hooks & State Utilities Reference
 
 Headless hooks and state management primitives that solve common interaction patterns without enforcing visual presentation.

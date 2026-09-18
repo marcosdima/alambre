@@ -1,3 +1,8 @@
+---
+title: Components & Icons Reference
+summary: Base UI primitives and icon contracts: Button, TimePicker, and the AlambreIcons family.
+---
+
 # Components & Icons Reference
 
 Framework UI components focus on accessibility and behavior contracts rather than opinionated visual styles. The application composes brand identity, visual variants, and layout on top.

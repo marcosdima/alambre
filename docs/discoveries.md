@@ -1,3 +1,8 @@
+---
+title: Discoveries
+summary: Reusable patterns observed in app development that could be rescued into the alambre framework.
+---
+
 # Discoveries
 
 Register of reusable patterns observed while building the reference application Colguetti (`apps/colguetti`) that could be rescued into `alambre`.

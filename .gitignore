@@ -45,3 +45,6 @@ apps/*/android
 apps/*/ios
 
 .vscode
+
+# agent artifacts (screenshots, verification evidence)
+.agents/artifacts/

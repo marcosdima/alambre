@@ -1,8 +1,15 @@
+---
+title: Alambre Functional Reference
+summary: Catalog of the complete functional reference and API guides for alambre capabilities, behaviors, hooks, storage utilities, and components.
+---
+
 # Alambre — Functional Reference
 
 This directory provides the complete functional reference and API guides for all capabilities, behaviors, hooks, storage utilities, and components provided by `alambre`.
 
-For global principles and boundaries, see [docs/architecture.md](../architecture.md) and [docs/project.md](../project.md).
+For global principles and boundaries, see [docs/architecture.md](../architecture.md), [docs/project.md](../project.md), and [docs/agents.md](../agents.md).
+
+For the retrieval protocol all agents must follow when consulting this documentation, see `.agents/skills/docs-retrieval/SKILL.md`.
 
 ---
 

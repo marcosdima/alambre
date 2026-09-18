@@ -1,3 +1,8 @@
+---
+title: Storage Layer Reference
+summary: The agnostic persistence contract, createStorage adapter, and JSON/collection helpers.
+---
+
 # Storage Layer Reference
 
 `alambre` provides an agnostic persistence contract that decouples application storage engines (e.g., `@react-native-async-storage/async-storage`, `mmkv`, memory storage) from framework capabilities.

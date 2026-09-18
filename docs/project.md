@@ -1,3 +1,8 @@
+---
+title: Project Guidelines
+summary: Purpose, structure, agent autonomy rules, code quality, testing, and documentation conventions for this repository.
+---
+
 # Project Guidelines
 
 ## 1. Purpose

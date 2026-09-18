@@ -1,3 +1,8 @@
+---
+title: Architecture
+summary: Architectural principles, boundaries, and the public type contract of alambre.
+---
+
 # Architecture
 
 This document defines the architectural principles and boundaries of `alambre`.
