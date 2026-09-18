@@ -1,7 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { createCollectionProvider } from 'alambre';
 import { storage } from '../storage';
-import type { CompletedRecord } from '../domain/types';
+import type { CompletedRecord, GameMode } from '../domain/types';
 
 const { Provider: RecordsCollectionProvider, useValue } = createCollectionProvider<CompletedRecord>({
   storage,
@@ -21,13 +21,17 @@ export const useRecords = () => {
       records: value.records,
       loading: value.loading,
       addRecord: value.add,
-      getBestTime: (puzzleId: string) => {
-        const matches = value.records.filter((r) => r.id === puzzleId);
+      getBestTime: (puzzleId: string, mode?: GameMode): number | null => {
+        const matches = value.records.filter(
+          (r) => r.id === puzzleId && (mode === undefined || r.mode === mode),
+        );
         if (matches.length === 0) return null;
         return Math.min(...matches.map((r) => r.elapsedSeconds));
       },
-      isPuzzleCompleted: (puzzleId: string) => {
-        return value.records.some((r) => r.id === puzzleId);
+      isPuzzleCompleted: (puzzleId: string, mode?: GameMode): boolean => {
+        return value.records.some(
+          (r) => r.id === puzzleId && (mode === undefined || r.mode === mode),
+        );
       },
     }),
     [value],
