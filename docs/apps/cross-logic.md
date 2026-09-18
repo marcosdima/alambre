@@ -66,6 +66,12 @@ The following architectural and product decisions are closed and not subject to 
 - **Changes**:
   - Theme toggle presentation refinement: scale growth of ~10% and drop shadow underneath the light/dark icons.
 
+### Unit 7: Iconos Lucide en Alambre y Animación de Desdibujo
+- **Changes**:
+  - Implement Lucide-guided custom icons in `packages/alambre`: `TriangleAlert` (`AlertTriangle`), `CircleCheck` (`CheckCircle`), `CircleX` (`CircleCross`, `XCircle`).
+  - Replace all emojis and unicode glyphs across `apps/cross-logic` (`PuzzleCreator.tsx`, `lang.tsx`) with the new `AlambreIcons` and primitives.
+  - Implement un-drawing animation in `GridCell.tsx`: when marks (cross, tick, auto-cross) are cleared (state transitions to `empty`), maintain the component mounted with `drawIt={false}` for 220ms, allowing `useIconAnimation.reset()` to animate the stroke retraction smoothly before unmounting.
+
 ---
 
 ## 4. Validation Protocol

@@ -55,7 +55,7 @@ describe('solver', () => {
     { persons: 'bruno', pets: 'perro' },
   ];
 
-  it('validates a puzzle with a unique matching solution (✅)', () => {
+  it('validates a puzzle with a unique matching solution', () => {
     const clues: Clue[] = [
       {
         id: 'c1',
@@ -81,7 +81,7 @@ describe('solver', () => {
     expect(result.matchesDeclaredSolution).toBe(true);
   });
 
-  it('detects ambiguous puzzles with multiple solutions (⚠️)', () => {
+  it('detects ambiguous puzzles with multiple solutions', () => {
     // 3 categories x 3 items with only 1 clue: multiple solutions exist
     const categories3x3: Category[] = [
       {
@@ -105,7 +105,7 @@ describe('solver', () => {
     expect(result.solutionsCount).toBeGreaterThan(1);
   });
 
-  it('detects contradictory clues with 0 solutions (❌)', () => {
+  it('detects contradictory clues with 0 solutions', () => {
     const clues: Clue[] = [
       {
         id: 'c1',
@@ -141,7 +141,7 @@ describe('solver', () => {
     expect(result.solutionsCount).toBe(0);
   });
 
-  it('flags puzzle as invalid if unique solution does not match declared solution (❌)', () => {
+  it('flags puzzle as invalid if unique solution does not match declared solution', () => {
     const clues: Clue[] = [
       {
         id: 'c1',

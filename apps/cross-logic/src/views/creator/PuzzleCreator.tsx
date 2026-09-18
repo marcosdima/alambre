@@ -440,9 +440,17 @@ export default function PuzzleCreator() {
           </View>
 
           <AppButton onPress={() => setActiveStep(2)}>
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>
-              Siguiente: Categorías ➔
-            </Text>
+            <View style={styles.buttonWithIcon}>
+              <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                Siguiente: Categorías
+              </Text>
+              <AlambreIcons.Arrow
+                color={theme.primary}
+                lineWidth={2.5}
+                style={{ width: 14, height: 14 }}
+                drawIt={true}
+              />
+            </View>
           </AppButton>
         </View>
       )}
@@ -502,14 +510,31 @@ export default function PuzzleCreator() {
 
           <View style={styles.navRow}>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(1)}>
-              <Text style={{ color: theme.muted, fontWeight: '600' }}>
-                ⬅ Anterior
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <AlambreIcons.Arrow
+                  color={theme.muted}
+                  lineWidth={2.5}
+                  rotation={180}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+                <Text style={{ color: theme.muted, fontWeight: '600' }}>
+                  Anterior
+                </Text>
+              </View>
             </AppButton>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(3)}>
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>
-                Siguiente ➔
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                  Siguiente
+                </Text>
+                <AlambreIcons.Arrow
+                  color={theme.primary}
+                  lineWidth={2.5}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+              </View>
             </AppButton>
           </View>
         </View>
@@ -605,14 +630,31 @@ export default function PuzzleCreator() {
 
           <View style={styles.navRow}>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(2)}>
-              <Text style={{ color: theme.muted, fontWeight: '600' }}>
-                ⬅ Anterior
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <AlambreIcons.Arrow
+                  color={theme.muted}
+                  lineWidth={2.5}
+                  rotation={180}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+                <Text style={{ color: theme.muted, fontWeight: '600' }}>
+                  Anterior
+                </Text>
+              </View>
             </AppButton>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(4)}>
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>
-                Siguiente ➔
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                  Siguiente
+                </Text>
+                <AlambreIcons.Arrow
+                  color={theme.primary}
+                  lineWidth={2.5}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+              </View>
             </AppButton>
           </View>
         </View>
@@ -800,14 +842,31 @@ export default function PuzzleCreator() {
 
           <View style={styles.navRow}>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(3)}>
-              <Text style={{ color: theme.muted, fontWeight: '600' }}>
-                ⬅ Anterior
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <AlambreIcons.Arrow
+                  color={theme.muted}
+                  lineWidth={2.5}
+                  rotation={180}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+                <Text style={{ color: theme.muted, fontWeight: '600' }}>
+                  Anterior
+                </Text>
+              </View>
             </AppButton>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(5)}>
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>
-                Validar ➔
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                  Validar
+                </Text>
+                <AlambreIcons.Arrow
+                  color={theme.primary}
+                  lineWidth={2.5}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+              </View>
             </AppButton>
           </View>
         </View>
@@ -840,13 +899,32 @@ export default function PuzzleCreator() {
               },
             ]}
           >
-            <Text style={styles.statusIcon}>
-              {solverResult.status === 'valid'
-                ? '✅'
-                : solverResult.status === 'ambiguous'
-                  ? '⚠️'
-                  : '❌'}
-            </Text>
+            <View style={styles.statusIconContainer}>
+              {solverResult.status === 'valid' && (
+                <AlambreIcons.CircleCheck
+                  color={theme.success}
+                  lineWidth={2.5}
+                  style={{ width: 28, height: 28 }}
+                  drawIt={true}
+                />
+              )}
+              {solverResult.status === 'ambiguous' && (
+                <AlambreIcons.TriangleAlert
+                  color={theme.warning}
+                  lineWidth={2.5}
+                  style={{ width: 28, height: 28 }}
+                  drawIt={true}
+                />
+              )}
+              {solverResult.status === 'invalid' && (
+                <AlambreIcons.CircleX
+                  color={theme.danger}
+                  lineWidth={2.5}
+                  style={{ width: 28, height: 28 }}
+                  drawIt={true}
+                />
+              )}
+            </View>
             <View style={{ flex: 1, gap: 4 }}>
               <Text
                 style={[
@@ -879,21 +957,38 @@ export default function PuzzleCreator() {
           {/* Save Button */}
           {solverResult.status === 'valid' ? (
             <AppButton onPress={handleSavePuzzle}>
-              <Text style={{ color: theme.success, fontWeight: '800', fontSize: 16 }}>
-                ✓ {lang.creator.savePuzzle}
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <AlambreIcons.Tick
+                  color={theme.success}
+                  lineWidth={3}
+                  style={{ width: 18, height: 18 }}
+                  drawIt={true}
+                />
+                <Text style={{ color: theme.success, fontWeight: '800', fontSize: 16 }}>
+                  {lang.creator.savePuzzle}
+                </Text>
+              </View>
             </AppButton>
           ) : (
             <Text style={[styles.disabledWarning, { color: theme.muted }]}>
-              Para poder guardar el puzzle, debe resolverse con solución única (✅).
+              Para poder guardar el puzzle, debe resolverse con solución única.
             </Text>
           )}
 
           <View style={styles.navRow}>
             <AppButton style={{ flex: 1 }} onPress={() => setActiveStep(4)}>
-              <Text style={{ color: theme.muted, fontWeight: '600' }}>
-                ⬅ Modificar Pistas
-              </Text>
+              <View style={styles.buttonWithIcon}>
+                <AlambreIcons.Arrow
+                  color={theme.muted}
+                  lineWidth={2.5}
+                  rotation={180}
+                  style={{ width: 14, height: 14 }}
+                  drawIt={true}
+                />
+                <Text style={{ color: theme.muted, fontWeight: '600' }}>
+                  Modificar Pistas
+                </Text>
+              </View>
             </AppButton>
           </View>
         </View>
@@ -1091,8 +1186,17 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     gap: 12,
   },
-  statusIcon: {
-    fontSize: 24,
+  statusIconContainer: {
+    width: 28,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   statusTitle: {
     fontSize: 15,
