@@ -16,6 +16,9 @@ export { default as Play } from './Play';
 export { default as Gear } from './Gear';
 export { default as Zap } from './Zap';
 export { default as Leaf } from './Leaf';
+export { default as TriangleAlert, default as AlertTriangle } from './TriangleAlert';
+export { default as CircleCheck, default as CheckCircle } from './CircleCheck';
+export { default as CircleX, default as CircleCross, default as XCircle } from './CircleX';
 
 export { default as Keys } from './Keys';
 export { default as Wallet } from './Wallet';

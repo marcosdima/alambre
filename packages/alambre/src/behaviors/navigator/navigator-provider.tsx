@@ -1,5 +1,6 @@
 import type { NavigatorTypes } from '../../types';
-import { createContext, useContext, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { BackHandler } from 'react-native';
 
 
 const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
@@ -28,6 +29,21 @@ const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
     setScrollTop(0);
     updatePage(aux);
   };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (stack.current.length > 0) {
+        previous();
+        return true;
+      }
+      return false;
+    };
+
+    const sub = BackHandler?.addEventListener?.('hardwareBackPress', onBackPress);
+    return () => {
+      sub?.remove?.();
+    };
+  }, []);
 
 
   const getComponent = (path: readonly string[]) => {

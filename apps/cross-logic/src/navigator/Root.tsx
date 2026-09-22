@@ -9,6 +9,7 @@ import { useNavigator } from 'alambre';
 import type { NavigatorTypes } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
+import { useGame } from '../session/game-context';
 import { pages, type PageTitle } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 
@@ -25,9 +26,13 @@ export default () => {
   const { theme } = useLightDark();
   const { currentLang } = useLang();
   const { currentPage } = useNavigator();
+  const { activePuzzle } = useGame();
 
   const title = resolvePageTitle(currentPage);
-  const headerTitle = title?.[currentLang as 'es' | 'en'];
+  const headerTitle =
+    currentPage === pages.game && activePuzzle
+      ? activePuzzle.title
+      : title?.[currentLang as 'es' | 'en'];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

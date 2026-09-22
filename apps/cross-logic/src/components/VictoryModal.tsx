@@ -27,10 +27,6 @@ export default function VictoryModal({
     return `${mins}m ${secs}s`;
   };
 
-  const diffLabel =
-    (lang.home as Record<string, string>)[activePuzzle.difficulty] ??
-    activePuzzle.difficulty;
-
   return (
     <Modal
       transparent
@@ -91,15 +87,6 @@ export default function VictoryModal({
               </Text>
               <Text style={[styles.statValue, { color: theme.color }]}>
                 {mistakesCount}
-              </Text>
-            </View>
-
-            <View style={styles.statItem}>
-              <Text style={[styles.statLabel, { color: theme.muted }]}>
-                {lang.home.selectDifficulty}
-              </Text>
-              <Text style={[styles.statValue, { color: theme.primary, textTransform: 'capitalize' }]}>
-                {diffLabel}
               </Text>
             </View>
           </View>

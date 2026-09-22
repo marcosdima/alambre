@@ -72,79 +72,50 @@ export const nextCellState = (current: CellState): CellState => {
     case 'tick':
       return 'empty';
     case 'auto-cross':
-      return 'empty';
+      return 'auto-cross';
     default:
       return 'empty';
   }
 };
 
-export const applyAutoCross = (
+export const recomputeAutoCross = (
   puzzle: PuzzleDefinition,
   grid: GridState,
-  catAId: string,
-  itemAId: string,
-  catBId: string,
-  itemBId: string,
 ): GridState => {
-  const nextGrid = { ...grid };
-  const catA = puzzle.categories.find((c) => c.id === catAId);
-  const catB = puzzle.categories.find((c) => c.id === catBId);
+  const nextGrid: GridState = {};
 
-  if (!catA || !catB) return nextGrid;
-
-  // Cross out other items in catB for itemA
-  for (const otherB of catB.items) {
-    if (otherB.id !== itemBId) {
-      const key = createPairKey(catAId, itemAId, catBId, otherB.id);
-      if (nextGrid[key] === 'empty') {
-        nextGrid[key] = 'auto-cross';
-      }
-    }
+  // Preserve manual marks ('cross', 'tick', 'empty'), resetting inferred 'auto-cross'
+  for (const [key, state] of Object.entries(grid)) {
+    nextGrid[key] = state === 'auto-cross' ? 'empty' : state;
   }
 
-  // Cross out other items in catA for itemB
-  for (const otherA of catA.items) {
-    if (otherA.id !== itemAId) {
-      const key = createPairKey(catAId, otherA.id, catBId, itemBId);
-      if (nextGrid[key] === 'empty') {
-        nextGrid[key] = 'auto-cross';
+  // Infer auto-crosses from all ticks
+  for (const [key, state] of Object.entries(nextGrid)) {
+    if (state === 'tick') {
+      const { catAId, itemAId, catBId, itemBId } = parsePairKey(key);
+      const catA = puzzle.categories.find((c) => c.id === catAId);
+      const catB = puzzle.categories.find((c) => c.id === catBId);
+
+      if (!catA || !catB) continue;
+
+      // Cross out other items in catB for itemA
+      for (const otherB of catB.items) {
+        if (otherB.id !== itemBId) {
+          const pairKey = createPairKey(catAId, itemAId, catBId, otherB.id);
+          if (nextGrid[pairKey] === 'empty') {
+            nextGrid[pairKey] = 'auto-cross';
+          }
+        }
       }
-    }
-  }
 
-  return nextGrid;
-};
-
-export const removeAutoCross = (
-  puzzle: PuzzleDefinition,
-  grid: GridState,
-  catAId: string,
-  itemAId: string,
-  catBId: string,
-  itemBId: string,
-): GridState => {
-  const nextGrid = { ...grid };
-  const catA = puzzle.categories.find((c) => c.id === catAId);
-  const catB = puzzle.categories.find((c) => c.id === catBId);
-
-  if (!catA || !catB) return nextGrid;
-
-  // Clear auto-crosses in catB for itemA
-  for (const otherB of catB.items) {
-    if (otherB.id !== itemBId) {
-      const key = createPairKey(catAId, itemAId, catBId, otherB.id);
-      if (nextGrid[key] === 'auto-cross') {
-        nextGrid[key] = 'empty';
-      }
-    }
-  }
-
-  // Clear auto-crosses in catA for itemB
-  for (const otherA of catA.items) {
-    if (otherA.id !== itemAId) {
-      const key = createPairKey(catAId, otherA.id, catBId, itemBId);
-      if (nextGrid[key] === 'auto-cross') {
-        nextGrid[key] = 'empty';
+      // Cross out other items in catA for itemB
+      for (const otherA of catA.items) {
+        if (otherA.id !== itemAId) {
+          const pairKey = createPairKey(catAId, otherA.id, catBId, itemBId);
+          if (nextGrid[pairKey] === 'empty') {
+            nextGrid[pairKey] = 'auto-cross';
+          }
+        }
       }
     }
   }

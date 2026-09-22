@@ -40,10 +40,6 @@ export default function GameScreen() {
     );
   }
 
-  const diffLabel =
-    (lang.home as Record<string, string>)[activePuzzle.difficulty] ??
-    activePuzzle.difficulty;
-
   const handlePlayAnother = () => {
     startNewGame(difficulty, mode);
   };
@@ -58,24 +54,8 @@ export default function GameScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
       >
-        {/* Title Header */}
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.color }]} numberOfLines={1}>
-            {activePuzzle.title}
-          </Text>
-          <View
-            style={[
-              styles.difficultyBadge,
-              { backgroundColor: theme.primarySoft, borderColor: theme.primary },
-            ]}
-          >
-            <Text style={[styles.difficultyText, { color: theme.primary }]}>
-              {diffLabel}
-            </Text>
-          </View>
-        </View>
-
         {/* Game Controls & Status Bar */}
         <GameControls />
 
@@ -163,29 +143,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-    gap: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    flex: 1,
-  },
-  difficultyBadge: {
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  difficultyText: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
   },
   gridCard: {
     borderRadius: 14,

@@ -360,10 +360,31 @@ describe('public icon API', () => {
       'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
       'Plug', 'Charger', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
       'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
+      'TriangleAlert', 'AlertTriangle', 'CircleCheck', 'CheckCircle',
+      'CircleX', 'CircleCross', 'XCircle',
     ];
     for (const name of expected) {
       expect(AlambreIcons).toHaveProperty(name);
     }
+  });
+
+  it('renders status icons TriangleAlert, CircleCheck, CircleX with stroke and fill="none"', async () => {
+    const { toJSON: alertJson } = await render(
+      <AlambreIcons.TriangleAlert color="#ff9900" lineWidth={2} />,
+    );
+    expect(pathsOf(alertJson()).length).toBeGreaterThan(0);
+
+    const { toJSON: checkJson } = await render(
+      <AlambreIcons.CircleCheck color="#00ff00" lineWidth={2} />,
+    );
+    expect(circlesOf(checkJson()).length).toBe(1);
+    expect(pathsOf(checkJson()).length).toBe(1);
+
+    const { toJSON: xJson } = await render(
+      <AlambreIcons.CircleX color="#ff0000" lineWidth={2} />,
+    );
+    expect(circlesOf(xJson()).length).toBe(1);
+    expect(linesOf(xJson()).length).toBe(2);
   });
 
   it('renders newly added item icons with default fill="none" and forwards stroke', async () => {

@@ -1,6 +1,9 @@
 import type { ReactElement } from 'react';
 import Home from '../views/home/Home';
+import GameSelect from '../views/gameSelect/GameSelect';
 import GameScreen from '../views/game/GameScreen';
+import History from '../views/history/History';
+import PuzzleCreator from '../views/creator/PuzzleCreator';
 import HowToPlay from '../views/howToPlay/HowToPlay';
 import Settings from '../views/settings/Settings';
 
@@ -18,9 +21,21 @@ export const pages: Record<string, AppNavigatorPage> = {
   home: {
     component: <Home />,
   },
+  gameSelect: {
+    component: <GameSelect />,
+    title: { es: 'Nueva Partida', en: 'New Game' },
+  },
   game: {
     component: <GameScreen />,
     title: { es: 'Partida', en: 'Game' },
+  },
+  history: {
+    component: <History />,
+    title: { es: 'Historial', en: 'History' },
+  },
+  creator: {
+    component: <PuzzleCreator />,
+    title: { es: 'Creador de Puzzles', en: 'Puzzle Creator' },
   },
   howToPlay: {
     component: <HowToPlay />,
