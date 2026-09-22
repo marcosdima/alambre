@@ -1,9 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, FadeInDown, FadeOutUp } from 'react-native-reanimated';
 import type { ToastComponentProps } from 'alambre';
+import { useNavigator } from 'alambre';
 import { useLightDark } from './theme';
 
 export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
   const { theme } = useLightDark();
+  const { noPreviousPages } = useNavigator();
   const { data } = toast;
 
   const raw = data.payload;
@@ -14,13 +17,27 @@ export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
   }
 
   return (
-    <View style={styles.root} pointerEvents='box-none'>
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.primary }]}>
+    <View
+      style={[styles.root, { top: noPreviousPages ? 12 : 72 }]}
+      pointerEvents="box-none"
+    >
+      <Animated.View
+        key={data.id}
+        entering={FadeInDown.duration(260).easing(Easing.out(Easing.cubic))}
+        exiting={FadeOutUp.duration(220).easing(Easing.in(Easing.cubic))}
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.primary,
+          },
+        ]}
+      >
         <Text style={{ color: theme.color, flex: 1 }}>{content}</Text>
         <Pressable onPress={() => dismiss(data.id)} hitSlop={12}>
           <Text style={{ color: theme.primary, fontWeight: '700' }}>✕</Text>
         </Pressable>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -28,7 +45,6 @@ export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
 const styles = StyleSheet.create({
   root: {
     position: 'absolute',
-    top: 12,
     width: '100%',
     alignItems: 'center',
     zIndex: 999,
@@ -41,5 +57,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
 });

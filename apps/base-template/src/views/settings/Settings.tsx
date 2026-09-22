@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, Pressable } from 'react-native';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
-import AppTitle from '../../components/AppTitle';
 import ToggleLightDark from '../../components/ToggleLightDark';
 
 export default () => {
@@ -10,9 +10,11 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppTitle style={{ color: theme.color }}>{lang.settings.title}</AppTitle>
-
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {/* Language Section */}
+      <Animated.View
+        entering={FadeInDown.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+      >
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
         <View style={styles.row}>
           {(['es', 'en'] as const).map((code) => {
@@ -26,6 +28,7 @@ export default () => {
                   { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
                   active && { borderColor: theme.primary, backgroundColor: theme.primarySoft },
                 ]}
+                accessibilityRole="button"
               >
                 <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase' }}>
                   {code}
@@ -34,12 +37,16 @@ export default () => {
             );
           })}
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {/* Theme Section */}
+      <Animated.View
+        entering={FadeInDown.duration(280).delay(110).easing(Easing.out(Easing.cubic))}
+        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+      >
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
         <ToggleLightDark toggle={toggleTheme} setLeft={currThemeName === 'light'} style={styles.toggle} />
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -74,5 +81,6 @@ const styles = StyleSheet.create({
   toggle: {
     height: 64,
     aspectRatio: 3.2,
+    alignSelf: 'center',
   },
 });
