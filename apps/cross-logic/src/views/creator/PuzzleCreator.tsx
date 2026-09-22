@@ -408,7 +408,7 @@ export default function PuzzleCreator() {
 
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.muted }]}>
-              {lang.creator.categoriesCount} (3 o 4)
+              {lang.creator.categoriesCount} (3 - 4)
             </Text>
             <View style={styles.segmentedRow}>
               {[3, 4].map((count) => {
@@ -444,7 +444,7 @@ export default function PuzzleCreator() {
 
           <View style={styles.field}>
             <Text style={[styles.label, { color: theme.muted }]}>
-              {lang.creator.itemsCount} (3 o 4)
+              {lang.creator.itemsCount} (3 - 4)
             </Text>
             <View style={styles.segmentedRow}>
               {[3, 4].map((count) => {

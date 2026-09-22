@@ -74,6 +74,7 @@ describe('public API — value surface', () => {
       'Keys', 'Wallet', 'Phone', 'Documents', 'Umbrella', 'Water', 'Meds',
       'Plug', 'Charger', 'Backpack', 'Laptop', 'Headphones', 'Glasses', 'Book',
       'ShoppingBag', 'Coffee', 'Watch', 'Gift', 'CreditCard',
+      'CircleCheck', 'CircleX', 'TriangleAlert',
     ] as const) {
       expect(typeof AlambreIcons[name]).toBe('function');
     }

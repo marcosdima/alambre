@@ -54,6 +54,7 @@ export default function GameScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
       >
         {/* Game Controls & Status Bar */}
         <GameControls />
