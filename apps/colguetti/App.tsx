@@ -12,6 +12,7 @@ import { ItemsProvider } from './src/items/items-context';
 import { AlarmsProvider } from './src/alarms/alarms-context';
 import { ConfirmationsProvider } from './src/checklist/confirmations-context';
 import { ActivationProvider } from './src/checklist/activation-context';
+import { NotificationPermissionProvider } from './src/notifications/notification-permission-context';
 
 export default function App() {
   return (
@@ -24,13 +25,15 @@ export default function App() {
                 <AlarmsProvider>
                   <ConfirmationsProvider>
                     <ActivationProvider>
-                      <NavigatorProvider pages={navigator}>
-                        <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                          <ToastProvider ToastComponent={ColguettiToast}>
-                            <Root />
-                          </ToastProvider>
-                        </ConfirmProvider>
-                      </NavigatorProvider>
+                      <NotificationPermissionProvider>
+                        <NavigatorProvider pages={navigator}>
+                          <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                            <ToastProvider ToastComponent={ColguettiToast}>
+                              <Root />
+                            </ToastProvider>
+                          </ConfirmProvider>
+                        </NavigatorProvider>
+                      </NotificationPermissionProvider>
                     </ActivationProvider>
                   </ConfirmationsProvider>
                 </AlarmsProvider>

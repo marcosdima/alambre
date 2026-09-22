@@ -1,11 +1,43 @@
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
+import { useToast } from 'alambre';
 import ToggleLightDark from '../../components/ToggleLightDark';
+import { useNotificationPermission } from '../../notifications/notification-permission-context';
 
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
   const { lang, currentLang, changeLang } = useLang();
+  const { show } = useToast();
+  const { permission, loading, requestPermission, sendTestNotification } =
+    useNotificationPermission();
+
+  const permissionHint = loading
+    ? lang.settings.notificationsChecking
+    : permission === 'granted'
+      ? lang.settings.notificationsGranted
+      : permission === 'denied'
+        ? lang.settings.notificationsDenied
+        : lang.settings.notificationsUndetermined;
+
+  const onRequestPermission = () => {
+    void requestPermission();
+  };
+
+  const onTestNotification = () => {
+    void (async () => {
+      const ok = await sendTestNotification();
+      show({
+        payload: {
+          title: ok
+            ? lang.settings.testNotificationSent
+            : lang.settings.testNotificationFailed,
+          tone: ok ? 'success' : 'warning',
+        },
+        duration: 3000,
+      });
+    })();
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -57,6 +89,39 @@ export default () => {
           }}
         />
       </View>
+
+      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.notifications}</Text>
+        <Text style={{ color: theme.muted }}>{permissionHint}</Text>
+        <View style={styles.row}>
+          {permission !== 'granted' && (
+            <Pressable
+              onPress={onRequestPermission}
+              style={({ pressed }) => [
+                styles.actionButton,
+                { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
+                pressed && styles.langChipPressed,
+              ]}
+            >
+              <Text style={{ color: theme.primary, fontWeight: '700' }}>
+                {lang.settings.requestPermission}
+              </Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={onTestNotification}
+            style={({ pressed }) => [
+              styles.actionButton,
+              { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
+              pressed && styles.langChipPressed,
+            ]}
+          >
+            <Text style={{ color: theme.primary, fontWeight: '700' }}>
+              {lang.settings.testNotification}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 };
@@ -91,6 +156,12 @@ const styles = StyleSheet.create({
   langChipPressed: {
     opacity: 0.85,
     transform: [{ scale: 0.97 }],
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   toggle: {
     height: 64,

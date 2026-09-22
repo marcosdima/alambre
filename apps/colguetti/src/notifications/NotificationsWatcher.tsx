@@ -6,6 +6,7 @@ import { useAlarms } from '../alarms/alarms-context';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from '../navigator/RouteIntent';
 import { useActivation } from '../checklist/activation-context';
+import { useNotificationPermission } from './notification-permission-context';
 import { ACTIVATION_CATEGORY, syncSchedule } from './sync';
 import { EXPIRY_CATEGORY, SNOOZE_ACTION, SNOOZE_MINUTES } from './expiry';
 
@@ -20,6 +21,7 @@ export const NotificationsWatcher = () => {
   const { navigate } = useNavigator();
   const { setIntent } = useRouteIntent();
   const { active, activate, snooze } = useActivation();
+  const { permission, requestPermission } = useNotificationPermission();
 
   const alarmsRef = useRef(alarms);
   const activeRef = useRef(active);
@@ -126,16 +128,15 @@ export const NotificationsWatcher = () => {
           importance: Notifications.AndroidImportance.DEFAULT,
         }).catch(() => undefined);
       }
-      const existing = await Notifications.getPermissionsAsync().catch(
-        () => null,
-      );
-      if (!existing?.granted) {
-        await Notifications.requestPermissionsAsync().catch(() => undefined);
-      }
-      void sync();
+      void requestPermission();
     };
     void setup();
-  }, [lang, sync]);
+  }, [lang, requestPermission]);
+
+  useEffect(() => {
+    if (permission !== 'granted') return;
+    void sync();
+  }, [permission, sync]);
 
   useEffect(() => {
     void syncSchedule(alarms, bodyForRef.current);
