@@ -19,7 +19,7 @@ export default function App() {
     <ConfigProvider>
       <LightDarkProvider>
         <LangProvider>
-          <GestureHandlerRootView>
+          <GestureHandlerRootView style={{ flex: 1 }}>
             <RouteIntentProvider>
               <ItemsProvider>
                 <AlarmsProvider>

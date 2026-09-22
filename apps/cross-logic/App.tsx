@@ -20,7 +20,7 @@ export default function App() {
           <RecordsProvider>
             <PuzzlesProvider>
               <GameProvider>
-                <GestureHandlerRootView>
+                <GestureHandlerRootView style={{ flex: 1 }}>
                   <NavigatorProvider pages={navigator}>
                     <ConfirmProvider ConfirmComponent={ConfirmDialog}>
                       <ToastProvider ToastComponent={TemplateToast}>

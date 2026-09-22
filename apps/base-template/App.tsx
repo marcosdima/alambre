@@ -12,7 +12,7 @@ export default function App() {
     <ConfigProvider>
       <LightDarkProvider>
         <LangProvider>
-          <GestureHandlerRootView>
+          <GestureHandlerRootView style={{ flex: 1 }}>
             <NavigatorProvider pages={navigator}>
               <ToastProvider ToastComponent={TemplateToast}>
                 <Root />

@@ -163,7 +163,11 @@ export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
             <Text numberOfLines={1} style={[styles.title, { color: toneColor }]}>{title}</Text>
           </View>
 
-          <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>
+          <Pressable
+            onPress={() => dismiss(data.id)}
+            hitSlop={10}
+            style={[styles.closeButton, { borderColor: theme.border }]}
+          >
             <View style={styles.closeIconWrap}>
               <AlambreIcons.Cross
                 key={`close-${data.id}`}
