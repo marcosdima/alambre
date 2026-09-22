@@ -25,10 +25,14 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
   // Column categories are C_{k-1} .. C_1 (reversed)
   const colCategories = [...cats.slice(1)].reverse();
 
-  const catBadgeWidth = 22;
-  const itemLabelWidth = 54;
+  const catBadgeWidth = 24;
+  const maxItemLength = Math.max(
+    ...cats.flatMap((c) => c.items.map((it) => it.name.length)),
+    6,
+  );
+  const itemLabelWidth = Math.max(62, Math.min(84, Math.round(maxItemLength * 6.8)));
   const totalLeftHeaderWidth = catBadgeWidth + itemLabelWidth;
-  const colHeaderHeight = 60;
+  const colHeaderHeight = 76;
 
   return (
     <ScrollView
@@ -61,6 +65,8 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
                 <View style={[styles.colCatTitleBox, { backgroundColor: theme.surfaceAlt }]}>
                   <Text
                     numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.8}
                     style={[styles.colCatTitleText, { color: theme.primary }]}
                   >
                     {colCat.name}
@@ -76,6 +82,8 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
                     >
                       <Text
                         numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.75}
                         ellipsizeMode="tail"
                         style={[
                           styles.colItemText,
@@ -100,13 +108,7 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
           return (
             <View
               key={rowCat.id}
-              style={[
-                styles.rowCategoryBlock,
-                {
-                  borderColor: theme.border,
-                  borderBottomWidth: isLastRowCategory ? 0 : 2,
-                },
-              ]}
+              style={styles.rowCategoryBlock}
             >
               <View style={styles.rowCategoryRow}>
                 {/* Category vertical badge spanning all items */}
@@ -123,6 +125,8 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
                 >
                   <Text
                     numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.8}
                     style={[
                       styles.rowCatVerticalText,
                       {
@@ -145,6 +149,9 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
                         <View style={[styles.rowItemHeader, { width: itemLabelWidth, height: cellSize }]}>
                           <Text
                             numberOfLines={1}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.75}
+                            ellipsizeMode="tail"
                             style={[styles.rowItemText, { color: theme.color }]}
                           >
                             {rowItem.name}
@@ -212,6 +219,36 @@ export default function LogicGrid({ puzzle, cellSize = 34 }: LogicGridProps) {
                   })}
                 </View>
               </View>
+
+              {/* Separator between row categories: only render under active subgrids, NOT under empty spacers */}
+              {!isLastRowCategory && (
+                <View style={{ flexDirection: 'row', height: 2 }}>
+                  <View
+                    style={{
+                      width: totalLeftHeaderWidth,
+                      height: 2,
+                      backgroundColor: theme.border,
+                    }}
+                  />
+                  {colCategories.map((colCat, colCatIdx) => {
+                    const hasSubgrid = rowCatIdx + colCatIdx < k - 1;
+                    if (!hasSubgrid) return null;
+                    const isLastCol = colCatIdx === colCategories.length - 1;
+                    return (
+                      <View
+                        key={`sep-${colCat.id}`}
+                        style={{
+                          width: colCat.items.length * cellSize,
+                          height: 2,
+                          backgroundColor: theme.border,
+                          borderColor: theme.border,
+                          borderRightWidth: isLastCol ? 0 : 2,
+                        }}
+                      />
+                    );
+                  })}
+                </View>
+              )}
             </View>
           );
         })}
@@ -238,7 +275,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   colCatTitleBox: {
-    paddingVertical: 3,
+    paddingVertical: 4,
     paddingHorizontal: 6,
     borderRadius: 4,
     alignItems: 'center',
@@ -255,14 +292,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   colItemHeader: {
-    height: 38,
+    height: 52,
     justifyContent: 'center',
     alignItems: 'center',
   },
   colItemText: {
     fontSize: 10,
     fontWeight: '600',
-    width: 50,
+    width: 68,
     textAlign: 'center',
   },
   rowCategoryBlock: {

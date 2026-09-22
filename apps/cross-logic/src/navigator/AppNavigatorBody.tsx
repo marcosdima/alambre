@@ -1,9 +1,8 @@
 import type { ComponentProps } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, StyleSheet, Pressable, BackHandler, View } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import type { NavigatorTypes } from 'alambre';
-import { View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
@@ -173,6 +172,22 @@ export default ({
   useEffect(() => {
     isReturningRef.current = false;
   }, [pageKey]);
+
+  useEffect(() => {
+    const onHardwareBack = () => {
+      if (!noPreviousPages) {
+        isReturningRef.current = true;
+        previous();
+        return true;
+      }
+      return false;
+    };
+
+    const sub = BackHandler?.addEventListener?.('hardwareBackPress', onHardwareBack);
+    return () => {
+      sub?.remove?.();
+    };
+  }, [noPreviousPages, previous]);
 
   return (
     <View

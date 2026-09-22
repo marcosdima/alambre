@@ -5,6 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import LetterReveal from '../../components/LetterReveal';
 import AppButton from '../../components/AppButton';
+import StaggeredGroup from '../../components/StaggeredGroup';
 
 export default function Home() {
   const { theme } = useLightDark();
@@ -93,7 +94,13 @@ export default function Home() {
       )}
 
       {/* Main Menu Items */}
-      <View style={styles.menuContainer}>
+      <StaggeredGroup
+        style={styles.menuContainer}
+        staggerMs={70}
+        initialDelay={120}
+        duration={340}
+        direction="from-bottom"
+      >
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -146,7 +153,7 @@ export default function Home() {
             </Pressable>
           );
         })}
-      </View>
+      </StaggeredGroup>
     </View>
   );
 }

@@ -77,6 +77,23 @@ The following architectural and product decisions are closed and not subject to 
   - **Redacción de Pistas (`PuzzleCreator.tsx`)**: Permitir personalizar libremente el texto visible de la pista (`clue.text`) antes de agregarla (pre-rellenada con texto sugerido) y editarla en línea en la lista de pistas. El solver continúa validando estrictamente `clue.relation` sin interferir en la redacción natural elegida por el creador.
   - **Historial Agrupado (`History.tsx`)**: En lugar de tarjetas duplicadas por cada partida, agrupar las partidas por acertijo. Listar los intentos ordenados estrictamente de mejor tiempo a peor tiempo (el primer intento #1 es inherentemente el mejor tiempo). La insignia de dificultad del puzzle se ubica en el encabezado de la tarjeta, evitando repeticiones innecesarias.
 
+### Unit 9: Botón Back del Sistema, Animaciones Grupales Escalonadas y Fixes Visuales de Grilla
+- **Changes**:
+  - **Botón Atrás del Sistema Android (`BackHandler`)**:
+    - En `packages/alambre/src/behaviors/navigator/navigator-provider.tsx`, interceptar el evento `hardwareBackPress`. Si hay páginas previas en la pila (`stack.current.length > 0`), se llama a `previous()` y se devuelve `true` evitando salir de la app. Si la pila está vacía, devuelve `false` permitiendo el comportamiento estándar del sistema.
+    - En `apps/cross-logic/src/navigator/AppNavigatorBody.tsx`, se enlaza el evento para activar la animación de retroceso (`isReturningRef.current = true`) al pulsar el botón físico/barra de navegación del sistema.
+  - **Animación Grupal Escalonada (`StaggeredGroup`, `StaggeredItem`)**:
+    - Diseñada en `apps/cross-logic/src/components/StaggeredGroup.tsx` para ser promovida a `alambre` en el futuro.
+    - Aplica una secuencia escalonada con física de resortes (`springify`) y animación de abajo hacia arriba con desvanecimiento (`FadeInDown`, configurable a `from-top`, `from-left`, `from-right` o `fade`).
+    - Integrada en `apps/cross-logic/src/views/home/Home.tsx` sobre los botones del menú principal (`staggerMs={70}`, `initialDelay={120}`, `duration={340}`).
+  - **Línea Espuria en Grilla 4x4 (`LogicGrid.tsx`)**:
+    - Se eliminó el `borderBottomWidth` en `rowCategoryBlock` (que se extendía a lo largo de todo el ancho del contenedor abarcando la columna espaciadora 12).
+    - Se implementó un separador condicional entre categorías de filas que se dibuja únicamente bajo los subgrids activos (`hasSubgrid = rowCatIdx + colCatIdx < k - 1`), omitiendo los bloques vacíos de la matriz escalonada.
+  - **Legibilidad de Textos Largos de Filas y Columnas (`LogicGrid.tsx`)**:
+    - Cálculo dinámico de ancho de etiquetas según longitud máxima de caracteres (`itemLabelWidth = Math.max(62, Math.min(84, Math.round(maxItemLength * 6.8)))`).
+    - Incremento de altura de cabecera inclinada (`colHeaderHeight = 76`, `colItemHeader = 52`) y ancho de texto rotado (`width: 68`).
+    - Inclusión de `adjustsFontSizeToFit`, `minimumFontScale={0.75}`, `numberOfLines={1}` y `ellipsizeMode="tail"` en etiquetas de columnas y filas para evitar cortes y desbordes.
+
 ---
 
 ## 4. Validation Protocol

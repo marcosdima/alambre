@@ -1,5 +1,6 @@
 import { act, render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { BackHandler, type NativeEventSubscription } from 'react-native';
 import {
   NavigatorProvider,
   useNavigator,
@@ -75,5 +76,37 @@ describe('NavigatorProvider', () => {
 
     act(() => getApi().previous());
     expect(getApi().noPreviousPages).toBe(true);
+  });
+
+  it('registers BackHandler listener and navigates back on hardwareBackPress', () => {
+    let backHandler: (() => boolean) | undefined;
+    const addListenerSpy = vi.spyOn(BackHandler, 'addEventListener').mockImplementation((event, handler) => {
+      if (event === 'hardwareBackPress') {
+        backHandler = handler as () => boolean;
+      }
+      return { remove: vi.fn() } as unknown as NativeEventSubscription;
+    });
+
+    const { getApi, unmount } = setup();
+
+    expect(addListenerSpy).toHaveBeenCalledWith('hardwareBackPress', expect.any(Function));
+
+    // When on root, hardwareBackPress returns false (allowing OS exit)
+    expect(backHandler?.()).toBe(false);
+
+    // After navigating forward
+    act(() => getApi().navigate('alarms'));
+    expect(getApi().noPreviousPages).toBe(false);
+
+    // hardwareBackPress returns true and navigates back
+    act(() => {
+      const handled = backHandler?.();
+      expect(handled).toBe(true);
+    });
+    expect(getApi().noPreviousPages).toBe(true);
+    expect(getApi().pageKey).toBe('');
+
+    unmount();
+    addListenerSpy.mockRestore();
   });
 });
