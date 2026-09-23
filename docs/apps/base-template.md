@@ -47,14 +47,21 @@ Follow this checklist during manual testing or emulator inspection (e.g. via `ad
 - [ ] **Back Navigation:** Tapping the back arrow or triggering hardware back navigates back to Home with a smooth reverse transition (`FadeInLeft`), resetting scroll position.
 
 ### D. Toast Feedback & Safe Area
-- [ ] **Entrance Animation:** Tapping "Mostrar toast" / "Show toast" summons the toast with an intentional `FadeInDown` entrance.
-- [ ] **Exit Animation:** Tapping the dismiss button (✕) causes the toast to exit upwards with an accelerating `FadeOutUp` animation.
-- [ ] **Status Bar Clearance:** On Home, the Toast never sits underneath the physical system status-bar area (battery, signal, notch). It respects `Math.max(insets.top, 16) + 10`.
-- [ ] **Header Clearance:** On subpages (Settings, Details), the Toast sits at `baseTop + 66`, cleanly below the 56px navigation header without overlapping.
+- [ ] **Entrance Animation:** Tapping "Mostrar toast" / "Show toast" summons the toast with an intentional `FadeInDown` (or `FadeInUp` when bottom) entrance.
+- [ ] **Exit Animation:** Tapping the dismiss button (✕) or allowing auto-dismiss causes the toast to exit upwards with an accelerating `FadeOutUp` (or downwards with `FadeOutDown` when bottom) animation.
+- [ ] **Swipe-to-Dismiss Gestures:**
+  - Swiping horizontally to either left or right smoothly flings the card off-screen and dismisses it without teleporting back to center.
+  - Swiping vertically in the dismissal direction (upwards for top toasts, downwards for bottom toasts) ejects the toast cleanly.
+  - Partial drags return to center via spring physics when below threshold.
+- [ ] **Semantic Tones & Iconography:** Correct icon container, badge background, and accent stripe render for `info`, `success` (`CircleCheck`), `warning` (`TriangleAlert`), and `danger` (`CircleX`).
+- [ ] **Countdown Progress Bar:** Auto-dismissing toasts display an animated linear countdown track at the bottom of the card.
+- [ ] **Queue Badge:** Sequential toasts render a `+{queueLength}` badge indicating pending queue count.
+- [ ] **Status Bar Clearance:** On Home, top toasts never sit underneath the physical system status-bar area (battery, signal, notch), respecting `Math.max(insets.top, 16) + 10`.
+- [ ] **Header Clearance:** On subpages (Settings, Details), top toasts sit at `baseTop + 66`, cleanly below the 56px navigation header without overlapping.
 - [ ] **Navigation Transition Gliding:**
   - Trigger a Toast on Home and tap Settings while visible: the Toast smoothly glides down from its Home position to the subpage position over 250ms without jumping or popping.
   - Trigger a Toast on Settings and tap back while visible: the Toast smoothly glides up from the subpage position to the Home position over 250ms without jumping.
-- [ ] **Touch Target:** The dismiss button respects accessibility guidelines with `hitSlop={12}`.
+- [ ] **Touch Target:** Dismiss and action buttons respect accessibility guidelines with appropriate `hitSlop`.
 
 ### E. Theme Consistency (Light & Dark)
 - [ ] Test the entire checklist in **Light Theme**.

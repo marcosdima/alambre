@@ -108,42 +108,114 @@ const handleDelete = async () => {
 
 ## 3. `ToastProvider` & `useToast`
 
-Provides non-blocking, queued transient notification toasts. The application provides `ToastComponent` to render the notification.
+Provides non-blocking, queued transient notification toasts. The framework provides the state machine, queue management, and contracts; the application provides the concrete visual component (`ToastComponent`).
+
+### Types & Contracts
+```typescript
+import type {
+  ToastTone,
+  ToastPosition,
+  ToastAction,
+  StandardToastPayload,
+  ToastPayload,
+  RegisterToast,
+  Toast,
+  ToastComponentProps,
+  UseToastType,
+} from 'alambre';
+```
+
+- **`ToastTone`**: `'info' | 'success' | 'warning' | 'danger'` — semantic tone for styling and iconography.
+- **`ToastPosition`**: `'top' | 'bottom'` — vertical placement on the screen.
+- **`ToastAction`**: `{ label: string; onPress: () => void; tone?: 'primary' | 'danger' | ToastTone }` — interactive secondary actions rendered inside the notification.
+- **`StandardToastPayload`**: `{ content: string; title?: string; tone?: ToastTone; position?: ToastPosition }`.
+- **`ToastPayload`**: `string | StandardToastPayload` — backward-compatible payload accepting plain text or structured properties.
+- **`parseToastPayload(raw: unknown): StandardToastPayload`** — utility helper that normalizes strings and partial objects into a valid structured payload with defaults (`tone: 'info'`, `position: 'top'`).
 
 ### Provider Setup
 ```typescript
 import { ToastProvider, type ToastComponentProps } from 'alambre';
+import { TemplateToast } from './src/providers/toast';
 
-export function ToastBanner({ toast, dismiss }: ToastComponentProps) {
-  return (
-    <View style={styles.toast}>
-      <Text>{toast.data.payload}</Text>
-      <Pressable onPress={() => dismiss(toast.data.id)}>
-        <Text>✕</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-<ToastProvider ToastComponent={ToastBanner}>
+<ToastProvider
+  ToastComponent={TemplateToast}
+  defaultDuration={4000}       // optional, default 4000ms
+  delay={0}                    // optional, delay between consecutive toasts
+  queueMode="queue"            // optional, 'queue' (default) or 'replace'
+>
   <App />
 </ToastProvider>
 ```
 
-### Hook Usage
+### Hook Usage (`useToast`)
 ```typescript
 import { useToast } from 'alambre';
 
-const { show, dismiss, clear } = useToast();
+const { show, dismiss, clear, queueLength, toast } = useToast();
+```
 
-// Trigger a toast notification
+#### 1. Simple Quick Toast
+```typescript
 show({
-  payload: 'Saved successfully!',
-  duration: 3000, // optional time in ms (default 4000, overridable via provider `defaultDuration`)
+  payload: 'Preferences saved successfully.',
+  duration: 3000,
 });
 ```
 
-`RegisterToast` fields: `payload`, `duration`, `persistent` (stays until dismissed), `actions`, `id`. Toasts with `persistent` or `actions` never auto-dismiss. The provider takes `delay`, `defaultDuration` and `queueMode` (`'queue'` | `'replace'`).
+#### 2. Structured Semantic Toast (Top or Bottom)
+```typescript
+show({
+  duration: 4000,
+  payload: {
+    title: 'Sync Complete',
+    content: 'All records have been synchronized with the cloud.',
+    tone: 'success',        // 'info' | 'success' | 'warning' | 'danger'
+    position: 'bottom',     // 'top' (default) | 'bottom'
+  },
+});
+```
+
+#### 3. Actionable Interactive Toast
+```typescript
+show({
+  payload: {
+    title: 'Item Deleted',
+    content: 'The item was removed from your collection.',
+    tone: 'danger',
+    position: 'top',
+  },
+  actions: [
+    {
+      label: 'Undo',
+      tone: 'primary',
+      onPress: () => restoreItem(item.id),
+    },
+  ],
+});
+```
+
+### Lifecycle & Queue Semantics
+- **Auto-Dismiss**: Standard toasts automatically dismiss after `duration ?? defaultDuration` milliseconds.
+- **Actionable & Persistent Toasts**: Toasts with `persistent: true` or active `actions` **never auto-dismiss** prematurely. They remain visible until the user interacts with an action button, clicks the close button (✕), or swipes them away.
+- **Queue Modes**:
+  - `'queue'` (default): Consecutive notifications are appended to FIFO queue. The current toast renders with `+{queueLength}` badge.
+  - `'replace'`: A new notification immediately supersedes the active one.
+- **Programmatic Dismissal**:
+  - `dismiss()`: Dismisses the active toast and advances the queue.
+  - `dismiss(id)`: Removes a specific toast by ID (from active slot or pending queue).
+  - `clear()`: Immediately dismisses the active toast and purges the entire pending queue.
+
+### Swipe-to-Dismiss Architecture & Reanimated Decoupling
+To support swipe gestures (`Gesture.Pan`) without visual glitches or teleportation on unmount, visual components must separate layout transitions from gesture transformations into two distinct layers:
+
+1. **Outer Layout Wrapper (`cardWrapper`)**:
+   Owns Reanimated layout animations: `entering={FadeInDown / FadeInUp}` and `exiting={isGestureDismissed ? undefined : exitAnimation}`.
+2. **Inner Interactive Card (`card`)**:
+   Owns gesture styles from `useAnimatedStyle` (`translateX`, `translateY`, clamped `opacity` via `Extrapolation.CLAMP`).
+3. **Dynamic `exiting` Suppression**:
+   When a swipe gesture dismisses the toast, set `isGestureDismissed = true` before calling `dismiss()`. This prevents Reanimated's layout animation from resetting the view to `(0, 0)` upon unmount.
+
+The reference production component implementing this pattern is exported in [`apps/base-template/src/providers/toast.tsx`](../../apps/base-template/src/providers/toast.tsx).
 
 ---
 

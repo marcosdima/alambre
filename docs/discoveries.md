@@ -97,3 +97,22 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 - Concrete visual animations, curves, and wrappers remain 100% owned by the application.
 
 **Status: ADOPTED.** Shipped in `alambre` (`src/hooks/use-stagger.tsx`) and exported top-level (`useStagger`, `calculateStaggerDelay`, `StaggerProvider`, `useStaggerItem`). Validated with unit tests in `packages/alambre/tests/hooks/use-stagger.test.tsx`.
+
+## Decoupled two-layer layout and gesture animation for swipe-to-dismiss (discovered in playground & base-template)
+
+**Pattern:** transient cards (such as toasts, modals, banners, or dismissible list rows) combining gesture-driven swipe-to-dismiss (`Gesture.Pan`) with Reanimated unmount layout animations (`exiting={FadeOut*}`) suffer from a severe visual glitch: when dismissed via swipe, the view is translated off-screen; upon unmount, Reanimated's exiting layout animation takes over native positioning starting from the layout origin (`translateX: 0`), instantaneously teleporting the card back into the screen center and playing the exit animation on an already-dismissed element.
+
+**Where it appeared:** `apps/playground/src/providers/toast.tsx` and `apps/base-template/src/providers/toast.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Decouple into two layers:**
+   - Outer layout container (`cardWrapper`): owns `key={id}`, `entering={FadeInDown / FadeInUp}`, and `exiting={isGestureDismissed ? undefined : exitAnimation}`.
+   - Inner interactive element (`card`): owns gesture styles from `useAnimatedStyle` (`translateX`, `translateY`, clamped `opacity`).
+2. **Dynamic `exiting` suppression:**
+   - Track `isGestureDismissed`. When the user flings/swipes past the dismissal threshold, immediately set `isGestureDismissed = true` before invoking `dismiss()`.
+   - When the component unmounts, Reanimated evaluates `exiting` as `undefined` and cleanly unmounts without creating an exiting snapshot at the origin.
+   - For auto-dismiss timers and explicit close button taps (where no gesture occurred), `isGestureDismissed` remains `false`, seamlessly executing `FadeOutDown` or `FadeOutUp`.
+3. **Clamped opacity during drag:**
+   - Use `Extrapolation.CLAMP` on gesture drag interpolation so opacity smoothly transitions from `1` to `0` without negative opacity glitches.
+
+**Status: ADOPTED.** Standardized in `apps/base-template/src/providers/toast.tsx` and documented in `docs/reference/behaviors.md` §3.
