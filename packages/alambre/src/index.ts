@@ -34,7 +34,17 @@ export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
 export type { UseCollectionType } from './capabilities/collection';
 
-export type { ToastComponentProps } from './behaviors';
+export type {
+  ToastComponentProps,
+  ToastTone,
+  ToastPosition,
+  ToastAction,
+  StandardToastPayload,
+  ToastPayload,
+  RegisterToast,
+  Toast,
+  UseToastType,
+} from './behaviors';
 export type { ConfirmComponentProps } from './behaviors';
 
 // Capabilities.
@@ -54,6 +64,7 @@ export {
   useNavigator,
   ToastProvider,
   useToast,
+  parseToastPayload,
 } from './behaviors';
 
 // Hooks & state utilities.

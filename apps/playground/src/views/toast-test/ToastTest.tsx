@@ -27,6 +27,7 @@ export default function ToastTest() {
       success: 'Operación Exitosa',
       warning: 'Atención Requerida',
       danger: 'Error del Sistema',
+      error: 'Error del Sistema',
     };
 
     show({
@@ -42,7 +43,7 @@ export default function ToastTest() {
         ? [
           {
             label: 'Deshacer',
-            tone: tone === 'danger' ? 'danger' : 'primary',
+            tone: tone === 'danger' || tone === 'error' ? 'danger' : 'primary',
             onPress: () => {
               setActionLog(`Acción "Deshacer" ejecutada en Toast #${toastCount}`);
             },
@@ -60,6 +61,7 @@ export default function ToastTest() {
       success: '¡Guardado correctamente en la nube!',
       warning: 'Conexión inestable detectada.',
       danger: 'No se pudo conectar con el endpoint.',
+      error: 'No se pudo conectar con el endpoint.',
     };
 
     burstTones.forEach((t, i) => {

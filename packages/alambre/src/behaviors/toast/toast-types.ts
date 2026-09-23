@@ -1,46 +1,85 @@
 import type { ReactNode } from 'react';
 import type { DefaultReact } from '../../types';
 
+export type ToastTone = 'info' | 'success' | 'warning' | 'danger' | 'error';
+export type ToastPosition = 'top' | 'bottom';
+
 export type ToastAction = {
   label: string;
   onPress: () => void;
-  tone?: 'primary' | 'danger';
+  tone?: 'primary' | 'danger' | ToastTone;
 };
 
-export type RegisterToast = {
+export type StandardToastPayload = {
+  content?: string;
+  title?: string;
+  tone?: ToastTone;
+  position?: ToastPosition;
+};
+
+export type ToastPayload = string | StandardToastPayload;
+
+export const parseToastPayload = (raw: unknown): StandardToastPayload => {
+  if (typeof raw === 'string') {
+    return { content: raw, tone: 'info', position: 'top' };
+  }
+  if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>;
+    const rawTone = obj.tone as string | undefined;
+    const tone: ToastTone =
+      rawTone === 'error' || rawTone === 'danger'
+        ? 'danger'
+        : rawTone === 'success'
+          ? 'success'
+          : rawTone === 'warning'
+            ? 'warning'
+            : 'info';
+
+    return {
+      content: typeof obj.content === 'string' ? obj.content : '',
+      title: typeof obj.title === 'string' ? obj.title : undefined,
+      tone,
+      position: (obj.position as ToastPosition) ?? 'top',
+    };
+  }
+  return { content: '', tone: 'info', position: 'top' };
+};
+
+export type RegisterToast<TPayload = ToastPayload> = {
   id?: string;
   duration?: number;
   persistent?: boolean;
   actions?: ToastAction[];
-  payload?: unknown;
+  payload?: TPayload;
 };
 
-export type Toast = {
-  data: RegisterToast;
+export type Toast<TPayload = ToastPayload> = {
+  data: RegisterToast<TPayload>;
   startedAt: Date;
 };
 
-export type UseToastType = {
-  next: () => RegisterToast | undefined;
-  show: (message: RegisterToast) => void;
+export type UseToastType<TPayload = ToastPayload> = {
+  next: () => RegisterToast<TPayload> | undefined;
+  show: (message: RegisterToast<TPayload>) => void;
   dismiss: (id?: string) => void;
   clear: () => void;
-  setMessage: (message: RegisterToast) => void;
-  toast: Toast | null;
+  setMessage: (message: RegisterToast<TPayload>) => void;
+  toast: Toast<TPayload> | null;
   queueLength: number;
 };
 
-export type ToastComponentProps = {
-  toast: Toast;
-  dismiss: UseToastType['dismiss'];
-  clear: UseToastType['clear'];
-  next: UseToastType['next'];
+export type ToastComponentProps<TPayload = ToastPayload> = {
+  toast: Toast<TPayload>;
+  dismiss: UseToastType<TPayload>['dismiss'];
+  clear: UseToastType<TPayload>['clear'];
+  next: UseToastType<TPayload>['next'];
   queueLength: number;
 };
 
-export type ProviderProps = DefaultReact.ViewProps & {
+export type ProviderProps<TPayload = ToastPayload> = DefaultReact.ViewProps & {
   delay?: number;
   defaultDuration?: number;
   queueMode?: 'queue' | 'replace';
-  ToastComponent: (props: ToastComponentProps) => ReactNode;
+  ToastComponent: (props: ToastComponentProps<TPayload>) => ReactNode;
 };
+

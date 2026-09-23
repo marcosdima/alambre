@@ -16,42 +16,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { ToastComponentProps } from 'alambre';
-import { AlambreIcons, useNavigator } from 'alambre';
+import type { ToastComponentProps, ToastTone, ToastPosition, ToastPayload } from 'alambre';
+import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
 import { useLightDark } from './theme';
 
-export type ToastTone = 'info' | 'success' | 'warning' | 'danger';
-export type ToastPosition = 'top' | 'bottom';
-
-export type ToastPayloadObject = {
-  content: string;
-  title?: string;
-  tone?: ToastTone;
-  position?: ToastPosition;
-};
-
-export type ToastPayload = string | ToastPayloadObject;
-
-const parsePayload = (raw: unknown): ToastPayloadObject => {
-  if (typeof raw === 'string') {
-    return { content: raw, tone: 'info', position: 'top' };
-  }
-  if (
-    raw &&
-    typeof raw === 'object' &&
-    'content' in raw &&
-    typeof (raw as Record<string, unknown>).content === 'string'
-  ) {
-    const obj = raw as Record<string, unknown>;
-    return {
-      content: String(obj.content),
-      title: typeof obj.title === 'string' ? obj.title : undefined,
-      tone: (obj.tone as ToastTone) ?? 'info',
-      position: (obj.position as ToastPosition) ?? 'top',
-    };
-  }
-  return { content: '', tone: 'info', position: 'top' };
-};
+export type { ToastTone, ToastPosition, ToastPayload };
 
 export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentProps) {
   const { theme } = useLightDark();
@@ -59,7 +28,7 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
   const insets = useSafeAreaInsets();
   const { data } = toast;
 
-  const parsed = parsePayload(data.payload);
+  const parsed = parseToastPayload(data.payload);
   const isTop = parsed.position !== 'bottom';
 
   // Base clearance: status bar or bottom bar
@@ -254,7 +223,9 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                     {parsed.title}
                   </Text>
                 ) : null}
-                <Text style={[styles.content, { color: theme.color }]}>{parsed.content}</Text>
+                {parsed.content ? (
+                  <Text style={[styles.content, { color: theme.color }]}>{parsed.content}</Text>
+                ) : null}
 
                 {/* Action Buttons if any */}
                 {data.actions && data.actions.length > 0 ? (
