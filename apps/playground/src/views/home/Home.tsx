@@ -26,11 +26,12 @@ export default () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View
         entering={FadeInDown.duration(300).delay(getDelay(0)).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
-        <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
-        <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-        <Text style={{ color: theme.primary }}>{config.greeting}</Text>
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
+          <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
+          <Text style={{ color: theme.primary }}>{config.greeting}</Text>
+        </View>
       </Animated.View>
 
       {navItems.map((item, index) => (
