@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, Pressable } from 'react-native';
-import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
+import Animated, { Easing, FadeInLeft, FadeInRight } from 'react-native-reanimated';
 import { useLang } from '../../providers/lang';
-import { useLightDark } from '../../providers/theme';
+import { useLightDark, light as lightTokens, dark as darkTokens } from '../../providers/theme';
 import ToggleLightDark from '../../components/ToggleLightDark';
 
 export default () => {
@@ -10,9 +10,9 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Language Section */}
+      {/* Language Section - enters from left */}
       <Animated.View
-        entering={FadeInDown.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+        entering={FadeInLeft.duration(260).delay(0).easing(Easing.out(Easing.cubic))}
         style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
@@ -39,13 +39,33 @@ export default () => {
         </View>
       </Animated.View>
 
-      {/* Theme Section */}
+      {/* Theme Section - enters from right (alternating) */}
       <Animated.View
-        entering={FadeInDown.duration(280).delay(110).easing(Easing.out(Easing.cubic))}
+        entering={FadeInRight.duration(260).delay(70).easing(Easing.out(Easing.cubic))}
         style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
         <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
-        <ToggleLightDark toggle={toggleTheme} setLeft={currThemeName === 'light'} style={styles.toggle} />
+        <ToggleLightDark
+          toggle={toggleTheme}
+          setLeft={currThemeName === 'light'}
+          style={styles.toggle}
+          colors={{
+            light: {
+              background: lightTokens.surfaceAlt,
+              border: lightTokens.border,
+              circle: '#0b525b',
+              sun: '#f59e0b',
+              moon: lightTokens.muted,
+            },
+            dark: {
+              background: darkTokens.surfaceAlt,
+              border: darkTokens.border,
+              circle: '#9eebce',
+              sun: '#ffc266',
+              moon: darkTokens.muted,
+            },
+          }}
+        />
       </Animated.View>
     </View>
   );

@@ -41,15 +41,15 @@ const getColorConfig = (colors?: ThemeColors) => {
 
   return {
     light: {
-      background: safe(light.background, '#fff'),
-      border: safe(light.border, '#222'),
+      background: safe(light.background, '#e8eef7'),
+      border: safe(light.border, '#c9d6ea'),
       circle: safe(light.circle, '#0b525b'),
       sun: safe(light.sun, '#f59e0b'),
-      moon: safe(light.moon, '#6b7280'),
+      moon: safe(light.moon, '#5e6a7f'),
     },
     dark: {
-      background: safe(dark.background, '#222'),
-      border: safe(dark.border, '#fff'),
+      background: safe(dark.background, '#1d2d45'),
+      border: safe(dark.border, '#32455f'),
       circle: safe(dark.circle, '#9eebce'),
       sun: safe(dark.sun, '#ffc266'),
       moon: safe(dark.moon, '#9eb0c8'),
@@ -71,7 +71,7 @@ export default (
   const [side, setSide] = useState(setLeft ? 0 : 1);
   const [iconCenters, setIconCenters] = useState({ left: 0, right: 0 });
 
-  const progress = useSharedValue(setLeft ? 1 : 0);
+  const progress = useSharedValue(setLeft ? 0 : 1);
   const radius = useSharedValue(0);
 
   useEffect(() => {

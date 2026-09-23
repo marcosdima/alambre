@@ -1,10 +1,9 @@
 import { Text, View, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
-import { useNavigator, useToast } from 'alambre';
+import { useNavigator, useToast, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
-import { useStagger } from '../../hooks/use-stagger';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 
@@ -18,8 +17,8 @@ export default () => {
 
   const navItems = [
     { key: 'details', label: lang.home.openDetails, onPress: () => navigate('home', { subpage: 'details' }) },
-    { key: 'toast', label: lang.home.showToast, onPress: () => show({ payload: lang.home.title }) },
     { key: 'settings', label: lang.home.openSettings, onPress: () => navigate('settings') },
+    { key: 'toast', label: lang.home.showToast, onPress: () => show({ payload: lang.home.title }) },
   ];
 
   return (

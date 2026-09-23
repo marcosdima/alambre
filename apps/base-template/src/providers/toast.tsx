@@ -1,5 +1,14 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { Easing, FadeInDown, FadeOutUp } from 'react-native-reanimated';
+import { useEffect } from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import Animated, {
+  Easing,
+  FadeInDown,
+  FadeOutUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ToastComponentProps } from 'alambre';
 import { useNavigator } from 'alambre';
 import { useLightDark } from './theme';
@@ -7,6 +16,7 @@ import { useLightDark } from './theme';
 export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
   const { theme } = useLightDark();
   const { noPreviousPages } = useNavigator();
+  const insets = useSafeAreaInsets();
   const { data } = toast;
 
   const raw = data.payload;
@@ -16,9 +26,28 @@ export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
     content = raw.content;
   }
 
+  // Base clearance: ensure toast is never obscured by the status bar area
+  const baseTop = Math.max(insets.top, 16);
+  // When noPreviousPages is true (Home), there is no header, so sit just below the status bar.
+  // When noPreviousPages is false (secondary pages), keep below the 56px navigation header.
+  const targetTop = baseTop + (noPreviousPages ? 10 : 66);
+
+  const animatedTop = useSharedValue(targetTop);
+
+  useEffect(() => {
+    animatedTop.value = withTiming(targetTop, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [targetTop, animatedTop]);
+
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    top: animatedTop.value,
+  }));
+
   return (
-    <View
-      style={[styles.root, { top: noPreviousPages ? 12 : 72 }]}
+    <Animated.View
+      style={[styles.root, animatedContainerStyle]}
       pointerEvents="box-none"
     >
       <Animated.View
@@ -38,7 +67,7 @@ export function TemplateToast({ toast, dismiss }: ToastComponentProps) {
           <Text style={{ color: theme.primary, fontWeight: '700' }}>✕</Text>
         </Pressable>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 

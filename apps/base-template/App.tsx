@@ -1,3 +1,4 @@
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ConfigProvider } from './src/providers/config';
 import { LightDarkProvider } from './src/providers/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -9,18 +10,20 @@ import { TemplateToast } from './src/providers/toast';
 
 export default function App() {
   return (
-    <ConfigProvider>
-      <LightDarkProvider>
-        <LangProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <NavigatorProvider pages={navigator}>
-              <ToastProvider ToastComponent={TemplateToast}>
-                <Root />
-              </ToastProvider>
-            </NavigatorProvider>
-          </GestureHandlerRootView>
-        </LangProvider>
-      </LightDarkProvider>
-    </ConfigProvider>
+    <SafeAreaProvider>
+      <ConfigProvider>
+        <LightDarkProvider>
+          <LangProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <NavigatorProvider pages={navigator}>
+                <ToastProvider ToastComponent={TemplateToast}>
+                  <Root />
+                </ToastProvider>
+              </NavigatorProvider>
+            </GestureHandlerRootView>
+          </LangProvider>
+        </LightDarkProvider>
+      </ConfigProvider>
+    </SafeAreaProvider>
   );
 }

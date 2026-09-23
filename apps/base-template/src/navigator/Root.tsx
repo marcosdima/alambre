@@ -2,8 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 import {
   Easing,
-  FadeInLeft,
-  FadeInRight,
+  FadeIn,
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
 import type { NavigatorTypes } from 'alambre';
@@ -46,10 +45,10 @@ export default () => {
         headerTitle={headerTitle}
         animations={{
           go: {
-            pageEntering: FadeInRight.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
+            pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
           },
           return: {
-            pageEntering: FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic)),
+            pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
           },
         }}
         useNavigator={useNavigator}
