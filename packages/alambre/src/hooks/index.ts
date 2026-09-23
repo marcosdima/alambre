@@ -23,3 +23,15 @@ export type {
   UseStopwatchOptions,
   UseStopwatchReturn,
 } from './use-stopwatch';
+
+export {
+  useStagger,
+  calculateStaggerDelay,
+  StaggerProvider,
+  useStaggerItem,
+} from './use-stagger';
+export type {
+  StaggerOptions,
+  StaggerContextValue,
+  StaggerProviderProps,
+} from './use-stagger';
