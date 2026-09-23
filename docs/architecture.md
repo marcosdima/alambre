@@ -143,6 +143,11 @@ Only the types exported there are part of the public contract. Every other type 
 Intentional public type contracts:
 
 * `ButtonProps`, `ButtonState` — the `Button` primitive contract.
+* `StepperProps`, `StepperOptions`, `StepperState` — the `Stepper` primitive contract.
+* `SliderProps`, `SliderOptions`, `SliderState` — the `Slider` primitive contract.
+* `SegmentedControlProps`, `SelectOption`, `SelectOptions`, `SelectState` — the `SegmentedControl` primitive contract.
+* `InputProps`, `InputState` — the `Input` primitive contract.
+* `StaggerOptions`, `StaggerContextValue`, `StaggerProviderProps` — the `useStagger` headless timing contract.
 * `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
 * `ConfirmComponentProps` — the client `ConfirmComponent` contract of `ConfirmProvider`.
 * `NavigatorTypes` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).

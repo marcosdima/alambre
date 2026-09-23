@@ -120,3 +120,57 @@ formatStopwatchTime(3665); // "01:01:05"
 ## 3. `useIconAnimation`
 
 Low-level driver hook for animated vector SVG primitives (`Line`, `Circle`, `Path`). Connects `drawIt` prop toggles with `strokeDashoffset` Reanimated animations.
+
+---
+
+## 4. `useStagger` & `calculateStaggerDelay`
+
+Headless hook and utility for calculating staggered entrance delays across sequential elements (menu items, list rows, form sections). Decoupled from visual styles and layout, with built-in accessibility for reduced motion.
+
+### Signature
+```typescript
+import { useStagger, type StaggerOptions } from 'alambre';
+
+const { getDelay, isReducedMotion } = useStagger(options?: StaggerOptions);
+```
+
+### Options (`StaggerOptions`)
+* `initialDelay?: number`: Delay before the first item starts animating (default: `60ms`).
+* `staggerMs?: number`: Interval delay added per consecutive index (default: `50ms`).
+* `maxDelay?: number`: Maximum delay ceiling to prevent long lists from stalling (default: `500ms`).
+
+### Properties
+* `getDelay(index: number): number`: Computes the delay in milliseconds for item at `index`. Returns `0` if reduced motion is enabled.
+* `isReducedMotion: boolean`: True if the user prefers reduced motion (derived from `useReducedMotion()` in Reanimated).
+
+### Pure Helper: `calculateStaggerDelay`
+For calculations outside React component renders or in worklets:
+```typescript
+import { calculateStaggerDelay } from 'alambre';
+
+calculateStaggerDelay(index, { initialDelay: 50, staggerMs: 40, maxDelay: 400 }, isReducedMotion);
+```
+
+### Context Propagation: `StaggerProvider` & `useStaggerItem`
+Optional Context Provider to distribute stagger timing down a deep tree without prop drilling:
+```typescript
+import { StaggerProvider, useStaggerItem } from 'alambre';
+
+function List() {
+  return (
+    <StaggerProvider initialDelay={100} staggerMs={40}>
+      <ListItem index={0} />
+      <ListItem index={1} />
+    </StaggerProvider>
+  );
+}
+
+function ListItem({ index }: { index: number }) {
+  const delay = useStaggerItem(index);
+  return (
+    <Animated.View entering={FadeInDown.duration(300).delay(delay)}>
+      {/* ... */}
+    </Animated.View>
+  );
+}
+```

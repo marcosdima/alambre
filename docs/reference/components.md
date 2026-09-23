@@ -49,7 +49,130 @@ export function AppButton({ children, style, ...props }: ButtonProps) {
 
 ---
 
-## 2. `TimePicker`
+## 2. `Slider` & `useSlider`
+
+Continuous and stepped numeric slider primitive. Manages ratio calculations, boundary clamping, and native responder gestures while leaving track and thumb visual styling to the application.
+
+### Signature & Usage
+```typescript
+import { Slider, type SliderProps } from 'alambre';
+
+<Slider
+  value={volume}
+  min={0}
+  max={100}
+  step={5}
+  onChange={setVolume}
+>
+  {({ ratio, percentage, value }) => (
+    <View style={styles.track}>
+      <View style={[styles.filledTrack, { width: `${percentage}%` }]} />
+      <View style={[styles.thumb, { left: `${percentage}%` }]} />
+    </View>
+  )}
+</Slider>
+```
+
+### Accessibility
+* `role="adjustable"`.
+* Emits `accessibilityValue={{ min, max, now }}` and handles `increment`/`decrement` accessibility actions.
+
+---
+
+## 3. `SegmentedControl` & `useSelect`
+
+Option selection primitive for discrete single-choice items (segmented tabs, pills, inline filters).
+
+### Signature & Usage
+```typescript
+import { SegmentedControl, type SegmentedControlProps } from 'alambre';
+
+<SegmentedControl
+  value={filter}
+  options={[
+    { value: 'all', label: 'All' },
+    { value: 'active', label: 'Active' },
+    { value: 'done', label: 'Completed' },
+  ]}
+  onChange={setFilter}
+>
+  {({ options, isSelected, select }) => (
+    <View style={styles.segmentContainer}>
+      {options.map((opt) => (
+        <Pressable
+          key={opt.value}
+          onPress={() => select(opt.value)}
+          style={[styles.tab, isSelected(opt.value) && styles.activeTab]}
+        >
+          <Text>{opt.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  )}
+</SegmentedControl>
+```
+
+### Accessibility
+* Container sets `role="radiogroup"`.
+* Each child item receives `role="radio"` and `accessibilityState={{ selected }}`.
+
+---
+
+## 4. `Stepper` & `useStepper`
+
+Step-based numeric increment and decrement input with boundary clamping.
+
+### Signature & Usage
+```typescript
+import { Stepper, type StepperProps } from 'alambre';
+
+<Stepper
+  value={quantity}
+  min={1}
+  max={10}
+  step={1}
+  onChange={setQuantity}
+>
+  {({ value, increment, decrement, canIncrement, canDecrement }) => (
+    <View style={styles.row}>
+      <Pressable onPress={decrement} disabled={!canDecrement}>
+        <Text>-</Text>
+      </Pressable>
+      <Text>{value}</Text>
+      <Pressable onPress={increment} disabled={!canIncrement}>
+        <Text>+</Text>
+      </Pressable>
+    </View>
+  )}
+</Stepper>
+```
+
+---
+
+## 5. `Input`
+
+Behavior-first text input wrapping React Native's `TextInput`, tracking `focused`, `disabled`, and `error` states.
+
+### Signature & Usage
+```typescript
+import { Input, type InputProps } from 'alambre';
+
+<Input
+  value={email}
+  onChangeText={setEmail}
+  error={!isValidEmail}
+  placeholder="Enter email"
+  style={({ focused, error }) => [
+    styles.input,
+    focused && styles.focused,
+    error && styles.error,
+  ]}
+/>
+```
+
+---
+
+## 6. `TimePicker`
 
 A 24-hour hour and minute time selector built as a fixed tap viewport with increment/decrement buttons. It requires no native dependencies and avoids nested scroll issues.
 

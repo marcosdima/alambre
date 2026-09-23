@@ -40,10 +40,15 @@ Headless interaction hooks and pure helpers:
 * **`useHistoryState`**: Undo / Redo stack management with optional limits.
 * **History Helpers**: `createHistory`, `pushHistory`, `undoHistory`, `redoHistory`, `canUndo`, `canRedo`.
 * **`useStopwatch`**: Elapsed time tracking, pause, reset, and formatted string display.
+* **`useStagger` & `calculateStaggerDelay`**: Headless stagger timing coordination with automatic reduced-motion accessibility.
 * **`useIconAnimation`**: SVG stroke draw/reset animation driver.
 
 ### 5. [Components & Icons](components.md)
 Base UI primitives and icon contracts:
 * **`Button`**: Accessible interaction primitive with `{ pressed, disabled, loading }`.
+* **`Slider` & `useSlider`**: Accessible continuous and discrete numeric track/thumb primitive (`role="adjustable"`).
+* **`SegmentedControl` & `useSelect`**: Option selection primitive with radio group accessibility (`role="radiogroup"`).
+* **`Stepper` & `useStepper`**: Step-based numeric increment/decrement with clamping (`role="spinbutton"`).
+* **`Input`**: Accessible text input with state styling (`focused`, `disabled`, `error`).
 * **`TimePicker`**: 24-hour hour/minute wheel selector.
 * **`AlambreIcons`**: Vector icon family (`Cross`, `Tick`, `Arrow`, `Sun`, `Moon`, catalog shapes) and primitives (`Circle`, `Line`, `Path`).

@@ -28,7 +28,9 @@ The main conceptual boundaries are:
 The repository also contains:
 
 * `apps/colguetti` — the reference application: a real product built on `alambre` that exercises the framework, exposes weaknesses, and guides its evolution. Prototyping for potential framework capability happens here first.
+* `apps/cross-logic` — logic puzzle game application validating game sessions, history state, and grid models.
 * `apps/base-template` — the application template: a generic, product-free skeleton on top of `alambre`, intended to provide a solid, opinionated starting point for future applications. It is rebuilt when lessons from the reference application make the wiring worth updating, and its canonical standalone copy is published as the GitHub template repository `marcosdima/base-expo` (regenerated with `scripts/export-template.sh`). Apps bootstrapped with *"Use this template"* depend on the published `alambre` package (npm/pnpm) and are independent from this repository.
+* `apps/playground` — the interactive proving ground: an isolated environment for testing animation parameters, toast behaviors, edge cases, and UI primitives without cluttering the starter template.
 
 An application created from the template should be able to evolve independently from `apps/base-template` and from this repository.
 

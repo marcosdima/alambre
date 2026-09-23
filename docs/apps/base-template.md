@@ -17,8 +17,8 @@ It must mirror the proven visual and interaction quality established in the othe
 
 Key architectural boundaries:
 - **Unified Header Chrome:** When navigating to subpages or secondary routes (`Settings`, `Details`), `AppNavigatorBody` provides a unified navigation header row where the page title aligns horizontally and vertically with the back arrow.
-- **Theme Switcher:** Follows the reference implementation in `ToggleLightDark.tsx` (`docs/project.md` §14), using animated shadow discs and dedicated light/dark icon color palettes (`light.circle: #0b525b`, `dark.circle: #9eebce`).
-- **Transient Feedback:** `TemplateToast` features bounded entering (`FadeInDown`) and accelerating exit (`FadeOutUp`) animations, positioned cleanly below the header bar when navigation history exists.
+- **Theme Switcher:** Follows the reference implementation in `ToggleLightDark.tsx` (`docs/project.md` §14), using animated shadow discs and dedicated light/dark icon color palettes matching application tokens (`light.border: #c9d6ea`, `dark.border: #32455f`, `light.circle: #0b525b`, `dark.circle: #9eebce`).
+- **Transient Feedback:** `TemplateToast` features bounded entering (`FadeInDown`) and accelerating exit (`FadeOutUp`) animations, bounded by safe-area insets (`baseTop = Math.max(insets.top, 16)`), positioned cleanly below the header bar when navigation history exists, and smoothly gliding between header/non-header offsets when navigating while a toast is active.
 
 ---
 
@@ -34,25 +34,36 @@ Follow this checklist during manual testing or emulator inspection (e.g. via `ad
 
 ### B. Settings Screen
 - [ ] **Header Alignment:** When navigating into Settings, the page title ("Ajustes" / "Settings") appears in the header row, strictly aligned vertically with the back arrow button.
-- [ ] **Section Animations:** The Language card and Theme card enter with sequential, intentional `FadeInDown` motion rather than a single blunt block fade.
+- [ ] **Directional Alternation Motion:** The first semantic section (Language card) enters from the left (`FadeInLeft`), and the second section (Theme card) enters from the right (`FadeInRight`), keeping motion subtle (260ms) and independent from the header.
 - [ ] **Theme Switcher Alignment:** The theme switcher toggle is horizontally centered (`alignSelf: 'center'`) within the Theme card.
 - [ ] **Theme Switcher Colors:**
-  - In **Light mode**: Background is white, border dark, active circle is `#0b525b`, Sun icon is amber (`#f59e0b`), Moon icon is neutral gray (`#6b7280`).
-  - In **Dark mode**: Background is dark `#222`, border white, active circle is `#9eebce`, Sun icon is light amber (`#ffc266`), Moon icon is soft blue-gray (`#9eb0c8`).
+  - In **Light mode**: Background is `surfaceAlt` (`#e8eef7`), border is `theme.border` (`#c9d6ea`), active circle is `#0b525b`, Sun icon is amber (`#f59e0b`), Moon icon is `theme.muted` (`#5e6a7f`).
+  - In **Dark mode**: Background is `surfaceAlt` (`#1d2d45`), border is `theme.border` (`#32455f`), active circle is `#9eebce`, Sun icon is light amber (`#ffc266`), Moon icon is `theme.muted` (`#9eb0c8`).
+  - The animated disc/circle behind the icons dynamically interpolates color according to the active theme rather than staying constant.
 - [ ] **Language Switching:** Tapping language chips ("ES" / "EN") dynamically updates all visible strings and immediately reflects the active chip style (`primarySoft` background, `primary` border).
 
 ### C. Details Screen
 - [ ] **Header Alignment:** Subpage title ("Subpágina" / "Subpage") is cleanly displayed in the navigation header beside the back arrow.
 - [ ] **Back Navigation:** Tapping the back arrow or triggering hardware back navigates back to Home with a smooth reverse transition (`FadeInLeft`), resetting scroll position.
 
-### D. Toast Feedback
+### D. Toast Feedback & Safe Area
 - [ ] **Entrance Animation:** Tapping "Mostrar toast" / "Show toast" summons the toast with an intentional `FadeInDown` entrance.
 - [ ] **Exit Animation:** Tapping the dismiss button (✕) causes the toast to exit upwards with an accelerating `FadeOutUp` animation.
-- [ ] **Positioning:**
-  - On Home (no previous pages): Toast renders at `top: 12`.
-  - On subpages (Settings, Details): Toast automatically offsets to `top: 72` so it does not overlap the navigation header.
+- [ ] **Status Bar Clearance:** On Home, the Toast never sits underneath the physical system status-bar area (battery, signal, notch). It respects `Math.max(insets.top, 16) + 10`.
+- [ ] **Header Clearance:** On subpages (Settings, Details), the Toast sits at `baseTop + 66`, cleanly below the 56px navigation header without overlapping.
+- [ ] **Navigation Transition Gliding:**
+  - Trigger a Toast on Home and tap Settings while visible: the Toast smoothly glides down from its Home position to the subpage position over 250ms without jumping or popping.
+  - Trigger a Toast on Settings and tap back while visible: the Toast smoothly glides up from the subpage position to the Home position over 250ms without jumping.
 - [ ] **Touch Target:** The dismiss button respects accessibility guidelines with `hitSlop={12}`.
 
 ### E. Theme Consistency (Light & Dark)
 - [ ] Test the entire checklist in **Light Theme**.
 - [ ] Switch to **Dark Theme** and repeat to verify contrast, card borders (`theme.border`), and background colors (`theme.background`).
+
+---
+
+## 3. Extracted Experiments & Playground
+
+The interactive animation playground, timing experiments, and advanced toast queue tests were extracted into a dedicated application: `apps/playground` (`@alambre/playground`).
+
+See [docs/apps/playground.md](playground.md) for the experimental test suite, parameter sliders, curve selectors, and gliding verification tools. `apps/base-template` remains lean and clean as the starter template for new apps.

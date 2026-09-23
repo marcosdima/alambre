@@ -82,3 +82,18 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 - Presentation remains 100% owned by the application.
 
 **Status: ADOPTED (cross-logic, colguetti).** Shipped in `alambre` (`src/hooks/use-stopwatch.ts`) and exported top-level as `useStopwatch` and `formatStopwatchTime`. Validated with unit tests in `packages/alambre/tests/hooks/use-stopwatch.test.ts`.
+
+## Headless animation stagger coordination (discovered in cross-logic, base-template, playground)
+
+**Pattern:** sequential UI elements (menu buttons, list cards, settings sections) benefit from staggered entrance timing, but coupling timing to specific visual transitions (`FadeInDown`, `FadeInLeft`, springs) or layout containers causes awkward abstractions and restricts design freedom.
+
+**Where it appeared:** `cross-logic` animation experiments, `base-template` navigation menus, and `playground` test cards.
+
+**Candidate for alambre:**
+- A pure headless delay calculation `calculateStaggerDelay(index, options, isReducedMotion)`.
+- A headless hook `useStagger(options)` returning `{ getDelay(index), isReducedMotion }`.
+- Automatically respects accessibility preferences: returns `0` when `useReducedMotion()` is active to prevent sluggish stalls.
+- Optional context propagation (`StaggerProvider`, `useStaggerItem`) for deep trees.
+- Concrete visual animations, curves, and wrappers remain 100% owned by the application.
+
+**Status: ADOPTED.** Shipped in `alambre` (`src/hooks/use-stagger.tsx`) and exported top-level (`useStagger`, `calculateStaggerDelay`, `StaggerProvider`, `useStaggerItem`). Validated with unit tests in `packages/alambre/tests/hooks/use-stagger.test.tsx`.

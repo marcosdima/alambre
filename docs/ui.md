@@ -86,3 +86,48 @@ The graphic primitives (`base/Circle`, `base/Line` and `base/Path`, plus the ani
 `Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
 
 `DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the core provider wiring, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.
+
+---
+
+## 4. Behavior-first Inputs: `Stepper` and `Input`
+
+Following the direction established by `Button` (§1):
+
+### `Stepper` and `useStepper`
+
+* `Stepper` provides numeric stepping logic, boundary clamping (`min`/`max`), step precision handling, disabled states, and accessibility (`role="spinbutton"`, `accessibilityValue={{ min, max, now }}`).
+* It exposes the interactive state (`{ value, canIncrement, canDecrement, increment, decrement, setValue, disabled }`) through a `children` render prop and `style` callback.
+* No visual styling, +/- symbols, or layout is hard-coded in `alambre`. Applications compose their own presentation (for example `AppStepper` in `base-template`).
+
+### `Input`
+
+* `Input` provides behavior-first text input wrapping React Native's `TextInput`.
+* Manages `focused`, `disabled`, and `error` states, exposing them to the consumer via `style={({ focused, disabled, error }) => ...}`.
+* Enforces accessible semantics (`aria-invalid`, `accessibilityState.disabled`).
+
+### `Slider` and `useSlider`
+
+* `Slider` provides continuous or stepped numeric input calculation, boundary clamping (`min`/`max`), step snapping, and ratio calculation.
+* Handles touch responder gestures (`onResponderGrant`, `onResponderMove`, `onResponderRelease`) tracking container dimensions via `onLayout` without imposing hardcoded thumb or track visuals.
+* Enforces accessibility with `role="adjustable"`, `accessibilityValue={{ min, max, now }}`, and accessibility actions (`increment`, `decrement`).
+* Exposes `SliderState` (`{ value, ratio, percentage, increment, decrement, setValue, setValueFromRatio, disabled }`) via children render prop and style callback.
+* Application presentation: `apps/base-template/src/components/AppSlider.tsx`.
+
+### `SegmentedControl` and `useSelect`
+
+* `SegmentedControl` provides discrete single-option selection over a collection of items.
+* Manages selected value, active index, and disabled states.
+* Enforces accessibility with `role="radiogroup"`, child option `role="radio"`, and `accessibilityState={{ selected }}`.
+* Presentation-agnostic: the consumer receives `SelectState<T>` (`{ value, selectedIndex, select, isSelected, options, disabled }`).
+* Application presentation: `apps/base-template/src/components/AppSegmentedControl.tsx` (segmented tab pills) and `apps/base-template/src/components/AppSelect.tsx` (expandable dropdown).
+
+---
+
+## 5. Headless animation timing: `useStagger`
+
+Following the principle that the framework defines behavior while the application defines visual presentation (`docs/architecture.md` §6):
+
+* `useStagger` and `calculateStaggerDelay` provide headless stagger timing coordination across sequential elements.
+* **Non-responsibilities:** The framework does NOT choose visual entrance animations (`FadeInDown`, `FadeInUp`, `ZoomIn`, springs, keyframes, or easing curves) and does NOT impose animation wrappers. Applications pair the computed delays (`getDelay(index)`) with whatever presentation or Reanimated builder they choose.
+* **Accessibility:** Automatically integrates with `useReducedMotion()`. When reduced motion is preferred by the user, `calculateStaggerDelay` returns `0` immediately to avoid unnatural delayed stalls without breaking layout.
+* **Optional composition:** `StaggerProvider` and `useStaggerItem` allow deep component trees to consume stagger timing without manual prop drilling, falling back gracefully to local calculations when no provider is present.
