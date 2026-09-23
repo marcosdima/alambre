@@ -11,9 +11,10 @@ export default () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View
         entering={FadeInDown.duration(280).delay(60).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
-        <Text style={[styles.text, { color: theme.color }]}>{lang.details.text}</Text>
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.text, { color: theme.color }]}>{lang.details.text}</Text>
+        </View>
       </Animated.View>
     </View>
   );

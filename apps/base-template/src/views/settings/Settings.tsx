@@ -13,59 +13,62 @@ export default () => {
       {/* Language Section - enters from left */}
       <Animated.View
         entering={FadeInLeft.duration(260).delay(0).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
-        <View style={styles.row}>
-          {(['es', 'en'] as const).map((code) => {
-            const active = currentLang === code;
-            return (
-              <Pressable
-                key={code}
-                onPress={() => changeLang(code)}
-                style={[
-                  styles.langChip,
-                  { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-                  active && { borderColor: theme.primary, backgroundColor: theme.primarySoft },
-                ]}
-                accessibilityRole="button"
-              >
-                <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase' }}>
-                  {code}
-                </Text>
-              </Pressable>
-            );
-          })}
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
+          <View style={styles.row}>
+            {(['es', 'en'] as const).map((code) => {
+              const active = currentLang === code;
+              return (
+                <Pressable
+                  key={code}
+                  onPress={() => changeLang(code)}
+                  style={[
+                    styles.langChip,
+                    { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
+                    active && { borderColor: theme.primary, backgroundColor: theme.primarySoft },
+                  ]}
+                  accessibilityRole="button"
+                >
+                  <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase' }}>
+                    {code}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       </Animated.View>
 
       {/* Theme Section - enters from right (alternating) */}
       <Animated.View
         entering={FadeInRight.duration(260).delay(70).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
       >
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
-        <ToggleLightDark
-          toggle={toggleTheme}
-          setLeft={currThemeName === 'light'}
-          style={styles.toggle}
-          colors={{
-            light: {
-              background: lightTokens.surfaceAlt,
-              border: lightTokens.border,
-              circle: '#0b525b',
-              sun: '#f59e0b',
-              moon: lightTokens.muted,
-            },
-            dark: {
-              background: darkTokens.surfaceAlt,
-              border: darkTokens.border,
-              circle: '#9eebce',
-              sun: '#ffc266',
-              moon: darkTokens.muted,
-            },
-          }}
-        />
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
+          <ToggleLightDark
+            toggle={toggleTheme}
+            setLeft={currThemeName === 'light'}
+            style={styles.toggle}
+            colors={{
+              light: {
+                background: lightTokens.surfaceAlt,
+                border: lightTokens.border,
+                circle: lightTokens.primary,
+                circleOpacity: 0.3,
+                sun: '#f59e0b',
+                moon: lightTokens.muted,
+              },
+              dark: {
+                background: darkTokens.surfaceAlt,
+                border: darkTokens.border,
+                circle: '#9eebce',
+                sun: '#ffc266',
+                moon: darkTokens.muted,
+              },
+            }}
+          />
+        </View>
       </Animated.View>
     </View>
   );

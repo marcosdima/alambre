@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   withSpring,
   interpolateColor,
+  interpolate,
 } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
 import type { ComponentProps } from 'react';
@@ -18,6 +19,7 @@ type Colors = {
   background?: ColorValue;
   border?: ColorValue;
   circle?: ColorValue;
+  circleOpacity?: number;
   sun?: ColorValue;
   moon?: ColorValue;
 };
@@ -44,6 +46,7 @@ const getColorConfig = (colors?: ThemeColors) => {
       background: safe(light.background, '#e8eef7'),
       border: safe(light.border, '#c9d6ea'),
       circle: safe(light.circle, '#0b525b'),
+      circleOpacity: light.circleOpacity ?? 0.25,
       sun: safe(light.sun, '#f59e0b'),
       moon: safe(light.moon, '#5e6a7f'),
     },
@@ -51,6 +54,7 @@ const getColorConfig = (colors?: ThemeColors) => {
       background: safe(dark.background, '#1d2d45'),
       border: safe(dark.border, '#32455f'),
       circle: safe(dark.circle, '#9eebce'),
+      circleOpacity: dark.circleOpacity ?? 0.25,
       sun: safe(dark.sun, '#ffc266'),
       moon: safe(dark.moon, '#9eb0c8'),
     },
@@ -146,7 +150,11 @@ export default (
         [0, 1],
         [light.circle, dark.circle],
       ),
-      opacity: 0.25,
+      opacity: interpolate(
+        progress.value,
+        [0, 1],
+        [light.circleOpacity, dark.circleOpacity],
+      ),
     };
   });
 
