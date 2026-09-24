@@ -39,3 +39,6 @@ export { default as Coffee } from './Coffee';
 export { default as Watch } from './Watch';
 export { default as Gift } from './Gift';
 export { default as CreditCard } from './CreditCard';
+export { default as Eye } from './Eye';
+export { default as EyeOff } from './EyeOff';
+export { default as Search } from './Search';

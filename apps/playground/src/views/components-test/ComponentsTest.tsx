@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeInLeft, FadeInRight } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
@@ -7,11 +7,24 @@ import AppTitle, { AppText } from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 import type { ButtonSize, ButtonTone, ButtonVariant } from '../../components/AppButton';
 import AppSegmentedControl from '../../components/AppSegmentedControl';
+import AppTextInput from '../../components/AppTextInput';
+import type { InputSize, InputTone, InputVariant } from '../../components/AppTextInput';
+import AppSwitch from '../../components/AppSwitch';
+
+type ActiveTab = 'buttons' | 'inputs';
+
+const TEAM_MEMBERS = [
+  { name: 'Alex Rivera', role: 'Engineering Lead' },
+  { name: 'Beatriz Gomez', role: 'Product Designer' },
+  { name: 'Carlos Mendez', role: 'Operations & QA' },
+  { name: 'Diana Rossi', role: 'Mobile Architect' },
+];
 
 export default function ComponentsTest() {
   const { theme } = useLightDark();
+  const [activeTab, setActiveTab] = useState<ActiveTab>('buttons');
 
-  // Interactive playground state
+  // --- Button Playground State ---
   const [variant, setVariant] = useState<ButtonVariant>('solid');
   const [tone, setTone] = useState<ButtonTone>('primary');
   const [size, setSize] = useState<ButtonSize>('md');
@@ -19,6 +32,38 @@ export default function ComponentsTest() {
   const [disabled, setDisabled] = useState(false);
   const [fullWidth, setFullWidth] = useState(false);
   const [clicks, setClicks] = useState(0);
+
+  // --- Input Playground State ---
+  const [inputVariant, setInputVariant] = useState<InputVariant>('outline');
+  const [inputTone, setInputTone] = useState<InputTone>('default');
+  const [inputSize, setInputSize] = useState<InputSize>('md');
+  const [inputClearable, setInputClearable] = useState(true);
+  const [inputPassword, setInputPassword] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
+  const [inputHasError, setInputHasError] = useState(false);
+  const [inputWithIcon, setInputWithIcon] = useState(true);
+  const [inputTestValue, setInputTestValue] = useState('Dynamic Value');
+
+  // --- Real-world Showcase State ---
+  const [searchQuery, setSearchQuery] = useState('');
+  const [emailText, setEmailText] = useState('user@alambre.dev');
+  const [passwordText, setPasswordText] = useState('supersecret123');
+  const [noteText, setNoteText] = useState('Please leave package by the front door.');
+
+  // --- Switch Showcase State ---
+  const [switchNotifications, setSwitchNotifications] = useState(true);
+  const [switchHaptics, setSwitchHaptics] = useState(true);
+  const [switchAnalytics, setSwitchAnalytics] = useState(false);
+
+  // --- Switch Size Comparison State ---
+  const [sizeSm, setSizeSm] = useState(false);
+  const [sizeMd, setSizeMd] = useState(true);
+  const [sizeLg, setSizeLg] = useState(true);
+
+  const filteredMembers = TEAM_MEMBERS.filter((m) =>
+    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.role.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -31,279 +76,628 @@ export default function ComponentsTest() {
           level={1}
           badge="UI Core"
           badgeTone="primary"
-          subtitle="Explore visual variants, semantic tones, sizing tokens, and tactile spring physics for buttons and typography."
+          subtitle="Explore visual variants, semantic tones, sizing tokens, and tactile spring physics across the component library."
         >
-          Buttons & Typography
+          UI Components
         </AppTitle>
+
+        {/* Catalog Navigation Tabs */}
+        <AppSegmentedControl<ActiveTab>
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { label: 'Buttons & Typography', value: 'buttons' },
+            { label: 'Inputs & Form Controls', value: 'inputs' },
+          ]}
+        />
       </Animated.View>
 
-      {/* 2. Interactive Button Playground */}
-      <Animated.View
-        entering={FadeInLeft.duration(280).delay(60).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      >
-        <AppTitle level={2} subtitle="Tune button parameters to test variant, tone, size, and spring responses in real time.">
-          Interactive Playground
-        </AppTitle>
+      {/* ============================================================== */}
+      {/* TAB 1: BUTTONS & TYPOGRAPHY                                    */}
+      {/* ============================================================== */}
+      {activeTab === 'buttons' && (
+        <>
+          {/* Interactive Button Playground */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Tune button parameters to test variant, tone, size, and spring responses in real time.">
+              Interactive Playground
+            </AppTitle>
 
-        {/* Variant selector */}
-        <AppSegmentedControl<ButtonVariant>
-          label="Visual Variant"
-          value={variant}
-          onChange={setVariant}
-          options={[
-            { label: 'Solid', value: 'solid' },
-            { label: 'Outline', value: 'outline' },
-            { label: 'Soft', value: 'soft' },
-            { label: 'Ghost', value: 'ghost' },
-          ]}
-        />
+            {/* Variant selector */}
+            <AppSegmentedControl<ButtonVariant>
+              label="Visual Variant"
+              value={variant}
+              onChange={setVariant}
+              options={[
+                { label: 'Solid', value: 'solid' },
+                { label: 'Outline', value: 'outline' },
+                { label: 'Soft', value: 'soft' },
+                { label: 'Ghost', value: 'ghost' },
+              ]}
+            />
 
-        {/* Tone selector */}
-        <AppSegmentedControl<ButtonTone>
-          label="Semantic Tone"
-          value={tone}
-          onChange={setTone}
-          options={[
-            { label: 'Primary', value: 'primary' },
-            { label: 'Success', value: 'success' },
-            { label: 'Warning', value: 'warning' },
-            { label: 'Danger', value: 'danger' },
-            { label: 'Neutral', value: 'neutral' },
-          ]}
-        />
+            {/* Tone selector */}
+            <AppSegmentedControl<ButtonTone>
+              label="Semantic Tone"
+              value={tone}
+              onChange={setTone}
+              options={[
+                { label: 'Primary', value: 'primary' },
+                { label: 'Success', value: 'success' },
+                { label: 'Warning', value: 'warning' },
+                { label: 'Danger', value: 'danger' },
+                { label: 'Neutral', value: 'neutral' },
+              ]}
+            />
 
-        {/* Size selector */}
-        <AppSegmentedControl<ButtonSize>
-          label="Size"
-          value={size}
-          onChange={setSize}
-          options={[
-            { label: 'SM (34px)', value: 'sm' },
-            { label: 'MD (44px)', value: 'md' },
-            { label: 'LG (52px)', value: 'lg' },
-          ]}
-        />
+            {/* Size selector */}
+            <AppSegmentedControl<ButtonSize>
+              label="Size"
+              value={size}
+              onChange={setSize}
+              options={[
+                { label: 'SM (34px)', value: 'sm' },
+                { label: 'MD (44px)', value: 'md' },
+                { label: 'LG (52px)', value: 'lg' },
+              ]}
+            />
 
-        {/* Toggles */}
-        <View style={styles.togglesRow}>
-          <AppButton
-            variant={loading ? 'solid' : 'soft'}
-            tone={loading ? 'warning' : 'neutral'}
-            size="sm"
-            label={loading ? 'Loading: YES' : 'Loading: NO'}
-            onPress={() => setLoading((v) => !v)}
-          />
-          <AppButton
-            variant={disabled ? 'solid' : 'soft'}
-            tone={disabled ? 'danger' : 'neutral'}
-            size="sm"
-            label={disabled ? 'Disabled: YES' : 'Disabled: NO'}
-            onPress={() => setDisabled((v) => !v)}
-          />
-          <AppButton
-            variant={fullWidth ? 'solid' : 'soft'}
-            tone={fullWidth ? 'primary' : 'neutral'}
-            size="sm"
-            label={fullWidth ? 'Width: 100%' : 'Width: Auto'}
-            onPress={() => setFullWidth((v) => !v)}
-          />
-        </View>
-
-        {/* Live Preview Area */}
-        <View
-          style={[
-            styles.previewArea,
-            { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
-          ]}
-        >
-          <AppText variant="caption">Tactile Spring Physics Preview</AppText>
-          <AppButton
-            variant={variant}
-            tone={tone}
-            size={size}
-            loading={loading}
-            disabled={disabled}
-            fullWidth={fullWidth}
-            label={`Press Button (${clicks})`}
-            leftIcon={
-              <AlambreIcons.Zap
-                drawIt={true}
-                color={variant === 'solid' ? (tone === 'warning' ? '#1e1e1e' : '#fff') : theme.primary}
-                lineWidth={2}
-                style={{ width: 18, height: 18 }}
+            {/* Toggles */}
+            <View style={styles.togglesRow}>
+              <AppButton
+                variant={loading ? 'solid' : 'soft'}
+                tone={loading ? 'warning' : 'neutral'}
+                size="sm"
+                label={loading ? 'Loading: YES' : 'Loading: NO'}
+                onPress={() => setLoading((v) => !v)}
               />
-            }
-            onPress={() => setClicks((c) => c + 1)}
-          />
-          <AppText variant="subtitle">
-            Press and hold to feel the spring scale feedback (withSpring).
-          </AppText>
-        </View>
-      </Animated.View>
+              <AppButton
+                variant={disabled ? 'solid' : 'soft'}
+                tone={disabled ? 'danger' : 'neutral'}
+                size="sm"
+                label={disabled ? 'Disabled: YES' : 'Disabled: NO'}
+                onPress={() => setDisabled((v) => !v)}
+              />
+              <AppButton
+                variant={fullWidth ? 'solid' : 'soft'}
+                tone={fullWidth ? 'primary' : 'neutral'}
+                size="sm"
+                label={fullWidth ? 'Width: 100%' : 'Width: Auto'}
+                onPress={() => setFullWidth((v) => !v)}
+              />
+            </View>
 
-      {/* 3. Variants Showcase */}
-      <Animated.View
-        entering={FadeInRight.duration(280).delay(120).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      >
-        <AppTitle level={2} subtitle="Four visual styles to establish clear hierarchy for user actions.">
-          Visual Variants
-        </AppTitle>
+            {/* Live Preview Area */}
+            <View
+              style={[
+                styles.previewArea,
+                { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+              ]}
+            >
+              <AppText variant="caption">Tactile Spring Physics Preview</AppText>
+              <AppButton
+                variant={variant}
+                tone={tone}
+                size={size}
+                loading={loading}
+                disabled={disabled}
+                fullWidth={fullWidth}
+                label={`Press Button (${clicks})`}
+                leftIcon={
+                  <AlambreIcons.Zap
+                    drawIt={true}
+                    color={variant === 'solid' ? (tone === 'warning' ? '#1e1e1e' : '#fff') : theme.primary}
+                    lineWidth={2}
+                    style={{ width: 18, height: 18 }}
+                  />
+                }
+                onPress={() => setClicks((c) => c + 1)}
+              />
+              <AppText variant="subtitle">
+                Press and hold to feel the spring scale feedback (withSpring).
+              </AppText>
+            </View>
+          </Animated.View>
 
-        <View style={styles.gridRow}>
-          <AppButton
-            variant="solid"
-            tone="primary"
-            label="Solid"
-            style={styles.gridBtn}
-            leftIcon={<AlambreIcons.CircleCheck drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
-          />
-          <AppButton
-            variant="outline"
-            tone="primary"
-            label="Outline"
-            style={styles.gridBtn}
-          />
-        </View>
+          {/* Variants Showcase */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(80).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Four visual styles to establish clear hierarchy for user actions.">
+              Visual Variants
+            </AppTitle>
 
-        <View style={styles.gridRow}>
-          <AppButton
-            variant="soft"
-            tone="primary"
-            label="Soft"
-            style={styles.gridBtn}
-          />
-          <AppButton
-            variant="ghost"
-            tone="primary"
-            label="Ghost"
-            style={styles.gridBtn}
-          />
-        </View>
-      </Animated.View>
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="solid"
+                tone="primary"
+                label="Solid"
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.CircleCheck drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="outline"
+                tone="primary"
+                label="Outline"
+                style={styles.gridBtn}
+              />
+            </View>
 
-      {/* 4. Semantic Tones Showcase */}
-      <Animated.View
-        entering={FadeInLeft.duration(280).delay(160).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      >
-        <AppTitle level={2} subtitle="Semantic color palettes ready for every UI context and tone.">
-          Semantic Tones
-        </AppTitle>
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="soft"
+                tone="primary"
+                label="Soft"
+                style={styles.gridBtn}
+              />
+              <AppButton
+                variant="ghost"
+                tone="primary"
+                label="Ghost"
+                style={styles.gridBtn}
+              />
+            </View>
+          </Animated.View>
 
-        <View style={styles.tonesGrid}>
-          <AppButton variant="solid" tone="primary" label="Primary" size="sm" />
-          <AppButton variant="solid" tone="success" label="Success" size="sm" />
-          <AppButton variant="solid" tone="warning" label="Warning" size="sm" />
-          <AppButton variant="solid" tone="danger" label="Danger" size="sm" />
-          <AppButton variant="solid" tone="neutral" label="Neutral" size="sm" />
-        </View>
+          {/* Semantic Tones Showcase */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(120).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Semantic color palettes ready for every UI context and tone.">
+              Semantic Tones
+            </AppTitle>
 
-        <View style={styles.tonesGrid}>
-          <AppButton variant="soft" tone="primary" label="Soft Primary" size="sm" />
-          <AppButton variant="soft" tone="success" label="Soft Success" size="sm" />
-          <AppButton variant="soft" tone="warning" label="Soft Warning" size="sm" />
-          <AppButton variant="soft" tone="danger" label="Soft Danger" size="sm" />
-          <AppButton variant="soft" tone="neutral" label="Soft Neutral" size="sm" />
-        </View>
-      </Animated.View>
+            <View style={styles.tonesGrid}>
+              <AppButton variant="solid" tone="primary" label="Primary" size="sm" />
+              <AppButton variant="solid" tone="success" label="Success" size="sm" />
+              <AppButton variant="solid" tone="warning" label="Warning" size="sm" />
+              <AppButton variant="solid" tone="danger" label="Danger" size="sm" />
+              <AppButton variant="solid" tone="neutral" label="Neutral" size="sm" />
+            </View>
 
-      {/* 5. Icons and Shapes */}
-      <Animated.View
-        entering={FadeInRight.duration(280).delay(200).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      >
-        <AppTitle level={2} subtitle="Support for left/right icon slots, responsive sizing, and square icon-only buttons.">
-          Icons & Layout
-        </AppTitle>
+            <View style={styles.tonesGrid}>
+              <AppButton variant="soft" tone="primary" label="Soft Primary" size="sm" />
+              <AppButton variant="soft" tone="success" label="Soft Success" size="sm" />
+              <AppButton variant="soft" tone="warning" label="Soft Warning" size="sm" />
+              <AppButton variant="soft" tone="danger" label="Soft Danger" size="sm" />
+              <AppButton variant="soft" tone="neutral" label="Soft Neutral" size="sm" />
+            </View>
+          </Animated.View>
 
-        <View style={styles.gridRow}>
-          <AppButton
-            variant="solid"
-            tone="primary"
-            label="Left Icon"
-            style={styles.gridBtn}
-            leftIcon={<AlambreIcons.Zap drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
-          />
-          <AppButton
-            variant="outline"
-            tone="primary"
-            label="Right Arrow"
-            style={styles.gridBtn}
-            rightIcon={<AlambreIcons.Arrow drawIt color={theme.primary} lineWidth={2} style={styles.btnIcon} />}
-          />
-        </View>
+          {/* Icons and Shapes */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(160).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Support for left/right icon slots, responsive sizing, and square icon-only buttons.">
+              Icons & Layout
+            </AppTitle>
 
-        <AppText variant="caption">Square Icon Buttons (iconOnly)</AppText>
-        <View style={styles.iconRow}>
-          <AppButton
-            variant="soft"
-            tone="primary"
-            iconOnly
-            leftIcon={<AlambreIcons.Gear drawIt color={theme.primary} lineWidth={2.2} style={styles.btnIcon} />}
-          />
-          <AppButton
-            variant="soft"
-            tone="success"
-            iconOnly
-            leftIcon={<AlambreIcons.CircleCheck drawIt color="#10b981" lineWidth={2.2} style={styles.btnIcon} />}
-          />
-          <AppButton
-            variant="soft"
-            tone="danger"
-            iconOnly
-            leftIcon={<AlambreIcons.CircleX drawIt color="#ef4444" lineWidth={2.2} style={styles.btnIcon} />}
-          />
-          <AppButton
-            variant="outline"
-            tone="neutral"
-            iconOnly
-            leftIcon={<AlambreIcons.Moon drawIt color={theme.color} lineWidth={2.2} style={styles.btnIcon} />}
-          />
-        </View>
-      </Animated.View>
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="solid"
+                tone="primary"
+                label="Left Icon"
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.Zap drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="outline"
+                tone="primary"
+                label="Right Arrow"
+                style={styles.gridBtn}
+                rightIcon={<AlambreIcons.Arrow drawIt color={theme.primary} lineWidth={2} style={styles.btnIcon} />}
+              />
+            </View>
 
-      {/* 6. Typography System */}
-      <Animated.View
-        entering={FadeInDown.duration(280).delay(240).easing(Easing.out(Easing.cubic))}
-        style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
-      >
-        <AppTitle level={2} subtitle="Structured hierarchy with dynamic light and dark theme bindings.">
-          Typography System (AppTitle & AppText)
-        </AppTitle>
+            <AppText variant="caption">Square Icon Buttons (iconOnly)</AppText>
+            <View style={styles.iconRow}>
+              <AppButton
+                variant="soft"
+                tone="primary"
+                iconOnly
+                leftIcon={<AlambreIcons.Gear drawIt color={theme.primary} lineWidth={2.2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="soft"
+                tone="success"
+                iconOnly
+                leftIcon={<AlambreIcons.CircleCheck drawIt color="#10b981" lineWidth={2.2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="soft"
+                tone="danger"
+                iconOnly
+                leftIcon={<AlambreIcons.CircleX drawIt color="#ef4444" lineWidth={2.2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="outline"
+                tone="neutral"
+                iconOnly
+                leftIcon={<AlambreIcons.Moon drawIt color={theme.color} lineWidth={2.2} style={styles.btnIcon} />}
+              />
+            </View>
+          </Animated.View>
 
-        <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-          <AppTitle level={1} badge="H1 (28px)" badgeTone="primary">
-            Title Level 1 (Hero)
-          </AppTitle>
-          <AppText variant="subtitle">For primary screens, hero banners, and full-page titles.</AppText>
-        </View>
+          {/* Typography System */}
+          <Animated.View
+            entering={FadeInDown.duration(280).delay(200).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Structured hierarchy with dynamic light and dark theme bindings.">
+              Typography System (AppTitle & AppText)
+            </AppTitle>
 
-        <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-          <AppTitle level={2} badge="H2 (22px)" badgeTone="success">
-            Title Level 2 (Section)
-          </AppTitle>
-          <AppText variant="subtitle">For content sections, modal sheets, and configuration cards.</AppText>
-        </View>
+            <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppTitle level={1} badge="H1 (28px)" badgeTone="primary">
+                Title Level 1 (Hero)
+              </AppTitle>
+              <AppText variant="subtitle">For primary screens, hero banners, and full-page titles.</AppText>
+            </View>
 
-        <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-          <AppTitle level={3} badge="H3 (17px)" badgeTone="warning">
-            Title Level 3 (Card)
-          </AppTitle>
-          <AppText variant="subtitle">For internal cards, summary blocks, and item headers.</AppText>
-        </View>
+            <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppTitle level={2} badge="H2 (22px)" badgeTone="success">
+                Title Level 2 (Section)
+              </AppTitle>
+              <AppText variant="subtitle">For content sections, modal sheets, and configuration cards.</AppText>
+            </View>
 
-        <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-          <AppText variant="caption">CAPTION / UPPERCASE LABEL (11px)</AppText>
-          <AppText variant="body">
-            Standard body text (<AppText variant="code">variant="body"</AppText>) with optimized line height for comfortable mobile reading.
-          </AppText>
-          <AppText variant="muted">
-            Secondary muted text (<AppText variant="code">variant="muted"</AppText>) providing balanced context without distraction.
-          </AppText>
-        </View>
-      </Animated.View>
+            <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppTitle level={3} badge="H3 (17px)" badgeTone="warning">
+                Title Level 3 (Card)
+              </AppTitle>
+              <AppText variant="subtitle">For internal cards, summary blocks, and item headers.</AppText>
+            </View>
+
+            <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppText variant="caption">CAPTION / UPPERCASE LABEL (11px)</AppText>
+              <AppText variant="body">
+                Standard body text (<AppText variant="code">variant="body"</AppText>) with optimized line height for comfortable mobile reading.
+              </AppText>
+              <AppText variant="muted">
+                Secondary muted text (<AppText variant="code">variant="muted"</AppText>) providing balanced context without distraction.
+              </AppText>
+            </View>
+          </Animated.View>
+        </>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 2: INPUTS & FORM CONTROLS                                  */}
+      {/* ============================================================== */}
+      {activeTab === 'inputs' && (
+        <>
+          {/* Interactive Input Configurator */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Customize input styles, validation feedback, and focus animation in real time.">
+              Input Configurator
+            </AppTitle>
+
+            {/* Input Variant */}
+            <AppSegmentedControl<InputVariant>
+              label="Input Variant"
+              value={inputVariant}
+              onChange={setInputVariant}
+              options={[
+                { label: 'Outline', value: 'outline' },
+                { label: 'Soft', value: 'soft' },
+                { label: 'Underlined', value: 'underlined' },
+              ]}
+            />
+
+            {/* Input Tone */}
+            <AppSegmentedControl<InputTone>
+              label="Tone / State"
+              value={inputTone}
+              onChange={setInputTone}
+              options={[
+                { label: 'Default', value: 'default' },
+                { label: 'Success', value: 'success' },
+                { label: 'Warning', value: 'warning' },
+                { label: 'Danger', value: 'danger' },
+              ]}
+            />
+
+            {/* Input Size */}
+            <AppSegmentedControl<InputSize>
+              label="Size"
+              value={inputSize}
+              onChange={setInputSize}
+              options={[
+                { label: 'SM (36px)', value: 'sm' },
+                { label: 'MD (46px)', value: 'md' },
+                { label: 'LG (54px)', value: 'lg' },
+              ]}
+            />
+
+            {/* Feature Toggles */}
+            <View style={styles.togglesRow}>
+              <AppButton
+                variant={inputClearable ? 'solid' : 'soft'}
+                tone={inputClearable ? 'primary' : 'neutral'}
+                size="sm"
+                label={inputClearable ? 'Clearable: YES' : 'Clearable: NO'}
+                onPress={() => setInputClearable((v) => !v)}
+              />
+              <AppButton
+                variant={inputPassword ? 'solid' : 'soft'}
+                tone={inputPassword ? 'warning' : 'neutral'}
+                size="sm"
+                label={inputPassword ? 'Password: YES' : 'Password: NO'}
+                onPress={() => setInputPassword((v) => !v)}
+              />
+              <AppButton
+                variant={inputWithIcon ? 'solid' : 'soft'}
+                tone={inputWithIcon ? 'primary' : 'neutral'}
+                size="sm"
+                label={inputWithIcon ? 'Icon: YES' : 'Icon: NO'}
+                onPress={() => setInputWithIcon((v) => !v)}
+              />
+              <AppButton
+                variant={inputHasError ? 'solid' : 'soft'}
+                tone={inputHasError ? 'danger' : 'neutral'}
+                size="sm"
+                label={inputHasError ? 'Error: ON' : 'Error: OFF'}
+                onPress={() => setInputHasError((v) => !v)}
+              />
+              <AppButton
+                variant={inputDisabled ? 'solid' : 'soft'}
+                tone={inputDisabled ? 'danger' : 'neutral'}
+                size="sm"
+                label={inputDisabled ? 'Disabled: YES' : 'Disabled: NO'}
+                onPress={() => setInputDisabled((v) => !v)}
+              />
+            </View>
+
+            {/* Live Interactive Input Preview */}
+            <View style={[styles.previewArea, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppText variant="caption">Interactive Live Input (Type to Test)</AppText>
+              <AppTextInput
+                label="Customizable Field"
+                required
+                value={inputTestValue}
+                onChangeText={setInputTestValue}
+                variant={inputVariant}
+                tone={inputTone}
+                size={inputSize}
+                clearable={inputClearable}
+                isPassword={inputPassword}
+                disabled={inputDisabled}
+                errorMessage={inputHasError ? 'This value does not satisfy validation rules.' : undefined}
+                helperText={!inputHasError ? 'Smooth animated border interpolation on focus.' : undefined}
+                placeholder="Type here..."
+                leftIcon={
+                  inputWithIcon ? (
+                    <AlambreIcons.Zap
+                      drawIt
+                      color={theme.primary}
+                      lineWidth={2}
+                      style={styles.btnIcon}
+                    />
+                  ) : undefined
+                }
+              />
+            </View>
+          </Animated.View>
+
+          {/* Real-World Use Cases Showcase */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(80).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Everyday mobile application form patterns.">
+              Real-World Use Cases
+            </AppTitle>
+
+            {/* 1. Real-World Search Bar with Live Filter */}
+            <AppTextInput
+              placeholder="Search team members (e.g. Alex, Design)..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              clearable
+              variant="soft"
+              leftIcon={
+                <AlambreIcons.Search
+                  drawIt
+                  color={theme.muted}
+                  lineWidth={2}
+                  style={styles.btnIcon}
+                />
+              }
+              helperText={
+                searchQuery
+                  ? `Showing results matching "${searchQuery}" (${filteredMembers.length} found)`
+                  : 'Type in the box above to filter the directory in real time.'
+              }
+            />
+
+            {/* Live Filter Results */}
+            <View
+              style={[
+                styles.searchResultCard,
+                { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+              ]}
+            >
+              <AppText variant="caption">Team Directory Results</AppText>
+              {filteredMembers.length > 0 ? (
+                filteredMembers.map((member, idx) => (
+                  <View key={member.name}>
+                    {idx > 0 && <View style={[styles.searchResultDivider, { backgroundColor: theme.border }]} />}
+                    <View style={styles.searchResultItem}>
+                      <Text style={{ fontWeight: '700', color: theme.color, fontSize: 13 }}>
+                        {member.name}
+                      </Text>
+                      <Text style={{ color: theme.muted, fontSize: 12 }}>
+                        {member.role}
+                      </Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ color: theme.muted, fontSize: 13, fontStyle: 'italic', paddingVertical: 4 }}>
+                  No team members found for "{searchQuery}". Tap 'X' to clear.
+                </Text>
+              )}
+            </View>
+
+            {/* 2. Authentication fields */}
+            <AppTextInput
+              label="Email Address"
+              value={emailText}
+              onChangeText={setEmailText}
+              placeholder="name@example.com"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              clearable
+              leftIcon={
+                <AlambreIcons.Documents
+                  drawIt
+                  color={theme.muted}
+                  lineWidth={2}
+                  style={styles.btnIcon}
+                />
+              }
+            />
+
+            <AppTextInput
+              label="Account Password"
+              value={passwordText}
+              onChangeText={setPasswordText}
+              isPassword
+              placeholder="Enter your password..."
+              leftIcon={
+                <AlambreIcons.Keys
+                  drawIt
+                  color={theme.muted}
+                  lineWidth={2}
+                  style={styles.btnIcon}
+                />
+              }
+              helperText="Tap the eye icon on the right to toggle between dots and visible text."
+            />
+
+            {/* 3. Verified Promo Code (Checkout Pattern) */}
+            <AppTextInput
+              label="Applied Coupon / Promo Code"
+              value="SUMMER2026"
+              tone="success"
+              editable={false}
+              rightIcon={
+                <AlambreIcons.CircleCheck
+                  drawIt
+                  color="#10b981"
+                  lineWidth={2}
+                  style={styles.btnIcon}
+                />
+              }
+              helperText="20% seasonal checkout discount applied to total."
+            />
+
+            {/* 4. Form Validation Error Pattern */}
+            <AppTextInput
+              label="Postal / ZIP Code"
+              value="9401"
+              errorMessage="Postal code must be 5 digits (e.g. 94016)."
+              leftIcon={
+                <AlambreIcons.Phone
+                  drawIt
+                  color={theme.muted}
+                  lineWidth={2}
+                  style={styles.btnIcon}
+                />
+              }
+            />
+
+            {/* 5. Multiline Textarea */}
+            <AppTextInput
+              label="Order Delivery Notes"
+              value={noteText}
+              onChangeText={setNoteText}
+              multiline
+              numberOfLines={3}
+              placeholder="Write delivery instructions or notes..."
+              helperText="Multiline input adapts height for longer descriptions and feedback."
+            />
+          </Animated.View>
+
+          {/* Tactile Switch & Toggles Showcase */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(120).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Tactile toggle switches with Reanimated spring physics and press feedback.">
+              Tactile Switches (AppSwitch)
+            </AppTitle>
+
+            <View style={[styles.switchCard, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppSwitch
+                label="Push Notifications"
+                subtitle="Receive alerts on background process completions."
+                checked={switchNotifications}
+                onChange={setSwitchNotifications}
+                activeTone="primary"
+              />
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <AppSwitch
+                label="Haptic Feedback"
+                subtitle="Trigger physical vibration pulses on button actions."
+                checked={switchHaptics}
+                onChange={setSwitchHaptics}
+                activeTone="success"
+              />
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <AppSwitch
+                label="Diagnostic Telemetry"
+                subtitle="Send anonymous crash reports and stack traces."
+                checked={switchAnalytics}
+                onChange={setSwitchAnalytics}
+                activeTone="warning"
+              />
+            </View>
+
+            {/* Sizing Comparison */}
+            <AppText variant="caption">Switch Sizing Comparison (Independent Toggles)</AppText>
+            <View style={styles.switchSizeRow}>
+              <View style={styles.switchSizeItem}>
+                <AppText variant="subtitle">SM</AppText>
+                <AppSwitch
+                  size="sm"
+                  checked={sizeSm}
+                  onChange={setSizeSm}
+                />
+              </View>
+              <View style={styles.switchSizeItem}>
+                <AppText variant="subtitle">MD (Default)</AppText>
+                <AppSwitch
+                  size="md"
+                  checked={sizeMd}
+                  onChange={setSizeMd}
+                />
+              </View>
+              <View style={styles.switchSizeItem}>
+                <AppText variant="subtitle">LG</AppText>
+                <AppSwitch
+                  size="lg"
+                  checked={sizeLg}
+                  onChange={setSizeLg}
+                />
+              </View>
+            </View>
+          </Animated.View>
+        </>
+      )}
     </View>
   );
 }
@@ -330,8 +724,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     borderWidth: 1,
-    gap: 10,
+    gap: 12,
     alignItems: 'center',
+    width: '100%',
   },
   gridRow: {
     flexDirection: 'row',
@@ -360,5 +755,43 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     gap: 4,
+  },
+  searchResultCard: {
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  searchResultDivider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
+  },
+  switchCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
+  },
+  switchSizeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingVertical: 8,
+  },
+  switchSizeItem: {
+    alignItems: 'center',
+    gap: 6,
   },
 });
