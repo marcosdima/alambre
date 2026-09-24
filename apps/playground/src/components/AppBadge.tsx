@@ -183,6 +183,7 @@ export type AppChipProps = {
   size?: 'sm' | 'md';
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
 };
 
 export function AppChip({
@@ -195,6 +196,7 @@ export function AppChip({
   size = 'md',
   disabled = false,
   style,
+  contentStyle,
 }: AppChipProps) {
   const { theme } = useLightDark();
   const scale = useSharedValue(1);
@@ -229,6 +231,7 @@ export function AppChip({
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}
       hitSlop={4}
+      style={style}
     >
       <Animated.View
         style={[
@@ -243,7 +246,7 @@ export function AppChip({
             borderWidth: 1.5,
           },
           disabled && styles.disabled,
-          style,
+          contentStyle,
         ]}
       >
         {icon}

@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import type {
   StyleProp,
   TextStyle,
@@ -37,7 +37,7 @@ export type AppTextInputProps = Omit<ComponentProps<typeof TextInput>, 'style'> 
   style?: StyleProp<TextStyle>;
 };
 
-export default function AppTextInput({
+const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextInput({
   label,
   required = false,
   helperText,
@@ -63,9 +63,11 @@ export default function AppTextInput({
   shellStyle,
   style,
   ...props
-}: AppTextInputProps) {
+}: AppTextInputProps, ref) {
   const { theme } = useLightDark();
-  const inputRef = useRef<TextInput>(null);
+  const innerRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => innerRef.current as TextInput);
 
   const [currentText, setCurrentText] = useState(value ?? defaultValue ?? '');
   const [isFocused, setIsFocused] = useState(false);
@@ -104,7 +106,7 @@ export default function AppTextInput({
       setCurrentText('');
     }
     onChangeText?.('');
-    inputRef.current?.focus();
+    innerRef.current?.focus();
   };
 
   // Tone colors resolution
@@ -218,7 +220,7 @@ export default function AppTextInput({
 
       {/* Input Shell */}
       <Pressable
-        onPress={() => inputRef.current?.focus()}
+        onPress={() => innerRef.current?.focus()}
         accessible={false}
       >
         <Animated.View
@@ -243,7 +245,7 @@ export default function AppTextInput({
           {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
 
           <TextInput
-            ref={inputRef}
+            ref={innerRef}
             value={textValue}
             editable={isEditable}
             onFocus={handleFocus}
@@ -253,6 +255,7 @@ export default function AppTextInput({
             multiline={multiline}
             numberOfLines={numberOfLines}
             placeholderTextColor={placeholderTextColor ?? theme.muted}
+            accessibilityLabel={props.accessibilityLabel ?? label}
             style={[
               styles.textInput,
               {
@@ -332,7 +335,9 @@ export default function AppTextInput({
       ) : null}
     </View>
   );
-}
+});
+
+export default AppTextInput;
 
 const styles = StyleSheet.create({
   container: {

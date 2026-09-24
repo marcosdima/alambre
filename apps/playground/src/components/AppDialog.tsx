@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -153,7 +161,10 @@ export default function AppDialog({
       statusBarTranslucent
       navigationBarTranslucent
     >
-      <View style={styles.modalRoot}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.modalRoot}
+      >
         {/* Animated Dim Backdrop */}
         <Animated.View style={[styles.backdrop, animatedBackdropStyle]}>
           <Pressable
@@ -166,6 +177,7 @@ export default function AppDialog({
 
         {/* Animated Centered Dialog Card */}
         <Animated.View
+          accessibilityRole="alert"
           style={[
             styles.card,
             {
@@ -232,7 +244,7 @@ export default function AppDialog({
             )
           )}
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

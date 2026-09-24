@@ -129,6 +129,7 @@ export default function AppCard({
         {
           padding: paddingVal,
           borderRadius: 18,
+          overflow: variant === 'elevated' ? 'visible' : 'hidden',
         },
         animatedScaleStyle,
         disabled && styles.disabled,
@@ -221,7 +222,6 @@ export default function AppCard({
 const styles = StyleSheet.create({
   cardBase: {
     width: '100%',
-    overflow: 'hidden',
   },
   headerRow: {
     flexDirection: 'row',

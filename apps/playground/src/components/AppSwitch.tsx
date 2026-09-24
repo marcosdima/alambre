@@ -143,54 +143,59 @@ export default function AppSwitch({
     };
   });
 
-  const switchElement = (
-    <Pressable
-      onPress={handleToggle}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={disabled}
-      accessibilityRole="switch"
-      accessibilityState={{ checked, disabled }}
-      hitSlop={8}
-      style={[disabled && styles.disabled, switchStyle]}
+  const trackView = (
+    <Animated.View
+      style={[
+        styles.track,
+        animatedTrackStyle,
+        {
+          width: sizeConfig.trackWidth,
+          height: sizeConfig.trackHeight,
+          borderRadius: sizeConfig.borderRadius,
+          padding: sizeConfig.pad,
+        },
+      ]}
     >
       <Animated.View
         style={[
-          styles.track,
-          animatedTrackStyle,
+          styles.thumb,
+          animatedThumbStyle,
           {
-            width: sizeConfig.trackWidth,
-            height: sizeConfig.trackHeight,
-            borderRadius: sizeConfig.borderRadius,
-            padding: sizeConfig.pad,
+            width: sizeConfig.thumbSize,
+            height: sizeConfig.thumbSize,
+            borderRadius: sizeConfig.thumbSize / 2,
           },
         ]}
-      >
-        <Animated.View
-          style={[
-            styles.thumb,
-            animatedThumbStyle,
-            {
-              width: sizeConfig.thumbSize,
-              height: sizeConfig.thumbSize,
-              borderRadius: sizeConfig.thumbSize / 2,
-            },
-          ]}
-        />
-      </Animated.View>
-    </Pressable>
+      />
+    </Animated.View>
   );
 
   if (!label && !subtitle) {
-    return switchElement;
+    return (
+      <Pressable
+        onPress={handleToggle}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        accessibilityRole="switch"
+        accessibilityState={{ checked, disabled }}
+        hitSlop={8}
+        style={[disabled && styles.disabled, switchStyle]}
+      >
+        {trackView}
+      </Pressable>
+    );
   }
 
   return (
     <Pressable
       onPress={handleToggle}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled}
       style={[styles.rowContainer, disabled && styles.disabled, containerStyle]}
       accessibilityRole="switch"
+      accessibilityLabel={label}
       accessibilityState={{ checked, disabled }}
     >
       <View style={styles.textContainer}>
@@ -201,7 +206,9 @@ export default function AppSwitch({
           <Text style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</Text>
         ) : null}
       </View>
-      {switchElement}
+      <View pointerEvents="none" style={switchStyle}>
+        {trackView}
+      </View>
     </Pressable>
   );
 }

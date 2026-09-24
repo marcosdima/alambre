@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -151,134 +160,144 @@ export default function AppActionSheet({
       navigationBarTranslucent
     >
       <GestureHandlerRootView style={styles.modalRoot}>
-        {/* Animated Dim Backdrop */}
-        <Animated.View style={[styles.backdrop, animatedBackdropStyle]}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={handleBackdropPress}
-            accessibilityRole="button"
-            accessibilityLabel="Dismiss action sheet"
-          />
-        </Animated.View>
-
-        {/* Animated Bottom Sheet Drawer */}
-        <Animated.View
-          style={[
-            styles.sheetContainer,
-            {
-              backgroundColor: theme.surface,
-              borderColor: theme.border,
-              borderBottomWidth: 0,
-              paddingBottom: Math.max(insets.bottom, 16) + 8,
-            },
-            style,
-            animatedSheetStyle,
-          ]}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoid}
         >
-          {/* Bottom Overshoot Skirt: overlaps inside container and extends 350px below to cover negative space */}
-          <View
+          {/* Animated Dim Backdrop */}
+          <Animated.View style={[styles.backdrop, animatedBackdropStyle]}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={handleBackdropPress}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss action sheet"
+            />
+          </Animated.View>
+
+          {/* Animated Bottom Sheet Drawer */}
+          <Animated.View
             style={[
-              styles.bottomSkirt,
+              styles.sheetContainer,
               {
                 backgroundColor: theme.surface,
+                borderColor: theme.border,
+                borderBottomWidth: 0,
+                paddingBottom: Math.max(insets.bottom, 16) + 8,
               },
+              style,
+              animatedSheetStyle,
             ]}
-            pointerEvents="none"
-          />
+          >
+            {/* Bottom Overshoot Skirt: overlaps inside container and extends 350px below to cover negative space */}
+            <View
+              style={[
+                styles.bottomSkirt,
+                {
+                  backgroundColor: theme.surface,
+                },
+              ]}
+              pointerEvents="none"
+            />
 
-          {/* Pan Gesture Area for Grab Handle & Dragging */}
-          <GestureDetector gesture={panGesture}>
-            <View style={styles.grabHandleArea}>
-              <View style={[styles.grabHandle, { backgroundColor: theme.border }]} />
-              {(title || description) && (
-                <View style={styles.header}>
-                  {title ? (
-                    <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
-                  ) : null}
-                  {description ? (
-                    <Text style={[styles.description, { color: theme.muted }]}>
-                      {description}
-                    </Text>
-                  ) : null}
-                </View>
-              )}
-            </View>
-          </GestureDetector>
-
-          {/* Options List */}
-          {options && options.length > 0 && (
-            <View style={styles.optionsList}>
-              {options.map((option) => {
-                const isDanger = option.tone === 'danger';
-                const isPrimary = option.tone === 'primary';
-                const textColor = isDanger
-                  ? '#ef4444'
-                  : isPrimary
-                    ? theme.primary
-                    : theme.color;
-                const iconBg = isDanger
-                  ? '#ef444415'
-                  : isPrimary
-                    ? theme.primarySoft
-                    : theme.surfaceAlt;
-
-                return (
-                  <Pressable
-                    key={option.id}
-                    disabled={option.disabled}
-                    onPress={() => {
-                      if (option.disabled) return;
-                      onClose();
-                      option.onPress();
-                    }}
-                    style={({ pressed }) => [
-                      styles.optionRow,
-                      {
-                        backgroundColor: pressed ? theme.surfaceAlt : 'transparent',
-                        borderColor: theme.border,
-                        opacity: option.disabled ? 0.45 : 1,
-                      },
-                    ]}
-                  >
-                    {option.icon ? (
-                      <View style={[styles.optionIcon, { backgroundColor: iconBg }]}>
-                        {option.icon}
-                      </View>
+            {/* Pan Gesture Area for Grab Handle & Dragging */}
+            <GestureDetector gesture={panGesture}>
+              <View style={styles.grabHandleArea}>
+                <View style={[styles.grabHandle, { backgroundColor: theme.border }]} />
+                {(title || description) && (
+                  <View style={styles.header}>
+                    {title ? (
+                      <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
                     ) : null}
-
-                    <View style={styles.optionContent}>
-                      <Text style={[styles.optionLabel, { color: textColor }]}>
-                        {option.label}
+                    {description ? (
+                      <Text style={[styles.description, { color: theme.muted }]}>
+                        {description}
                       </Text>
-                      {option.subtitle ? (
-                        <Text style={[styles.optionSubtitle, { color: theme.muted }]}>
-                          {option.subtitle}
-                        </Text>
+                    ) : null}
+                  </View>
+                )}
+              </View>
+            </GestureDetector>
+
+            {/* Options List */}
+            {options && options.length > 0 && (
+              <ScrollView
+                style={styles.optionsList}
+                contentContainerStyle={styles.optionsListContent}
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
+                {options.map((option) => {
+                  const isDanger = option.tone === 'danger';
+                  const isPrimary = option.tone === 'primary';
+                  const textColor = isDanger
+                    ? '#ef4444'
+                    : isPrimary
+                      ? theme.primary
+                      : theme.color;
+                  const iconBg = isDanger
+                    ? '#ef444415'
+                    : isPrimary
+                      ? theme.primarySoft
+                      : theme.surfaceAlt;
+
+                  return (
+                    <Pressable
+                      key={option.id}
+                      disabled={option.disabled}
+                      onPress={() => {
+                        if (option.disabled) return;
+                        onClose();
+                        option.onPress();
+                      }}
+                      style={({ pressed }) => [
+                        styles.optionRow,
+                        {
+                          backgroundColor: pressed ? theme.surfaceAlt : 'transparent',
+                          borderColor: theme.border,
+                          opacity: option.disabled ? 0.45 : 1,
+                        },
+                      ]}
+                    >
+                      {option.icon ? (
+                        <View style={[styles.optionIcon, { backgroundColor: iconBg }]}>
+                          {option.icon}
+                        </View>
                       ) : null}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
 
-          {/* Custom Children */}
-          {children ? <View style={styles.childrenContainer}>{children}</View> : null}
+                      <View style={styles.optionContent}>
+                        <Text style={[styles.optionLabel, { color: textColor }]}>
+                          {option.label}
+                        </Text>
+                        {option.subtitle ? (
+                          <Text style={[styles.optionSubtitle, { color: theme.muted }]}>
+                            {option.subtitle}
+                          </Text>
+                        ) : null}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            )}
 
-          {/* Cancel Button */}
-          {cancelLabel ? (
-            <View style={styles.cancelContainer}>
-              <AppButton
-                fullWidth
-                variant="soft"
-                tone="neutral"
-                size="md"
-                label={cancelLabel}
-                onPress={onClose}
-              />
-            </View>
-          ) : null}
-        </Animated.View>
+            {/* Custom Children */}
+            {children ? <View style={styles.childrenContainer}>{children}</View> : null}
+
+            {/* Cancel Button */}
+            {cancelLabel ? (
+              <View style={styles.cancelContainer}>
+                <AppButton
+                  fullWidth
+                  variant="soft"
+                  tone="neutral"
+                  size="md"
+                  label={cancelLabel}
+                  onPress={onClose}
+                />
+              </View>
+            ) : null}
+          </Animated.View>
+        </KeyboardAvoidingView>
       </GestureHandlerRootView>
     </Modal>
   );
@@ -286,6 +305,10 @@ export default function AppActionSheet({
 
 const styles = StyleSheet.create({
   modalRoot: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  keyboardAvoid: {
     flex: 1,
     justifyContent: 'flex-end',
   },
@@ -338,7 +361,11 @@ const styles = StyleSheet.create({
   },
   optionsList: {
     width: '100%',
+    maxHeight: 380,
     marginVertical: 4,
+  },
+  optionsListContent: {
+    paddingVertical: 2,
   },
   optionRow: {
     flexDirection: 'row',
