@@ -208,3 +208,40 @@ Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'` on t
 3. **Staggered Spin Wave:** Introduce a calculated delay per digit column (`withDelay(index * staggerMs, withSpring(...))`), allowing callers to select between right-to-left (place value order, starting from units) and left-to-right cascades. Non-digit symbols (currency signs, commas, decimal points) remain static inline without jumping.
 
 **Status: ADOPTED in playground.** Ready for evaluation in game development and financial metrics.
+
+## Eliminating Android native text layout tearing in rapid typewriter streams (discovered in playground text-animations)
+
+**Pattern:** Simulating conversational dialogues, terminal outputs, or RPG typewriter text by rapidly appending characters into a parent `<Text>` component while simultaneously hosting an inline `<Animated.Text>` (e.g., a blinking cursor driven by an active 60fps Reanimated loop `withRepeat(withSequence(...))`) causes severe graphical corruption on Android: duplicate character painting, phantom line duplication, and tearing at line wraps.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/TypewriterText.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Never combine inline Reanimated loops with mutating parent text:** Android's native `TextLayout` recomputes line breaks and glyph measurements on every character append. Concurrently mutating inline opacity via native Reanimated ticks corrupts Android's native layout cache.
+2. **Phase-separated cursor states:** Keep the cursor solid (`opacity: 1`) during active character generation (`!isDone`). Once typing settles (`isDone`), switch to a standard discrete interval blink (`setInterval(..., 530)`).
+3. **Avoid flex wrapping around native text:** Do not use `flexDirection: 'row', flexWrap: 'wrap'` on outer containers that wrap standard `<Text>` elements. Let native text layout manage natural line breaks.
+
+**Status: ADOPTED in playground.** Ready for evaluation in dialogue systems.
+
+## Digit column stabilization via zero-opacity placeholders (discovered in playground text-animations)
+
+**Pattern:** In numeric counters or game HUDs where digit counts vary dynamically (such as HP dropping from 100 to 50), removing a column causes trailing labels or suffixes (e.g. `/ 100`) to abruptly jump horizontally. Forcing leading zeros (`050`) solves the layout shift but degrades visual presentation.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/TickerText.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Configurable Minimum Columns:** Support a `minDigits` prop alongside an optional `padZero?: boolean`.
+2. **Invisible Tabular Spacer Glyphs:** When `padZero` is false, pad the string with whitespace characters and render spaces as digit `'0'` glyphs styled with `opacity: 0` and `fontVariant: ['tabular-nums']`.
+3. **Metric Parity:** Because the invisible glyph shares the exact font size, line height, and tabular numeral bounding box as active digits, the overall component dimensions remain pixel-stable across orders of magnitude without showing artificial leading zeros.
+
+**Status: ADOPTED in playground.** Ready for evaluation in game HUDs and metric displays.
+
+## Nested scroll entrapment in navigator pages (discovered in playground text-animations)
+
+**Pattern:** Embedding an inner `<ScrollView>` inside a screen rendered within `AppNavigatorBody` causes Android gesture responders to lock onto the inner scroll container before layout measurements settle, preventing vertical scrolling and hiding UI components located below the fold.
+
+**Where it appeared:** `apps/playground/src/views/text-animations/TextAnimationsTest.tsx`.
+
+**Solution / Architectural Pattern:**
+Enforce that screens rendered inside `AppNavigatorBody` render a root `<View style={styles.container}>` rather than a `<ScrollView>`, allowing the outer navigator container to cleanly manage page scrolling, momentum, and scroll position restoration across route transitions.
+
+**Status: ADOPTED in playground & base-template.**
