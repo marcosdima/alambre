@@ -10,8 +10,11 @@ import AppSegmentedControl from '../../components/AppSegmentedControl';
 import AppTextInput from '../../components/AppTextInput';
 import type { InputSize, InputTone, InputVariant } from '../../components/AppTextInput';
 import AppSwitch from '../../components/AppSwitch';
+import AppBadge, { AppChip } from '../../components/AppBadge';
+import AppCard from '../../components/AppCard';
+import type { CardPadding, CardVariant } from '../../components/AppCard';
 
-type ActiveTab = 'buttons' | 'inputs';
+type ActiveTab = 'buttons' | 'inputs' | 'cards';
 
 const TEAM_MEMBERS = [
   { name: 'Alex Rivera', role: 'Engineering Lead' },
@@ -44,7 +47,7 @@ export default function ComponentsTest() {
   const [inputWithIcon, setInputWithIcon] = useState(true);
   const [inputTestValue, setInputTestValue] = useState('Dynamic Value');
 
-  // --- Real-world Showcase State ---
+  // --- Real-world Inputs Showcase State ---
   const [searchQuery, setSearchQuery] = useState('');
   const [emailText, setEmailText] = useState('user@alambre.dev');
   const [passwordText, setPasswordText] = useState('supersecret123');
@@ -60,10 +63,34 @@ export default function ComponentsTest() {
   const [sizeMd, setSizeMd] = useState(true);
   const [sizeLg, setSizeLg] = useState(true);
 
+  // --- Card Playground State ---
+  const [cardVariant, setCardVariant] = useState<CardVariant>('outlined');
+  const [cardPadding, setCardPadding] = useState<CardPadding>('md');
+  const [cardInteractive, setCardInteractive] = useState(true);
+  const [cardSelected, setCardSelected] = useState(false);
+  const [cardHasHeader, setCardHasHeader] = useState(true);
+  const [cardHasChevron, setCardHasChevron] = useState(true);
+  const [cardClicks, setCardClicks] = useState(0);
+
+  // --- Real-world Cards & Badges State ---
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('pro');
+  const [filterTags, setFilterTags] = useState<string[]>(['React Native', 'TypeScript']);
+  const [activeRemovableTags, setActiveRemovableTags] = useState<string[]>(['In Stock', 'Top Rated', 'Free Shipping']);
+
   const filteredMembers = TEAM_MEMBERS.filter((m) =>
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.role.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const toggleFilterTag = (tag: string) => {
+    setFilterTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setActiveRemovableTags((prev) => prev.filter((t) => t !== tagToRemove));
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -86,8 +113,9 @@ export default function ComponentsTest() {
           value={activeTab}
           onChange={setActiveTab}
           options={[
-            { label: 'Buttons & Typography', value: 'buttons' },
-            { label: 'Inputs & Form Controls', value: 'inputs' },
+            { label: 'Buttons', value: 'buttons' },
+            { label: 'Inputs & Controls', value: 'inputs' },
+            { label: 'Cards & Badges', value: 'cards' },
           ]}
         />
       </Animated.View>
@@ -698,6 +726,277 @@ export default function ComponentsTest() {
           </Animated.View>
         </>
       )}
+
+      {/* ============================================================== */}
+      {/* TAB 3: CARDS & BADGES                                          */}
+      {/* ============================================================== */}
+      {activeTab === 'cards' && (
+        <>
+          {/* 1. Interactive Card Configurator */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Configure card surface styling, padding, and tactile touch feedback.">
+              Card Configurator
+            </AppTitle>
+
+            {/* Variant Selector */}
+            <AppSegmentedControl<CardVariant>
+              label="Card Variant"
+              value={cardVariant}
+              onChange={setCardVariant}
+              options={[
+                { label: 'Outlined', value: 'outlined' },
+                { label: 'Elevated', value: 'elevated' },
+                { label: 'Soft', value: 'soft' },
+              ]}
+            />
+
+            {/* Padding Selector */}
+            <AppSegmentedControl<CardPadding>
+              label="Padding"
+              value={cardPadding}
+              onChange={setCardPadding}
+              options={[
+                { label: 'SM (12px)', value: 'sm' },
+                { label: 'MD (16px)', value: 'md' },
+                { label: 'LG (22px)', value: 'lg' },
+              ]}
+            />
+
+            {/* Toggles */}
+            <View style={styles.togglesRow}>
+              <AppButton
+                variant={cardInteractive ? 'solid' : 'soft'}
+                tone={cardInteractive ? 'primary' : 'neutral'}
+                size="sm"
+                label={cardInteractive ? 'Interactive: YES' : 'Interactive: NO'}
+                onPress={() => setCardInteractive((v) => !v)}
+              />
+              <AppButton
+                variant={cardSelected ? 'solid' : 'soft'}
+                tone={cardSelected ? 'primary' : 'neutral'}
+                size="sm"
+                label={cardSelected ? 'Selected: YES' : 'Selected: NO'}
+                onPress={() => setCardSelected((v) => !v)}
+              />
+              <AppButton
+                variant={cardHasHeader ? 'solid' : 'soft'}
+                tone={cardHasHeader ? 'primary' : 'neutral'}
+                size="sm"
+                label={cardHasHeader ? 'Header: YES' : 'Header: NO'}
+                onPress={() => setCardHasHeader((v) => !v)}
+              />
+              <AppButton
+                variant={cardHasChevron ? 'solid' : 'soft'}
+                tone={cardHasChevron ? 'primary' : 'neutral'}
+                size="sm"
+                label={cardHasChevron ? 'Chevron: YES' : 'Chevron: NO'}
+                onPress={() => setCardHasChevron((v) => !v)}
+              />
+            </View>
+
+            {/* Live Interactive Card Preview */}
+            <View style={[styles.previewArea, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppText variant="caption">Interactive Card Preview (Tap to Feel Spring)</AppText>
+              <AppCard
+                variant={cardVariant}
+                padding={cardPadding}
+                selected={cardSelected}
+                title={cardHasHeader ? `Interactive Surface (${cardClicks})` : undefined}
+                subtitle={cardHasHeader ? 'Tactile spring scale response on press.' : undefined}
+                badge={cardHasHeader ? 'DYNAMIC' : undefined}
+                badgeTone="primary"
+                chevron={cardHasChevron}
+                onPress={cardInteractive ? () => setCardClicks((c) => c + 1) : undefined}
+              >
+                <AppText variant="body">
+                  Cards serve as flexible content containers with customizable elevation, border radius, and structured header/footer slots.
+                </AppText>
+              </AppCard>
+            </View>
+          </Animated.View>
+
+          {/* 2. Badges & Interactive Chips Showcase */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(80).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Semantic labels for status, counts, categories, and active filters.">
+              Badges & Interactive Chips
+            </AppTitle>
+
+            {/* Badges Matrix: Soft */}
+            <AppText variant="caption">Soft Badges (Default)</AppText>
+            <View style={styles.badgeRow}>
+              <AppBadge label="Primary" tone="primary" />
+              <AppBadge label="Success" tone="success" />
+              <AppBadge label="Warning" tone="warning" />
+              <AppBadge label="Danger" tone="danger" />
+              <AppBadge label="Neutral" tone="neutral" />
+            </View>
+
+            {/* Badges Matrix: Solid */}
+            <AppText variant="caption">Solid Badges</AppText>
+            <View style={styles.badgeRow}>
+              <AppBadge label="Primary" tone="primary" variant="solid" />
+              <AppBadge label="Success" tone="success" variant="solid" />
+              <AppBadge label="Warning" tone="warning" variant="solid" />
+              <AppBadge label="Danger" tone="danger" variant="solid" />
+            </View>
+
+            {/* Badges with Icons */}
+            <AppText variant="caption">Badges with Icon Slot</AppText>
+            <View style={styles.badgeRow}>
+              <AppBadge
+                label="Verified"
+                tone="success"
+                icon={<AlambreIcons.CircleCheck drawIt color="#10b981" lineWidth={2} style={styles.badgeIcon} />}
+              />
+              <AppBadge
+                label="High Priority"
+                tone="danger"
+                icon={<AlambreIcons.TriangleAlert drawIt color="#ef4444" lineWidth={2} style={styles.badgeIcon} />}
+              />
+              <AppBadge
+                label="Fast Track"
+                tone="primary"
+                icon={<AlambreIcons.Zap drawIt color={theme.primary} lineWidth={2} style={styles.badgeIcon} />}
+              />
+            </View>
+
+            {/* Filter Chips Bar */}
+            <AppText variant="caption">Interactive Filter Chips (Tap to Toggle)</AppText>
+            <View style={styles.chipRow}>
+              {['All', 'React Native', 'TypeScript', 'Reanimated', 'Mobile UI'].map((tag) => {
+                const isSelected = filterTags.includes(tag);
+                return (
+                  <AppChip
+                    key={tag}
+                    label={tag}
+                    selected={isSelected}
+                    onPress={() => toggleFilterTag(tag)}
+                    icon={
+                      isSelected ? (
+                        <AlambreIcons.CircleCheck
+                          drawIt
+                          color={theme.primary}
+                          lineWidth={2}
+                          style={styles.badgeIcon}
+                        />
+                      ) : undefined
+                    }
+                  />
+                );
+              })}
+            </View>
+
+            {/* Removable Chips */}
+            <AppText variant="caption">Dismissible Active Filter Chips</AppText>
+            <View style={styles.chipRow}>
+              {activeRemovableTags.map((tag) => (
+                <AppChip
+                  key={tag}
+                  label={tag}
+                  selected
+                  onRemove={() => removeTag(tag)}
+                />
+              ))}
+              {activeRemovableTags.length === 0 && (
+                <Text style={{ color: theme.muted, fontSize: 13, fontStyle: 'italic', paddingVertical: 4 }}>
+                  All filters removed.
+                </Text>
+              )}
+            </View>
+          </Animated.View>
+
+          {/* 3. Real-World Card Patterns */}
+          <Animated.View
+            entering={FadeInLeft.duration(280).delay(120).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={2} subtitle="Cohesive card patterns assembled from buttons, typography, and badges.">
+              Real-World Card Patterns
+            </AppTitle>
+
+            {/* Pattern A: Plan Selection Cards */}
+            <AppText variant="caption">Pattern 1: Interactive Plan / Tier Selector</AppText>
+            <View style={styles.planCardsRow}>
+              {/* Starter Card */}
+              <AppCard
+                variant={selectedPlan === 'free' ? 'outlined' : 'soft'}
+                selected={selectedPlan === 'free'}
+                title="Community"
+                subtitle="Free forever for individuals"
+                badge="STARTER"
+                badgeTone="neutral"
+                onPress={() => setSelectedPlan('free')}
+                style={styles.planCard}
+              >
+                <Text style={[styles.planPrice, { color: theme.color }]}>$0</Text>
+                <AppText variant="subtitle">Basic gesture physics & 2 slots</AppText>
+              </AppCard>
+
+              {/* Pro Card */}
+              <AppCard
+                variant={selectedPlan === 'pro' ? 'outlined' : 'soft'}
+                selected={selectedPlan === 'pro'}
+                title="Professional"
+                subtitle="Full design system"
+                badge="POPULAR"
+                badgeTone="primary"
+                onPress={() => setSelectedPlan('pro')}
+                style={styles.planCard}
+              >
+                <Text style={[styles.planPrice, { color: theme.primary }]}>$19/mo</Text>
+                <AppText variant="subtitle">Unlimited components & spring physics</AppText>
+              </AppCard>
+            </View>
+
+            {/* Pattern B: Product / E-Commerce Card */}
+            <AppText variant="caption">Pattern 2: Product & Summary Card</AppText>
+            <AppCard
+              variant="elevated"
+              title="Alambre Tactile Keyboard"
+              subtitle="Custom mechanical switches engineered for mobile typing."
+              badge="IN STOCK"
+              badgeTone="success"
+              footer={
+                <View style={styles.productFooter}>
+                  <View>
+                    <AppText variant="caption">Price</AppText>
+                    <Text style={[styles.productPrice, { color: theme.color }]}>$129.00</Text>
+                  </View>
+                  <AppButton
+                    variant="solid"
+                    tone="primary"
+                    size="sm"
+                    label="Add to Cart"
+                    leftIcon={<AlambreIcons.ShoppingBag drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
+                  />
+                </View>
+              }
+            >
+              <AppText variant="body">
+                Features hot-swappable tactile stems, aluminum top plate, and Bluetooth 5.2 dual-pairing.
+              </AppText>
+            </AppCard>
+
+            {/* Pattern C: Navigation Row Card */}
+            <AppText variant="caption">Pattern 3: Settings Action Row</AppText>
+            <AppCard
+              variant="outlined"
+              title="Biometric Authentication"
+              subtitle="FaceID and fingerprint security lock."
+              badge="ENABLED"
+              badgeTone="success"
+              chevron
+              onPress={() => {}}
+            />
+          </Animated.View>
+        </>
+      )}
     </View>
   );
 }
@@ -793,5 +1092,41 @@ const styles = StyleSheet.create({
   switchSizeItem: {
     alignItems: 'center',
     gap: 6,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  badgeIcon: {
+    width: 12,
+    height: 12,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  planCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  planCard: {
+    flex: 1,
+  },
+  planPrice: {
+    fontSize: 24,
+    fontWeight: '800',
+    marginVertical: 4,
+  },
+  productFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: '800',
   },
 });
