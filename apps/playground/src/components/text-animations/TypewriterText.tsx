@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
 
 export type TypewriterTextProps = {
@@ -44,20 +37,21 @@ export default function TypewriterText({
   const { theme } = useLightDark();
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isDone, setIsDone] = useState(false);
+  const [blink, setBlink] = useState(true);
 
-  const cursorOpacity = useSharedValue(1);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Blinking cursor only when typing has finished (idle)
   useEffect(() => {
-    cursorOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0, { duration: 450 }),
-        withTiming(1, { duration: 450 }),
-      ),
-      -1,
-      true,
-    );
-  }, [cursorOpacity]);
+    if (!isDone) {
+      setBlink(true);
+      return;
+    }
+    const interval = setInterval(() => {
+      setBlink((b) => !b);
+    }, 530);
+    return () => clearInterval(interval);
+  }, [isDone]);
 
   useEffect(() => {
     // Reset typing state on text or loop change
@@ -96,12 +90,9 @@ export default function TypewriterText({
     };
   }, [text, speed, initialDelay, loop, pauseOnLoopMs, onComplete]);
 
-  const animatedCursorStyle = useAnimatedStyle(() => ({
-    opacity: cursorOpacity.value,
-  }));
-
   const visibleText = text.slice(0, displayedLength);
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
+  const isCursorVisible = showCursor && (!isDone || blink);
 
   return (
     <View
@@ -112,17 +103,16 @@ export default function TypewriterText({
     >
       <Text style={[styles.text, { color: theme.color }, textStyle]}>
         {visibleText}
-        {showCursor ? (
-          <Animated.Text
+        {isCursorVisible ? (
+          <Text
             style={[
               styles.cursor,
               { color: cursorColor ?? theme.primary },
               cursorStyle,
-              animatedCursorStyle,
             ]}
           >
             {cursorChar}
-          </Animated.Text>
+          </Text>
         ) : null}
       </Text>
     </View>
@@ -131,9 +121,7 @@ export default function TypewriterText({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
+    width: '100%',
   },
   text: {
     fontSize: 18,
@@ -142,7 +130,5 @@ const styles = StyleSheet.create({
   },
   cursor: {
     fontWeight: '700',
-    fontSize: 16,
-    marginLeft: 2,
   },
 });

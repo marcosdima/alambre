@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
@@ -81,10 +81,7 @@ export default function TextAnimationsTest() {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.scrollContent, { backgroundColor: theme.background }]}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <Animated.View entering={FadeInDown.duration(260)} style={styles.header}>
         <AppTitle
@@ -271,7 +268,7 @@ export default function TextAnimationsTest() {
 
           {/* Speed & Controls */}
           <View style={styles.controlsRow}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.speedColumn}>
               <AppText variant="caption">Typing Speed</AppText>
               <View style={styles.chipRow}>
                 {([20, 45, 80] as const).map((spd) => (
@@ -348,7 +345,7 @@ export default function TextAnimationsTest() {
           </View>
 
           <View style={styles.controlsRow}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.speedColumn}>
               <AppText variant="caption">Amplitude (Wave Height)</AppText>
               <View style={styles.chipRow}>
                 {([4, 8, 14] as const).map((amp) => (
@@ -408,10 +405,10 @@ export default function TextAnimationsTest() {
               <AppText variant="caption" style={{ color: '#ef4444' }}>HP</AppText>
               <TickerText
                 value={gameHp}
-                fontSize={22}
+                minDigits={3}
+                fontSize={20}
                 color="#ef4444"
                 suffix="/ 100"
-                textStyle={{ fontSize: 20 }}
               />
             </View>
 
@@ -421,9 +418,8 @@ export default function TextAnimationsTest() {
               <TickerText
                 value={gameGold}
                 prefix="🪙 "
-                fontSize={22}
+                fontSize={20}
                 color="#f59e0b"
-                textStyle={{ fontSize: 20 }}
               />
             </View>
 
@@ -432,9 +428,9 @@ export default function TextAnimationsTest() {
               <AppText variant="caption" style={{ color: theme.primary }}>TURN</AppText>
               <TickerText
                 value={gameTurn}
-                fontSize={22}
+                minDigits={2}
+                fontSize={20}
                 color={theme.primary}
-                textStyle={{ fontSize: 20 }}
               />
             </View>
           </View>
@@ -510,12 +506,12 @@ export default function TextAnimationsTest() {
           </View>
         </AppCard>
       </Animated.View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
+  container: {
     padding: 18,
     gap: 18,
     paddingBottom: 40,
@@ -581,6 +577,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
     marginTop: 10,
+    flexWrap: 'wrap',
+  },
+  speedColumn: {
+    flexShrink: 1,
   },
   wavyCenterBox: {
     alignItems: 'center',
@@ -600,6 +600,7 @@ const styles = StyleSheet.create({
   hudStatCol: {
     alignItems: 'center',
     gap: 2,
+    minWidth: 95,
   },
   turnBannerRow: {
     alignItems: 'center',

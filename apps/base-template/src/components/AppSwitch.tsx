@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   textContainer: {
-    flex: 1,
+    flexShrink: 1,
     gap: 2,
   },
   label: {

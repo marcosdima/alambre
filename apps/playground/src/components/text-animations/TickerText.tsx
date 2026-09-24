@@ -85,6 +85,8 @@ const DigitColumn = memo(function DigitColumn({
 
 export type TickerTextProps = {
   value: number | string;
+  minDigits?: number;
+  padZero?: boolean;
   fontSize?: number;
   lineHeight?: number;
   color?: string;
@@ -99,6 +101,8 @@ export type TickerTextProps = {
 
 export default function TickerText({
   value,
+  minDigits,
+  padZero = false,
   fontSize = 28,
   lineHeight,
   color,
@@ -114,7 +118,13 @@ export default function TickerText({
   const itemHeight = lineHeight ?? Math.round(fontSize * 1.25);
   const textColor = color ?? theme.color;
 
-  const chars = useMemo(() => String(value).split(''), [value]);
+  const chars = useMemo(() => {
+    let str = String(value);
+    if (minDigits !== undefined && minDigits > 0) {
+      str = padZero ? str.padStart(minDigits, '0') : str.padStart(minDigits, ' ');
+    }
+    return str.split('');
+  }, [value, minDigits, padZero]);
 
   const mergedTextStyle = useMemo<StyleProp<TextStyle>>(
     () => [
@@ -147,6 +157,21 @@ export default function TickerText({
 
       <View style={styles.digitsRow}>
         {chars.map((char, index) => {
+          if (char === ' ') {
+            return (
+              <Text
+                key={`space-${index}`}
+                style={[
+                  styles.symbolText,
+                  { height: itemHeight, lineHeight: itemHeight, opacity: 0 },
+                  mergedTextStyle,
+                ]}
+              >
+                0
+              </Text>
+            );
+          }
+
           const isDigit = char >= '0' && char <= '9';
           if (!isDigit) {
             return (
