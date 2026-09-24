@@ -116,3 +116,29 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
    - Use `Extrapolation.CLAMP` on gesture drag interpolation so opacity smoothly transitions from `1` to `0` without negative opacity glitches.
 
 **Status: ADOPTED.** Standardized in `apps/base-template/src/providers/toast.tsx` and documented in `docs/reference/behaviors.md` §3.
+
+## Outer Pressable layout propagation in composite touchables (discovered in playground)
+
+**Pattern:** When building interactive composite components (such as pressable cards `AppCard` or button shells `AppButton` wrapping an inner `Animated.View`), applying caller styles (`flex: 1`, `margin`, `width`) only to the inner animated view while leaving the outer `<Pressable>` unstyled causes flex containers to treat the touchable as unconstrained in cross/main axes, leading to horizontal blowouts and layout overflows on narrow mobile screens.
+
+**Where it appeared:** `apps/playground/src/components/AppCard.tsx` and `apps/playground/src/views/components-test/ComponentsTest.tsx`.
+
+**Solution / Architectural Pattern:**
+1. Forward layout and sizing styles (`style`) directly to the outer `<Pressable>` element so parent flexbox layouts can calculate bounds accurately.
+2. Maintain `width: '100%'` on the inner `Animated.View` so it fully expands into the measured touchable container.
+3. Apply `flexShrink: 1` on title and text elements inside flex rows to guarantee clean truncation and prevent child elements from forcing container expansion.
+
+**Status: ADOPTED in playground.** To be evaluated during Step 5 promotion to base-template.
+
+## Tactile micro-physics for mobile components (discovered in playground)
+
+**Pattern:** Standard flat press feedback (`opacity: 0.7`) often feels ungrounded or web-like. Mobile users expect tactile physical feedback that responds immediately to finger contact.
+
+**Where it appeared:** `apps/playground/src/components/AppButton.tsx`, `apps/playground/src/components/AppSwitch.tsx`, `apps/playground/src/components/AppCard.tsx`, and `apps/playground/src/components/AppBadge.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Compress on press-in:** Use a rapid timing animation (`withTiming(0.95 - 0.98, { duration: 80 - 90 })`) upon `onPressIn` to mimic physical surface compression or thumb squish (`scaleX: 1.15` on switches).
+2. **Elastic snap on release:** Use a tuned spring animation (`withSpring(1, { damping: 14 - 16, stiffness: 300 - 320 })`) upon `onPressOut` to produce a springy return without sluggish oscillation.
+3. **UI-thread color interpolation:** Animate focus and active states using `interpolateColor` on shared values (`focusProgress`, `switchProgress`) to achieve 60fps color morphing without React re-renders.
+
+**Status: ADOPTED in playground.** To be evaluated during Step 5 promotion to base-template.

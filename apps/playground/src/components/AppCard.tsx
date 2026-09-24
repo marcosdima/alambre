@@ -132,7 +132,7 @@ export default function AppCard({
         },
         animatedScaleStyle,
         disabled && styles.disabled,
-        style,
+        !onPress && style,
       ]}
     >
       {/* Optional Structured Header */}
@@ -208,6 +208,7 @@ export default function AppCard({
         disabled={disabled}
         accessibilityRole="button"
         accessibilityState={{ selected, disabled }}
+        style={style}
       >
         {cardContent}
       </Pressable>
@@ -242,6 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
+    flexShrink: 1,
   },
   subtitleText: {
     fontSize: 13,

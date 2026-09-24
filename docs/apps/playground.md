@@ -43,15 +43,58 @@ Proving ground for transient feedback and layout adaptation:
 * **Queue Testing:** Test enqueuing multiple items (3 toasts) and inspecting active `queueLength`.
 * **Dismiss & Clear:** Verify `dismiss()` for immediate transition to the next queue item, and `clear()` to cancel the entire pending queue.
 * **Navigation Gliding:** Launch a long-running toast on Home or Subpage and navigate across screens to verify that the Toast smoothly glides vertically (`insets.top` vs `headerHeight`) without unmounting or snapping.
+* **Gesture Exit Decoupling:** Decoupled outer layout wrapper and inner card prevents the swipe-dismiss unmount teleportation glitch.
 
-### C. Reference UI Components Showcase
-Hosts reference implementations of `alambre` primitives:
-* `AppButton` (wrapping `alambre.Button`)
-* `AppSlider` (wrapping `alambre.Slider` / `alambre.useSlider`)
-* `AppStepper` (wrapping `alambre.Stepper` / `alambre.useStepper`)
-* `AppSegmentedControl` (wrapping `alambre.SegmentedControl` / `alambre.useSelect`)
-* `AppSelect` (dropdown select component)
-* `ToggleLightDark` (theme switcher)
+### C. UI Components Catalog (`ComponentsTest`)
+Comprehensive living catalog and testbed for tactile, accessible components before promoting them to `packages/alambre` or `apps/base-template`:
+
+#### 1. Buttons & Typography
+* **`AppButton` (`src/components/AppButton.tsx`):**
+  * **Variants:** `'solid'`, `'outline'` (backward compatible default), `'soft'`, and `'ghost'`.
+  * **Semantic Tones:** `'primary'`, `'neutral'`, `'success'`, `'warning'`, and `'danger'`.
+  * **Sizing Tokens:** `'sm'` (34px), `'md'` (44px, standard mobile touch target), `'lg'` (52px).
+  * **Tactile Spring Physics:** Press-in triggers `withTiming(0.96)` scale; press-out rebounds with `withSpring(1, { damping: 14, stiffness: 320 })`.
+  * **Slots & States:** `leftIcon`, `rightIcon`, square `iconOnly` mode, and `loading` indicator with contrast-matched spinner.
+* **`AppTitle` & `AppText` (`src/components/AppTitle.tsx`):**
+  * **`AppTitle`:** Heading levels 1 (28px hero), 2 (22px section), and 3 (17px card), supporting inline badges and subtitle lockups.
+  * **`AppText`:** Semantic body variants (`'body'`, `'caption'`, `'subtitle'`, `'muted'`, `'code'`).
+
+#### 2. Inputs & Form Controls
+* **`AppTextInput` (`src/components/AppTextInput.tsx`):**
+  * **Variants:** `'outline'` (bordered), `'soft'` (tonal background), `'underlined'` (sleek bottom border).
+  * **Semantic Validation Tones:** `'default'`, `'success'`, `'warning'`, `'danger'` (auto-escalates on `errorMessage`).
+  * **Sizing Tokens:** `'sm'` (36px), `'md'` (46px), `'lg'` (54px).
+  * **Dynamic Motion:** Reanimated border color interpolation (`interpolateColor`) on focus/blur with smooth active glow.
+  * **Interactive Slots:**
+    * `clearable`: instant one-tap clear button (`CircleX`) that resets content and maintains focus.
+    * `isPassword`: interactive reveal toggle switching between `AlambreIcons.Eye` (open) and `AlambreIcons.EyeOff` (slashed).
+    * `multiline`: auto-expanding textarea support with top-aligned text.
+    * Animated helper text and error message rows (`TriangleAlert`).
+* **`AppSwitch` (`src/components/AppSwitch.tsx`):**
+  * **Spring Physics:** Thumb glides with Reanimated `withSpring` (stiffness 300, damping 16).
+  * **Thumb Squish Feedback:** Thumb stretches horizontally (`scaleX: 1.15`) on press-in and snaps back on release.
+  * **Color Morphing:** Track interpolates between inactive surface color and active semantic tones.
+  * **Layout:** Standalone switch or compound label + subtitle row.
+  * **Sizing:** `'sm'`, `'md'`, `'lg'`.
+
+#### 3. Cards & Badges
+* **`AppCard` (`src/components/AppCard.tsx`):**
+  * **Variants:** `'outlined'` (crisp 1.5px border), `'elevated'` (ambient shadow with depth), `'soft'` (tinted background).
+  * **Interactive Mode:** When `onPress` is supplied, wraps with `Pressable` and reacts with tactile spring scale (`scale: 0.98` press-in, spring release).
+  * **Structured Slots:** Header (title, subtitle, badge, action button, chevron), body content, and divider-separated footer.
+  * **Selection State:** `selected` prop highlights borders in `theme.primary` with active surface tinting.
+* **`AppBadge` & `AppChip` (`src/components/AppBadge.tsx`):**
+  * **`AppBadge`:** Non-interactive status tags with semantic tones (`'primary'`, `'neutral'`, `'success'`, `'warning'`, `'danger'`) across `'soft'`, `'solid'`, and `'outline'` variants.
+  * **`AppChip`:** Interactive tactile chips for filter bars (`selected` state with checkmark icon and spring scale) and dismissible tags (`onRemove` with hit-slop `'X'`).
+
+#### 4. Real-World Mobile Showcases
+* **Team Directory Search:** Live filtering list driven by `AppTextInput` (with `AlambreIcons.Search`) and quick-clear reset.
+* **Authentication Form:** Email with left icon and Password with `Eye`/`EyeOff` mask toggle.
+* **Checkout Promo Code:** Validated read-only input with `tone="success"` and checkmark accessory.
+* **Form Error Alert:** Input with inline validation error and warning icon.
+* **Plan / Tier Selector:** Full-width selectable cards with active checkmarks and spring scale feedback.
+* **E-Commerce Product Card:** Header badges, product specs, pricing, and action footer.
+* **Settings Action Row:** Chevron navigation row with press feedback.
 
 ---
 

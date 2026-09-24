@@ -921,21 +921,32 @@ export default function ComponentsTest() {
             </AppTitle>
 
             {/* Pattern A: Plan Selection Cards */}
-            <AppText variant="caption">Pattern 1: Interactive Plan / Tier Selector</AppText>
-            <View style={styles.planCardsRow}>
+            <AppText variant="caption">Pattern 1: Interactive Plan / Tier Selector (Tap to Select)</AppText>
+            <View style={styles.planCardsCol}>
               {/* Starter Card */}
               <AppCard
                 variant={selectedPlan === 'free' ? 'outlined' : 'soft'}
                 selected={selectedPlan === 'free'}
                 title="Community"
-                subtitle="Free forever for individuals"
+                subtitle="Free forever for individuals & open source prototypes"
                 badge="STARTER"
                 badgeTone="neutral"
                 onPress={() => setSelectedPlan('free')}
-                style={styles.planCard}
+                headerAction={
+                  selectedPlan === 'free' ? (
+                    <AlambreIcons.CircleCheck
+                      drawIt
+                      color={theme.primary}
+                      lineWidth={2}
+                      style={styles.planSelectedIcon}
+                    />
+                  ) : null
+                }
               >
-                <Text style={[styles.planPrice, { color: theme.color }]}>$0</Text>
-                <AppText variant="subtitle">Basic gesture physics & 2 slots</AppText>
+                <View style={styles.planBodyRow}>
+                  <Text style={[styles.planPrice, { color: theme.color }]}>$0 / free</Text>
+                  <AppText variant="subtitle">Basic gesture physics & 2 slots</AppText>
+                </View>
               </AppCard>
 
               {/* Pro Card */}
@@ -943,14 +954,25 @@ export default function ComponentsTest() {
                 variant={selectedPlan === 'pro' ? 'outlined' : 'soft'}
                 selected={selectedPlan === 'pro'}
                 title="Professional"
-                subtitle="Full design system"
+                subtitle="Full design system & priority feature support"
                 badge="POPULAR"
                 badgeTone="primary"
                 onPress={() => setSelectedPlan('pro')}
-                style={styles.planCard}
+                headerAction={
+                  selectedPlan === 'pro' ? (
+                    <AlambreIcons.CircleCheck
+                      drawIt
+                      color={theme.primary}
+                      lineWidth={2}
+                      style={styles.planSelectedIcon}
+                    />
+                  ) : null
+                }
               >
-                <Text style={[styles.planPrice, { color: theme.primary }]}>$19/mo</Text>
-                <AppText variant="subtitle">Unlimited components & spring physics</AppText>
+                <View style={styles.planBodyRow}>
+                  <Text style={[styles.planPrice, { color: theme.primary }]}>$19 / mo</Text>
+                  <AppText variant="subtitle">Unlimited components & spring physics</AppText>
+                </View>
               </AppCard>
             </View>
 
@@ -1107,12 +1129,21 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  planCardsRow: {
-    flexDirection: 'row',
+  planCardsCol: {
     gap: 12,
+    width: '100%',
   },
-  planCard: {
-    flex: 1,
+  planBodyRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    width: '100%',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  planSelectedIcon: {
+    width: 20,
+    height: 20,
   },
   planPrice: {
     fontSize: 24,
