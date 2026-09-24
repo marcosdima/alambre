@@ -195,3 +195,16 @@ Wrap the component in `React.forwardRef<TextInput, AppTextInputProps>` and attac
 Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'` on the card container. Outlined and soft cards retain clipping to enforce border-radius boundary containment, while elevated cards allow their native drop shadows to project freely beyond the card boundaries without clipping.
 
 **Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppCard.tsx`.
+
+## Tabular numeral alignment and staggered digit column rolls for animated counters (discovered in playground text-animations)
+
+**Pattern:** Building animated numerical counters (slot machine tickers, health meters, score displays, currency counters) with standard proportional font metrics causes horizontal jitter and layout vibration during digit transitions because digits like `1` are substantially narrower than digits like `8`. Furthermore, spinning all columns in unison feels artificial.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/TickerText.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Tabular Numerals:** Apply `fontVariant: ['tabular-nums']` to digit text styles. This forces all numeral glyphs to render with fixed, equal column widths regardless of font weight or numeral value, completely eliminating horizontal vibration during animations.
+2. **Stacked Column Strip:** Render numbers 0 through 9 in a vertical column clipped by a fixed line height (`height: itemHeight, overflow: 'hidden'`).
+3. **Staggered Spin Wave:** Introduce a calculated delay per digit column (`withDelay(index * staggerMs, withSpring(...))`), allowing callers to select between right-to-left (place value order, starting from units) and left-to-right cascades. Non-digit symbols (currency signs, commas, decimal points) remain static inline without jumping.
+
+**Status: ADOPTED in playground.** Ready for evaluation in game development and financial metrics.

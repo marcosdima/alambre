@@ -111,6 +111,24 @@ Comprehensive living catalog and testbed for tactile, accessible components befo
   * **Dynamic Backdrop Interpolation:** Dimmed overlay fades out proportionally as the sheet is dragged downward.
   * **Inner `GestureHandlerRootView`:** Guarantees touch and gesture dispatching across Android modal windows.
 
+### D. Text Animations Laboratory (`TextAnimationsTest`)
+Interactive proving ground and showcase for kinetic typography, number counters, and wave motion:
+
+* **`TickerText` (`src/components/text-animations/TickerText.tsx`):**
+  * **Slot-Machine Rolling Numbers:** Stacked digit columns (0-9) with tabular numeral font metrics (`fontVariant: ['tabular-nums']`) that eliminate horizontal jitter.
+  * **Spring Physics Presets:** Dynamic spring interpolation supporting `'bouncy'`, `'snappy'`, and `'calm'` spring configs.
+  * **Staggered Spin Direction:** Staggered start delay per digit column (`staggerMs: 30`) supporting both `'right-to-left'` (place value order) and `'left-to-right'` spin waves.
+  * **Mixed Content:** Automatically handles prefix (`$`, `+`, `🪙`), suffix (`pts`, `HP`, `/ 100`), commas, decimals, and negative symbols.
+* **`TypewriterText` (`src/components/text-animations/TypewriterText.tsx`):**
+  * **Sequential Revelation:** Reveals characters with configurable typing speed (`speed: 20ms - 80ms`) and initial pause.
+  * **Blinking Animated Cursor:** Reanimated continuous pulse (`withRepeat(withSequence(withTiming(...)))`) supporting custom cursor glyphs (e.g. `▍` or `|`) and `hideCursorOnComplete`.
+  * **Loop & Replay:** Supports infinite loop mode with customizable pause (`pauseOnLoopMs`) and programmatic replay.
+* **`WavyText` (`src/components/text-animations/WavyText.tsx`):**
+  * **Sine Wave Ripple:** Staggered sine wave bouncing animation across individual characters with configurable `amplitude` (4px to 14px), duration, and phase delay.
+  * **Playful Delights:** Ideal for victory banners, "Level Up", "JACKPOT!", and turn notifications.
+* **Card Game HUD Prototype:**
+  * Living integration mockup simulating a turn-based card game: real-time HP depletion/restoration, gold loot counter, turn progression, and dynamic typewriter combat dialogue log.
+
 ---
 
 ## 2. Validation
