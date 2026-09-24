@@ -102,6 +102,7 @@ export default function ComponentsTest() {
   const [dialogLoading, setDialogLoading] = useState(false);
   const [customProjectName, setCustomProjectName] = useState('alambre-mobile');
   const [feedbackNote, setFeedbackNote] = useState('');
+  const [sheetMotion, setSheetMotion] = useState<'smooth' | 'bouncy'>('smooth');
   const [lastActionMessage, setLastActionMessage] = useState('No actions triggered yet');
 
   const handleDeleteWorkspace = () => {
@@ -1152,6 +1153,16 @@ export default function ComponentsTest() {
               Action Sheets & Drawers
             </AppTitle>
 
+            <AppSegmentedControl<'smooth' | 'bouncy'>
+              label="Spring Physics Profile"
+              value={sheetMotion}
+              onChange={setSheetMotion}
+              options={[
+                { label: 'Smooth (Calm)', value: 'smooth' },
+                { label: 'Bouncy (Elastic)', value: 'bouncy' },
+              ]}
+            />
+
             <View style={styles.gridRow}>
               <AppButton
                 variant="outline"
@@ -1260,6 +1271,11 @@ export default function ComponentsTest() {
             description="Select an operation for this project repository"
             cancelLabel="Cancel"
             options={sheetOptions}
+            springConfig={
+              sheetMotion === 'smooth'
+                ? { damping: 32, stiffness: 220, mass: 0.9 }
+                : { damping: 18, stiffness: 260, mass: 1.0 }
+            }
             onClose={() => setActiveSheet(null)}
           />
 
@@ -1268,6 +1284,11 @@ export default function ComponentsTest() {
             title="Quick Feedback"
             description="Let us know what you think of the new mobile components"
             cancelLabel="Close"
+            springConfig={
+              sheetMotion === 'smooth'
+                ? { damping: 32, stiffness: 220, mass: 0.9 }
+                : { damping: 18, stiffness: 260, mass: 1.0 }
+            }
             onClose={() => setActiveSheet(null)}
           >
             <AppTextInput

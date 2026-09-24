@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -26,6 +26,18 @@ export type ActionSheetOption = {
   onPress: () => void;
 };
 
+export type ActionSheetSpringConfig = {
+  damping?: number;
+  stiffness?: number;
+  mass?: number;
+};
+
+const DEFAULT_SPRING: Required<ActionSheetSpringConfig> = {
+  damping: 32,
+  stiffness: 220,
+  mass: 0.9,
+};
+
 export type AppActionSheetProps = {
   visible: boolean;
   onClose: () => void;
@@ -34,6 +46,7 @@ export type AppActionSheetProps = {
   options?: ActionSheetOption[];
   cancelLabel?: string;
   dismissOnBackdropPress?: boolean;
+  springConfig?: ActionSheetSpringConfig;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
@@ -46,6 +59,7 @@ export default function AppActionSheet({
   options,
   cancelLabel = 'Cancel',
   dismissOnBackdropPress = true,
+  springConfig,
   children,
   style,
 }: AppActionSheetProps) {
@@ -57,6 +71,15 @@ export default function AppActionSheet({
   const backdropOpacity = useSharedValue(0);
   const translateY = useSharedValue(420);
 
+  const damping = springConfig?.damping ?? DEFAULT_SPRING.damping;
+  const stiffness = springConfig?.stiffness ?? DEFAULT_SPRING.stiffness;
+  const mass = springConfig?.mass ?? DEFAULT_SPRING.mass;
+
+  const resolvedSpring = useMemo(
+    () => ({ damping, stiffness, mass }),
+    [damping, stiffness, mass],
+  );
+
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -66,30 +89,31 @@ export default function AppActionSheet({
     if (visible) {
       setMounted(true);
       backdropOpacity.value = withTiming(1, { duration: 200 });
-      translateY.value = withSpring(0, { damping: 20, stiffness: 280 });
+      translateY.value = withSpring(0, resolvedSpring);
     } else {
       backdropOpacity.value = withTiming(0, { duration: 180 });
-      translateY.value = withTiming(420, { duration: 200 }, (finished) => {
+      translateY.value = withTiming(450, { duration: 200 }, (finished) => {
         if (finished) {
           runOnJS(setMounted)(false);
         }
       });
     }
-  }, [visible, backdropOpacity, translateY]);
+  }, [visible, backdropOpacity, translateY, resolvedSpring]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
       if (event.translationY > 0) {
         translateY.value = event.translationY;
       } else {
-        translateY.value = event.translationY * 0.18;
+        // Soft resistance when dragging upward with a safe clamp (-45px)
+        translateY.value = Math.max(-45, event.translationY * 0.12);
       }
     })
     .onEnd((event) => {
       if (event.translationY > 70 || event.velocityY > 500) {
         runOnJS(onClose)();
       } else {
-        translateY.value = withSpring(0, { damping: 20, stiffness: 280 });
+        translateY.value = withSpring(0, resolvedSpring);
       }
     });
 
@@ -149,6 +173,19 @@ export default function AppActionSheet({
             animatedSheetStyle,
           ]}
         >
+          {/* Bottom Overshoot Skirt to completely cover any gap when sprung or dragged upward */}
+          <View
+            style={[
+              styles.bottomSkirt,
+              {
+                backgroundColor: theme.surface,
+                borderLeftColor: theme.border,
+                borderRightColor: theme.border,
+              },
+            ]}
+            pointerEvents="none"
+          />
+
           {/* Pan Gesture Area for Grab Handle & Dragging */}
           <GestureDetector gesture={panGesture}>
             <View style={styles.grabHandleArea}>
@@ -336,5 +373,14 @@ const styles = StyleSheet.create({
   cancelContainer: {
     width: '100%',
     marginTop: 10,
+  },
+  bottomSkirt: {
+    position: 'absolute',
+    left: -1,
+    right: -1,
+    bottom: -350,
+    height: 350,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
   },
 });

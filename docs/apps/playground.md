@@ -105,7 +105,9 @@ Comprehensive living catalog and testbed for tactile, accessible components befo
   * **Custom Body:** Accepts `{children}` for embedding form inputs (e.g. rename workspace) or custom notifications.
 * **`AppActionSheet` (`src/components/AppActionSheet.tsx`):**
   * **Anatomy:** Bottom-sheet drawer with grab handle, option items, header title/description, safe-area bottom clearance (`useSafeAreaInsets`), and optional full-width cancel button.
-  * **Pan Gesture Physics:** Drag-to-dismiss with `Gesture.Pan()`. Downward drags track finger position with velocity-based dismissal threshold (>70px or >500px/s velocity). Upward dragging provides elastic resistance (`translationY * 0.18`).
+  * **Pan Gesture Physics:** Drag-to-dismiss with `Gesture.Pan()`. Downward drags track finger position with velocity-based dismissal threshold (>70px or >500px/s velocity). Upward dragging provides rubber-band resistance clamped at -45px.
+  * **Bottom Overshoot Skirt:** 350px solid surface skirt rendered directly below the sheet container to prevent showing the background viewport during spring overshoot or upward pulling.
+  * **Configurable Spring Dynamics:** Exposes `springConfig` (`damping`, `stiffness`, `mass`), defaulting to a calm, critically-damped profile (`damping: 32, stiffness: 220`) that eliminates jarring oscillation while allowing caller overrides.
   * **Dynamic Backdrop Interpolation:** Dimmed overlay fades out proportionally as the sheet is dragged downward.
   * **Inner `GestureHandlerRootView`:** Guarantees touch and gesture dispatching across Android modal windows.
 
