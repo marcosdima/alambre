@@ -142,3 +142,18 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 3. **UI-thread color interpolation:** Animate focus and active states using `interpolateColor` on shared values (`focusProgress`, `switchProgress`) to achieve 60fps color morphing without React re-renders.
 
 **Status: ADOPTED in playground.** To be evaluated during Step 5 promotion to base-template.
+
+## Gesture-driven bottom sheets and animated modal mounting (discovered in playground)
+
+**Pattern:** Building custom animated modals (`AppDialog`) and bottom action sheets (`AppActionSheet`) in React Native often runs into two traps:
+1. Native `<Modal visible={visible}>` instantly unmounts children as soon as `visible` becomes false, cutting off exit animations.
+2. Pan gestures inside native modals on Android fail to respond because `<Modal>` creates a separate native window hierarchy that bypasses the root `GestureHandlerRootView`.
+
+**Where it appeared:** `apps/playground/src/components/AppDialog.tsx` and `apps/playground/src/components/AppActionSheet.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Deferred unmounting via Reanimated callback:** Maintain an internal `mounted` state initialized to `visible`. When `visible` changes to false, run closing animations (`withTiming(0)` on backdrop, `withTiming(400)` on sheet `translateY`), and inside the animation completion callback invoke `runOnJS(setMounted)(false)`. Render `<Modal visible={mounted}>` so the native modal remains alive until exit animations complete.
+2. **GestureHandlerRootView inside Modal:** Wrap the modal root layout with `<GestureHandlerRootView style={{ flex: 1 }}>` so PanGesture detectors receive touch events reliably across iOS and Android.
+3. **Drag-to-dismiss resistance & backdrop interpolation:** During downward drag (`translationY > 0`), update sheet position directly, while applying strong resistance (`translationY * 0.18`) on upward over-dragging. Interpolate backdrop opacity dynamically against `translateY` so dragging down smoothly reveals the background.
+
+**Status: ADOPTED in playground.** Ready for evaluation in Step 5 promotion.

@@ -13,8 +13,10 @@ import AppSwitch from '../../components/AppSwitch';
 import AppBadge, { AppChip } from '../../components/AppBadge';
 import AppCard from '../../components/AppCard';
 import type { CardPadding, CardVariant } from '../../components/AppCard';
+import AppDialog from '../../components/AppDialog';
+import AppActionSheet, { type ActionSheetOption } from '../../components/AppActionSheet';
 
-type ActiveTab = 'buttons' | 'inputs' | 'cards';
+type ActiveTab = 'buttons' | 'inputs' | 'cards' | 'modals';
 
 const TEAM_MEMBERS = [
   { name: 'Alex Rivera', role: 'Engineering Lead' },
@@ -92,6 +94,63 @@ export default function ComponentsTest() {
     setActiveRemovableTags((prev) => prev.filter((t) => t !== tagToRemove));
   };
 
+  // --- Modals & Sheets Showcase State ---
+  const [activeDialog, setActiveDialog] = useState<
+    'danger' | 'success' | 'warning' | 'custom' | null
+  >(null);
+  const [activeSheet, setActiveSheet] = useState<'actions' | 'custom' | null>(null);
+  const [dialogLoading, setDialogLoading] = useState(false);
+  const [customProjectName, setCustomProjectName] = useState('alambre-mobile');
+  const [feedbackNote, setFeedbackNote] = useState('');
+  const [lastActionMessage, setLastActionMessage] = useState('No actions triggered yet');
+
+  const handleDeleteWorkspace = () => {
+    setDialogLoading(true);
+    setTimeout(() => {
+      setDialogLoading(false);
+      setActiveDialog(null);
+      setLastActionMessage('Workspace deleted permanently.');
+    }, 700);
+  };
+
+  const sheetOptions: ActionSheetOption[] = [
+    {
+      id: 'copy-link',
+      label: 'Copy Repository URL',
+      subtitle: 'alambre/react-native/playground',
+      icon: <AlambreIcons.Laptop drawIt color={theme.primary} lineWidth={2} style={styles.sheetIcon} />,
+      tone: 'primary',
+      onPress: () => setLastActionMessage('Repository link copied to clipboard.'),
+    },
+    {
+      id: 'export-data',
+      label: 'Export Analytics',
+      subtitle: 'Download latest telemetry CSV',
+      icon: <AlambreIcons.Documents drawIt color={theme.color} lineWidth={2} style={styles.sheetIcon} />,
+      tone: 'default',
+      onPress: () => setLastActionMessage('Analytics data exported.'),
+    },
+    {
+      id: 'project-settings',
+      label: 'Project Settings',
+      subtitle: 'Manage members & permissions',
+      icon: <AlambreIcons.Gear drawIt color={theme.color} lineWidth={2} style={styles.sheetIcon} />,
+      tone: 'default',
+      onPress: () => setLastActionMessage('Opened project settings.'),
+    },
+    {
+      id: 'delete-workspace',
+      label: 'Delete Workspace',
+      subtitle: 'Destructive action',
+      icon: <AlambreIcons.TriangleAlert drawIt color="#ef4444" lineWidth={2} style={styles.sheetIcon} />,
+      tone: 'danger',
+      onPress: () => {
+        setActiveSheet(null);
+        setTimeout(() => setActiveDialog('danger'), 150);
+      },
+    },
+  ];
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* 1. Header Hero with Compound AppTitle */}
@@ -116,6 +175,7 @@ export default function ComponentsTest() {
             { label: 'Buttons', value: 'buttons' },
             { label: 'Inputs & Controls', value: 'inputs' },
             { label: 'Cards & Badges', value: 'cards' },
+            { label: 'Modals & Sheets', value: 'modals' },
           ]}
         />
       </Animated.View>
@@ -1019,6 +1079,220 @@ export default function ComponentsTest() {
           </Animated.View>
         </>
       )}
+
+      {/* ============================================================== */}
+      {/* TAB 4: MODALS & ACTION SHEETS                                   */}
+      {/* ============================================================== */}
+      {activeTab === 'modals' && (
+        <>
+          {/* Dialogs Showcase Card */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(40).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle
+              level={2}
+              badge="Spring"
+              badgeTone="primary"
+              subtitle="Spring-animated centered alert and confirmation dialogs with dimmed backdrops, tone badges, and focus handling."
+            >
+              Confirmation Dialogs
+            </AppTitle>
+
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="solid"
+                tone="danger"
+                label="Delete Workspace"
+                onPress={() => setActiveDialog('danger')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.TriangleAlert drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="solid"
+                tone="success"
+                label="Plan Upgraded"
+                onPress={() => setActiveDialog('success')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.CircleCheck drawIt color="#fff" lineWidth={2} style={styles.btnIcon} />}
+              />
+            </View>
+
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="outline"
+                tone="warning"
+                label="Unsaved Changes"
+                onPress={() => setActiveDialog('warning')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.TriangleAlert drawIt color="#f59e0b" lineWidth={2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="soft"
+                tone="primary"
+                label="Rename Form"
+                onPress={() => setActiveDialog('custom')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.Zap drawIt color={theme.primary} lineWidth={2} style={styles.btnIcon} />}
+              />
+            </View>
+          </Animated.View>
+
+          {/* Action Sheets Showcase Card */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(80).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle
+              level={2}
+              badge="Gesture"
+              badgeTone="success"
+              subtitle="Bottom-sheet action drawers with grab handles, option lists, and PanGesture drag-to-dismiss physics."
+            >
+              Action Sheets & Drawers
+            </AppTitle>
+
+            <View style={styles.gridRow}>
+              <AppButton
+                variant="outline"
+                tone="primary"
+                label="Open Actions Drawer"
+                onPress={() => setActiveSheet('actions')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.Gear drawIt color={theme.primary} lineWidth={2} style={styles.btnIcon} />}
+              />
+              <AppButton
+                variant="outline"
+                tone="neutral"
+                label="Feedback Sheet"
+                onPress={() => setActiveSheet('custom')}
+                style={styles.gridBtn}
+                leftIcon={<AlambreIcons.Documents drawIt color={theme.color} lineWidth={2} style={styles.btnIcon} />}
+              />
+            </View>
+          </Animated.View>
+
+          {/* Real-World Action Log Card */}
+          <Animated.View
+            entering={FadeInRight.duration(280).delay(120).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle level={3} subtitle="Live callback event stream verifying that modal and sheet actions settle properly.">
+              Event Log
+            </AppTitle>
+            <View style={[styles.typeBox, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <AppText variant="muted">Last Action Event:</AppText>
+              <AppText variant="body" style={{ fontWeight: '600', color: theme.primary }}>
+                {lastActionMessage}
+              </AppText>
+            </View>
+          </Animated.View>
+
+          {/* Modals & Sheets Instances */}
+          <AppDialog
+            visible={activeDialog === 'danger'}
+            tone="danger"
+            title="Delete Workspace?"
+            description="This action cannot be undone. All project repositories, environments, and team member access will be permanently revoked."
+            confirmLabel="Delete Workspace"
+            cancelLabel="Cancel"
+            confirmLoading={dialogLoading}
+            onConfirm={handleDeleteWorkspace}
+            onCancel={() => setActiveDialog(null)}
+            onClose={() => setActiveDialog(null)}
+          />
+
+          <AppDialog
+            visible={activeDialog === 'success'}
+            tone="success"
+            title="Plan Upgraded Successfully"
+            description="You are now on the Enterprise tier. High-concurrency worker threads and priority emulator queues are now unlocked."
+            confirmLabel="Awesome, Continue"
+            onConfirm={() => {
+              setActiveDialog(null);
+              setLastActionMessage('Enterprise upgrade confirmed.');
+            }}
+            onClose={() => setActiveDialog(null)}
+          />
+
+          <AppDialog
+            visible={activeDialog === 'warning'}
+            tone="warning"
+            title="Discard Unsaved Changes?"
+            description="You have modified 3 configuration parameters. Exiting without saving will revert all changes back to previous state."
+            confirmLabel="Discard"
+            cancelLabel="Keep Editing"
+            onConfirm={() => {
+              setActiveDialog(null);
+              setLastActionMessage('Unsaved draft discarded.');
+            }}
+            onCancel={() => setActiveDialog(null)}
+            onClose={() => setActiveDialog(null)}
+          />
+
+          <AppDialog
+            visible={activeDialog === 'custom'}
+            tone="primary"
+            title="Rename Workspace"
+            description="Choose a clean alphanumeric identifier for this workspace."
+            confirmLabel="Save Name"
+            cancelLabel="Cancel"
+            onConfirm={() => {
+              setActiveDialog(null);
+              setLastActionMessage(`Workspace renamed to "${customProjectName}".`);
+            }}
+            onCancel={() => setActiveDialog(null)}
+            onClose={() => setActiveDialog(null)}
+          >
+            <AppTextInput
+              label="Workspace Identifier"
+              variant="outline"
+              tone="default"
+              value={customProjectName}
+              onChangeText={setCustomProjectName}
+              clearable
+            />
+          </AppDialog>
+
+          <AppActionSheet
+            visible={activeSheet === 'actions'}
+            title="alambre-mobile"
+            description="Select an operation for this project repository"
+            cancelLabel="Cancel"
+            options={sheetOptions}
+            onClose={() => setActiveSheet(null)}
+          />
+
+          <AppActionSheet
+            visible={activeSheet === 'custom'}
+            title="Quick Feedback"
+            description="Let us know what you think of the new mobile components"
+            cancelLabel="Close"
+            onClose={() => setActiveSheet(null)}
+          >
+            <AppTextInput
+              label="Feedback & Suggestions"
+              multiline
+              numberOfLines={3}
+              placeholder="Share bugs, suggestions, or thoughts..."
+              value={feedbackNote}
+              onChangeText={setFeedbackNote}
+            />
+            <AppButton
+              variant="solid"
+              tone="primary"
+              label="Submit Feedback"
+              onPress={() => {
+                const note = feedbackNote.trim() || 'No text provided';
+                setActiveSheet(null);
+                setFeedbackNote('');
+                setLastActionMessage(`Feedback submitted: "${note}"`);
+              }}
+              style={{ marginTop: 12 }}
+            />
+          </AppActionSheet>
+        </>
+      )}
     </View>
   );
 }
@@ -1159,5 +1433,9 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 18,
     fontWeight: '800',
+  },
+  sheetIcon: {
+    width: 20,
+    height: 20,
   },
 });

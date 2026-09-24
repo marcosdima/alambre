@@ -96,6 +96,19 @@ Comprehensive living catalog and testbed for tactile, accessible components befo
 * **E-Commerce Product Card:** Header badges, product specs, pricing, and action footer.
 * **Settings Action Row:** Chevron navigation row with press feedback.
 
+#### 5. Modals & Action Sheets
+* **`AppDialog` (`src/components/AppDialog.tsx`):**
+  * **Anatomy:** Centered modal surface with rounded corners (24px), subtle border, and deep ambient elevation.
+  * **Animations:** Backdrop fades in (`withTiming`), dialog card scales in with spring (`scale: withSpring(1, { damping: 18, stiffness: 300 })`). Exit animation plays smoothly before unmounting native modal.
+  * **Semantic Tone Badges:** Circular tone icon (`'primary'`, `'danger'`, `'warning'`, `'success'`, `'neutral'`) with contrast-matched soft background.
+  * **Action Row:** Dual side-by-side buttons (`confirmLabel` + `cancelLabel`) or single full-width button with `confirmLoading` spinner support.
+  * **Custom Body:** Accepts `{children}` for embedding form inputs (e.g. rename workspace) or custom notifications.
+* **`AppActionSheet` (`src/components/AppActionSheet.tsx`):**
+  * **Anatomy:** Bottom-sheet drawer with grab handle, option items, header title/description, safe-area bottom clearance (`useSafeAreaInsets`), and optional full-width cancel button.
+  * **Pan Gesture Physics:** Drag-to-dismiss with `Gesture.Pan()`. Downward drags track finger position with velocity-based dismissal threshold (>70px or >500px/s velocity). Upward dragging provides elastic resistance (`translationY * 0.18`).
+  * **Dynamic Backdrop Interpolation:** Dimmed overlay fades out proportionally as the sheet is dragged downward.
+  * **Inner `GestureHandlerRootView`:** Guarantees touch and gesture dispatching across Android modal windows.
+
 ---
 
 ## 2. Validation
