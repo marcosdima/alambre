@@ -148,6 +148,7 @@ export default function AppActionSheet({
       onRequestClose={onClose}
       animationType="none"
       statusBarTranslucent
+      navigationBarTranslucent
     >
       <GestureHandlerRootView style={styles.modalRoot}>
         {/* Animated Dim Backdrop */}
@@ -167,20 +168,19 @@ export default function AppActionSheet({
             {
               backgroundColor: theme.surface,
               borderColor: theme.border,
+              borderBottomWidth: 0,
               paddingBottom: Math.max(insets.bottom, 16) + 8,
             },
             style,
             animatedSheetStyle,
           ]}
         >
-          {/* Bottom Overshoot Skirt to completely cover any gap when sprung or dragged upward */}
+          {/* Bottom Overshoot Skirt: overlaps inside container and extends 350px below to cover negative space */}
           <View
             style={[
               styles.bottomSkirt,
               {
                 backgroundColor: theme.surface,
-                borderLeftColor: theme.border,
-                borderRightColor: theme.border,
               },
             ]}
             pointerEvents="none"
@@ -300,6 +300,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
+    borderBottomWidth: 0,
     paddingHorizontal: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -6 },
@@ -376,11 +377,9 @@ const styles = StyleSheet.create({
   },
   bottomSkirt: {
     position: 'absolute',
-    left: -1,
-    right: -1,
+    left: 0,
+    right: 0,
     bottom: -350,
-    height: 350,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
+    height: 370,
   },
 });

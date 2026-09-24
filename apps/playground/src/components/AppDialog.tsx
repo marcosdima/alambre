@@ -151,6 +151,7 @@ export default function AppDialog({
       onRequestClose={onClose}
       animationType="none"
       statusBarTranslucent
+      navigationBarTranslucent
     >
       <View style={styles.modalRoot}>
         {/* Animated Dim Backdrop */}
