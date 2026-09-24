@@ -4,6 +4,7 @@ import Settings from '../views/settings/Settings';
 import AnimationTest from '../views/animation-test/AnimationTest';
 import ToastTest from '../views/toast-test/ToastTest';
 import ComponentsTest from '../views/components-test/ComponentsTest';
+import TextAnimationsTest from '../views/text-animations/TextAnimationsTest';
 import type { NavigatorTypes } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -38,6 +39,10 @@ export const pages: Record<string, AppPage> = {
   components: {
     title: { es: 'UI Components', en: 'UI Components' },
     component: <ComponentsTest />,
+  },
+  textAnimations: {
+    title: { es: 'Animaciones de Texto', en: 'Text Animations' },
+    component: <TextAnimationsTest />,
   },
 };
 

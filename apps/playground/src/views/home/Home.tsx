@@ -17,6 +17,7 @@ export default () => {
 
   const navItems = [
     { key: 'components', label: 'UI Components (Buttons & Typography)', onPress: () => navigate('components') },
+    { key: 'textAnimations', label: 'Text Animations (Ticker, Typewriter, Wave)', onPress: () => navigate('textAnimations') },
     { key: 'animations', label: 'Animation Playground (Timing & Mag.)', onPress: () => navigate('animations') },
     { key: 'toast', label: 'Toast Playground (Gliding & Queue)', onPress: () => navigate('toast') },
     { key: 'settings', label: lang.home.openSettings, onPress: () => navigate('settings') },
