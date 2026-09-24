@@ -128,7 +128,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 2. Maintain `width: '100%'` on the inner `Animated.View` so it fully expands into the measured touchable container.
 3. Apply `flexShrink: 1` on title and text elements inside flex rows to guarantee clean truncation and prevent child elements from forcing container expansion.
 
-**Status: ADOPTED in playground.** To be evaluated during Step 5 promotion to base-template.
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppCard.tsx` and `AppBadge.tsx`.
 
 ## Tactile micro-physics for mobile components (discovered in playground)
 
@@ -141,7 +141,7 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 2. **Elastic snap on release:** Use a tuned spring animation (`withSpring(1, { damping: 14 - 16, stiffness: 300 - 320 })`) upon `onPressOut` to produce a springy return without sluggish oscillation.
 3. **UI-thread color interpolation:** Animate focus and active states using `interpolateColor` on shared values (`focusProgress`, `switchProgress`) to achieve 60fps color morphing without React re-renders.
 
-**Status: ADOPTED in playground.** To be evaluated during Step 5 promotion to base-template.
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/`.
 
 ## Gesture-driven bottom sheets and animated modal mounting (discovered in playground)
 
@@ -159,4 +159,39 @@ Each entry captures the pattern, where it appeared, and the candidate abstractio
 5. **Critically-damped spring default:** Use a higher damping ratio (`damping: 32, stiffness: 220, mass: 0.9`) to achieve a calm, swift entry without oscillating bounce, while exposing a `springConfig` prop for configurable dynamics.
 6. **Edge-to-edge modal windows on Android (`navigationBarTranslucent`):** On Android, setting only `statusBarTranslucent` on `<Modal>` leaves the native system navigation bar opaque black at the bottom of the screen. Supplying `navigationBarTranslucent={true}` alongside `statusBarTranslucent={true}` extends the modal window edge-to-edge to the physical display bezel, eliminating black navigation bar gaps beneath bottom sheets.
 
-**Status: ADOPTED in playground.** Ready for evaluation in Step 5 promotion.
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppActionSheet.tsx` and `AppDialog.tsx`.
+
+## Single accessibility node for compound controls (discovered in playground hardening)
+
+**Pattern:** When a switch or checkbox is embedded in a row with a label and subtitle (`AppSwitch`), rendering both the outer row and the inner toggle as nested interactive `<Pressable accessibilityRole="switch">` elements creates duplicate TalkBack and VoiceOver navigation targets. Screen readers announce the switch twice, confusing users who navigate sequentially with screen reader swipe gestures.
+
+**Where it appeared:** `apps/playground/src/components/AppSwitch.tsx`.
+
+**Solution / Architectural Pattern:**
+1. In compound row mode (`label || subtitle`), mark the outer row container as the sole accessible switch node (`accessibilityRole="switch"`, `accessibilityLabel={label}`, `accessibilityState={{ checked, disabled }}`).
+2. Render the inner switch toggle track as an inert, non-interactive visual representation wrapped in `<View pointerEvents="none">`.
+3. In standalone mode (no label/subtitle), render the switch track directly as the accessible `<Pressable accessibilityRole="switch">`.
+
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppSwitch.tsx`.
+
+## Imperative focus chaining for styled text inputs (discovered in playground hardening)
+
+**Pattern:** In mobile login, registration, and survey forms, users expect tapping "Next" on the soft keyboard (`onSubmitEditing`) to smoothly advance focus to the next field (`passwordRef.current?.focus()`). Wrapping `TextInput` in an animated shell container without forwarding the native ref prevents callers from accessing the native focus methods.
+
+**Where it appeared:** `apps/playground/src/components/AppTextInput.tsx`.
+
+**Solution / Architectural Pattern:**
+Wrap the component in `React.forwardRef<TextInput, AppTextInputProps>` and attach `useImperativeHandle(ref, () => innerRef.current as TextInput)`. The outer container forwards all standard `TextInput` imperative methods (`focus()`, `blur()`, `isFocused()`, `clear()`) to callers seamlessly while maintaining internal focus listeners for animated label and border effects.
+
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppTextInput.tsx`.
+
+## iOS drop-shadow preservation via conditional overflow (discovered in playground hardening)
+
+**Pattern:** On iOS, setting `overflow: 'hidden'` on any `UIView` that also defines shadow properties (`shadowColor`, `shadowOffset`, `shadowRadius`, `shadowOpacity`) causes iOS UIKit to clip all drop shadows outside the view bounds to transparent, completely nullifying the elevated appearance.
+
+**Where it appeared:** `apps/playground/src/components/AppCard.tsx`.
+
+**Solution / Architectural Pattern:**
+Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'` on the card container. Outlined and soft cards retain clipping to enforce border-radius boundary containment, while elevated cards allow their native drop shadows to project freely beyond the card boundaries without clipping.
+
+**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppCard.tsx`.

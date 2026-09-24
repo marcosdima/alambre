@@ -69,7 +69,71 @@ Follow this checklist during manual testing or emulator inspection (e.g. via `ad
 
 ---
 
-## 3. Extracted Experiments & Playground
+## 3. Promoted Tactile UI Component Library
+
+`apps/base-template` ships with a complete, hardened catalog of interactive tactile UI components located under `apps/base-template/src/components/`. These components were designed, experimentally tuned, and accessibility-hardened in `apps/playground` before promotion into the base template.
+
+### Component Catalog
+
+| Component | File | Key Props & Features | Tactile & Visual Feedback |
+| --- | --- | --- | --- |
+| `AppButton` | `AppButton.tsx` | `variant` (`solid`, `outline`, `soft`, `ghost`), `tone` (`primary`, `neutral`, `success`, `danger`, `warning`), `size` (`sm`, `md`, `lg`), `leftIcon`, `rightIcon`, `loading`, `iconOnly`, `fullWidth` | Rapid compression on press-in (`scale: 0.96`), spring return on release (`damping: 14`, `stiffness: 320`), accessible disabled/loading states. |
+| `AppTitle` | `AppTitle.tsx` | `level` (`1`, `2`, `3`), `subtitle`, `badge`, `badgeTone`, `align` (`left`, `center`, `right`) | Crisp typographic hierarchy, optional inline tone badge, and secondary caption pairing. |
+| `AppText` | `AppTitle.tsx` | `variant` (`body`, `caption`, `subtitle`, `muted`, `code`), `color` | Standardized typography tokens matching active theme colors. |
+| `AppTextInput` | `AppTextInput.tsx` | `ref` (`forwardRef<TextInput>`), `label`, `required`, `helperText`, `tone` (`default`, `error`, `success`), `leftIcon`, `rightIcon`, `clearable`, `passwordToggle`, `isPassword` | Smooth focus border & background interpolation on UI thread, clear button, eye toggle for password visibility, accessible focus chaining via forwarded ref. |
+| `AppSwitch` | `AppSwitch.tsx` | `size` (`sm`, `md`, `lg`), `checked`, `onChange`, `label`, `subtitle`, `disabled` | Dynamic thumb elongation on press (`scaleX: 1.15`), spring transition across track, compound row mode with single TalkBack/VoiceOver focus node (inert inner track). |
+| `AppCard` | `AppCard.tsx` | `variant` (`outlined`, `elevated`, `soft`), `padding` (`none`, `sm`, `md`, `lg`), `title`, `subtitle`, `badge`, `badgeTone`, `headerAction`, `footer`, `chevron`, `selected`, `onPress` | Interactive spring compression on press (`scale: 0.98`), conditional `overflow: 'visible'` for elevated cards to prevent iOS drop-shadow clipping. |
+| `AppBadge` | `AppBadge.tsx` | `tone` (`primary`, `neutral`, `success`, `warning`, `danger`), `variant` (`soft`, `solid`, `outline`), `size` (`sm`, `md`), `icon`, `label` | Uppercase pill styling with matching accent, border, and background tokens. |
+| `AppChip` | `AppBadge.tsx` | `label`, `selected`, `onPress`, `onRemove`, `icon`, `tone`, `size`, `disabled`, `style`, `contentStyle` | Spring feedback on press, dismissible remove cross icon, style forwarded to outer `Pressable` for correct flexbox layout positioning. |
+| `AppDialog` | `AppDialog.tsx` | `visible`, `onClose`, `title`, `description`, `tone`, `confirmLabel`, `cancelLabel`, `confirmTone`, `onConfirm`, `onCancel`, `confirmLoading`, `dismissOnBackdropPress`, `customActions` | Animated backdrop dimming, spring entrance card scale, tone badge, `accessibilityRole="alert"`, edge-to-edge modal windows, wrapped in `KeyboardAvoidingView` on iOS. |
+| `AppActionSheet` | `AppActionSheet.tsx` | `visible`, `onClose`, `title`, `description`, `options`, `cancelLabel`, `dismissOnBackdropPress`, `springConfig` | Interactive pan drag-to-dismiss gesture with rubber-band upward resistance, clamped backdrop fade, scrollable options list (`maxHeight: 380`), bottom overshoot skirt eliminating viewport see-through, edge-to-edge Android modal (`navigationBarTranslucent`). |
+
+---
+
+## 4. Confirm Behavior & Dialog Integration
+
+The application root (`apps/base-template/App.tsx`) wires `alambre`'s `ConfirmProvider` with `ConfirmDialog.tsx`:
+
+```tsx
+<NavigatorProvider pages={navigator}>
+  <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+    <ToastProvider ToastComponent={TemplateToast}>
+      <Root />
+    </ToastProvider>
+  </ConfirmProvider>
+</NavigatorProvider>
+```
+
+### Usage Pattern
+Any screen or component within `apps/base-template` can trigger confirmation flows asynchronously without needing local modal state:
+
+```tsx
+import { useConfirm } from 'alambre';
+
+export function DeleteButton({ onDeleted }: { onDeleted: () => void }) {
+  const { confirm } = useConfirm();
+
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: 'Delete Item',
+      message: 'Are you sure you want to permanently delete this item?',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+      tone: 'danger',
+    });
+
+    if (ok) {
+      onDeleted();
+    }
+  };
+
+  return <AppButton tone="danger" label="Delete" onPress={handleDelete} />;
+}
+```
+
+---
+
+## 5. Extracted Experiments & Playground
 
 The interactive animation playground, timing experiments, and advanced toast queue tests were extracted into a dedicated application: `apps/playground` (`@alambre/playground`).
 
