@@ -3,6 +3,7 @@ import Details from '../views/home/Details';
 import Settings from '../views/settings/Settings';
 import AnimationTest from '../views/animation-test/AnimationTest';
 import ToastTest from '../views/toast-test/ToastTest';
+import ComponentsTest from '../views/components-test/ComponentsTest';
 import type { NavigatorTypes } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -33,6 +34,10 @@ export const pages: Record<string, AppPage> = {
   toast: {
     title: { es: 'Test de Toast', en: 'Toast Test' },
     component: <ToastTest />,
+  },
+  components: {
+    title: { es: 'UI Components', en: 'UI Components' },
+    component: <ComponentsTest />,
   },
 };
 

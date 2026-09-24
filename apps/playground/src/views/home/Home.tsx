@@ -16,6 +16,7 @@ export default () => {
   const { getDelay } = useStagger({ initialDelay: 80, staggerMs: 60 });
 
   const navItems = [
+    { key: 'components', label: 'UI Components (Buttons & Typography)', onPress: () => navigate('components') },
     { key: 'animations', label: 'Animation Playground (Timing & Mag.)', onPress: () => navigate('animations') },
     { key: 'toast', label: 'Toast Playground (Gliding & Queue)', onPress: () => navigate('toast') },
     { key: 'settings', label: lang.home.openSettings, onPress: () => navigate('settings') },
