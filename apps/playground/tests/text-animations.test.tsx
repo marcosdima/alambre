@@ -110,13 +110,29 @@ describe('TickerText component contract', () => {
 });
 
 describe('WavyText component contract', () => {
-  it('renders with accessible label containing full text', async () => {
-    const { getByLabelText } = await renderWithTheme(
-      <WavyText text="Wavy Motion" />,
+  it('renders with accessible label containing full text in char mode', async () => {
+    const screen = await renderWithTheme(
+      <WavyText text="Wavy Motion" mode="char" />,
     );
 
-    const element = getByLabelText('Wavy Motion');
+    const element = screen.getByLabelText('Wavy Motion');
     expect(element).toBeDefined();
     expect(element.props.accessibilityRole).toBe('text');
+    // Each individual character rendered
+    expect(screen.getByText('W')).toBeDefined();
+    expect(screen.getByText('M')).toBeDefined();
+  });
+
+  it('renders with accessible label and word units in word mode', async () => {
+    const screen = await renderWithTheme(
+      <WavyText text="Rapid Wave" mode="word" />,
+    );
+
+    const element = screen.getByLabelText('Rapid Wave');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+    // Whole words rendered as units
+    expect(screen.getByText('Rapid')).toBeDefined();
+    expect(screen.getByText('Wave')).toBeDefined();
   });
 });

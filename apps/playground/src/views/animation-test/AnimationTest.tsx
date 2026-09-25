@@ -7,7 +7,7 @@ import Animated, {
   FadeInRight,
   Keyframe,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import AppSlider from '../../components/AppSlider';
@@ -36,6 +36,13 @@ export default function AnimationTest() {
   const [slowMotion, setSlowMotion] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
 
+  const speedMult = slowMotion ? 4 : 1;
+  const { getDelay } = useStagger({
+    initialDelay: 0,
+    staggerMs: stagger * speedMult,
+    maxDelay: 5000,
+  });
+
   const getEasingFunction = (curve: EasingType) => {
     switch (curve) {
       case 'quad':
@@ -51,9 +58,8 @@ export default function AnimationTest() {
   };
 
   const getEnteringAnimation = (index: number) => {
-    const speedMult = slowMotion ? 4 : 1;
     const actualDuration = duration * speedMult;
-    const actualDelay = index * stagger * speedMult;
+    const actualDelay = getDelay(index);
     const isEven = index % 2 === 0;
 
     if (pattern === 'pop') {

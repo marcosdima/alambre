@@ -15,6 +15,7 @@ import { useLightDark } from '../../providers/theme';
 
 export type WavyTextProps = {
   text: string;
+  mode?: 'char' | 'word';
   amplitude?: number;
   duration?: number;
   staggerMs?: number;
@@ -24,8 +25,8 @@ export type WavyTextProps = {
   containerStyle?: StyleProp<ViewStyle>;
 };
 
-type WavyCharProps = {
-  char: string;
+type WavyUnitProps = {
+  content: string;
   index: number;
   amplitude: number;
   duration: number;
@@ -35,8 +36,8 @@ type WavyCharProps = {
   textStyle?: StyleProp<TextStyle>;
 };
 
-const WavyChar = memo(function WavyChar({
-  char,
+const WavyUnit = memo(function WavyUnit({
+  content,
   index,
   amplitude,
   duration,
@@ -44,7 +45,7 @@ const WavyChar = memo(function WavyChar({
   active,
   isReducedMotion,
   textStyle,
-}: WavyCharProps) {
+}: WavyUnitProps) {
   const progress = useSharedValue(0);
   const animAmplitude = useSharedValue(amplitude);
 
@@ -85,13 +86,14 @@ const WavyChar = memo(function WavyChar({
 
   return (
     <Animated.Text style={[styles.baseText, textStyle, animatedStyle]}>
-      {char}
+      {content}
     </Animated.Text>
   );
 });
 
 export default function WavyText({
   text,
+  mode = 'char',
   amplitude = 7,
   duration = 600,
   staggerMs = 60,
@@ -117,6 +119,35 @@ export default function WavyText({
       style={[styles.container, containerStyle]}
     >
       {words.map((word, wordIndex) => {
+        if (mode === 'word') {
+          return (
+            <View key={`word-${wordIndex}`} style={styles.wordGroup}>
+              <WavyUnit
+                content={word}
+                index={wordIndex}
+                amplitude={amplitude}
+                duration={duration}
+                staggerMs={staggerMs}
+                active={active}
+                isReducedMotion={isReducedMotion}
+                textStyle={[{ color: textColor }, textStyle]}
+              />
+              {wordIndex < words.length - 1 ? (
+                <Text
+                  style={[
+                    styles.baseText,
+                    { color: textColor },
+                    textStyle,
+                    styles.space,
+                  ]}
+                >
+                  {' '}
+                </Text>
+              ) : null}
+            </View>
+          );
+        }
+
         const chars = word.split('');
         const startIndex = charOffset;
         charOffset += chars.length + 1; // +1 for the space
@@ -126,9 +157,9 @@ export default function WavyText({
             {chars.map((char, charIdx) => {
               const globalIndex = startIndex + charIdx;
               return (
-                <WavyChar
+                <WavyUnit
                   key={`char-${globalIndex}`}
-                  char={char}
+                  content={char}
                   index={globalIndex}
                   amplitude={amplitude}
                   duration={duration}
