@@ -245,3 +245,30 @@ Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'` on t
 Enforce that screens rendered inside `AppNavigatorBody` render a root `<View style={styles.container}>` rather than a `<ScrollView>`, allowing the outer navigator container to cleanly manage page scrolling, momentum, and scroll position restoration across route transitions.
 
 **Status: ADOPTED in playground & base-template.**
+
+## Harmonic phase decoupling for dynamic wave amplitude in Reanimated (discovered in playground text-animations)
+
+**Pattern:** In undulating wave animations (`WavyText`) where individual characters follow a staggered cyclic motion (`withDelay(index * staggerMs, withRepeat(withSequence(...)))`), updating the wave amplitude dynamically (e.g., via a live slider or state toggle) causes severe phase disruption: letters mid-flight snap to baseline, wave synchronization collapses, and characters jump abruptly.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/WavyText.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Decouple oscillation phase from amplitude scaling:** Never bundle the amplitude scalar into the repeat sequence or hook dependency array. Harmonic phase depends strictly on `[active, duration, index, staggerMs]`.
+2. **Normalized Unit Wave Driver:** Let the cyclic Reanimated driver cycle between normalized values `0 -> 1 -> 0`.
+3. **Independent Amplitude Shared Value:** Track amplitude in an independent shared value (`animAmplitude`) that updates smoothly via `withTiming(amplitude, { duration: 250, easing: Easing.out(Easing.cubic) })`.
+4. **Multiplicative Transform:** In `useAnimatedStyle`, evaluate `translateY = -progress.value * animAmplitude.value`. The cyclic wave continues without phase resets while the amplitude smoothly scales up or down in real-time.
+
+**Status: ADOPTED in playground.** Ready for evaluation in playful UI and game titles.
+
+## Ghost text pre-layout and greedy break strategy to prevent Knuth-Plass retro-balancing (discovered in playground text-animations)
+
+**Pattern:** In typewriter / streaming text rendering (`TypewriterText`), words near the right margin unexpectedly snap down to the next line right as the typing animation finishes, even though they previously appeared to fit on the current line.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/TypewriterText.tsx`.
+
+**Solution / Architectural Pattern:**
+1. **Knuth-Plass Line Balancing on Android:** React Native `<Text>` on Android defaults to `textBreakStrategy="highQuality"`, which runs full-paragraph Knuth-Plass line balancing. When rendering partial substrings (`text.slice(0, N)`), the layout engine measures only visible words. As subsequent words arrive, the engine retroactively rebalances earlier lines, pulling completed words to the next line to minimize raggedness.
+2. **Greedy First-Fit Line Breaking (`textBreakStrategy="simple"`):** Setting `textBreakStrategy="simple"` disables full-paragraph retro-balancing, enforcing deterministic line breaks based strictly on line-width constraints.
+3. **Ghost Text Pre-Layout:** Always render the entire target text string inside the native `<Text>` container from the first frame. The revealed characters render in the active theme color, while unrevealed remainder characters render inline within a nested `<Text style={{ color: 'transparent' }}>{remainingText}</Text>`. The native layout engine pre-calculates the exact, permanent line breaks for the entire paragraph upfront, guaranteeing that each word is typed directly into its final, permanent line position with zero reflow.
+
+**Status: ADOPTED in playground.** Standard pattern for typewriter and streaming dialogue systems.
