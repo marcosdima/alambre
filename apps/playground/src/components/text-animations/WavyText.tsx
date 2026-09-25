@@ -1,9 +1,10 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -30,6 +31,7 @@ type WavyCharProps = {
   duration: number;
   staggerMs: number;
   active: boolean;
+  isReducedMotion: boolean;
   textStyle?: StyleProp<TextStyle>;
 };
 
@@ -40,6 +42,7 @@ const WavyChar = memo(function WavyChar({
   duration,
   staggerMs,
   active,
+  isReducedMotion,
   textStyle,
 }: WavyCharProps) {
   const progress = useSharedValue(0);
@@ -55,7 +58,7 @@ const WavyChar = memo(function WavyChar({
 
   // Wave oscillation driver - strictly independent from amplitude
   useEffect(() => {
-    if (!active) {
+    if (!active || isReducedMotion) {
       progress.value = withTiming(0, { duration: 180 });
       return;
     }
@@ -74,19 +77,11 @@ const WavyChar = memo(function WavyChar({
         false,
       ),
     );
-  }, [active, duration, index, staggerMs, progress]);
+  }, [active, duration, index, staggerMs, progress, isReducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: -progress.value * animAmplitude.value }],
   }));
-
-  if (char === ' ') {
-    return (
-      <Text style={[styles.baseText, textStyle, styles.space]}>
-        {' '}
-      </Text>
-    );
-  }
 
   return (
     <Animated.Text style={[styles.baseText, textStyle, animatedStyle]}>
@@ -106,8 +101,13 @@ export default function WavyText({
   containerStyle,
 }: WavyTextProps) {
   const { theme } = useLightDark();
+  const isReducedMotion = useReducedMotion();
   const textColor = color ?? theme.color;
-  const chars = text.split('');
+
+  // Split into words so flexWrap wraps on whole word boundaries
+  const words = useMemo(() => text.split(' '), [text]);
+
+  let charOffset = 0;
 
   return (
     <View
@@ -116,18 +116,44 @@ export default function WavyText({
       accessibilityLabel={text}
       style={[styles.container, containerStyle]}
     >
-      {chars.map((char, index) => (
-        <WavyChar
-          key={`${char}-${index}`}
-          char={char}
-          index={index}
-          amplitude={amplitude}
-          duration={duration}
-          staggerMs={staggerMs}
-          active={active}
-          textStyle={[{ color: textColor }, textStyle]}
-        />
-      ))}
+      {words.map((word, wordIndex) => {
+        const chars = word.split('');
+        const startIndex = charOffset;
+        charOffset += chars.length + 1; // +1 for the space
+
+        return (
+          <View key={`word-${wordIndex}`} style={styles.wordGroup}>
+            {chars.map((char, charIdx) => {
+              const globalIndex = startIndex + charIdx;
+              return (
+                <WavyChar
+                  key={`char-${globalIndex}`}
+                  char={char}
+                  index={globalIndex}
+                  amplitude={amplitude}
+                  duration={duration}
+                  staggerMs={staggerMs}
+                  active={active}
+                  isReducedMotion={isReducedMotion}
+                  textStyle={[{ color: textColor }, textStyle]}
+                />
+              );
+            })}
+            {wordIndex < words.length - 1 ? (
+              <Text
+                style={[
+                  styles.baseText,
+                  { color: textColor },
+                  textStyle,
+                  styles.space,
+                ]}
+              >
+                {' '}
+              </Text>
+            ) : null}
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -138,6 +164,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     paddingVertical: 6,
+  },
+  wordGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   baseText: {
     fontSize: 22,

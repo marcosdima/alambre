@@ -429,6 +429,7 @@ export default function TextAnimationsTest() {
               <TickerText
                 value={gameTurn}
                 minDigits={2}
+                padZero
                 fontSize={20}
                 color={theme.primary}
               />

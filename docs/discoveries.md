@@ -260,15 +260,21 @@ Enforce that screens rendered inside `AppNavigatorBody` render a root `<View sty
 
 **Status: ADOPTED in playground.** Ready for evaluation in playful UI and game titles.
 
-## Ghost text pre-layout and greedy break strategy to prevent Knuth-Plass retro-balancing (discovered in playground text-animations)
+## Greedy break strategy to prevent Knuth-Plass retro-balancing (discovered in playground text-animations)
 
 **Pattern:** In typewriter / streaming text rendering (`TypewriterText`), words near the right margin unexpectedly snap down to the next line right as the typing animation finishes, even though they previously appeared to fit on the current line.
 
 **Where it appeared:** `apps/playground/src/components/text-animations/TypewriterText.tsx`.
 
-**Solution / Architectural Pattern:**
+**Solution / Architectural Evaluation:**
 1. **Knuth-Plass Line Balancing on Android:** React Native `<Text>` on Android defaults to `textBreakStrategy="highQuality"`, which runs full-paragraph Knuth-Plass line balancing. When rendering partial substrings (`text.slice(0, N)`), the layout engine measures only visible words. As subsequent words arrive, the engine retroactively rebalances earlier lines, pulling completed words to the next line to minimize raggedness.
-2. **Greedy First-Fit Line Breaking (`textBreakStrategy="simple"`):** Setting `textBreakStrategy="simple"` disables full-paragraph retro-balancing, enforcing deterministic line breaks based strictly on line-width constraints.
-3. **Ghost Text Pre-Layout:** Always render the entire target text string inside the native `<Text>` container from the first frame. The revealed characters render in the active theme color, while unrevealed remainder characters render inline within a nested `<Text style={{ color: 'transparent' }}>{remainingText}</Text>`. The native layout engine pre-calculates the exact, permanent line breaks for the entire paragraph upfront, guaranteeing that each word is typed directly into its final, permanent line position with zero reflow.
+2. **Greedy First-Fit Line Breaking (`textBreakStrategy="simple"`): ADOPTED.** Setting `textBreakStrategy="simple"` disables full-paragraph retro-balancing, enforcing deterministic line breaks based strictly on line-width constraints. This cleanly prevents completed words from jumping between lines during typing.
+3. **Ghost Text Pre-Layout with `color: 'transparent'`: REJECTED (Fabric/Android color inheritance defect).**
+   - *Attempted hack:* Rendering unrevealed characters inside `<Text style={{ color: 'transparent' }}>{remainingText}</Text>` to pre-calculate line layout.
+   - *Engine-level failure:* In React Native Fabric (and Android `ForegroundColorSpan`), `'transparent'` normalizes to `0x00000000` (`0`). In React Native's C++ core (`HostPlatformColor.h`), `UndefinedColor = 0`. The wrapper `SharedColor(0)` evaluates `operator bool()` as `false`. In `TextAttributes::apply`:
+     `foregroundColor = textAttributes.foregroundColor ? textAttributes.foregroundColor : foregroundColor;`
+     Because `SharedColor(0)` evaluates to `false`, the transparent style is discarded and falls back to the parent's `foregroundColor`. Furthermore, inline `<Text>` spans do not support `opacity: 0` in React Native.
+   - *Visual failure:* The "ghost" text rendered 100% opaque from frame 0, causing the entire string to be visible immediately while the cursor moved through it, creating the appearance of rewriting over existing text without clearing.
+   - *Standard pattern:* Use `textBreakStrategy="simple"` with pure progressive slicing (`text.slice(0, displayedLength)`), combined with container `minHeight` for viewport stability.
 
-**Status: ADOPTED in playground.** Standard pattern for typewriter and streaming dialogue systems.
+**Status: ADOPTED (textBreakStrategy="simple" only; ghost text rejected).** Standard pattern for typewriter and streaming dialogue systems.

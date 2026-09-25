@@ -4,6 +4,7 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withSpring,
@@ -39,6 +40,7 @@ const DigitColumn = memo(function DigitColumn({
   springConfig,
   delayMs = 0,
 }: DigitColumnProps) {
+  const isReducedMotion = useReducedMotion();
   const translateY = useSharedValue(-digit * itemHeight);
 
   const damping = springConfig?.damping ?? DEFAULT_SPRING.damping;
@@ -52,12 +54,16 @@ const DigitColumn = memo(function DigitColumn({
 
   useEffect(() => {
     const targetY = -digit * itemHeight;
+    if (isReducedMotion) {
+      translateY.value = targetY;
+      return;
+    }
     if (delayMs > 0) {
       translateY.value = withDelay(delayMs, withSpring(targetY, spring));
     } else {
       translateY.value = withSpring(targetY, spring);
     }
-  }, [digit, itemHeight, delayMs, spring, translateY]);
+  }, [digit, itemHeight, delayMs, spring, translateY, isReducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -224,7 +230,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
   },
   digitsRow: {
     flexDirection: 'row',
