@@ -14,10 +14,11 @@ import AppSlider from '../../components/AppSlider';
 import AppSegmentedControl from '../../components/AppSegmentedControl';
 import AppSelect from '../../components/AppSelect';
 import AppButton from '../../components/AppButton';
+import AnimatedCascade from '../../components/AnimatedCascade';
 
 type PatternMode = 'alternate' | 'cascade' | 'pop';
 type EasingType = 'cubic' | 'quad' | 'back' | 'bounce';
-type EngineMode = 'preset' | 'keyframe';
+type EngineMode = 'preset' | 'keyframe' | 'cascade';
 
 export default function AnimationTest() {
   const { theme } = useLightDark();
@@ -129,6 +130,7 @@ export default function AnimationTest() {
   const engineOptions = [
     { value: 'preset' as const, label: 'Reanimated Presets' },
     { value: 'keyframe' as const, label: 'Dynamic Keyframe' },
+    { value: 'cascade' as const, label: 'AnimatedCascade' },
   ];
 
   const easingOptions = [
@@ -198,6 +200,69 @@ export default function AnimationTest() {
       ),
     },
   ];
+
+  const renderCardBody = (
+    card: (typeof previewCards)[number],
+    appliedDelay: number,
+  ) => (
+    <>
+      <View style={styles.previewHeader}>
+        <View style={styles.cardHeaderLeft}>
+          <View
+            style={[
+              styles.iconCircle,
+              {
+                backgroundColor: theme.primarySoft,
+                borderColor: theme.primary,
+              },
+            ]}
+          >
+            {card.icon}
+          </View>
+          <View style={styles.cardTitles}>
+            <Text style={[styles.cardTitle, { color: theme.color }]}>
+              {card.title}
+            </Text>
+            <Text style={[styles.cardSubtitle, { color: theme.muted }]}>
+              {card.subtitle}
+            </Text>
+          </View>
+        </View>
+
+        <View
+          style={[
+            styles.tagBadge,
+            {
+              backgroundColor: theme.surfaceAlt,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Text style={[styles.tagText, { color: theme.primary }]}>
+            {card.tag}
+          </Text>
+        </View>
+      </View>
+
+      {/* Param specs footer */}
+      <View
+        style={[
+          styles.cardFooter,
+          { borderTopColor: theme.border, borderTopWidth: 1 },
+        ]}
+      >
+        <Text style={[styles.paramBadge, { color: theme.muted }]}>
+          {`+${appliedDelay}ms delay`}
+        </Text>
+        <Text style={[styles.paramBadge, { color: theme.muted }]}>
+          {`${duration * speedMult}ms duración`}
+        </Text>
+        <Text style={[styles.paramBadge, { color: theme.muted }]}>
+          {engine === 'cascade' ? 'Cascade Auto' : easingCurve}
+        </Text>
+      </View>
+    </>
+  );
 
   return (
     <View style={[styles.container, styles.content, { backgroundColor: theme.background }]}>
@@ -319,75 +384,51 @@ export default function AnimationTest() {
 
       {/* Preview Section */}
       <View key={`preview-${replayKey}`} style={styles.previewContainer}>
-        {previewCards.map((card, index) => {
-          const appliedDelay = index * stagger * (slowMotion ? 4 : 1);
-          return (
-            <Animated.View
-              key={card.id}
-              entering={getEnteringAnimation(index)}
-              style={[
-                styles.previewCard,
-                { backgroundColor: theme.surface, borderColor: theme.border },
-              ]}
-            >
-              <View style={styles.previewHeader}>
-                <View style={styles.cardHeaderLeft}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      {
-                        backgroundColor: theme.primarySoft,
-                        borderColor: theme.primary,
-                      },
-                    ]}
-                  >
-                    {card.icon}
-                  </View>
-                  <View style={styles.cardTitles}>
-                    <Text style={[styles.cardTitle, { color: theme.color }]}>
-                      {card.title}
-                    </Text>
-                    <Text style={[styles.cardSubtitle, { color: theme.muted }]}>
-                      {card.subtitle}
-                    </Text>
-                  </View>
-                </View>
-
+        {engine === 'cascade' ? (
+          <AnimatedCascade
+            pattern={
+              pattern === 'alternate'
+                ? 'alternate'
+                : pattern === 'pop'
+                  ? 'pop'
+                  : 'top-to-bottom'
+            }
+            duration={duration * speedMult}
+            staggerMs={stagger * speedMult}
+            style={{ width: '100%', gap: 14 }}
+          >
+            {previewCards.map((card, index) => {
+              const appliedDelay = index * stagger * speedMult;
+              return (
                 <View
+                  key={card.id}
                   style={[
-                    styles.tagBadge,
-                    {
-                      backgroundColor: theme.surfaceAlt,
-                      borderColor: theme.border,
-                    },
+                    styles.previewCard,
+                    { backgroundColor: theme.surface, borderColor: theme.border },
                   ]}
                 >
-                  <Text style={[styles.tagText, { color: theme.primary }]}>
-                    {card.tag}
-                  </Text>
+                  {renderCardBody(card, appliedDelay)}
                 </View>
-              </View>
-
-              {/* Param specs footer */}
-              <View
+              );
+            })}
+          </AnimatedCascade>
+        ) : (
+          previewCards.map((card, index) => {
+            const appliedDelay = index * stagger * speedMult;
+            return (
+              <Animated.View
+                key={card.id}
+                entering={getEnteringAnimation(index)}
                 style={[
-                  styles.cardFooter,
-                  { borderTopColor: theme.border, borderTopWidth: 1 },
+                  styles.previewCard,
+                  { backgroundColor: theme.surface, borderColor: theme.border },
                 ]}
               >
-                <Text style={[styles.paramBadge, { color: theme.muted }]}>
-                  {`+${appliedDelay}ms delay`}
-                </Text>
-                <Text style={[styles.paramBadge, { color: theme.muted }]}>
-                  {`${duration * (slowMotion ? 4 : 1)}ms duración`}
-                </Text>
-                <Text style={[styles.paramBadge, { color: theme.muted }]}>
-                  {easingCurve}
-                </Text>
-              </View>
-            </Animated.View>
-          );
-        })}
+                {renderCardBody(card, appliedDelay)}
+              </Animated.View>
+            );
+          })
+        )}
       </View>
     </View>
   );

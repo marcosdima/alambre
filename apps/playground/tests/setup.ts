@@ -47,6 +47,16 @@ vi.mock('react-native-reanimated', async () => {
       cubic: (x: unknown) => x,
       bezier: () => (x: unknown) => x,
     },
+    FadeInDown: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    FadeInLeft: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    FadeInRight: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    FadeInUp: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    ZoomIn: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    LinearTransition: {
+      springify: () => ({
+        damping: () => ({ stiffness: () => ({ mass: () => ({}) }) }),
+      }),
+    },
   };
 });
 
