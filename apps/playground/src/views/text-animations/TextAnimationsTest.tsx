@@ -9,7 +9,14 @@ import AppCard from '../../components/AppCard';
 import AppSwitch from '../../components/AppSwitch';
 import AppTextInput from '../../components/AppTextInput';
 import AppBadge, { AppChip } from '../../components/AppBadge';
-import { TickerText, TypewriterText, WavyText } from '../../components/text-animations';
+import {
+  TickerText,
+  TypewriterText,
+  WavyText,
+  ScrambleText,
+  CountUpText,
+  MarqueeText,
+} from '../../components/text-animations';
 
 export default function TextAnimationsTest() {
   const { theme } = useLightDark();
@@ -41,8 +48,21 @@ export default function TextAnimationsTest() {
   const [wavyActive, setWavyActive] = useState(true);
   const [wavyAmplitude, setWavyAmplitude] = useState<4 | 8 | 14>(8);
   const [wavyTone, setWavyTone] = useState<'primary' | 'success' | 'warning'>('primary');
+  const [wavyMode, setWavyMode] = useState<'char' | 'word'>('char');
 
-  // 4. Game HUD Mockup state
+  // 4. CountUp state
+  const [countUpValue, setCountUpValue] = useState(2450.75);
+
+  // 5. Scramble state
+  const [scrambleKey, setScrambleKey] = useState(0);
+  const [scrambleIndex, setScrambleIndex] = useState(0);
+  const scramblePresets = [
+    'ACCESS_GRANTED // LEVEL 4 AUTHORIZED',
+    'CRITICAL_OVERDRIVE // 99.8% STABILITY',
+    'DECRYPTING_ENCRYPTED_SIGNATURE...',
+  ];
+
+  // 6. Game HUD Mockup state
   const [gameHp, setGameHp] = useState(100);
   const [gameGold, setGameGold] = useState(350);
   const [gameTurn, setGameTurn] = useState(1);
@@ -324,6 +344,7 @@ export default function TextAnimationsTest() {
           <View style={styles.wavyCenterBox}>
             <WavyText
               text="VICTORY ROYALE!"
+              mode={wavyMode}
               active={wavyActive}
               amplitude={wavyAmplitude}
               color={
@@ -337,6 +358,7 @@ export default function TextAnimationsTest() {
             />
             <WavyText
               text="Level Up +450 XP"
+              mode={wavyMode}
               active={wavyActive}
               amplitude={wavyAmplitude * 0.7}
               color={theme.muted}
@@ -368,6 +390,24 @@ export default function TextAnimationsTest() {
             />
           </View>
 
+          <AppText variant="caption" style={{ marginTop: 4 }}>Wave Granularity (Mode)</AppText>
+          <View style={styles.chipRow}>
+            <AppChip
+              label="Per Character (Detailed)"
+              selected={wavyMode === 'char'}
+              tone="primary"
+              size="sm"
+              onPress={() => setWavyMode('char')}
+            />
+            <AppChip
+              label="Per Word (Optimized)"
+              selected={wavyMode === 'word'}
+              tone="primary"
+              size="sm"
+              onPress={() => setWavyMode('word')}
+            />
+          </View>
+
           <AppText variant="caption" style={{ marginTop: 4 }}>Color Tone</AppText>
           <View style={styles.chipRow}>
             {(['primary', 'success', 'warning'] as const).map((t) => (
@@ -384,8 +424,150 @@ export default function TextAnimationsTest() {
         </AppCard>
       </Animated.View>
 
-      {/* 4. Real-World Card Game HUD Mockup */}
+      {/* 4. Smooth Numeric Counter (CountUpText) */}
+      <Animated.View entering={FadeInDown.duration(260).delay(200)}>
+        <AppCard
+          variant="outlined"
+          title="Smooth Numeric Counter"
+          subtitle="Continuous UI-thread interpolation for currency, scores, and meters"
+          badge="CountUpText"
+          badgeTone="primary"
+        >
+          <View style={styles.tickerHeroBox}>
+            <CountUpText
+              value={countUpValue}
+              decimals={2}
+              prefix="$"
+              duration={700}
+              color={theme.primary}
+              textStyle={{ fontSize: 38, fontWeight: '800' }}
+            />
+            <AppText variant="caption" style={styles.centerMuted}>
+              Smooth spring/timing continuous interpolation with tabular numeral alignment
+            </AppText>
+          </View>
+
+          <AppText variant="caption">Adjust Value</AppText>
+          <View style={styles.buttonRow}>
+            <AppButton
+              size="sm"
+              variant="soft"
+              tone="success"
+              label="+$150.00"
+              onPress={() => setCountUpValue((v) => v + 150)}
+            />
+            <AppButton
+              size="sm"
+              variant="soft"
+              tone="success"
+              label="+$1,000.50"
+              onPress={() => setCountUpValue((v) => v + 1000.5)}
+            />
+            <AppButton
+              size="sm"
+              variant="soft"
+              tone="danger"
+              label="-$200.00"
+              onPress={() => setCountUpValue((v) => Math.max(0, v - 200))}
+            />
+            <AppButton
+              size="sm"
+              variant="outline"
+              tone="neutral"
+              label="Reset"
+              onPress={() => setCountUpValue(2450.75)}
+            />
+          </View>
+        </AppCard>
+      </Animated.View>
+
+      {/* 5. Cyberpunk / Matrix Decryptor (ScrambleText) */}
       <Animated.View entering={FadeInDown.duration(260).delay(240)}>
+        <AppCard
+          variant="outlined"
+          title="Cyberpunk / Matrix Decryptor"
+          subtitle="Glyph scrambling wave resolving progressively to target text"
+          badge="ScrambleText"
+          badgeTone="warning"
+        >
+          <View
+            style={[
+              styles.terminalBox,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+            ]}
+          >
+            <View style={styles.terminalHeader}>
+              <View style={[styles.terminalDot, { backgroundColor: '#ef4444' }]} />
+              <View style={[styles.terminalDot, { backgroundColor: '#f59e0b' }]} />
+              <View style={[styles.terminalDot, { backgroundColor: '#22c55e' }]} />
+              <AppText variant="caption" style={styles.terminalTitle}>
+                CYBERDECK // DECRYPT_ENGINE
+              </AppText>
+            </View>
+
+            <ScrambleText
+              key={scrambleKey}
+              text={scramblePresets[scrambleIndex] ?? ''}
+              speed={30}
+              cyclesPerChar={2}
+              color={theme.primary}
+              textStyle={{ fontFamily: 'monospace', fontSize: 16 }}
+            />
+          </View>
+
+          <View style={styles.buttonRow}>
+            <AppButton
+              size="sm"
+              variant="solid"
+              tone="primary"
+              label="Re-scramble"
+              onPress={() => setScrambleKey((k) => k + 1)}
+            />
+            <AppButton
+              size="sm"
+              variant="outline"
+              tone="neutral"
+              label="Next Preset"
+              onPress={() => {
+                setScrambleIndex((i) => (i + 1) % scramblePresets.length);
+                setScrambleKey((k) => k + 1);
+              }}
+            />
+          </View>
+        </AppCard>
+      </Animated.View>
+
+      {/* 6. Auto-Scrolling Marquee (MarqueeText) */}
+      <Animated.View entering={FadeInDown.duration(260).delay(280)}>
+        <AppCard
+          variant="outlined"
+          title="Auto-Scrolling Marquee"
+          subtitle="Hardware-accelerated horizontal scroller when text overflows viewport"
+          badge="MarqueeText"
+          badgeTone="neutral"
+        >
+          <View
+            style={[
+              styles.combatLogBox,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border, marginVertical: 12 },
+            ]}
+          >
+            <MarqueeText
+              text="🎵 Now Playing: Neon Cyberpunk Symphony (Extended Synthwave Mix 2026) • Exclusive Track by Alambre Audio"
+              speed={35}
+              spacing={48}
+              color={theme.primary}
+              textStyle={{ fontSize: 15, fontWeight: '700' }}
+            />
+          </View>
+          <AppText variant="caption" style={styles.centerMuted}>
+            Scrolls continuously only when content exceeds available width. Pauses between loops.
+          </AppText>
+        </AppCard>
+      </Animated.View>
+
+      {/* 7. Real-World Card Game HUD Mockup */}
+      <Animated.View entering={FadeInDown.duration(260).delay(320)}>
         <AppCard
           variant="elevated"
           title="Card Game HUD Prototype"

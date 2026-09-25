@@ -5,6 +5,9 @@ import { LightDarkProvider } from '../src/providers/theme';
 import TypewriterText from '../src/components/text-animations/TypewriterText';
 import TickerText from '../src/components/text-animations/TickerText';
 import WavyText from '../src/components/text-animations/WavyText';
+import CountUpText from '../src/components/text-animations/CountUpText';
+import ScrambleText from '../src/components/text-animations/ScrambleText';
+import MarqueeText from '../src/components/text-animations/MarqueeText';
 
 const renderWithTheme = async (ui: ReactElement) => {
   return await render(<LightDarkProvider>{ui}</LightDarkProvider>);
@@ -136,3 +139,68 @@ describe('WavyText component contract', () => {
     expect(screen.getByText('Wave')).toBeDefined();
   });
 });
+
+describe('CountUpText component contract', () => {
+  it('renders with accessible label and initial formatted number', async () => {
+    const screen = await renderWithTheme(
+      <CountUpText
+        value={1500}
+        from={1500}
+        prefix="$"
+        decimals={2}
+      />,
+    );
+
+    const element = screen.getByLabelText('$1,500.00');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+    expect(screen.getByText('$1,500.00')).toBeDefined();
+  });
+});
+
+describe('ScrambleText component contract', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('renders with accessible label and settles to target text', async () => {
+    const onComplete = vi.fn();
+    const screen = await renderWithTheme(
+      <ScrambleText
+        text="CODE"
+        speed={20}
+        cyclesPerChar={1}
+        onComplete={onComplete}
+      />,
+    );
+
+    const element = screen.getByLabelText('CODE');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+
+    expect(screen.getByText('CODE')).toBeDefined();
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('MarqueeText component contract', () => {
+  it('renders with accessible role and text label', async () => {
+    const screen = await renderWithTheme(
+      <MarqueeText text="Now Playing: Synthwave Anthem" />,
+    );
+
+    const element = screen.getByLabelText('Now Playing: Synthwave Anthem');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+  });
+});
+
