@@ -15,8 +15,11 @@ import AppCard from '../../components/AppCard';
 import type { CardPadding, CardVariant } from '../../components/AppCard';
 import AppDialog from '../../components/AppDialog';
 import AppActionSheet, { type ActionSheetOption } from '../../components/AppActionSheet';
+import AppAccordion from '../../components/AppAccordion';
+import AppProgressBar from '../../components/AppProgressBar';
+import AnimatedCascade from '../../components/AnimatedCascade';
 
-type ActiveTab = 'buttons' | 'inputs' | 'cards' | 'modals';
+type ActiveTab = 'buttons' | 'inputs' | 'cards' | 'modals' | 'disclosure';
 
 const TEAM_MEMBERS = [
   { name: 'Alex Rivera', role: 'Engineering Lead' },
@@ -105,6 +108,11 @@ export default function ComponentsTest() {
   const [sheetMotion, setSheetMotion] = useState<'smooth' | 'bouncy'>('smooth');
   const [lastActionMessage, setLastActionMessage] = useState('No actions triggered yet');
 
+  // --- Disclosure & Progress Showcase State ---
+  const [progressVal, setProgressVal] = useState(65);
+  const [progressTone, setProgressTone] = useState<'primary' | 'success' | 'warning' | 'danger'>('primary');
+  const [progressIndeterminate, setProgressIndeterminate] = useState(false);
+
   const handleDeleteWorkspace = () => {
     setDialogLoading(true);
     setTimeout(() => {
@@ -177,6 +185,7 @@ export default function ComponentsTest() {
             { label: 'Inputs & Controls', value: 'inputs' },
             { label: 'Cards & Badges', value: 'cards' },
             { label: 'Modals & Sheets', value: 'modals' },
+            { label: 'Layout & Disclosure', value: 'disclosure' },
           ]}
         />
       </Animated.View>
@@ -1312,6 +1321,142 @@ export default function ComponentsTest() {
               style={{ marginTop: 12 }}
             />
           </AppActionSheet>
+        </>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 5: LAYOUT, DISCLOSURE & PROGRESS                           */}
+      {/* ============================================================== */}
+      {activeTab === 'disclosure' && (
+        <>
+          {/* Progress Bar Showcase Card */}
+          <Animated.View
+            entering={FadeInDown.duration(280).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle
+              level={2}
+              badge="AppProgressBar"
+              badgeTone="primary"
+              subtitle="Spring-driven accessible progress meter with customizable semantic tones and indeterminate sweep."
+            >
+              Progress Indicators
+            </AppTitle>
+
+            {/* Dynamic Progress Bar */}
+            <AppProgressBar
+              value={progressVal}
+              max={100}
+              label="Overall Task Completion"
+              showPercentage
+              tone={progressTone}
+              indeterminate={progressIndeterminate}
+              height={10}
+            />
+
+            {/* Controls */}
+            <View style={styles.togglesRow}>
+              <AppButton
+                size="sm"
+                variant="soft"
+                tone="primary"
+                label="-10%"
+                onPress={() => setProgressVal((v) => Math.max(0, v - 10))}
+              />
+              <AppButton
+                size="sm"
+                variant="soft"
+                tone="primary"
+                label="+10%"
+                onPress={() => setProgressVal((v) => Math.min(100, v + 10))}
+              />
+              <AppButton
+                size="sm"
+                variant={progressIndeterminate ? 'solid' : 'outline'}
+                tone="warning"
+                label={progressIndeterminate ? 'Indeterminate ON' : 'Indeterminate OFF'}
+                onPress={() => setProgressIndeterminate((i) => !i)}
+              />
+            </View>
+
+            {/* Tone Selector */}
+            <AppSegmentedControl<typeof progressTone>
+              label="Semantic Tone"
+              value={progressTone}
+              onChange={setProgressTone}
+              options={[
+                { label: 'Primary', value: 'primary' },
+                { label: 'Success', value: 'success' },
+                { label: 'Warning', value: 'warning' },
+                { label: 'Danger', value: 'danger' },
+              ]}
+            />
+          </Animated.View>
+
+          {/* Accordion / Collapsible Showcase Card */}
+          <Animated.View
+            entering={FadeInDown.duration(280).delay(60).easing(Easing.out(Easing.cubic))}
+            style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+          >
+            <AppTitle
+              level={2}
+              badge="AppAccordion"
+              badgeTone="success"
+              subtitle="Layout-jump free dynamic height disclosure with animated chevron and accessibility states."
+            >
+              Collapsible Sections
+            </AppTitle>
+
+            <AnimatedCascade pattern="top-to-bottom" staggerMs={60} style={{ gap: 12 }}>
+              <AppAccordion
+                title="Account Security & 2FA"
+                subtitle="Manage hardware security keys and authenticator apps"
+                badge="Recommended"
+                badgeTone="success"
+                defaultExpanded={true}
+              >
+                <AppText variant="caption" style={{ marginBottom: 8 }}>
+                  Two-factor authentication is currently enabled via Google Authenticator.
+                </AppText>
+                <AppButton
+                  size="sm"
+                  variant="outline"
+                  tone="neutral"
+                  label="Generate Backup Codes"
+                  onPress={() => {}}
+                />
+              </AppAccordion>
+
+              <AppAccordion
+                title="Telemetry & Error Reporting"
+                subtitle="Opt-in anonymous crash diagnostic dispatch"
+                badge="Optional"
+                badgeTone="neutral"
+                defaultExpanded={false}
+              >
+                <AppText variant="caption" style={{ marginBottom: 8 }}>
+                  Crash logs and performance metrics are sent to EAS Observe to monitor app stability.
+                </AppText>
+                <AppSwitch
+                  label="Dispatch Anonymous Crash Logs"
+                  checked={true}
+                  onChange={() => {}}
+                />
+              </AppAccordion>
+
+              <AppAccordion
+                title="Experimental Features"
+                subtitle="Locked under early preview program"
+                badge="Locked"
+                badgeTone="danger"
+                disabled={true}
+              >
+                <AppText variant="caption">
+                  You need to join the Canary testing flight to access experimental flags.
+                </AppText>
+              </AppAccordion>
+            </AnimatedCascade>
+          </Animated.View>
         </>
       )}
     </View>
