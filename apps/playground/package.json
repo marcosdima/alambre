@@ -2,7 +2,6 @@
   "name": "@alambre/playground",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
