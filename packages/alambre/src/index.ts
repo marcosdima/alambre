@@ -95,7 +95,8 @@ export type {
 } from './hooks';
 
 // Icons.
-export * as AlambreIcons from './components/icons';
+import * as AlambreIcons from './components/icons';
+export { AlambreIcons };
 
 // Input components.
 export { TimePicker } from './components/time';

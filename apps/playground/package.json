@@ -2,6 +2,7 @@
   "name": "@alambre/playground",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -27,6 +28,8 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
+    "@react-native/babel-preset": "^0.87.1",
+    "@testing-library/react-native": "^14.0.1",
     "@types/react": "~19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
@@ -34,7 +37,9 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-native": "^5.0.0",
+    "jsdom": "^26.1.0",
     "typescript": "~5.9.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "vitest-native": "^0.13.0"
   }
 }
