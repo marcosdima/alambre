@@ -47,24 +47,24 @@ For large multi-agent efforts, the native `/teamwork-preview` orchestrator (paid
 
 ---
 
-## 3. UI Verification on the Android Emulator
+## 3. UI Verification & Testing Strategy
 
-`@ui` verifies work against the running Android emulator via `adb` instead of the web `browser` subagent.
+The repository follows a tiered testing strategy to balance fast iteration, resource efficiency, and visual fidelity:
+
+1. **Component & Contract Testing (Headless):** Fast unit and contract testing with Vitest. Validates hooks, states, formatting, timer steps, and accessibility properties without launching native emulators.
+2. **Deterministic UI Hierarchy (Emulator):** When verifying layout, alignment, or component placement on the Android emulator, use native XML inspection (`uiautomator dump`) to evaluate exact element bounding boxes (`[left, top][right, bottom]`) rather than guessing from pixels.
+3. **Multimodal Visual Inspection:** For animations, physics, and visual aesthetics, use the single repository script `scripts/ui-capture.sh`:
+   - Captures `.agents/artifacts/screen.png` and dumps `.agents/artifacts/hierarchy.xml`.
+   - Read the image directly using Antigravity's native `view_file` (Gemini 3.1 Pro is multimodal).
+   - **Strict prohibition:** NEVER generate disposable, ad-hoc Python scripts (`analyze_image.py`, etc.) to measure or inspect screenshots. Use `view_file` or inspect the XML hierarchy directly.
 
 Flow:
-
 1. `adb devices` to confirm the device.
-2. Install/relaunch the build: `pnpm --filter @alambre/colguetti apk:install` (or `expo run:android`).
-3. Capture a screenshot: `adb exec-out screencap -p > .agents/artifacts/ui-<n>.png`, then read it as an image.
-4. Interact deterministically: `adb shell uiautomator dump` for real element bounds, then `adb shell input tap/swipe`.
-5. Iterate capture → decide → interact until the surface matches the contracts in `docs/ui.md`.
-
-Screenshots are written to `.agents/artifacts/`, which is gitignored. Access to `adb` requires a permission rule for `command(adb)` (or ad-hoc approval) so the sandbox does not block emulator traffic.
-
-### Forward notes
-
-- Emulator verification currently lives only in `@ui`. If `@tester` later needs visual test verification, the same pattern should be replicated there without duplicating UI responsibility.
-- The documentation corpus in `docs/` is retrieved through the structured retrieval skill (below). If the corpus grows beyond ~50 files or needs cross-repo semantic search, migrate to real embeddings (LanceDB or `sqlite-vec` via a `scripts/` indexer). Not built today.
+2. Install/relaunch the build: `pnpm --filter <app> apk:install` (or `expo run:android`).
+3. Run `scripts/ui-capture.sh` to extract `screen.png` and `hierarchy.xml`.
+4. Inspect `screen.png` via `view_file` or check numeric bounds in `hierarchy.xml`.
+5. Interact deterministically: `adb shell input tap/swipe`.
+6. Iterate until the surface matches the contracts in `docs/ui.md`.
 
 ---
 
@@ -76,3 +76,22 @@ Screenshots are written to `.agents/artifacts/`, which is gitignored. Access to 
 - Locate a section by heading with search, never read whole documents.
 - Cite `file:section` and never paraphrase architectural decisions.
 - Respect existing structure and decision history when updating.
+
+---
+
+## 5. Dynamic Routing & Anti-Drift Guardrails
+
+To prevent agent drift (such as a single agent assuming success on unverified native rendering tricks or prematurely marking discoveries as adopted), `@lead` dynamically routes incoming requests according to a 4-level classification:
+
+| Level | Scope | Routing & Delegation | Quality Gate | Token Cost |
+| --- | --- | --- | --- | --- |
+| **Level 1: Local Tactical** | Typos, minor style adjustments, prop tweaks, unit test fixes. | **`@lead` resolves directly** without invoking specialist agents. | Progressive validation: `lint`, `typecheck`, `test`. | Minimal |
+| **Level 2: UI Visual & Kinetic** | Animations (`playground`), gesture handling, screen transitions. | **`@lead` delegates to `@ui`.** | **Mandatory visual verification:** `scripts/ui-capture.sh` + `view_file`, or explicit user confirmation. Prohibited from closing the task solely on TypeScript compilation. | Moderate |
+| **Level 3: Template & Reusable** | Screens in `base-template` (e.g. Settings), shared compound controls. | **`@ui` implements**, followed by **`@integrity` review (Flash tier)**. | Gate: accessibility verification (TalkBack/VoiceOver, single switch node) and ensuring zero leaks or unapproved dependencies in exportable `base-expo`. | Medium |
+| **Level 4: Core Framework & API** | Changes to `packages/alambre`, new capabilities, `Storage` layer, SemVer bumps. | **Full pipeline:** `@lead` coordinates -> `@tester` creates regression suite -> `@integrity` audits contracts -> `@scribe` logs changelog/ADR. | Gate: contract tests in `packages/alambre/tests/public-api.test.ts` + documentation sync. | High (justified) |
+
+### Anti-Drift Guardrails
+
+1. **Zero Unverified Native Hacks:** If a proposed fix relies on non-standard React Native rendering assumptions (e.g. transparent ghost text spans, unusual flex overrides), the agent is strictly prohibited from considering it solved without empirical verification on device/emulator.
+2. **Double-Signature Gate for Discoveries:** No agent may mark a pattern as `ADOPTED` in `docs/discoveries.md` unilaterally. New patterns must be logged as `PROPOSAL` by `@scribe` or the author, and can only transition to `ADOPTED` after validation by a second consumer and sign-off by `@integrity`.
+3. **Resource-Conscious Review Tiers:** Auditors and loggers (`@integrity`, `@scribe`, `@tester`) run in the `flash` tier to keep token consumption and response latency minimal during day-to-day work.

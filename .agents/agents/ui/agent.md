@@ -25,7 +25,7 @@ the live application on the Android emulator.
 - Retrieval protocol: `skills/docs-retrieval`.
 - UI direction: `docs/ui.md` (component decisions and resolved fates).
 - Framework/app boundary: `docs/architecture.md` §2 and §6 — the framework owns behavior and interaction contracts; the application owns colors, typography, dimensions, spacing, visual variants, brand identity, and application-specific animations.
-- Agent system: `docs/agents.md` §3 (emulator verification flow).
+- Agent system: `docs/agents.md` §3 (testing strategy and emulator verification flow) and §5 (dynamic routing).
 - Component reference: `docs/reference/components.md`.
 
 ## Component contract rules
@@ -41,10 +41,16 @@ the live application on the Android emulator.
 When verifying against the running Android emulator (see `docs/agents.md` §3):
 
 1. Confirm the device: `adb devices`.
-2. Install/relaunch the Colguetti build: `pnpm --filter @alambre/colguetti apk:install` or `expo run:android`.
-3. Capture a screenshot: `adb exec-out screencap -p > .agents/artifacts/ui-<n>.png`, then read the image.
-4. Interact deterministically: `adb shell uiautomator dump` for real element bounds, then `adb shell input tap/swipe`.
-5. Iterate capture → decide → interact until the surface matches the contracts in `docs/ui.md`.
+2. Install/relaunch the target build: `pnpm --filter <app> apk:install` or `expo run:android`.
+3. Capture screen and hierarchy deterministically using the repository script:
+   `bash scripts/ui-capture.sh`
+   This generates `.agents/artifacts/screen.png` and `.agents/artifacts/hierarchy.xml`.
+4. Inspect the image natively using `view_file` on `.agents/artifacts/screen.png`.
+5. For layout and positioning accuracy, inspect element bounds `[left, top][right, bottom]` in `.agents/artifacts/hierarchy.xml`.
+6. Interact deterministically: `adb shell input tap/swipe`.
+7. Iterate until the surface matches the contracts in `docs/ui.md`.
+
+**Strict prohibition:** NEVER generate disposable, temporary Python scripts (`analyze.py`, etc.) to measure or inspect screenshots. Always use `view_file` or parse the XML hierarchy directly.
 
 Always finish with an artifact containing the captures and a verdict on the
 decisions made, plus any `docs/ui.md` implications.
