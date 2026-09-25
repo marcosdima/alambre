@@ -278,3 +278,43 @@ Enforce that screens rendered inside `AppNavigatorBody` render a root `<View sty
    - *Standard pattern:* Use `textBreakStrategy="simple"` with pure progressive slicing (`text.slice(0, displayedLength)`), combined with container `minHeight` for viewport stability.
 
 **Status: ADOPTED (textBreakStrategy="simple" only; ghost text rejected).** Standard pattern for typewriter and streaming dialogue systems.
+
+## Declarative child animation choreography via headless stagger (`AnimatedCascade`)
+
+**Pattern:** Manually wiring sequential entrance delays (`index * staggerMs`) and layout transitions across child elements in menus, cards, and list groups results in high boilerplate and inconsistent reduced-motion handling.
+
+**Where it appeared:** `apps/playground/src/components/AnimatedCascade.tsx` and `apps/playground/src/views/animation-test/AnimationTest.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Compose over `alambre`'s headless `useStagger` hook to automatically calculate item delays while honoring `useReducedMotion()`.
+2. Inspect children via `Children.toArray` and attach parameterized entrance animations (`FadeInDown`, `FadeInUp`, `FadeInLeft`/`FadeInRight` alternating, `ZoomIn`) alongside Reanimated's `LinearTransition.springify()` for smooth item insertions/removals.
+3. Decouple layout styles: caller forwards container `style` and child `itemStyle` without intrusive markup.
+
+**Status: PROPOSAL.** Implemented and validated in playground. Awaiting secondary consumer validation before graduation to `apps/base-template`.
+
+## Dynamic height disclosure without layout jump (`AppAccordion`)
+
+**Pattern:** In React Native, animating container height for collapsible sections (e.g. FAQs, filters, setting disclosures) is prone to clipping glitches or layout jumps because `height: 'auto'` cannot be animated via Reanimated shared values.
+
+**Where it appeared:** `apps/playground/src/components/AppAccordion.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Maintain an off-screen/zero-opacity measurement probe (`position: 'absolute', top: -9999`) to dynamically record inner content height via `onLayout`.
+2. Drive visible container height via `progress.value * measuredHeight` with `overflow: 'hidden'`.
+3. Provide single-node accessible button semantics (`accessibilityRole="button"`, `accessibilityState={{ expanded }}`) on the header with synchronized chevron rotation.
+4. Support controlled (`expanded`) and uncontrolled (`defaultExpanded`) states.
+
+**Status: PROPOSAL.** Implemented and validated in playground. Awaiting secondary consumer validation before graduation to `apps/base-template`.
+
+## Continuous numeric interpolation via frame cadence (`CountUpText`)
+
+**Pattern:** Animating continuous numeric shifts (such as currency counters, balances, or experience gains) using vertical column reels (`TickerText`) introduces excessive DOM/view nodes and layout constraints when formatting arbitrary decimal places or localized currency symbols.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/CountUpText.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Drive numerical interpolation on the animation frame cadence (`globalThis.requestAnimationFrame`) with cubic ease-out curves rather than multi-column reel views.
+2. Apply `fontVariant: ['tabular-nums']` to ensure numeric characters retain fixed horizontal metrics without jitter during counting.
+3. Enforce deterministic accessibility semantics: expose the final target value in `accessibilityLabel` so screen readers announce the accurate settled value immediately rather than streaming intermediate numbers.
+
+**Status: PROPOSAL.** Implemented and validated in playground. Ready for evaluation in game HUDs and financial summaries.
