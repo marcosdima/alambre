@@ -42,32 +42,42 @@ const WavyChar = memo(function WavyChar({
   active,
   textStyle,
 }: WavyCharProps) {
-  const translateY = useSharedValue(0);
+  const progress = useSharedValue(0);
+  const animAmplitude = useSharedValue(amplitude);
 
+  // Smoothly update amplitude without disrupting running wave phase
+  useEffect(() => {
+    animAmplitude.value = withTiming(amplitude, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [amplitude, animAmplitude]);
+
+  // Wave oscillation driver - strictly independent from amplitude
   useEffect(() => {
     if (!active) {
-      translateY.value = withTiming(0, { duration: 150 });
+      progress.value = withTiming(0, { duration: 180 });
       return;
     }
 
     const half = duration / 2;
     const delay = index * staggerMs;
 
-    translateY.value = withDelay(
+    progress.value = withDelay(
       delay,
       withRepeat(
         withSequence(
-          withTiming(-amplitude, { duration: half, easing: Easing.inOut(Easing.quad) }),
+          withTiming(1, { duration: half, easing: Easing.inOut(Easing.quad) }),
           withTiming(0, { duration: half, easing: Easing.inOut(Easing.quad) }),
         ),
         -1,
         false,
       ),
     );
-  }, [active, amplitude, duration, index, staggerMs, translateY]);
+  }, [active, duration, index, staggerMs, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
+    transform: [{ translateY: -progress.value * animAmplitude.value }],
   }));
 
   if (char === ' ') {

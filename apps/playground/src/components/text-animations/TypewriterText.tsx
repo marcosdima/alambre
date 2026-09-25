@@ -91,6 +91,7 @@ export default function TypewriterText({
   }, [text, speed, initialDelay, loop, pauseOnLoopMs, onComplete]);
 
   const visibleText = text.slice(0, displayedLength);
+  const remainingText = text.slice(displayedLength);
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
   const isCursorVisible = showCursor && (!isDone || blink);
 
@@ -101,7 +102,10 @@ export default function TypewriterText({
       accessibilityLabel={text}
       style={[styles.container, containerStyle]}
     >
-      <Text style={[styles.text, { color: theme.color }, textStyle]}>
+      <Text
+        textBreakStrategy="simple"
+        style={[styles.text, { color: theme.color }, textStyle]}
+      >
         {visibleText}
         {isCursorVisible ? (
           <Text
@@ -114,6 +118,7 @@ export default function TypewriterText({
             {cursorChar}
           </Text>
         ) : null}
+        <Text style={styles.ghostText}>{remainingText}</Text>
       </Text>
     </View>
   );
@@ -130,5 +135,8 @@ const styles = StyleSheet.create({
   },
   cursor: {
     fontWeight: '700',
+  },
+  ghostText: {
+    color: 'transparent',
   },
 });
