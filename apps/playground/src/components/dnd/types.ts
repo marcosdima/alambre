@@ -57,4 +57,11 @@ export type DraggableKineticsConfig = {
   springStiffness?: number;
   /** If true, item returns to origin if not dropped over a droppable zone. @default true */
   returnOnReject?: boolean;
+  /** Optional boundary constraint relative to initial position. */
+  boundsConstraint?: {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  };
 };

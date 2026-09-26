@@ -5,6 +5,7 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeOut,
+  FadeOutUp,
   LinearTransition,
   ZoomIn,
   ZoomOut,
@@ -57,10 +58,44 @@ const INITIAL_POOL: PoolItem[] = [
   { id: 'token-blade', name: 'Dagger', symbol: '🗡️', category: 'Weapon', accent: '#ec4899' },
 ];
 
+export type SlotEntranceMode = 'zoom' | 'slide' | 'fade' | 'instant';
+export type SlotExitMode = 'zoom' | 'slide' | 'fade' | 'instant';
+
+function getEntranceAnimation(mode: SlotEntranceMode, slowMotion: boolean) {
+  const f = slowMotion ? 4 : 1;
+  switch (mode) {
+    case 'zoom':
+      return ZoomIn.duration(220 * f).springify().damping(16);
+    case 'slide':
+      return FadeInDown.duration(240 * f).springify().damping(16);
+    case 'fade':
+      return FadeIn.duration(200 * f);
+    case 'instant':
+      return undefined;
+  }
+}
+
+function getExitAnimation(mode: SlotExitMode, slowMotion: boolean) {
+  const f = slowMotion ? 4 : 1;
+  switch (mode) {
+    case 'zoom':
+      return ZoomOut.duration(180 * f);
+    case 'slide':
+      return FadeOutUp.duration(180 * f);
+    case 'fade':
+      return FadeOut.duration(160 * f);
+    case 'instant':
+      return undefined;
+  }
+}
+
 type FreeformTileProps = {
   activeScale: number;
   tiltDeg: number;
   returnOnReject: boolean;
+  clampToBounds: boolean;
+  sandboxBounds: { minX: number; maxX: number; minY: number; maxY: number };
+  onCoordsChange: (coords: { x: number; y: number }) => void;
   onResetRef: (resetFn: () => void) => void;
 };
 
@@ -68,9 +103,14 @@ function FreeformTile({
   activeScale,
   tiltDeg,
   returnOnReject,
+  clampToBounds,
+  sandboxBounds,
+  onCoordsChange,
   onResetRef,
 }: FreeformTileProps) {
   const { theme } = useLightDark();
+  const bounds = clampToBounds ? sandboxBounds : undefined;
+
   const {
     panGesture,
     animatedStyle,
@@ -83,6 +123,15 @@ function FreeformTile({
       activeScale,
       maxVelocityTiltDeg: tiltDeg,
       returnOnReject,
+      boundsConstraint: bounds,
+    },
+    onDragMove: (x, y) => {
+      onCoordsChange({ x: Math.round(x), y: Math.round(y) });
+    },
+    onDragEnd: () => {
+      if (returnOnReject) {
+        onCoordsChange({ x: 0, y: 0 });
+      }
     },
   });
 
@@ -90,8 +139,11 @@ function FreeformTile({
   const isDragging = activeDrag?.id === 'freeform-tile';
 
   useEffect(() => {
-    onResetRef(resetPosition);
-  }, [onResetRef, resetPosition]);
+    onResetRef(() => {
+      resetPosition();
+      onCoordsChange({ x: 0, y: 0 });
+    });
+  }, [onResetRef, resetPosition, onCoordsChange]);
 
   return (
     <GestureDetector gesture={panGesture}>
@@ -160,17 +212,32 @@ function DndTestContent({
   const [handSensitivity, setHandSensitivity] = useState<0.35 | 0.50 | 0.65>(0.50);
   const [handScale, setHandScale] = useState<1.00 | 1.08 | 1.16>(1.08);
 
-  // Card 2 Controls (Drop Zones)
+  // Card 2 Controls (Drop Zones & Inventory)
+  const [slotEntrance, setSlotEntrance] = useState<SlotEntranceMode>('zoom');
+  const [slotExit, setSlotExit] = useState<SlotExitMode>('zoom');
+  const [slotMagnetism, setSlotMagnetism] = useState<1.00 | 1.02 | 1.05>(1.02);
   const [glowTone, setGlowTone] = useState<'blue-purple' | 'emerald-amber'>('blue-purple');
+  const [slotSlowMotion, setSlotSlowMotion] = useState(false);
+
   const slotAColor = glowTone === 'blue-purple' ? '#3b82f6' : '#10b981';
   const slotBColor = glowTone === 'blue-purple' ? '#8b5cf6' : '#f59e0b';
 
-  // Card 3 Controls (Freeform & Physics)
+  // Card 3 Controls (Freeform & Physics Sandbox)
+  const [releasePhysics, setReleasePhysics] = useState<'float' | 'snap'>('float');
+  const [clampToBounds, setClampToBounds] = useState(true);
   const [tiltMode, setTiltMode] = useState<'off' | 'subtle' | 'dynamic'>('dynamic');
   const [scalePreset, setScalePreset] = useState<'calm' | 'tactile' | 'pop'>('tactile');
-  const [returnReject, setReturnReject] = useState(false);
+  const [liveCoords, setLiveCoords] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [sandboxBounds, setSandboxBounds] = useState<{
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  }>({ minX: -80, maxX: 80, minY: -30, maxY: 30 });
+
   const tiltDeg = tiltMode === 'off' ? 0 : tiltMode === 'subtle' ? 6 : 14;
   const activeScale = scalePreset === 'calm' ? 1.04 : scalePreset === 'tactile' ? 1.08 : 1.16;
+  const returnReject = releasePhysics === 'snap';
 
   const freeformResetRef = useRef<(() => void) | null>(null);
 
@@ -339,7 +406,7 @@ function DndTestContent({
       {/* CARD 2: Battlefield Drop Zones & Inventory */}
       <AppCard
         title="Battlefield Drop Zones & Inventory"
-        subtitle="Magnetic drop slots with animated zoom entrances, exits, and layout transitions."
+        subtitle="Magnetic drop slots with animated zoom/slide entrances, exits, and bidirectional token dragging."
         badge={`${pool.length} In Pool`}
         badgeTone="success"
       >
@@ -354,7 +421,11 @@ function DndTestContent({
             ]}
             activeStyle={[
               styles.dropZoneActive,
-              { borderColor: slotAColor, backgroundColor: `${slotAColor}18` },
+              {
+                borderColor: slotAColor,
+                backgroundColor: `${slotAColor}18`,
+                transform: [{ scale: slotMagnetism }],
+              },
             ]}
             accessibilityLabel="Field Slot A target zone"
           >
@@ -365,22 +436,48 @@ function DndTestContent({
                 </Text>
                 {slotA ? (
                   <Animated.View
-                    entering={ZoomIn.duration(220).springify().damping(16)}
-                    exiting={ZoomOut.duration(160)}
-                    style={styles.placedToken}
+                    key={slotA.id}
+                    entering={getEntranceAnimation(slotEntrance, slotSlowMotion)}
+                    exiting={getExitAnimation(slotExit, slotSlowMotion)}
+                    style={styles.placedTokenContainer}
                   >
-                    <Text style={styles.tokenSymbol}>{slotA.symbol}</Text>
-                    <Text style={[styles.tokenName, { color: theme.color }]} numberOfLines={1}>
-                      {slotA.name}
-                    </Text>
-                    <Pressable onPress={() => recallSlot('a')} hitSlop={8}>
-                      <Text style={styles.recallBtn}>Recall</Text>
-                    </Pressable>
+                    <Draggable
+                      id={slotA.id}
+                      data={slotA}
+                      kinetics={{
+                        activeScale: 1.08,
+                        maxVelocityTiltDeg: 10,
+                        returnOnReject: true,
+                      }}
+                      accessibilityLabel={`Draggable ${slotA.name} in Slot A`}
+                    >
+                      {({ isDragging }) => (
+                        <View
+                          style={[
+                            styles.placedToken,
+                            {
+                              backgroundColor: theme.surface,
+                              borderColor: isDragging ? slotAColor : theme.border,
+                              borderWidth: isDragging ? 2 : 1,
+                            },
+                          ]}
+                        >
+                          <Text style={styles.tokenSymbol}>{slotA.symbol}</Text>
+                          <Text style={[styles.tokenName, { color: theme.color }]} numberOfLines={1}>
+                            {slotA.name}
+                          </Text>
+                          <Pressable onPress={() => recallSlot('a')} hitSlop={8}>
+                            <Text style={styles.recallBtn}>Recall</Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </Draggable>
                   </Animated.View>
                 ) : (
                   <Animated.Text
-                    entering={FadeIn.duration(180)}
-                    exiting={FadeOut.duration(120)}
+                    key="empty-a"
+                    entering={FadeIn.duration(180 * (slotSlowMotion ? 4 : 1))}
+                    exiting={FadeOut.duration(120 * (slotSlowMotion ? 4 : 1))}
                     style={[styles.emptyHint, { color: theme.muted }]}
                   >
                     Empty
@@ -399,7 +496,11 @@ function DndTestContent({
             ]}
             activeStyle={[
               styles.dropZoneActive,
-              { borderColor: slotBColor, backgroundColor: `${slotBColor}18` },
+              {
+                borderColor: slotBColor,
+                backgroundColor: `${slotBColor}18`,
+                transform: [{ scale: slotMagnetism }],
+              },
             ]}
             accessibilityLabel="Field Slot B target zone"
           >
@@ -410,22 +511,48 @@ function DndTestContent({
                 </Text>
                 {slotB ? (
                   <Animated.View
-                    entering={ZoomIn.duration(220).springify().damping(16)}
-                    exiting={ZoomOut.duration(160)}
-                    style={styles.placedToken}
+                    key={slotB.id}
+                    entering={getEntranceAnimation(slotEntrance, slotSlowMotion)}
+                    exiting={getExitAnimation(slotExit, slotSlowMotion)}
+                    style={styles.placedTokenContainer}
                   >
-                    <Text style={styles.tokenSymbol}>{slotB.symbol}</Text>
-                    <Text style={[styles.tokenName, { color: theme.color }]} numberOfLines={1}>
-                      {slotB.name}
-                    </Text>
-                    <Pressable onPress={() => recallSlot('b')} hitSlop={8}>
-                      <Text style={styles.recallBtn}>Recall</Text>
-                    </Pressable>
+                    <Draggable
+                      id={slotB.id}
+                      data={slotB}
+                      kinetics={{
+                        activeScale: 1.08,
+                        maxVelocityTiltDeg: 10,
+                        returnOnReject: true,
+                      }}
+                      accessibilityLabel={`Draggable ${slotB.name} in Slot B`}
+                    >
+                      {({ isDragging }) => (
+                        <View
+                          style={[
+                            styles.placedToken,
+                            {
+                              backgroundColor: theme.surface,
+                              borderColor: isDragging ? slotBColor : theme.border,
+                              borderWidth: isDragging ? 2 : 1,
+                            },
+                          ]}
+                        >
+                          <Text style={styles.tokenSymbol}>{slotB.symbol}</Text>
+                          <Text style={[styles.tokenName, { color: theme.color }]} numberOfLines={1}>
+                            {slotB.name}
+                          </Text>
+                          <Pressable onPress={() => recallSlot('b')} hitSlop={8}>
+                            <Text style={styles.recallBtn}>Recall</Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </Draggable>
                   </Animated.View>
                 ) : (
                   <Animated.Text
-                    entering={FadeIn.duration(180)}
-                    exiting={FadeOut.duration(120)}
+                    key="empty-b"
+                    entering={FadeIn.duration(180 * (slotSlowMotion ? 4 : 1))}
+                    exiting={FadeOut.duration(120 * (slotSlowMotion ? 4 : 1))}
                     style={[styles.emptyHint, { color: theme.muted }]}
                   >
                     Empty
@@ -442,7 +569,14 @@ function DndTestContent({
               styles.dropZoneTrash,
               { backgroundColor: theme.surfaceAlt, borderColor: '#ef444455' },
             ]}
-            activeStyle={[styles.dropZoneActive, { borderColor: '#ef4444', backgroundColor: '#ef444422' }]}
+            activeStyle={[
+              styles.dropZoneActive,
+              {
+                borderColor: '#ef4444',
+                backgroundColor: '#ef444422',
+                transform: [{ scale: slotMagnetism }],
+              },
+            ]}
             accessibilityLabel="Trash recycle zone"
           >
             {({ isOver }) => (
@@ -456,62 +590,129 @@ function DndTestContent({
           </Droppable>
         </View>
 
-        {/* Draggable Pool */}
-        <Text style={[styles.sectionSubtitle, { color: theme.muted, marginTop: 16 }]}>
-          Draggable Items (Drag into slots above):
-        </Text>
-        <View style={styles.poolRow}>
-          {pool.map((item) => (
-            <Animated.View
-              key={item.id}
-              entering={FadeInDown.duration(240).springify().damping(16)}
-              exiting={FadeOut.duration(160)}
-              layout={LinearTransition.springify().damping(18)}
-            >
-              <Draggable
-                id={item.id}
-                data={item}
-                kinetics={{
-                  activeScale: 1.08,
-                  maxVelocityTiltDeg: 12,
-                  returnOnReject: true,
-                }}
-                accessibilityLabel={`Draggable ${item.name}`}
-              >
-                {({ isDragging }) => (
-                  <View
-                    style={[
-                      styles.poolItem,
-                      {
-                        backgroundColor: theme.surface,
-                        borderColor: isDragging ? item.accent : theme.border,
-                        borderWidth: isDragging ? 2 : 1,
-                      },
-                    ]}
+        {/* Draggable Pool wrapped in Droppable to allow dragging slotted tokens back */}
+        <Droppable
+          id="inventory-pool"
+          style={[
+            styles.poolDroppable,
+            { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+          ]}
+          activeStyle={[
+            styles.poolDroppableActive,
+            {
+              borderColor: '#06b6d4',
+              backgroundColor: '#06b6d418',
+              transform: [{ scale: slotMagnetism }],
+            },
+          ]}
+          accessibilityLabel="Inventory pool drop area"
+        >
+          {({ isOver }) => (
+            <View style={styles.poolContent}>
+              <View style={styles.poolHeaderRow}>
+                <Text style={[styles.sectionSubtitle, { color: theme.muted, marginBottom: 0 }]}>
+                  {isOver ? '★ Drop to Return to Inventory' : 'Draggable Inventory (Drag to slots above):'}
+                </Text>
+                <AppChip
+                  tone={pool.length > 0 ? 'primary' : 'neutral'}
+                  size="sm"
+                  label={`${pool.length} items`}
+                />
+              </View>
+
+              <View style={styles.poolRow}>
+                {pool.map((item) => (
+                  <Animated.View
+                    key={item.id}
+                    entering={FadeInDown.duration(240 * (slotSlowMotion ? 4 : 1)).springify().damping(16)}
+                    exiting={FadeOut.duration(160 * (slotSlowMotion ? 4 : 1))}
+                    layout={LinearTransition.springify().damping(18)}
                   >
-                    <Text style={styles.poolSymbol}>{item.symbol}</Text>
-                    <Text style={[styles.poolName, { color: theme.color }]} numberOfLines={1}>
-                      {item.name}
+                    <Draggable
+                      id={item.id}
+                      data={item}
+                      kinetics={{
+                        activeScale: 1.08,
+                        maxVelocityTiltDeg: 12,
+                        returnOnReject: true,
+                      }}
+                      accessibilityLabel={`Draggable ${item.name}`}
+                    >
+                      {({ isDragging }) => (
+                        <View
+                          style={[
+                            styles.poolItem,
+                            {
+                              backgroundColor: theme.surface,
+                              borderColor: isDragging ? item.accent : theme.border,
+                              borderWidth: isDragging ? 2 : 1,
+                            },
+                          ]}
+                        >
+                          <Text style={styles.poolSymbol}>{item.symbol}</Text>
+                          <Text style={[styles.poolName, { color: theme.color }]} numberOfLines={1}>
+                            {item.name}
+                          </Text>
+                          <AppChip
+                            tone={item.category === 'Weapon' ? 'danger' : 'primary'}
+                            size="sm"
+                            label={item.category}
+                          />
+                        </View>
+                      )}
+                    </Draggable>
+                  </Animated.View>
+                ))}
+                {pool.length === 0 && (
+                  <View style={styles.allPlacedBox}>
+                    <Text style={{ color: theme.muted }}>All items placed on field slots!</Text>
+                    <Text style={{ color: theme.muted, fontSize: 11, marginTop: 2 }}>
+                      Drag an item back here or to Trash to return it.
                     </Text>
-                    <AppChip
-                      tone={item.category === 'Weapon' ? 'danger' : 'primary'}
-                      size="sm"
-                      label={item.category}
-                    />
                   </View>
                 )}
-              </Draggable>
-            </Animated.View>
-          ))}
-          {pool.length === 0 && (
-            <View style={styles.allPlacedBox}>
-              <Text style={{ color: theme.muted }}>All items placed on field slots!</Text>
+              </View>
             </View>
           )}
-        </View>
+        </Droppable>
 
         {/* In-Card Controls for Drop Zones */}
         <View style={styles.inCardControls}>
+          <AppSegmentedControl
+            label="Slot Entrance Animation"
+            value={slotEntrance}
+            onChange={(val) => setSlotEntrance(val as SlotEntranceMode)}
+            options={[
+              { value: 'zoom', label: 'Zoom In' },
+              { value: 'slide', label: 'Slide Down' },
+              { value: 'fade', label: 'Fade In' },
+              { value: 'instant', label: 'Instant' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Slot Exit Animation"
+            value={slotExit}
+            onChange={(val) => setSlotExit(val as SlotExitMode)}
+            options={[
+              { value: 'zoom', label: 'Zoom Out' },
+              { value: 'slide', label: 'Slide Up' },
+              { value: 'fade', label: 'Fade Out' },
+              { value: 'instant', label: 'Instant' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Magnetism Scale"
+            value={slotMagnetism}
+            onChange={(val) => setSlotMagnetism(val as 1.00 | 1.02 | 1.05)}
+            options={[
+              { value: 1.00, label: 'Flat (1.0x)' },
+              { value: 1.02, label: 'Gentle (1.02x)' },
+              { value: 1.05, label: 'Snappy (1.05x)' },
+            ]}
+          />
+
           <AppSegmentedControl
             label="Target Glow Palette"
             value={glowTone}
@@ -520,6 +721,13 @@ function DndTestContent({
               { value: 'blue-purple', label: 'Blue / Violet' },
               { value: 'emerald-amber', label: 'Emerald / Amber' },
             ]}
+          />
+
+          <AppSwitch
+            label="Slow Motion (0.25x Speed)"
+            subtitle="4x slower animation to inspect slot entrance, exit, and eviction transitions frame-by-frame"
+            checked={slotSlowMotion}
+            onChange={setSlotSlowMotion}
           />
 
           <View style={styles.poolFooter}>
@@ -533,21 +741,68 @@ function DndTestContent({
       {/* CARD 3: Freeform Drag & Kinetic Physics Sandbox */}
       <AppCard
         title="Freeform Drag & Micro-Physics"
-        subtitle="Draggable tile that preserves its drop position and continues dragging seamlessly without snapping back."
+        subtitle="Draggable tile with live coordinate tracking, optional boundary clamping, and configurable release physics."
       >
-        <View style={[styles.sandboxArea, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+        <View
+          style={[styles.sandboxArea, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}
+          onLayout={(e) => {
+            const { width, height } = e.nativeEvent.layout;
+            const halfW = Math.max(20, Math.floor((width - 120) / 2 - 12));
+            const halfH = Math.max(16, Math.floor((height - 105) / 2 - 12));
+            setSandboxBounds({
+              minX: -halfW,
+              maxX: halfW,
+              minY: -halfH,
+              maxY: halfH,
+            });
+          }}
+        >
           <FreeformTile
             activeScale={activeScale}
             tiltDeg={tiltDeg}
             returnOnReject={returnReject}
+            clampToBounds={clampToBounds}
+            sandboxBounds={sandboxBounds}
+            onCoordsChange={setLiveCoords}
             onResetRef={(fn) => {
               freeformResetRef.current = fn;
             }}
           />
         </View>
 
+        {/* Live Coordinate Status Banner */}
+        <View style={styles.sandboxStatsRow}>
+          <AppChip
+            tone={liveCoords.x !== 0 || liveCoords.y !== 0 ? 'primary' : 'neutral'}
+            size="sm"
+            label={`ΔX: ${liveCoords.x >= 0 ? `+${liveCoords.x}` : liveCoords.x}px  ΔY: ${liveCoords.y >= 0 ? `+${liveCoords.y}` : liveCoords.y}px`}
+          />
+          <AppChip
+            tone={clampToBounds ? 'success' : 'neutral'}
+            size="sm"
+            label={clampToBounds ? 'Boundary: Clamped' : 'Boundary: Unclamped'}
+          />
+        </View>
+
         {/* In-Card Controls for Freeform Sandbox */}
         <View style={styles.inCardControls}>
+          <AppSegmentedControl
+            label="Release Physics"
+            value={releasePhysics}
+            onChange={(val) => setReleasePhysics(val as 'float' | 'snap')}
+            options={[
+              { value: 'float', label: 'Float in Place' },
+              { value: 'snap', label: 'Spring Home' },
+            ]}
+          />
+
+          <AppSwitch
+            label="Clamp to Sandbox Bounds"
+            subtitle="Restricts movement so the Mystic Orb stays strictly within the dashed area"
+            checked={clampToBounds}
+            onChange={setClampToBounds}
+          />
+
           <AppSegmentedControl
             label="Velocity Tilt Angle"
             value={tiltMode}
@@ -568,13 +823,6 @@ function DndTestContent({
               { value: 'tactile', label: 'Tactile (1.08x)' },
               { value: 'pop', label: 'Pop (1.16x)' },
             ]}
-          />
-
-          <AppSwitch
-            label="Return on Reject"
-            subtitle="If disabled, item stays where dropped and continues dragging seamlessly"
-            checked={returnReject}
-            onChange={setReturnReject}
           />
 
           <View style={styles.sandboxFooter}>
@@ -602,48 +850,98 @@ export default function DndTest() {
   const handleGlobalDrop = useCallback(
     (event: DropEvent) => {
       const { draggableId, droppableId } = event;
-      const draggedItem = pool.find((item) => item.id === draggableId);
+      const allItems = [...pool, ...(slotA ? [slotA] : []), ...(slotB ? [slotB] : [])];
+      const draggedItem = allItems.find((item) => item.id === draggableId);
       if (!draggedItem) return;
 
+      const sourceSlot = slotA?.id === draggableId ? 'slot-a' : slotB?.id === draggableId ? 'slot-b' : 'pool';
+
+      // Dropped back onto origin container
+      if (sourceSlot === droppableId) return;
+
       if (droppableId === 'slot-a') {
-        setPool((prev) => {
-          const next = prev.filter((p) => p.id !== draggedItem.id);
-          if (slotA && slotA.id !== draggedItem.id) {
-            next.push(slotA);
-          }
-          return next;
-        });
-        setSlotA(draggedItem);
-        setLastAction(`Assigned ${draggedItem.name} to Field Slot A`);
+        if (sourceSlot === 'pool') {
+          setPool((prev) => {
+            const next = prev.filter((p) => p.id !== draggedItem.id);
+            if (slotA && slotA.id !== draggedItem.id) {
+              next.push(slotA);
+            }
+            return next;
+          });
+          setSlotA(draggedItem);
+          setLastAction(`Assigned ${draggedItem.name} to Field Slot A`);
+        } else if (sourceSlot === 'slot-b') {
+          // Swap or move from Slot B to Slot A
+          setSlotB(slotA);
+          setSlotA(draggedItem);
+          setLastAction(
+            slotA
+              ? `Swapped ${draggedItem.name} (Slot B) with ${slotA.name} (Slot A)`
+              : `Moved ${draggedItem.name} from Slot B to Slot A`,
+          );
+        }
       } else if (droppableId === 'slot-b') {
-        setPool((prev) => {
-          const next = prev.filter((p) => p.id !== draggedItem.id);
-          if (slotB && slotB.id !== draggedItem.id) {
-            next.push(slotB);
-          }
-          return next;
-        });
-        setSlotB(draggedItem);
-        setLastAction(`Assigned ${draggedItem.name} to Field Slot B`);
+        if (sourceSlot === 'pool') {
+          setPool((prev) => {
+            const next = prev.filter((p) => p.id !== draggedItem.id);
+            if (slotB && slotB.id !== draggedItem.id) {
+              next.push(slotB);
+            }
+            return next;
+          });
+          setSlotB(draggedItem);
+          setLastAction(`Assigned ${draggedItem.name} to Field Slot B`);
+        } else if (sourceSlot === 'slot-a') {
+          // Swap or move from Slot A to Slot B
+          setSlotA(slotB);
+          setSlotB(draggedItem);
+          setLastAction(
+            slotB
+              ? `Swapped ${draggedItem.name} (Slot A) with ${slotB.name} (Slot B)`
+              : `Moved ${draggedItem.name} from Slot A to Slot B`,
+          );
+        }
       } else if (droppableId === 'trash-zone') {
-        setPool((prev) => (prev.some((p) => p.id === draggedItem.id) ? prev : [...prev, draggedItem]));
-        setLastAction(`Recycled ${draggedItem.name} back to inventory`);
+        if (sourceSlot === 'slot-a') {
+          setSlotA(null);
+          setPool((prev) => (prev.some((p) => p.id === draggedItem.id) ? prev : [...prev, draggedItem]));
+          setLastAction(`Recycled ${draggedItem.name} from Slot A back to inventory`);
+        } else if (sourceSlot === 'slot-b') {
+          setSlotB(null);
+          setPool((prev) => (prev.some((p) => p.id === draggedItem.id) ? prev : [...prev, draggedItem]));
+          setLastAction(`Recycled ${draggedItem.name} from Slot B back to inventory`);
+        } else {
+          setLastAction(`Recycled ${draggedItem.name} (already in inventory)`);
+        }
+      } else if (droppableId === 'inventory-pool') {
+        if (sourceSlot === 'slot-a') {
+          setSlotA(null);
+          setPool((prev) => (prev.some((p) => p.id === draggedItem.id) ? prev : [...prev, draggedItem]));
+          setLastAction(`Returned ${draggedItem.name} from Slot A to inventory pool`);
+        } else if (sourceSlot === 'slot-b') {
+          setSlotB(null);
+          setPool((prev) => (prev.some((p) => p.id === draggedItem.id) ? prev : [...prev, draggedItem]));
+          setLastAction(`Returned ${draggedItem.name} from Slot B to inventory pool`);
+        }
       }
     },
     [pool, slotA, slotB],
   );
 
-  const recallSlot = useCallback((slot: 'a' | 'b') => {
-    if (slot === 'a' && slotA) {
-      setPool((prev) => [...prev, slotA]);
-      setSlotA(null);
-      setLastAction(`Recalled ${slotA.name} to inventory`);
-    } else if (slot === 'b' && slotB) {
-      setPool((prev) => [...prev, slotB]);
-      setSlotB(null);
-      setLastAction(`Recalled ${slotB.name} to inventory`);
-    }
-  }, [slotA, slotB]);
+  const recallSlot = useCallback(
+    (slot: 'a' | 'b') => {
+      if (slot === 'a' && slotA) {
+        setPool((prev) => [...prev, slotA]);
+        setSlotA(null);
+        setLastAction(`Recalled ${slotA.name} to inventory`);
+      } else if (slot === 'b' && slotB) {
+        setPool((prev) => [...prev, slotB]);
+        setSlotB(null);
+        setLastAction(`Recalled ${slotB.name} to inventory`);
+      }
+    },
+    [slotA, slotB],
+  );
 
   const resetAll = useCallback(() => {
     setHand(INITIAL_HAND);
@@ -765,27 +1063,28 @@ const styles = StyleSheet.create({
   },
   dropZone: {
     flex: 1,
-    minHeight: 100,
+    minHeight: 110,
     borderRadius: 14,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 8,
+    overflow: 'visible',
   },
   dropZoneTrash: {
     width: 76,
-    minHeight: 100,
+    minHeight: 110,
     borderRadius: 14,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 8,
+    overflow: 'visible',
   },
   dropZoneActive: {
     borderStyle: 'solid',
-    transform: [{ scale: 1.03 }],
   },
   zoneContent: {
     alignItems: 'center',
@@ -802,9 +1101,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontStyle: 'italic',
   },
-  placedToken: {
+  placedTokenContainer: {
+    width: '100%',
     alignItems: 'center',
-    gap: 2,
+    justifyContent: 'center',
+  },
+  placedToken: {
+    width: 86,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   tokenSymbol: {
     fontSize: 22,
@@ -825,6 +1138,27 @@ const styles = StyleSheet.create({
   trashLabel: {
     fontSize: 11,
     fontWeight: '600',
+  },
+  poolDroppable: {
+    width: '100%',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    padding: 12,
+    marginTop: 14,
+    overflow: 'visible',
+  },
+  poolDroppableActive: {
+    borderStyle: 'solid',
+  },
+  poolContent: {
+    width: '100%',
+    gap: 8,
+  },
+  poolHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   poolRow: {
     flexDirection: 'row',
@@ -871,6 +1205,13 @@ const styles = StyleSheet.create({
     minHeight: 140,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sandboxStatsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
   },
   freeformTile: {
     width: 120,

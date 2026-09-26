@@ -19,6 +19,7 @@ export type UseDraggableOptions<T = unknown> = {
   disabled?: boolean;
   kinetics?: DraggableKineticsConfig;
   onDragStart?: () => void;
+  onDragMove?: (x: number, y: number) => void;
   onDragEnd?: (droppableId: string | null) => void;
 };
 
@@ -28,6 +29,7 @@ export function useDraggable<T = unknown>({
   disabled = false,
   kinetics = {},
   onDragStart: userOnDragStart,
+  onDragMove: userOnDragMove,
   onDragEnd: userOnDragEnd,
 }: UseDraggableOptions<T>) {
   const {
@@ -42,6 +44,7 @@ export function useDraggable<T = unknown>({
     springDamping = 20,
     springStiffness = 240,
     returnOnReject = true,
+    boundsConstraint,
   } = kinetics;
 
   const originBoundsRef = useRef<LayoutBounds | null>(null);
@@ -82,18 +85,23 @@ export function useDraggable<T = unknown>({
         const currentY = orig ? orig.y + orig.height / 2 + ty : ty;
         contextOnDragMove(currentX, currentY);
       }
+      userOnDragMove?.(tx, ty);
     },
-    [contextOnDragMove],
+    [contextOnDragMove, userOnDragMove],
   );
 
   const handleDragEndJS = useCallback(() => {
     const dropEvent = contextOnDragEnd();
+    if (returnOnReject && !dropEvent) {
+      userOnDragMove?.(0, 0);
+    }
     userOnDragEnd?.(dropEvent ? dropEvent.droppableId : null);
     return dropEvent;
-  }, [contextOnDragEnd, userOnDragEnd]);
+  }, [contextOnDragEnd, returnOnReject, userOnDragEnd, userOnDragMove]);
 
   const panGesture = Gesture.Pan()
     .enabled(!disabled)
+    .minDistance(4)
     .onStart((e) => {
       'worklet';
       isDragging.value = true;
@@ -108,8 +116,16 @@ export function useDraggable<T = unknown>({
     })
     .onUpdate((e) => {
       'worklet';
-      translateX.value = startOffsetX.value + e.translationX;
-      translateY.value = startOffsetY.value + e.translationY;
+      let nextX = startOffsetX.value + e.translationX;
+      let nextY = startOffsetY.value + e.translationY;
+
+      if (boundsConstraint) {
+        nextX = Math.max(boundsConstraint.minX, Math.min(boundsConstraint.maxX, nextX));
+        nextY = Math.max(boundsConstraint.minY, Math.min(boundsConstraint.maxY, nextY));
+      }
+
+      translateX.value = nextX;
+      translateY.value = nextY;
 
       // Dynamic tilt based on horizontal velocity
       const tilt = interpolate(
@@ -120,7 +136,7 @@ export function useDraggable<T = unknown>({
       );
       dragRotation.value = tilt;
 
-      runOnJS(handleDragMoveJS)(e.absoluteX, e.absoluteY, e.translationX, e.translationY);
+      runOnJS(handleDragMoveJS)(e.absoluteX, e.absoluteY, nextX, nextY);
     })
     .onEnd(() => {
       'worklet';
@@ -180,7 +196,8 @@ export function useDraggable<T = unknown>({
       damping: springDamping,
       stiffness: springStiffness,
     });
-  }, [translateX, translateY, startOffsetX, startOffsetY, springDamping, springStiffness]);
+    userOnDragMove?.(0, 0);
+  }, [translateX, translateY, startOffsetX, startOffsetY, springDamping, springStiffness, userOnDragMove]);
 
   return {
     panGesture,

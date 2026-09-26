@@ -16,6 +16,7 @@ export type DraggableProps<T = unknown> = {
   disabled?: boolean;
   kinetics?: DraggableKineticsConfig;
   onDragStart?: () => void;
+  onDragMove?: (x: number, y: number) => void;
   onDragEnd?: (droppableId: string | null) => void;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
@@ -28,6 +29,7 @@ export default function Draggable<T = unknown>({
   disabled = false,
   kinetics,
   onDragStart,
+  onDragMove,
   onDragEnd,
   style,
   accessibilityLabel,
@@ -44,6 +46,7 @@ export default function Draggable<T = unknown>({
     disabled,
     kinetics,
     onDragStart,
+    onDragMove,
     onDragEnd,
   });
 
