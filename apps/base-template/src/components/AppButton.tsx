@@ -174,6 +174,7 @@ export default function AppButton({
 
         return (
           <Animated.View
+            pointerEvents="none"
             style={[
               styles.shell,
               animatedScaleStyle,

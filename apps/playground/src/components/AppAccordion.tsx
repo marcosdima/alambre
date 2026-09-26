@@ -1,16 +1,9 @@
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { AlambreIcons, useCollapsible } from 'alambre';
+import type { CollapsibleSpringConfig, CollapsibleTransitionType } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppBadge from './AppBadge';
 
@@ -24,8 +17,8 @@ export type AppAccordionProps = {
   defaultExpanded?: boolean;
   onToggle?: (expanded: boolean) => void;
   duration?: number;
-  animationType?: 'timing' | 'spring';
-  springConfig?: { damping?: number; stiffness?: number; mass?: number };
+  animationType?: CollapsibleTransitionType;
+  springConfig?: CollapsibleSpringConfig;
   rotationAngle?: 90 | 180;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -54,59 +47,20 @@ export default function AppAccordion({
   titleStyle,
 }: AppAccordionProps) {
   const { theme } = useLightDark();
-  const isReducedMotion = useReducedMotion();
 
-  const isControlled = controlledExpanded !== undefined;
-  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
-  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
-
-  const [measuredHeight, setMeasuredHeight] = useState(0);
-  const progress = useSharedValue(isExpanded ? 1 : 0);
-
-  useEffect(() => {
-    if (isReducedMotion) {
-      progress.value = isExpanded ? 1 : 0;
-      return;
-    }
-
-    if (animationType === 'spring') {
-      progress.value = withSpring(isExpanded ? 1 : 0, {
-        damping: springConfig?.damping ?? 24,
-        stiffness: springConfig?.stiffness ?? 180,
-        mass: springConfig?.mass ?? 1,
-      });
-    } else {
-      progress.value = withTiming(isExpanded ? 1 : 0, {
-        duration,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-      });
-    }
-  }, [
+  const {
     isExpanded,
-    duration,
-    animationType,
-    springConfig?.damping,
-    springConfig?.stiffness,
-    springConfig?.mass,
-    isReducedMotion,
+    toggle,
     progress,
-  ]);
-
-  const handlePress = () => {
-    if (disabled) return;
-    const nextState = !isExpanded;
-    if (!isControlled) {
-      setInternalExpanded(nextState);
-    }
-    onToggle?.(nextState);
-  };
-
-  const contentAnimatedStyle = useAnimatedStyle(() => {
-    const clampedProgress = Math.max(0, progress.value);
-    return {
-      height: measuredHeight > 0 ? clampedProgress * measuredHeight : undefined,
-      opacity: Math.max(0, Math.min(1, progress.value)),
-    };
+    animatedStyle: collapsibleStyle,
+    probeProps,
+  } = useCollapsible({
+    expanded: controlledExpanded,
+    defaultExpanded,
+    onToggle,
+    transitionType: animationType,
+    springConfig,
+    duration,
   });
 
   const chevronAnimatedStyle = useAnimatedStyle(() => ({
@@ -130,7 +84,7 @@ export default function AppAccordion({
         accessibilityRole="button"
         accessibilityLabel={title}
         accessibilityState={{ expanded: isExpanded, disabled }}
-        onPress={handlePress}
+        onPress={disabled ? undefined : toggle}
         disabled={disabled}
         style={[styles.header, headerStyle]}
       >
@@ -168,22 +122,13 @@ export default function AppAccordion({
       </Pressable>
 
       {/* Hidden layout measurement probe */}
-      <View
-        style={styles.measureProbe}
-        pointerEvents="none"
-        onLayout={(e) => {
-          const h = Math.round(e.nativeEvent.layout.height);
-          if (h > 0 && h !== measuredHeight) {
-            setMeasuredHeight(h);
-          }
-        }}
-      >
+      <View {...probeProps}>
         <View style={[styles.contentInner, contentStyle]}>{children}</View>
       </View>
 
       {/* Active animated container */}
       <Animated.View
-        style={[styles.animatedContent, contentAnimatedStyle]}
+        style={[styles.animatedContent, collapsibleStyle]}
         pointerEvents={isExpanded ? 'auto' : 'none'}
       >
         <View style={[styles.contentInner, contentStyle]}>{children}</View>
