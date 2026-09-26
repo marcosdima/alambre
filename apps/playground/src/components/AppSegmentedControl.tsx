@@ -55,6 +55,7 @@ export default function AppSegmentedControl<T = string>({
                   accessibilityRole="button"
                 >
                   <Text
+                    numberOfLines={1}
                     style={[
                       styles.segmentText,
                       {
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 2,
     borderRadius: 9,
   },
   activeSegment: {
@@ -108,6 +109,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   segmentText: {
-    fontSize: 13,
+    fontSize: 12,
   },
 });

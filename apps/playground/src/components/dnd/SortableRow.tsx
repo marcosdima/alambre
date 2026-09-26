@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -37,6 +38,7 @@ export type SortableRowProps<T extends SortableItem> = {
 type SortableRowItemProps<T extends SortableItem> = {
   item: T;
   index: number;
+  displaySlot: number;
   total: number;
   itemWidth: number;
   gap: number;
@@ -46,12 +48,13 @@ type SortableRowItemProps<T extends SortableItem> = {
   slowMotion: boolean;
   activeScale: number;
   disabled: boolean;
+  slotPositions: SharedValue<number[]>;
   activeDragIndex: SharedValue<number>;
-  activeDragTranslationX: SharedValue<number>;
-  hoverIndex: SharedValue<number>;
-  isSettling: SharedValue<boolean>;
+  dragTranslationX: SharedValue<number>;
+  dragInitialSlot: SharedValue<number>;
   renderItem: (item: T, index: number, isDragging: boolean) => ReactNode;
-  onSwap: (fromIndex: number, toIndex: number) => void;
+  onCommitOrder: () => void;
+  onDirectMove: (fromIndex: number, toSlot: number) => void;
 };
 
 function getScaledSpring(
@@ -72,6 +75,7 @@ function getScaledSpring(
 function SortableRowItem<T extends SortableItem>({
   item,
   index,
+  displaySlot,
   total,
   itemWidth,
   gap,
@@ -81,12 +85,13 @@ function SortableRowItem<T extends SortableItem>({
   slowMotion,
   activeScale,
   disabled,
+  slotPositions,
   activeDragIndex,
-  activeDragTranslationX,
-  hoverIndex,
-  isSettling,
+  dragTranslationX,
+  dragInitialSlot,
   renderItem,
-  onSwap,
+  onCommitOrder,
+  onDirectMove,
 }: SortableRowItemProps<T>) {
   const [isDraggingState, setIsDraggingState] = useState(false);
   const scale = useSharedValue(1);
@@ -95,177 +100,148 @@ function SortableRowItem<T extends SortableItem>({
   const slotSize = itemWidth + gap;
   const speedMult = slowMotion ? 4 : 1;
 
-  const handleSwapJS = useCallback(
-    (fromIdx: number, toIdx: number) => {
-      if (fromIdx !== toIdx && toIdx >= 0 && toIdx < total) {
-        onSwap(fromIdx, toIdx);
-      }
-    },
-    [total, onSwap],
-  );
-
   const panGesture = Gesture.Pan()
     .enabled(!disabled)
     .onStart(() => {
       'worklet';
-      if (isSettling.value) return;
-
       activeDragIndex.value = index;
-      activeDragTranslationX.value = 0;
-      hoverIndex.value = index;
+      dragInitialSlot.value = slotPositions.value[index];
+      dragTranslationX.value = 0;
       scale.value = withSpring(activeScale, getScaledSpring(springDamping, springStiffness, speedMult));
       zIndexVal.value = 999;
       runOnJS(setIsDraggingState)(true);
     })
     .onUpdate((e) => {
       'worklet';
-      if (activeDragIndex.value !== index || isSettling.value) return;
+      if (activeDragIndex.value !== index) return;
 
-      activeDragTranslationX.value = e.translationX;
+      dragTranslationX.value = e.translationX;
 
-      const rawSlots = Math.round(e.translationX / slotSize);
-      const currentHover = Math.max(0, Math.min(total - 1, index + rawSlots));
-      hoverIndex.value = currentHover;
+      const rawShift = Math.round(e.translationX / slotSize);
+      const targetSlot = Math.max(0, Math.min(total - 1, dragInitialSlot.value + rawShift));
+      const currentSlot = slotPositions.value[index];
+
+      if (targetSlot !== currentSlot) {
+        const next = [...slotPositions.value];
+        for (let j = 0; j < total; j++) {
+          if (j === index) continue;
+          const s = next[j];
+          if (currentSlot < targetSlot) {
+            // Dragging right: intermediate cards shift left
+            if (s > currentSlot && s <= targetSlot) {
+              next[j] = s - 1;
+            }
+          } else {
+            // Dragging left: intermediate cards shift right
+            if (s >= targetSlot && s < currentSlot) {
+              next[j] = s + 1;
+            }
+          }
+        }
+        next[index] = targetSlot;
+        slotPositions.value = next;
+      }
     })
-    .onEnd((_e) => {
+    .onEnd(() => {
       'worklet';
       if (activeDragIndex.value !== index) return;
 
-      const targetIndex = hoverIndex.value;
-      const willSwap = targetIndex !== -1 && targetIndex !== index;
-      isSettling.value = true;
+      const currentSlot = slotPositions.value[index];
+      const targetVisualOffset = (currentSlot - index) * slotSize;
+      const initialSlot = dragInitialSlot.value;
+      const initialVisualOffset = (initialSlot - index) * slotSize;
+      const deltaToTarget = targetVisualOffset - initialVisualOffset;
 
-      // Drop spring configurations based on mode
-      let baseDropDamping = springDamping;
-      let baseDropStiffness = springStiffness;
-
-      if (dropAnimationMode === 'bounce') {
-        baseDropDamping = 12;
-        baseDropStiffness = 170;
-      } else if (dropAnimationMode === 'seamless') {
-        baseDropDamping = 26;
-        baseDropStiffness = 260;
-      } else if (dropAnimationMode === 'impact') {
-        baseDropDamping = 24;
-        baseDropStiffness = 260;
-      }
-
-      const dropSpring = getScaledSpring(baseDropDamping, baseDropStiffness, speedMult);
-
-      if (!willSwap) {
-        // Dropped without moving to a new slot: spring back to 0 in original slot
-        scale.value = withSpring(1, dropSpring);
-        activeDragTranslationX.value = withSpring(0, dropSpring, (finished) => {
-          if (finished) {
-            activeDragIndex.value = -1;
-            hoverIndex.value = -1;
-            isSettling.value = false;
-            zIndexVal.value = 0;
-            runOnJS(setIsDraggingState)(false);
-          }
-        });
-        return;
-      }
-
-      // Swapping slots! Target slot offset relative to origin slot:
-      const targetSlotOffset = (targetIndex - index) * slotSize;
-
-      const finishSwap = () => {
+      const finishDrop = () => {
         'worklet';
+        activeDragIndex.value = -1;
+        scale.value = withSpring(1, { damping: 20, stiffness: 260 });
+        zIndexVal.value = 0;
         runOnJS(setIsDraggingState)(false);
-        runOnJS(handleSwapJS)(index, targetIndex);
+        runOnJS(onCommitOrder)();
       };
 
       if (dropAnimationMode === 'instant') {
-        activeDragTranslationX.value = targetSlotOffset;
-        scale.value = 1;
-        zIndexVal.value = 0;
-        finishSwap();
+        dragTranslationX.value = deltaToTarget;
+        finishDrop();
         return;
       }
 
       if (dropAnimationMode === 'impact') {
-        // Glide into target slot, then trigger impact squash
-        activeDragTranslationX.value = withSpring(targetSlotOffset, dropSpring, (finished) => {
-          if (finished) {
-            scale.value = withSequence(
-              withTiming(0.92, { duration: 60 * speedMult }),
-              withSpring(1, getScaledSpring(16, 240, speedMult), (impactFinished) => {
-                if (impactFinished) {
-                  finishSwap();
-                }
-              }),
-            );
-          }
-        });
+        dragTranslationX.value = withTiming(
+          deltaToTarget,
+          { duration: 130 * speedMult, easing: Easing.out(Easing.quad) },
+          (finished) => {
+            if (finished) {
+              scale.value = withSequence(
+                withTiming(0.92, { duration: 50 * speedMult }),
+                withSpring(1, getScaledSpring(16, 240, speedMult), (done) => {
+                  if (done) finishDrop();
+                }),
+              );
+            }
+          },
+        );
+      } else if (dropAnimationMode === 'bounce') {
+        scale.value = withSpring(1, getScaledSpring(14, 200, speedMult));
+        dragTranslationX.value = withSpring(
+          deltaToTarget,
+          {
+            damping: Math.max(1, 13 / Math.sqrt(speedMult)),
+            stiffness: Math.max(1, 220 / speedMult),
+            energyThreshold: 0.5,
+          },
+          (finished) => {
+            if (finished) finishDrop();
+          },
+        );
       } else {
-        // 'seamless' or 'bounce'
-        scale.value = withSpring(1, dropSpring);
-        activeDragTranslationX.value = withSpring(targetSlotOffset, dropSpring, (finished) => {
-          if (finished) {
-            finishSwap();
-          }
-        });
+        // 'seamless' - quick 140ms crisp glide into slot with zero lingering delay
+        scale.value = withSpring(1, getScaledSpring(24, 280, speedMult));
+        dragTranslationX.value = withTiming(
+          deltaToTarget,
+          { duration: 140 * speedMult, easing: Easing.out(Easing.quad) },
+          (finished) => {
+            if (finished) finishDrop();
+          },
+        );
       }
     });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const isCurrentItem = activeDragIndex.value === index;
-    const isAnyItemDragging = activeDragIndex.value !== -1;
+    const isDragging = activeDragIndex.value === index;
+    const currentSlot = slotPositions.value[index];
+    const targetOffset = (currentSlot - index) * slotSize;
 
-    if (isCurrentItem) {
+    if (isDragging) {
+      const initialSlot = dragInitialSlot.value;
+      const visualOffset = (initialSlot - index) * slotSize + dragTranslationX.value;
       return {
-        zIndex: 999,
+        zIndex: zIndexVal.value,
         transform: [
-          { translateX: activeDragTranslationX.value },
+          { translateX: visualOffset },
           { scale: scale.value },
         ],
       };
     }
 
-    if (!isAnyItemDragging) {
-      return {
-        zIndex: 0,
-        transform: [
-          { translateX: 0 },
-          { scale: 1 },
-        ],
-      };
-    }
-
-    // A neighboring item is being dragged: calculate dynamic slot shift
-    const from = activeDragIndex.value;
-    const to = hoverIndex.value;
-    let targetOffset = 0;
-
-    if (from < to) {
-      // Dragging right: intermediate items shift LEFT
-      if (index > from && index <= to) {
-        targetOffset = -slotSize;
-      }
-    } else if (from > to) {
-      // Dragging left: intermediate items shift RIGHT
-      if (index >= to && index < from) {
-        targetOffset = slotSize;
-      }
-    }
-
     const neighborSpring = getScaledSpring(springDamping, springStiffness, speedMult);
 
     return {
-      zIndex: 1,
+      zIndex: zIndexVal.value,
       transform: [
         { translateX: withSpring(targetOffset, neighborSpring) },
-        { scale: 1 },
+        { scale: scale.value },
       ],
     };
   });
 
   const handleAccessibilityAction = (event: { nativeEvent: { actionName: string } }) => {
-    if (event.nativeEvent.actionName === 'moveLeft' && index > 0) {
-      onSwap(index, index - 1);
-    } else if (event.nativeEvent.actionName === 'moveRight' && index < total - 1) {
-      onSwap(index, index + 1);
+    const currentSlot = slotPositions.value[index];
+    if (event.nativeEvent.actionName === 'moveLeft' && currentSlot > 0) {
+      onDirectMove(index, currentSlot - 1);
+    } else if (event.nativeEvent.actionName === 'moveRight' && currentSlot < total - 1) {
+      onDirectMove(index, currentSlot + 1);
     }
   };
 
@@ -275,7 +251,7 @@ function SortableRowItem<T extends SortableItem>({
         collapsable={false}
         accessible
         accessibilityRole="button"
-        accessibilityLabel={`Item ${item.id}, position ${index + 1} of ${total}`}
+        accessibilityLabel={`Item ${item.id}, position ${displaySlot + 1} of ${total}`}
         accessibilityActions={[
           { name: 'moveLeft', label: 'Move left' },
           { name: 'moveRight', label: 'Move right' },
@@ -283,7 +259,7 @@ function SortableRowItem<T extends SortableItem>({
         onAccessibilityAction={handleAccessibilityAction}
         style={[animatedStyle, { width: itemWidth }]}
       >
-        {renderItem(item, index, isDraggingState)}
+        {renderItem(item, displaySlot, isDraggingState)}
       </Animated.View>
     </GestureDetector>
   );
@@ -303,51 +279,108 @@ export default function SortableRow<T extends SortableItem>({
   containerStyle,
   disabled = false,
 }: SortableRowProps<T>) {
+  // Fixed initial items baseline for stable indexing:
+  const baselineItemsRef = useRef(items);
+
+  // If the items array length changes or different items are passed, update baseline
+  const hasStructuralChange =
+    items.length !== baselineItemsRef.current.length ||
+    items.some((it) => !baselineItemsRef.current.some((b) => b.id === it.id));
+
+  if (hasStructuralChange) {
+    baselineItemsRef.current = items;
+  }
+
+  const baseline = baselineItemsRef.current;
+  const total = baseline.length;
+
+  const slotPositions = useSharedValue<number[]>(baseline.map((_, i) => i));
   const activeDragIndex = useSharedValue(-1);
-  const activeDragTranslationX = useSharedValue(0);
-  const hoverIndex = useSharedValue(-1);
-  const isSettling = useSharedValue(false);
+  const dragTranslationX = useSharedValue(0);
+  const dragInitialSlot = useSharedValue(0);
 
-  const handleSwap = useCallback(
-    (from: number, to: number) => {
-      // Synchronously reset shared values at the exact moment React re-renders with the new order
+  // If the parent passes an updated items array from outside (e.g. Reset Hand),
+  // sync the slotPositions to match the new incoming order
+  useEffect(() => {
+    const targetSlots = baseline.map((baseItem) => {
+      const foundIdx = items.findIndex((it) => it.id === baseItem.id);
+      return foundIdx !== -1 ? foundIdx : 0;
+    });
+
+    const isDifferent = targetSlots.some((slot, idx) => slot !== slotPositions.value[idx]);
+    if (isDifferent) {
+      slotPositions.value = targetSlots;
       activeDragIndex.value = -1;
-      hoverIndex.value = -1;
-      activeDragTranslationX.value = 0;
-      isSettling.value = false;
+      dragTranslationX.value = 0;
+    }
+  }, [items, baseline, slotPositions, activeDragIndex, dragTranslationX]);
 
-      const copy = [...items];
-      const [moved] = copy.splice(from, 1);
-      copy.splice(to, 0, moved);
-      onReorder(copy);
+  const handleCommitOrder = useCallback(() => {
+    const ordered: T[] = new Array(total);
+    for (let i = 0; i < total; i++) {
+      const slot = slotPositions.value[i];
+      ordered[slot] = baseline[i];
+    }
+    onReorder(ordered);
+  }, [total, baseline, onReorder, slotPositions]);
+
+  const handleDirectMove = useCallback(
+    (itemIndex: number, targetSlot: number) => {
+      const currentSlot = slotPositions.value[itemIndex];
+      if (currentSlot === targetSlot) return;
+
+      const next = [...slotPositions.value];
+      for (let j = 0; j < total; j++) {
+        if (j === itemIndex) continue;
+        const s = next[j];
+        if (currentSlot < targetSlot) {
+          if (s > currentSlot && s <= targetSlot) {
+            next[j] = s - 1;
+          }
+        } else {
+          if (s >= targetSlot && s < currentSlot) {
+            next[j] = s + 1;
+          }
+        }
+      }
+      next[itemIndex] = targetSlot;
+      slotPositions.value = next;
+      handleCommitOrder();
     },
-    [items, onReorder, activeDragIndex, hoverIndex, activeDragTranslationX, isSettling],
+    [total, slotPositions, handleCommitOrder],
   );
 
   return (
     <View style={[styles.container, { gap }, containerStyle]}>
-      {items.map((item, index) => (
-        <SortableRowItem
-          key={item.id}
-          item={item}
-          index={index}
-          total={items.length}
-          itemWidth={itemWidth}
-          gap={gap}
-          springDamping={springDamping}
-          springStiffness={springStiffness}
-          dropAnimationMode={dropAnimationMode}
-          slowMotion={slowMotion}
-          activeScale={activeScale}
-          disabled={disabled}
-          activeDragIndex={activeDragIndex}
-          activeDragTranslationX={activeDragTranslationX}
-          hoverIndex={hoverIndex}
-          isSettling={isSettling}
-          renderItem={renderItem}
-          onSwap={handleSwap}
-        />
-      ))}
+      {baseline.map((item, index) => {
+        const foundSlot = items.findIndex((it) => it.id === item.id);
+        const displaySlot = foundSlot !== -1 ? foundSlot : index;
+
+        return (
+          <SortableRowItem
+            key={item.id}
+            item={item}
+            index={index}
+            displaySlot={displaySlot}
+            total={total}
+            itemWidth={itemWidth}
+            gap={gap}
+            springDamping={springDamping}
+            springStiffness={springStiffness}
+            dropAnimationMode={dropAnimationMode}
+            slowMotion={slowMotion}
+            activeScale={activeScale}
+            disabled={disabled}
+            slotPositions={slotPositions}
+            activeDragIndex={activeDragIndex}
+            dragTranslationX={dragTranslationX}
+            dragInitialSlot={dragInitialSlot}
+            renderItem={renderItem}
+            onCommitOrder={handleCommitOrder}
+            onDirectMove={handleDirectMove}
+          />
+        );
+      })}
     </View>
   );
 }
