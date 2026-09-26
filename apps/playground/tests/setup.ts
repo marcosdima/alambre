@@ -32,6 +32,7 @@ vi.mock('react-native-reanimated', async () => {
     useAnimatedReaction: () => {},
     runOnJS: (fn: unknown) => fn,
     cancelAnimation: () => {},
+    interpolateColor: (_val: unknown, _inRange: unknown, outRange: string[]) => outRange[0] ?? '#000000',
     withTiming: (toValue: unknown) => toValue,
     withSpring: (toValue: unknown) => toValue,
     withRepeat: (anim: unknown) => anim,
@@ -51,7 +52,17 @@ vi.mock('react-native-reanimated', async () => {
     FadeInLeft: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
     FadeInRight: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
     FadeInUp: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
-    ZoomIn: { duration: () => ({ delay: () => ({ easing: () => ({}) }) }) },
+    ZoomIn: {
+      duration: () => ({
+        delay: () => ({ easing: () => ({}) }),
+        springify: () => ({ damping: () => ({ stiffness: () => ({}) }) }),
+      }),
+    },
+    ZoomOut: {
+      duration: () => ({
+        delay: () => ({ easing: () => ({}) }),
+      }),
+    },
     LinearTransition: {
       springify: () => ({
         damping: () => ({ stiffness: () => ({ mass: () => ({}) }) }),

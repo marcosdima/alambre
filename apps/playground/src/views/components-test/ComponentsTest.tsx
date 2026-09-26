@@ -17,7 +17,6 @@ import AppDialog from '../../components/AppDialog';
 import AppActionSheet, { type ActionSheetOption } from '../../components/AppActionSheet';
 import AppAccordion from '../../components/AppAccordion';
 import AppProgressBar from '../../components/AppProgressBar';
-import AnimatedCascade from '../../components/AnimatedCascade';
 
 type ActiveTab = 'buttons' | 'inputs' | 'cards' | 'modals' | 'disclosure';
 
@@ -112,6 +111,12 @@ export default function ComponentsTest() {
   const [progressVal, setProgressVal] = useState(65);
   const [progressTone, setProgressTone] = useState<'primary' | 'success' | 'warning' | 'danger'>('primary');
   const [progressIndeterminate, setProgressIndeterminate] = useState(false);
+  const [accordionAnimType, setAccordionAnimType] = useState<'timing' | 'spring'>('timing');
+  const [accordionDuration, setAccordionDuration] = useState<number>(260);
+  const [accordionSpringPreset, setAccordionSpringPreset] = useState<'smooth' | 'bouncy' | 'gentle'>('smooth');
+  const [accordionRotation, setAccordionRotation] = useState<90 | 180>(180);
+  const [accordionMode, setAccordionMode] = useState<'multi' | 'single'>('multi');
+  const [activeAccordionId, setActiveAccordionId] = useState<string | null>('sec');
 
   const handleDeleteWorkspace = () => {
     setDialogLoading(true);
@@ -1402,18 +1407,108 @@ export default function ComponentsTest() {
               level={2}
               badge="AppAccordion"
               badgeTone="success"
-              subtitle="Layout-jump free dynamic height disclosure with animated chevron and accessibility states."
+              subtitle="Layout-jump free dynamic height disclosure with configurable motion dynamics."
             >
               Collapsible Sections
             </AppTitle>
 
-            <AnimatedCascade pattern="top-to-bottom" staggerMs={60} style={{ gap: 12 }}>
+            {/* Motion & Expansion Interactive Configurator */}
+            <View style={[styles.previewArea, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, alignItems: 'stretch', gap: 12, marginBottom: 8 }]}>
+              <AppText variant="caption" style={{ fontWeight: '700' }}>MOTION & DISCLOSURE CONFIGURATOR</AppText>
+
+              {/* Animation Driver */}
+              <AppSegmentedControl<'timing' | 'spring'>
+                label="Animation Driver"
+                value={accordionAnimType}
+                onChange={setAccordionAnimType}
+                options={[
+                  { label: 'Timing (Bezier)', value: 'timing' },
+                  { label: 'Spring (Physics)', value: 'spring' },
+                ]}
+              />
+
+              {/* Duration or Spring Presets */}
+              {accordionAnimType === 'timing' ? (
+                <AppSegmentedControl<number>
+                  label="Timing Duration"
+                  value={accordionDuration}
+                  onChange={setAccordionDuration}
+                  options={[
+                    { label: 'Fast (160ms)', value: 160 },
+                    { label: 'Normal (260ms)', value: 260 },
+                    { label: 'Slow (450ms)', value: 450 },
+                  ]}
+                />
+              ) : (
+                <AppSegmentedControl<'smooth' | 'bouncy' | 'gentle'>
+                  label="Spring Preset"
+                  value={accordionSpringPreset}
+                  onChange={setAccordionSpringPreset}
+                  options={[
+                    { label: 'Smooth (d24/s180)', value: 'smooth' },
+                    { label: 'Bouncy (d14/s160)', value: 'bouncy' },
+                    { label: 'Gentle (d32/s130)', value: 'gentle' },
+                  ]}
+                />
+              )}
+
+              {/* Chevron Angle & Mode */}
+              <View style={styles.togglesRow}>
+                <View style={{ flex: 1, minWidth: 140 }}>
+                  <AppSegmentedControl<90 | 180>
+                    label="Chevron Angle"
+                    value={accordionRotation}
+                    onChange={setAccordionRotation}
+                    options={[
+                      { label: '180° (Flip)', value: 180 },
+                      { label: '90° (Quarter)', value: 90 },
+                    ]}
+                  />
+                </View>
+
+                <View style={{ flex: 1, minWidth: 140 }}>
+                  <AppSegmentedControl<'multi' | 'single'>
+                    label="Expansion Mode"
+                    value={accordionMode}
+                    onChange={(m) => {
+                      setAccordionMode(m);
+                      if (m === 'single') {
+                        setActiveAccordionId('sec');
+                      }
+                    }}
+                    options={[
+                      { label: 'Multi (Free)', value: 'multi' },
+                      { label: 'Single (Solo)', value: 'single' },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Accordion Group without violent layout springs */}
+            <View style={{ gap: 12 }}>
               <AppAccordion
                 title="Account Security & 2FA"
                 subtitle="Manage hardware security keys and authenticator apps"
                 badge="Recommended"
                 badgeTone="success"
+                animationType={accordionAnimType}
+                duration={accordionDuration}
+                springConfig={
+                  accordionSpringPreset === 'bouncy'
+                    ? { damping: 14, stiffness: 160 }
+                    : accordionSpringPreset === 'gentle'
+                      ? { damping: 32, stiffness: 130 }
+                      : { damping: 24, stiffness: 180 }
+                }
+                rotationAngle={accordionRotation}
+                expanded={accordionMode === 'single' ? activeAccordionId === 'sec' : undefined}
                 defaultExpanded={true}
+                onToggle={(isExp) => {
+                  if (accordionMode === 'single') {
+                    setActiveAccordionId(isExp ? 'sec' : null);
+                  }
+                }}
               >
                 <AppText variant="caption" style={{ marginBottom: 8 }}>
                   Two-factor authentication is currently enabled via Google Authenticator.
@@ -1432,7 +1527,23 @@ export default function ComponentsTest() {
                 subtitle="Opt-in anonymous crash diagnostic dispatch"
                 badge="Optional"
                 badgeTone="neutral"
+                animationType={accordionAnimType}
+                duration={accordionDuration}
+                springConfig={
+                  accordionSpringPreset === 'bouncy'
+                    ? { damping: 14, stiffness: 160 }
+                    : accordionSpringPreset === 'gentle'
+                      ? { damping: 32, stiffness: 130 }
+                      : { damping: 24, stiffness: 180 }
+                }
+                rotationAngle={accordionRotation}
+                expanded={accordionMode === 'single' ? activeAccordionId === 'telemetry' : undefined}
                 defaultExpanded={false}
+                onToggle={(isExp) => {
+                  if (accordionMode === 'single') {
+                    setActiveAccordionId(isExp ? 'telemetry' : null);
+                  }
+                }}
               >
                 <AppText variant="caption" style={{ marginBottom: 8 }}>
                   Crash logs and performance metrics are sent to EAS Observe to monitor app stability.
@@ -1449,13 +1560,23 @@ export default function ComponentsTest() {
                 subtitle="Locked under early preview program"
                 badge="Locked"
                 badgeTone="danger"
+                animationType={accordionAnimType}
+                duration={accordionDuration}
+                springConfig={
+                  accordionSpringPreset === 'bouncy'
+                    ? { damping: 14, stiffness: 160 }
+                    : accordionSpringPreset === 'gentle'
+                      ? { damping: 32, stiffness: 130 }
+                      : { damping: 24, stiffness: 180 }
+                }
+                rotationAngle={accordionRotation}
                 disabled={true}
               >
                 <AppText variant="caption">
                   You need to join the Canary testing flight to access experimental flags.
                 </AppText>
               </AppAccordion>
-            </AnimatedCascade>
+            </View>
           </Animated.View>
         </>
       )}

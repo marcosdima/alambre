@@ -5,6 +5,7 @@ import { Text } from 'react-native';
 import { LightDarkProvider } from '../src/providers/theme';
 import AppAccordion from '../src/components/AppAccordion';
 import AppProgressBar from '../src/components/AppProgressBar';
+import AppTextInput from '../src/components/AppTextInput';
 
 const renderWithTheme = async (ui: ReactElement) => {
   return await render(<LightDarkProvider>{ui}</LightDarkProvider>);
@@ -38,6 +39,23 @@ describe('AppAccordion component contract', () => {
 
     expect(onToggle).toHaveBeenCalledWith(true);
   });
+
+  it('supports spring animationType, custom springConfig and rotationAngle', async () => {
+    const screen = await renderWithTheme(
+      <AppAccordion
+        title="Spring Config Test"
+        animationType="spring"
+        springConfig={{ damping: 20, stiffness: 150 }}
+        rotationAngle={90}
+        defaultExpanded={true}
+      >
+        <Text>Spring Details</Text>
+      </AppAccordion>,
+    );
+
+    const button = screen.getByLabelText('Spring Config Test');
+    expect(button.props.accessibilityState.expanded).toBe(true);
+  });
 });
 
 describe('AppProgressBar component contract', () => {
@@ -69,5 +87,39 @@ describe('AppProgressBar component contract', () => {
 
     const bar = screen.getByLabelText('Buffering...');
     expect(bar.props.accessibilityValue).toBeUndefined();
+  });
+});
+
+describe('AppTextInput component contract', () => {
+  it('renders with label and handles clearable action', async () => {
+    const onChangeText = vi.fn();
+    const screen = await renderWithTheme(
+      <AppTextInput
+        label="Username"
+        defaultValue="Initial User"
+        clearable
+        onChangeText={onChangeText}
+      />,
+    );
+
+    const clearBtn = screen.getByLabelText('Clear text');
+    expect(clearBtn).toBeDefined();
+    fireEvent.press(clearBtn);
+    expect(onChangeText).toHaveBeenCalledWith('');
+  });
+
+  it('renders password toggle and toggles visibility state', async () => {
+    const screen = await renderWithTheme(
+      <AppTextInput
+        label="Master Key"
+        defaultValue="SecretPhrase"
+        isPassword
+      />,
+    );
+
+    const toggleBtn = screen.getByLabelText('Show password');
+    expect(toggleBtn).toBeDefined();
+    fireEvent.press(toggleBtn);
+    expect(await screen.findByLabelText('Hide password')).toBeDefined();
   });
 });

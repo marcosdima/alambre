@@ -7,6 +7,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
@@ -23,6 +24,9 @@ export type AppAccordionProps = {
   defaultExpanded?: boolean;
   onToggle?: (expanded: boolean) => void;
   duration?: number;
+  animationType?: 'timing' | 'spring';
+  springConfig?: { damping?: number; stiffness?: number; mass?: number };
+  rotationAngle?: 90 | 180;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
@@ -40,6 +44,9 @@ export default function AppAccordion({
   defaultExpanded = false,
   onToggle,
   duration = 240,
+  animationType = 'timing',
+  springConfig,
+  rotationAngle = 180,
   disabled = false,
   style,
   headerStyle,
@@ -62,11 +69,28 @@ export default function AppAccordion({
       return;
     }
 
-    progress.value = withTiming(isExpanded ? 1 : 0, {
-      duration,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-    });
-  }, [isExpanded, duration, isReducedMotion, progress]);
+    if (animationType === 'spring') {
+      progress.value = withSpring(isExpanded ? 1 : 0, {
+        damping: springConfig?.damping ?? 24,
+        stiffness: springConfig?.stiffness ?? 180,
+        mass: springConfig?.mass ?? 1,
+      });
+    } else {
+      progress.value = withTiming(isExpanded ? 1 : 0, {
+        duration,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      });
+    }
+  }, [
+    isExpanded,
+    duration,
+    animationType,
+    springConfig?.damping,
+    springConfig?.stiffness,
+    springConfig?.mass,
+    isReducedMotion,
+    progress,
+  ]);
 
   const handlePress = () => {
     if (disabled) return;
@@ -77,13 +101,16 @@ export default function AppAccordion({
     onToggle?.(nextState);
   };
 
-  const contentAnimatedStyle = useAnimatedStyle(() => ({
-    height: measuredHeight > 0 ? progress.value * measuredHeight : undefined,
-    opacity: progress.value,
-  }));
+  const contentAnimatedStyle = useAnimatedStyle(() => {
+    const clampedProgress = Math.max(0, progress.value);
+    return {
+      height: measuredHeight > 0 ? clampedProgress * measuredHeight : undefined,
+      opacity: Math.max(0, Math.min(1, progress.value)),
+    };
+  });
 
   const chevronAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${progress.value * 180}deg` }],
+    transform: [{ rotate: `${progress.value * rotationAngle}deg` }],
   }));
 
   return (
@@ -132,7 +159,7 @@ export default function AppAccordion({
         {/* Animated Chevron Indicator */}
         <Animated.View style={[styles.chevronWrapper, chevronAnimatedStyle]}>
           <AlambreIcons.Arrow
-            rotation={90}
+            rotation={rotationAngle === 90 ? 0 : 90}
             color={disabled ? theme.border : theme.muted}
             lineWidth={2.5}
             style={styles.chevronIcon}
@@ -219,9 +246,10 @@ const styles = StyleSheet.create({
   },
   measureProbe: {
     position: 'absolute',
-    top: -9999,
+    top: 0,
     left: 0,
     right: 0,
     opacity: 0,
+    zIndex: -1,
   },
 });
