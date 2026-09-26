@@ -4,9 +4,9 @@ All notable changes to `alambre` are documented in this file.
 
 The package is currently in a **pre-baseline phase**: the public contract is still being defined and the current `1.0.x` version series is a frozen placeholder (see `docs/architecture.md` §9). SemVer constraints do not apply until a baseline is declared.
 
-## Unreleased — pre-baseline history
+## 1.1.0 — 2026-09-26
 
-Breaking and structural changes recorded while the contract was being defined, kept until the baseline is declared:
+Key features, structural refactors, and public type contracts graduated in this release:
 
 - [refactor] Restructure `modules` into an internal `core` (`createStore`, `createProvider`), content-driven `capabilities` (config, lang, light-dark) and `behaviors` (api, navigator, toast).
 - [refactor] Remove `BaseModule` and `createModuleProvider` from the public API.
