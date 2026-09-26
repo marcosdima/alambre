@@ -24,6 +24,7 @@ import {
   SortableRow,
   useDraggable,
   type DropAnimationMode,
+  type NeighborShiftMode,
   type DropEvent,
   type SortableItem,
 } from '../../components/dnd';
@@ -154,12 +155,10 @@ function DndTestContent({
   // Card 1 Controls (Hand)
   const [dropMode, setDropMode] = useState<DropAnimationMode>('seamless');
   const [handSlowMotion, setHandSlowMotion] = useState(false);
-  const [handGap, setHandGap] = useState<4 | 8 | 14>(8);
-  const [handPhysics, setHandPhysics] = useState<'snappy' | 'smooth' | 'bouncy'>('snappy');
-  const [handScale, setHandScale] = useState<1.05 | 1.10 | 1.18>(1.10);
-
-  const handDamping = handPhysics === 'snappy' ? 28 : handPhysics === 'smooth' ? 20 : 14;
-  const handStiffness = handPhysics === 'snappy' ? 300 : handPhysics === 'smooth' ? 200 : 150;
+  const [neighborMotion, setNeighborMotion] = useState<NeighborShiftMode>('glide');
+  const [handTilt, setHandTilt] = useState<0 | 4 | 8>(4);
+  const [handSensitivity, setHandSensitivity] = useState<0.35 | 0.50 | 0.65>(0.50);
+  const [handScale, setHandScale] = useState<1.00 | 1.08 | 1.16>(1.08);
 
   // Card 2 Controls (Drop Zones)
   const [glowTone, setGlowTone] = useState<'blue-purple' | 'emerald-amber'>('blue-purple');
@@ -218,7 +217,7 @@ function DndTestContent({
       {/* CARD 1: Card Hand / Sortable Reordering */}
       <AppCard
         title="Card Hand (Sortable Reorder)"
-        subtitle="Real-time reactive gap opening: drag cards horizontally to reorder slots with smooth physics."
+        subtitle="Real-time reactive gap opening: test pure glides (no bounce), linear slides, elastic springs, kinetic tilt, and drop settles."
         badge={`${hand.length} Cards`}
         badgeTone="primary"
       >
@@ -227,9 +226,10 @@ function DndTestContent({
             items={hand}
             onReorder={setHand}
             itemWidth={68}
-            gap={handGap}
-            springDamping={handDamping}
-            springStiffness={handStiffness}
+            gap={8}
+            neighborShiftMode={neighborMotion}
+            dragTiltDeg={handTilt}
+            reorderThreshold={handSensitivity}
             dropAnimationMode={dropMode}
             slowMotion={handSlowMotion}
             activeScale={handScale}
@@ -274,10 +274,56 @@ function DndTestContent({
             value={dropMode}
             onChange={(val) => setDropMode(val as DropAnimationMode)}
             options={[
-              { value: 'seamless', label: 'Seamless' },
-              { value: 'bounce', label: 'Elastic' },
+              { value: 'seamless', label: 'Glide' },
+              { value: 'bounce', label: 'Bounce' },
               { value: 'impact', label: 'Impact' },
               { value: 'instant', label: 'Instant' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Neighbor Shift Motion"
+            value={neighborMotion}
+            onChange={(val) => setNeighborMotion(val as NeighborShiftMode)}
+            options={[
+              { value: 'glide', label: 'Glide' },
+              { value: 'linear', label: 'Linear' },
+              { value: 'damped', label: 'Damped' },
+              { value: 'bounce', label: 'Bounce' },
+              { value: 'instant', label: 'Instant' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Reorder Sensitivity"
+            value={handSensitivity}
+            onChange={(val) => setHandSensitivity(val as 0.35 | 0.50 | 0.65)}
+            options={[
+              { value: 0.35, label: 'Quick (35%)' },
+              { value: 0.50, label: 'Balanced (50%)' },
+              { value: 0.65, label: 'Firm (65%)' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Kinetic Drag Tilt"
+            value={handTilt}
+            onChange={(val) => setHandTilt(val as 0 | 4 | 8)}
+            options={[
+              { value: 0, label: 'Flat (0°)' },
+              { value: 4, label: 'Subtle (4°)' },
+              { value: 8, label: 'Expressive (8°)' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Pickup Elevation Scale"
+            value={handScale}
+            onChange={(val) => setHandScale(val as 1.00 | 1.08 | 1.16)}
+            options={[
+              { value: 1.00, label: 'Flat (1.0x)' },
+              { value: 1.08, label: 'Calm (1.08x)' },
+              { value: 1.16, label: 'Pop (1.16x)' },
             ]}
           />
 
@@ -286,39 +332,6 @@ function DndTestContent({
             subtitle="4x slower animation to inspect drop physics and slot transitions frame-by-frame"
             checked={handSlowMotion}
             onChange={setHandSlowMotion}
-          />
-
-          <AppSegmentedControl
-            label="Neighbor Shift Glide"
-            value={handPhysics}
-            onChange={(val) => setHandPhysics(val as 'snappy' | 'smooth' | 'bouncy')}
-            options={[
-              { value: 'snappy', label: 'Snappy' },
-              { value: 'smooth', label: 'Smooth' },
-              { value: 'bouncy', label: 'Bouncy' },
-            ]}
-          />
-
-          <AppSegmentedControl
-            label="Pickup Elevation Scale"
-            value={handScale}
-            onChange={(val) => setHandScale(val as 1.05 | 1.10 | 1.18)}
-            options={[
-              { value: 1.05, label: 'Calm (1.05x)' },
-              { value: 1.10, label: 'Tactile (1.10x)' },
-              { value: 1.18, label: 'Pop (1.18x)' },
-            ]}
-          />
-
-          <AppSegmentedControl
-            label="Card Spacing"
-            value={handGap}
-            onChange={(val) => setHandGap(val as 4 | 8 | 14)}
-            options={[
-              { value: 4, label: 'Compact (4px)' },
-              { value: 8, label: 'Normal (8px)' },
-              { value: 14, label: 'Relaxed (14px)' },
-            ]}
           />
         </View>
       </AppCard>

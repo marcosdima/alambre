@@ -19,6 +19,7 @@ export type SortableItem = {
 };
 
 export type DropAnimationMode = 'seamless' | 'bounce' | 'impact' | 'instant';
+export type NeighborShiftMode = 'glide' | 'linear' | 'damped' | 'bounce' | 'instant';
 
 export type SortableRowProps<T extends SortableItem> = {
   items: T[];
@@ -28,6 +29,9 @@ export type SortableRowProps<T extends SortableItem> = {
   gap?: number;
   springDamping?: number;
   springStiffness?: number;
+  neighborShiftMode?: NeighborShiftMode;
+  dragTiltDeg?: number;
+  reorderThreshold?: number;
   dropAnimationMode?: DropAnimationMode;
   slowMotion?: boolean;
   activeScale?: number;
@@ -44,6 +48,9 @@ type SortableRowItemProps<T extends SortableItem> = {
   gap: number;
   springDamping: number;
   springStiffness: number;
+  neighborShiftMode: NeighborShiftMode;
+  dragTiltDeg: number;
+  reorderThreshold: number;
   dropAnimationMode: DropAnimationMode;
   slowMotion: boolean;
   activeScale: number;
@@ -81,6 +88,9 @@ function SortableRowItem<T extends SortableItem>({
   gap,
   springDamping,
   springStiffness,
+  neighborShiftMode,
+  dragTiltDeg,
+  reorderThreshold,
   dropAnimationMode,
   slowMotion,
   activeScale,
@@ -117,7 +127,11 @@ function SortableRowItem<T extends SortableItem>({
 
       dragTranslationX.value = e.translationX;
 
-      const rawShift = Math.round(e.translationX / slotSize);
+      const absX = Math.abs(e.translationX);
+      const sign = e.translationX >= 0 ? 1 : -1;
+      const rawShift =
+        sign *
+        Math.floor((absX + (1 - reorderThreshold) * slotSize) / slotSize);
       const targetSlot = Math.max(0, Math.min(total - 1, dragInitialSlot.value + rawShift));
       const currentSlot = slotPositions.value[index];
 
@@ -216,22 +230,54 @@ function SortableRowItem<T extends SortableItem>({
     if (isDragging) {
       const initialSlot = dragInitialSlot.value;
       const visualOffset = (initialSlot - index) * slotSize + dragTranslationX.value;
+
+      let rotationStr = '0deg';
+      if (dragTiltDeg > 0) {
+        const normalized = Math.max(-1, Math.min(1, dragTranslationX.value / slotSize));
+        const tilt = normalized * dragTiltDeg;
+        rotationStr = `${tilt}deg`;
+      }
+
       return {
         zIndex: zIndexVal.value,
         transform: [
           { translateX: visualOffset },
           { scale: scale.value },
+          { rotate: rotationStr },
         ],
       };
     }
 
-    const neighborSpring = getScaledSpring(springDamping, springStiffness, speedMult);
+    let neighborTranslateX: number;
+    if (neighborShiftMode === 'instant') {
+      neighborTranslateX = targetOffset;
+    } else if (neighborShiftMode === 'linear') {
+      neighborTranslateX = withTiming(targetOffset, {
+        duration: 150 * speedMult,
+        easing: Easing.linear,
+      });
+    } else if (neighborShiftMode === 'glide') {
+      neighborTranslateX = withTiming(targetOffset, {
+        duration: 170 * speedMult,
+        easing: Easing.out(Easing.cubic),
+      });
+    } else if (neighborShiftMode === 'damped') {
+      neighborTranslateX = withSpring(
+        targetOffset,
+        getScaledSpring(30, 260, speedMult),
+      );
+    } else {
+      // 'bounce'
+      const neighborSpring = getScaledSpring(springDamping, springStiffness, speedMult);
+      neighborTranslateX = withSpring(targetOffset, neighborSpring);
+    }
 
     return {
       zIndex: zIndexVal.value,
       transform: [
-        { translateX: withSpring(targetOffset, neighborSpring) },
+        { translateX: neighborTranslateX },
         { scale: scale.value },
+        { rotate: '0deg' },
       ],
     };
   });
@@ -273,6 +319,9 @@ export default function SortableRow<T extends SortableItem>({
   gap = 8,
   springDamping = 20,
   springStiffness = 240,
+  neighborShiftMode = 'glide',
+  dragTiltDeg = 0,
+  reorderThreshold = 0.5,
   dropAnimationMode = 'seamless',
   slowMotion = false,
   activeScale = 1.08,
@@ -367,6 +416,9 @@ export default function SortableRow<T extends SortableItem>({
             gap={gap}
             springDamping={springDamping}
             springStiffness={springStiffness}
+            neighborShiftMode={neighborShiftMode}
+            dragTiltDeg={dragTiltDeg}
+            reorderThreshold={reorderThreshold}
             dropAnimationMode={dropAnimationMode}
             slowMotion={slowMotion}
             activeScale={activeScale}
