@@ -82,6 +82,7 @@ export {
   calculateStaggerDelay,
   StaggerProvider,
   useStaggerItem,
+  useCollapsible,
 } from './hooks';
 export type {
   HistoryState,
@@ -92,6 +93,10 @@ export type {
   StaggerOptions,
   StaggerContextValue,
   StaggerProviderProps,
+  CollapsibleTransitionType,
+  CollapsibleSpringConfig,
+  UseCollapsibleOptions,
+  UseCollapsibleReturn,
 } from './hooks';
 
 // Icons.

@@ -68,6 +68,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.calculateStaggerDelay).toBe('function');
     expect(typeof Alambre.StaggerProvider).toBe('function');
     expect(typeof Alambre.useStaggerItem).toBe('function');
+    expect(typeof Alambre.useCollapsible).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 

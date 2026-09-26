@@ -35,3 +35,14 @@ export type {
   StaggerContextValue,
   StaggerProviderProps,
 } from './use-stagger';
+
+export {
+  useCollapsible,
+} from './use-collapsible';
+export type {
+  CollapsibleTransitionType,
+  CollapsibleSpringConfig,
+  UseCollapsibleOptions,
+  UseCollapsibleReturn,
+} from './use-collapsible';
+
