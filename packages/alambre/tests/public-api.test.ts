@@ -69,6 +69,13 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.StaggerProvider).toBe('function');
     expect(typeof Alambre.useStaggerItem).toBe('function');
     expect(typeof Alambre.useCollapsible).toBe('function');
+    expect(typeof Alambre.DndProvider).toBe('function');
+    expect(typeof Alambre.useDnd).toBe('function');
+    expect(typeof Alambre.useDraggable).toBe('function');
+    expect(typeof Alambre.useDroppable).toBe('function');
+    expect(typeof Alambre.Draggable).toBe('function');
+    expect(typeof Alambre.Droppable).toBe('function');
+    expect(typeof Alambre.SortableRow).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 
@@ -200,6 +207,14 @@ describe('public API — type surface', () => {
     const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };
     const staggerContext: Alambre.StaggerContextValue = { getDelay: () => 50, isReducedMotion: false };
     const staggerProps: Alambre.StaggerProviderProps = { children: null, initialDelay: 50 };
+    const layoutBounds: Alambre.LayoutBounds = { x: 0, y: 0, width: 100, height: 100 };
+    const droppableRegistration: Alambre.DroppableRegistration = { id: 'zone-1', bounds: layoutBounds };
+    const activeDragState: Alambre.ActiveDragState = { id: 'drag-1', touchX: 10, touchY: 10, originBounds: null, hoveredZoneId: null };
+    const dropEvent: Alambre.DropEvent = { draggableId: 'drag-1', droppableId: 'zone-1' };
+    const kinetics: Alambre.DraggableKineticsConfig = { activeScale: 1.05, maxVelocityTiltDeg: 10 };
+    const sortableItem: Alambre.SortableItem = { id: 'item-1' };
+    const dropMode: Alambre.DropAnimationMode = 'seamless';
+    const neighborMode: Alambre.NeighborShiftMode = 'glide';
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
@@ -219,6 +234,14 @@ describe('public API — type surface', () => {
     expect(staggerOptions).toBeDefined();
     expect(staggerContext).toBeDefined();
     expect(staggerProps).toBeDefined();
+    expect(layoutBounds).toBeDefined();
+    expect(droppableRegistration).toBeDefined();
+    expect(activeDragState).toBeDefined();
+    expect(dropEvent).toBeDefined();
+    expect(kinetics).toBeDefined();
+    expect(sortableItem).toBeDefined();
+    expect(dropMode).toBeDefined();
+    expect(neighborMode).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {

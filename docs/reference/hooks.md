@@ -1,6 +1,6 @@
 ---
 title: Hooks & State Utilities Reference
-summary: Headless hooks and state helpers: useHistoryState, useStopwatch, and useIconAnimation.
+summary: Headless hooks and state helpers: useHistoryState, useStopwatch, useIconAnimation, useStagger, and useCollapsible.
 ---
 
 # Hooks & State Utilities Reference
@@ -174,3 +174,93 @@ function ListItem({ index }: { index: number }) {
   );
 }
 ```
+
+---
+
+## 5. `useCollapsible`
+
+Headless hook for expandable and collapsible content (accordions, disclosure sections, expandable cards). Solves the React Native limitation where `height: 'auto'` cannot be animated via Reanimated shared values, using an off-screen layout measurement probe and spring/timing interpolation with automatic reduced motion support.
+
+### Signature
+```typescript
+import {
+  useCollapsible,
+  type UseCollapsibleOptions,
+  type UseCollapsibleReturn,
+} from 'alambre';
+
+const {
+  isExpanded,
+  toggle,
+  setExpanded,
+  measuredHeight,
+  handleContentLayout,
+  progress,
+  animatedStyle,
+  probeProps,
+} = useCollapsible(options?: UseCollapsibleOptions);
+```
+
+### Options (`UseCollapsibleOptions`)
+* `expanded?: boolean`: Controlled boolean expansion state.
+* `defaultExpanded?: boolean`: Initial state when uncontrolled (default: `false`).
+* `onToggle?: (expanded: boolean) => void`: Callback fired when expansion state toggles.
+* `transitionType?: 'spring' | 'timing'`: Animation curve (default: `'spring'`).
+* `springConfig?: { damping?: number; stiffness?: number; mass?: number }`: Spring physics parameters when `transitionType === 'spring'` (default: `damping: 20, stiffness: 240, mass: 0.8`).
+* `duration?: number`: Duration in milliseconds when `transitionType === 'timing'` (default: `240`).
+
+### Properties & Actions (`UseCollapsibleReturn`)
+* `isExpanded: boolean`: Current boolean expanded state.
+* `toggle(): void`: Inverts current expansion state.
+* `setExpanded(next: boolean): void`: Sets expansion state explicitly.
+* `measuredHeight: number`: Inner content height in pixels measured via `handleContentLayout`.
+* `handleContentLayout(event: LayoutChangeEvent): void`: Layout handler to attach to the inner content container.
+* `progress: SharedValue<number>`: Reanimated shared value between `0` (closed) and `1` (open).
+* `animatedStyle: { height: number | undefined; overflow: 'hidden' }`: Animated styles to apply to the visible container.
+* `probeProps`: Helper props (`pointerEvents="none"`, off-screen styling, and `onLayout`) to spread onto a measurement probe element.
+
+### Example
+```typescript
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { useCollapsible } from 'alambre';
+
+export function AccordionSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const { isExpanded, toggle, animatedStyle, probeProps, handleContentLayout } = useCollapsible({
+    transitionType: 'spring',
+  });
+
+  return (
+    <View style={styles.card}>
+      <Pressable
+        onPress={toggle}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isExpanded }}
+        style={styles.header}
+      >
+        <Text style={styles.title}>{title}</Text>
+      </Pressable>
+
+      {/* Visible animated collapsible container */}
+      <Animated.View style={animatedStyle}>
+        <View onLayout={handleContentLayout} style={styles.content}>
+          {children}
+        </View>
+      </Animated.View>
+
+      {/* Off-screen measurement probe to handle dynamic content height */}
+      <View {...probeProps} style={[probeProps.style, styles.content]}>
+        {children}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { borderRadius: 12, backgroundColor: '#ffffff', overflow: 'hidden' },
+  header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  title: { fontSize: 16, fontWeight: '600' },
+  content: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth, borderColor: '#e2e8f0' },
+});
+```
+

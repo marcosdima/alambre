@@ -1,4 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
+import type { LayoutChangeEvent } from 'react-native';
 import { describe, expect, it, vi } from 'vitest';
 import { useCollapsible } from '../../src/hooks/use-collapsible';
 
@@ -66,7 +67,7 @@ describe('useCollapsible hook contract', () => {
         nativeEvent: {
           layout: { x: 0, y: 0, width: 300, height: 142 },
         },
-      } as any);
+      } as unknown as LayoutChangeEvent);
     });
 
     expect(result.current.measuredHeight).toBe(142);

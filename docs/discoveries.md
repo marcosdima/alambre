@@ -373,3 +373,20 @@ Enforce that screens rendered inside `AppNavigatorBody` render a root `<View sty
 3. Use `pointerEvents="none"` on the inner mask slots and single-node accessible labels (`accessibilityLabel={masked ? 'Masked text' : text}`) to adhere to TalkBack/VoiceOver rules.
 
 **Status: PROPOSAL.** Implemented and validated in `apps/playground`.
+
+## Headless drag-and-drop primitives and 1D sortable containers (`DndProvider`, `Draggable`, `Droppable`, `SortableRow`)
+
+**Pattern:** Interactive card decks, item inventories, reorderable task lists, and physics sandboxes require drag-and-drop gestures with 60fps responsiveness, continuous spatial hit-testing, dynamic neighbor shifting, velocity tilt, and screen reader accessibility. Coupling drag gestures to rigid layout opinions or specific visual designs makes components unadaptable across applications.
+
+**Where it appeared:** `apps/playground/src/components/dnd/` (Sortable card deck with multiple easing curves, bidirectional slot swapping, recycling drop zones, and micro-physics sandboxes).
+
+**Solution / Architectural Evaluation:**
+1. **Headless Separation:** Decouple gesture tracking, coordinate calculation, and reordering state math into framework primitives (`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`) while leaving visual styles (colors, shadows, margins, cards) 100% to the application.
+2. **Central Spatial Hit-Testing:** `DndProvider` maintains a registry of screen-relative window bounds (`LayoutBounds`), remeasuring on drag start to prevent coordinate drift caused by parent scroll containers.
+3. **UI-Thread 60fps Worklets:** Continuous pan gestures run on the Reanimated UI thread. Dynamic rotation tilt (`interpolate` against `velocityX`), pickup scale, and 2D boundary clamping (`boundsConstraint`) execute with zero bridge latency.
+4. **Customizable Kinetic Dynamics:**
+   - Neighbor shift modes in `SortableRow`: `'glide'` (cubic timing), `'linear'` (linear timing), `'damped'` (critically-damped spring), `'bounce'` (elastic spring), and `'instant'`.
+   - Drop animation modes: `'seamless'` (140ms crisp glide, zero lingering delay), `'bounce'` (elastic settle), `'impact'` (compression sequence), and `'instant'`.
+5. **Screen Reader Accessibility:** Screen readers cannot operate spatial drag gestures. Primitives provide `accessibilityRole="button"`, semantic labels, and `SortableRow` equips items with `accessibilityActions: [{ name: 'moveLeft' }, { name: 'moveRight' }]` and `onAccessibilityAction` handlers so TalkBack and VoiceOver users can reorder items sequentially.
+
+**Status: PROPOSAL.** Implemented and validated in `apps/playground`, rescued into `packages/alambre`. Awaiting second consumer validation before graduation to `ADOPTED`.

@@ -157,6 +157,8 @@ Intentional public type contracts:
 * `TimePickerProps` — the `TimePicker` input contract.
 * `HistoryState`, `UseHistoryStateOptions`, `UseHistoryStateReturn` — the `useHistoryState` contract and its pure history helpers.
 * `UseStopwatchOptions`, `UseStopwatchReturn` — the `useStopwatch` contract.
+* `CollapsibleTransitionType`, `CollapsibleSpringConfig`, `UseCollapsibleOptions`, `UseCollapsibleReturn` — the `useCollapsible` headless disclosure contract.
+* `LayoutBounds`, `DroppableRegistration`, `ActiveDragState`, `DropEvent`, `DndContextValue`, `DndProviderProps`, `DraggableKineticsConfig`, `UseDraggableOptions`, `UseDraggableReturn`, `UseDroppableOptions`, `UseDroppableReturn`, `DraggableRenderProps`, `DraggableProps`, `DroppableRenderProps`, `DroppableProps`, `SortableItem`, `DropAnimationMode`, `NeighborShiftMode`, `SortableRowProps` — the headless Drag & Drop and sortable container contracts (`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`).
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
 
@@ -197,8 +199,13 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `TimePicker` is an additive input component: a 24h hour/minute wheel built as a fixed tap viewport with increment/decrement arrows (no native dependencies and no scrolling), exposed with `value`/`onChange` as an `HH:MM` string and a themeable accent. The wheel renders the selected row and its neighbours and accepts taps; the arrows clamp to the range. Its pure time math (`components/time/time-utils`) is unit-tested, and the component is covered by `tests/components/time-picker.test.tsx`. It is validated in the reference app's alarm form (Colguetti). The display wraps the row labels around the range edges; the previous ScrollView-snapping implementation was replaced (fixed tap viewport) to avoid nested scroll and layout jump issues.
 
+`useCollapsible` is an additive headless hook: manages expandable/collapsible disclosure animations with off-screen height measurement probe, cubic-bezier timing or spring physics, and automatic reduced-motion accessibility. Validated by `tests/hooks/use-collapsible.test.tsx`.
+
+`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives: provide central spatial hit-testing, 60fps pan gesture worklets with velocity tilt, scale transforms, boundary clamping, customizable neighbor shifting (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native TalkBack / VoiceOver accessibility actions (`moveLeft` / `moveRight`). Covered by unit tests in `tests/components/` and validated by `tests/public-api.test.ts`.
+
 Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/discoveries.md`).
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
 The versioning policy for this public contract is defined in §9.
+

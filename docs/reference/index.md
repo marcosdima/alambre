@@ -41,6 +41,7 @@ Headless interaction hooks and pure helpers:
 * **History Helpers**: `createHistory`, `pushHistory`, `undoHistory`, `redoHistory`, `canUndo`, `canRedo`.
 * **`useStopwatch`**: Elapsed time tracking, pause, reset, and formatted string display.
 * **`useStagger` & `calculateStaggerDelay`**: Headless stagger timing coordination with automatic reduced-motion accessibility.
+* **`useCollapsible`**: Headless disclosure and accordion height interpolation with off-screen measurement probe and reduced motion support.
 * **`useIconAnimation`**: SVG stroke draw/reset animation driver.
 
 ### 5. [Components & Icons](components.md)
@@ -52,3 +53,11 @@ Base UI primitives and icon contracts:
 * **`Input`**: Accessible text input with state styling (`focused`, `disabled`, `error`).
 * **`TimePicker`**: 24-hour hour/minute wheel selector.
 * **`AlambreIcons`**: Vector icon family (`Cross`, `Tick`, `Arrow`, `Sun`, `Moon`, catalog shapes) and primitives (`Circle`, `Line`, `Path`).
+
+### 6. [Drag & Drop Subsystem](dnd.md)
+Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, and 1D sortable containers:
+* **`DndProvider` & `useDnd`**: Central spatial registry, bounds tracking, and drop event coordination.
+* **`useDraggable` & `Draggable`**: Pan gesture worklet, velocity-based rotation tilt, scale pop, boundary clamping, and return physics.
+* **`useDroppable` & `Droppable`**: Spatial drop target registration, window coordinate measurement, and hover collision detection.
+* **`SortableRow`**: 1D horizontal sorting container with customizable neighbor shift curves (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native screen reader actions (`moveLeft` / `moveRight`).
+

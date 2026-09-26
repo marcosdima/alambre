@@ -117,3 +117,36 @@ export {
   readCollection,
   writeCollection,
 } from './storage';
+
+// Drag and drop primitives.
+export {
+  DndProvider,
+  useDnd,
+  useDraggable,
+  useDroppable,
+  Draggable,
+  Droppable,
+  SortableRow,
+} from './components/dnd';
+export type {
+  LayoutBounds,
+  DroppableRegistration,
+  ActiveDragState,
+  DropEvent,
+  DndContextValue,
+  DndProviderProps,
+  DraggableKineticsConfig,
+  UseDraggableOptions,
+  UseDraggableReturn,
+  UseDroppableOptions,
+  UseDroppableReturn,
+  DraggableRenderProps,
+  DraggableProps,
+  DroppableRenderProps,
+  DroppableProps,
+  SortableItem,
+  DropAnimationMode,
+  NeighborShiftMode,
+  SortableRowProps,
+} from './types/dnd';
+

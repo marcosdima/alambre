@@ -190,7 +190,7 @@ import { TimePicker, type TimePickerProps } from 'alambre';
 
 ---
 
-## 3. `AlambreIcons`
+## 7. `AlambreIcons`
 
 Vector icons and geometric drawing primitives built on `react-native-svg` and `react-native-reanimated`.
 
