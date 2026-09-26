@@ -61,3 +61,87 @@ Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, a
 * **`useDroppable` & `Droppable`**: Spatial drop target registration, window coordinate measurement, and hover collision detection.
 * **`SortableRow`**: 1D horizontal sorting container with customizable neighbor shift curves (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native screen reader actions (`moveLeft` / `moveRight`).
 
+---
+
+## 7. Canonical Root Provider Hierarchy
+
+When building an application with `alambre`, the composition order of providers in `App.tsx` is critical to ensure proper dependency resolution, modal layering, theme inheritance, and gesture handling.
+
+### The Canonical Tree
+
+```
+GestureHandlerRootView (native touch root)
+└── SafeAreaProvider (safe area insets)
+    └── ConfigProvider (persisted settings & flags)
+        └── LangProvider (i18n translations)
+            └── LightDarkProvider (theme tokens & surface styles)
+                └── [Domain Collection Providers...] (typed entity stores)
+                    └── NavigatorProvider (routing & navigation history)
+                        └── ConfirmProvider (modal confirmation dialogs)
+                            └── ToastProvider (transient HUD notifications)
+                                └── DndProvider (spatial drag & drop registry)
+                                    └── ApiProvider (TanStack query cache)
+                                        └── AppNavigatorBody / Screen Content
+```
+
+### Hierarchy Rationale
+
+| Level | Provider | Rationale |
+| --- | --- | --- |
+| **1. Platform** | `GestureHandlerRootView`, `SafeAreaProvider` | Must enclose all React Native Gesture Handler interactions (pan, swipe, DnD) on Android and supply window insets to all child components. |
+| **2. Capabilities** | `ConfigProvider`, `LangProvider`, `LightDarkProvider` | Must sit **above** all UI chrome so that navigation headers, back buttons, confirm dialogs, and toast messages inherit active theme tokens and language strings. |
+| **3. Routing** | `NavigatorProvider` | Manages page routing, transition animations, and history stack. Must sit above overlays so toasts and dialogs can inspect route state or glide when navigating. |
+| **4. Overlays** | `ConfirmProvider`, `ToastProvider` | Injected into the tree so modal dialogs and transient notifications render over the top of active screen contents without being obscured by container `overflow: hidden`. |
+| **5. Gestures** | `DndProvider` | Encloses the screens utilizing drag-and-drop, providing a unified spatial coordinate registry for draggable cards and droppable zones. |
+| **6. Data** | `ApiProvider` | Injects TanStack React Query client, ensuring any screen or modal component can perform queries and mutations. |
+
+### Canonical `App.tsx` Implementation
+
+```tsx
+// App.tsx
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  NavigatorProvider,
+  ConfirmProvider,
+  ToastProvider,
+  DndProvider,
+} from 'alambre';
+
+import { ConfigProvider } from './providers/config';
+import { LangProvider } from './providers/lang';
+import { LightDarkProvider } from './providers/theme';
+import { ApiProvider } from './services/api';
+import { navigatorConfig } from './navigation/config';
+import { AppNavigatorBody } from './navigation/AppNavigatorBody';
+import ConfirmDialog from './components/ConfirmDialog';
+import TemplateToast from './components/TemplateToast';
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ConfigProvider>
+          <LangProvider>
+            <LightDarkProvider>
+              <NavigatorProvider pages={navigatorConfig}>
+                <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                  <ToastProvider ToastComponent={TemplateToast}>
+                    <DndProvider>
+                      <ApiProvider>
+                        <AppNavigatorBody />
+                      </ApiProvider>
+                    </DndProvider>
+                  </ToastProvider>
+                </ConfirmProvider>
+              </NavigatorProvider>
+            </LightDarkProvider>
+          </LangProvider>
+        </ConfigProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+

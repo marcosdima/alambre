@@ -53,10 +53,90 @@ const {
 * `previous()`: Returns to the previous page in history.
 * `noPreviousPages: boolean`: True when at the root of navigation history.
 * `currentPage`: Object containing the current React element in `.component`.
-* `pageKey`: Unique identifier string of the current route (useful as an animation key).
+* `pageKey`: Unique identifier string of the current route (useful as an animation key for Reanimated).
 * `scrollTop`: Current scroll Y offset of the page container.
+* `setScrollTop(y: number): void`: Updates stored scroll offset for the current page.
+
+### Canonical Production Example: `AppNavigatorBody`
+```typescript
+import { useEffect, useRef } from 'react';
+import { View, Text, Pressable, ScrollView, BackHandler, StyleSheet } from 'react-native';
+import Animated, { FadeInLeft, FadeInRight } from 'react-native-reanimated';
+import { useNavigator, AlambreIcons } from 'alambre';
+
+export function AppNavigatorBody() {
+  const {
+    currentPage,
+    pageKey,
+    previous,
+    noPreviousPages,
+    scrollTop,
+    setScrollTop,
+  } = useNavigator();
+
+  const scrollRef = useRef<ScrollView>(null);
+
+  // Restore scroll offset when route transitions settle
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: scrollTop, animated: false });
+  }, [pageKey, scrollTop]);
+
+  // Android hardware back button integration
+  useEffect(() => {
+    const onBackPress = () => {
+      if (!noPreviousPages) {
+        previous();
+        return true;
+      }
+      return false;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [noPreviousPages, previous]);
+
+  return (
+    <View style={styles.container}>
+      {/* Header bar with back button when in subpage history */}
+      <View style={styles.header}>
+        {!noPreviousPages && (
+          <Pressable onPress={previous} style={styles.backButton} accessibilityLabel="Go back">
+            <AlambreIcons.Arrow rotation={180} color="#111827" lineWidth={3} />
+          </Pressable>
+        )}
+        <Text style={styles.headerTitle}>{pageKey.toUpperCase()}</Text>
+      </View>
+
+      {/* Animated content viewport with scroll offset tracking */}
+      <ScrollView
+        ref={scrollRef}
+        onScroll={(e) => setScrollTop(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Animated.View
+          key={pageKey}
+          entering={noPreviousPages ? FadeInRight.duration(200) : FadeInLeft.duration(200)}
+          style={styles.pageWrapper}
+        >
+          {currentPage.component}
+        </Animated.View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#ffffff' },
+  header: { height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  backButton: { marginRight: 12, padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  scrollContent: { flexGrow: 1 },
+  pageWrapper: { flex: 1 },
+});
+```
 
 ---
+
 
 ## 2. `ConfirmProvider` & `useConfirm`
 
@@ -90,6 +170,7 @@ import { useConfirm } from 'alambre';
 const { confirm } = useConfirm();
 
 const handleDelete = async () => {
+  // Returns Promise<boolean>: resolves to true if confirmed, false if cancelled
   const confirmed = await confirm({
     title: 'Are you sure?',
     message: 'This action cannot be undone.',
@@ -99,10 +180,17 @@ const handleDelete = async () => {
   });
 
   if (confirmed) {
-    // proceed with deletion
+    await performDelete();
   }
 };
 ```
+
+### Promise Lifecycle & Props Contract (`ConfirmComponentProps`)
+The `confirm()` method pushes a pending confirmation request into the provider queue. When the user interacts with your custom `ConfirmComponent`:
+* **`confirm`**: The active configuration payload `{ title, message, confirmLabel, cancelLabel, tone }`.
+* **`onConfirm()`**: Settles the pending Promise with `true` and closes the modal.
+* **`onCancel()`**: Settles the pending Promise with `false` and closes the modal.
+* **`visible: boolean`**: True while a confirmation request is actively pending.
 
 ---
 
@@ -263,3 +351,91 @@ const { ApiProvider, useApi, createRoute, createRoutes,
   transform?: (raw: unknown) => TResponse,
 }
 ```
+
+### Complete Production Example: Defining and Consuming API Routes
+
+#### 1. Setup API Provider and Typed Routes (`services/api.ts`)
+```typescript
+import { createApiProvider } from 'alambre';
+
+export const {
+  ApiProvider,
+  createRoutes,
+  createQueryHook,
+  createMutationHook,
+} = createApiProvider({
+  baseUrl: 'https://api.example.com/v1',
+  getHeaders: async () => ({
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer sample-token',
+  }),
+});
+
+export type Task = { id: string; title: string; completed: boolean };
+
+export const routes = createRoutes({
+  getTasks: {
+    key: ['tasks'],
+    method: 'GET',
+    path: '/tasks',
+    transform: (raw) => raw as Task[],
+  },
+  createTask: {
+    key: ['tasks', 'create'],
+    method: 'POST',
+    path: '/tasks',
+    body: (variables: { title: string }) => variables,
+  },
+});
+
+export const useTasks = createQueryHook(routes.getTasks);
+export const useCreateTask = createMutationHook(routes.createTask, {
+  invalidateKeys: [['tasks']], // Automatically refetches task list on success
+});
+```
+
+#### 2. Consuming in a React Component (`views/TaskList.tsx`)
+```typescript
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { useTasks, useCreateTask } from '../services/api';
+
+export function TaskList() {
+  const { data: tasks, isLoading, error } = useTasks();
+  const { mutate: addTask, isPending } = useCreateTask();
+
+  if (isLoading) return <Text>Loading tasks...</Text>;
+  if (error) return <Text>Failed to load tasks</Text>;
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.taskRow}>
+            <Text style={styles.taskTitle}>{item.title}</Text>
+          </View>
+        )}
+      />
+
+      <Pressable
+        disabled={isPending}
+        onPress={() => addTask({ title: 'New Task' })}
+        style={[styles.addButton, isPending && styles.buttonDisabled]}
+      >
+        <Text style={styles.buttonText}>{isPending ? 'Adding...' : 'Add Task'}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  taskRow: { paddingVertical: 12, borderBottomWidth: 1, borderColor: '#e2e8f0' },
+  taskTitle: { fontSize: 16, color: '#111827' },
+  addButton: { marginTop: 16, padding: 14, borderRadius: 8, backgroundColor: '#2563eb', alignItems: 'center' },
+  buttonDisabled: { opacity: 0.5 },
+  buttonText: { color: '#ffffff', fontWeight: '600' },
+});
+```
+

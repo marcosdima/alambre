@@ -176,3 +176,88 @@ const { Provider: RecordsProvider, useValue: useRecords } = createCollectionProv
   hookName: 'Records',
 });
 ```
+
+---
+
+## 5. Hydration Lifecycle & Error Resilience
+
+All capabilities backed by `Storage` follow a consistent, non-blocking asynchronous hydration lifecycle.
+
+### Initial Synchronous Render vs. Async Hydration
+1. **Immediate Initial Frame:** When a provider mounts, it initializes synchronously with in-memory default state (`baseConfig` for Config, the first language key for Lang, `light` theme for LightDark, and `initialValue` with `loading: true` for Collection). This guarantees zero white-screen flash and instant first-frame paint.
+2. **Mount Hydration (`hydrate`):** During `useEffect`, the provider fires an asynchronous `hydrate()` task that calls `storage.get(...)`. When the storage read resolves, the internal store calls `setState` and triggers a reactive re-render with persisted values.
+3. **Handling the `loading` State in Collections:**
+   Unlike key-value capabilities where defaults are valid active states, collections often represent remote or persisted user datasets. `useCollection()` exposes `loading: boolean`:
+   ```tsx
+   function RecordList() {
+     const { records, loading } = useRecords();
+
+     if (loading) {
+       return <ActivityIndicator size="large" />;
+     }
+
+     if (records.length === 0) {
+       return <Text>No records yet.</Text>;
+     }
+
+     return (
+       <FlatList
+         data={records}
+         keyExtractor={(item) => item.id}
+         renderItem={({ item }) => <RecordRow item={item} />}
+       />
+     );
+   }
+   ```
+
+### Storage Failure & Corrupted Data Handling
+- **Missing or Corrupted JSON:** `createCollectionProvider` wraps storage deserialization in a safe JSON parser. If stored raw text is null, unparseable, or not a JSON array, it safely falls back to `initialValue` without throwing unhandled exceptions.
+- **Async Write Failure:** Capability action methods (`add`, `update`, `remove`, `saveField`, `changeLang`, `setThemeName`) update internal memory state optimistically and then `await storage.set(...)`. If the underlying storage engine throws an error (e.g. disk full, quota exceeded), the returned Promise rejects, allowing callers to catch errors or display toasts if desired.
+
+---
+
+## 6. Root Provider Composition Pattern
+
+To prevent deep JSX nesting ("provider pyramid of doom") at application root, compose capability providers cleanly using a helper or a dedicated `AppProviders` component:
+
+```tsx
+// providers/AppProviders.tsx
+import type { ReactNode } from 'react';
+import { ConfigProvider } from './config';
+import { LangProvider } from './lang';
+import { LightDarkProvider } from './theme';
+import { RecordsProvider } from './records';
+
+type ProviderComponent = React.ComponentType<{ children: ReactNode }>;
+
+const composeProviders = (...providers: ProviderComponent[]) => {
+  return ({ children }: { children: ReactNode }) => (
+    providers.reduceRight(
+      (acc, Provider) => <Provider>{acc}</Provider>,
+      children,
+    )
+  );
+};
+
+export const AppProviders = composeProviders(
+  ConfigProvider,
+  LangProvider,
+  LightDarkProvider,
+  RecordsProvider,
+);
+```
+
+```tsx
+// App.tsx
+import { AppProviders } from './providers/AppProviders';
+import { RootNavigator } from './navigation/RootNavigator';
+
+export default function App() {
+  return (
+    <AppProviders>
+      <RootNavigator />
+    </AppProviders>
+  );
+}
+```
+
