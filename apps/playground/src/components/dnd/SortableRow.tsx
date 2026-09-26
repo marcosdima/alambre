@@ -9,6 +9,7 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 
 export type SortableItem = {
@@ -21,6 +22,8 @@ export type SortableRowProps<T extends SortableItem> = {
   renderItem: (item: T, index: number, isDragging: boolean) => ReactNode;
   itemWidth?: number;
   gap?: number;
+  springDamping?: number;
+  springStiffness?: number;
   containerStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
 };
@@ -31,7 +34,12 @@ type SortableRowItemProps<T extends SortableItem> = {
   total: number;
   itemWidth: number;
   gap: number;
+  springDamping: number;
+  springStiffness: number;
   disabled: boolean;
+  activeDragIndex: SharedValue<number>;
+  activeDragTranslationX: SharedValue<number>;
+  hoverIndex: SharedValue<number>;
   renderItem: (item: T, index: number, isDragging: boolean) => ReactNode;
   onSwap: (fromIndex: number, toIndex: number) => void;
 };
@@ -42,68 +50,117 @@ function SortableRowItem<T extends SortableItem>({
   total,
   itemWidth,
   gap,
+  springDamping,
+  springStiffness,
   disabled,
+  activeDragIndex,
+  activeDragTranslationX,
+  hoverIndex,
   renderItem,
   onSwap,
 }: SortableRowItemProps<T>) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const isDragging = useSharedValue(false);
   const [isDraggingState, setIsDraggingState] = useState(false);
   const scale = useSharedValue(1);
   const zIndexVal = useSharedValue(0);
 
   const slotSize = itemWidth + gap;
+  const springCfg = { damping: springDamping, stiffness: springStiffness };
 
   const handleSwapJS = useCallback(
-    (offsetIndex: number) => {
-      const targetIndex = Math.max(0, Math.min(total - 1, index + offsetIndex));
-      if (targetIndex !== index) {
-        onSwap(index, targetIndex);
+    (fromIdx: number, toIdx: number) => {
+      if (fromIdx !== toIdx && toIdx >= 0 && toIdx < total) {
+        onSwap(fromIdx, toIdx);
       }
     },
-    [index, total, onSwap],
+    [total, onSwap],
   );
 
   const panGesture = Gesture.Pan()
     .enabled(!disabled)
     .onStart(() => {
       'worklet';
-      isDragging.value = true;
-      scale.value = withSpring(1.08, { damping: 18, stiffness: 260 });
+      activeDragIndex.value = index;
+      activeDragTranslationX.value = 0;
+      hoverIndex.value = index;
+      scale.value = withSpring(1.08, springCfg);
       zIndexVal.value = 999;
       runOnJS(setIsDraggingState)(true);
     })
     .onUpdate((e) => {
       'worklet';
-      translateX.value = e.translationX;
-      translateY.value = e.translationY * 0.4; // slight vertical dampening for horizontal row
+      activeDragTranslationX.value = e.translationX;
+
+      const rawSlots = Math.round(e.translationX / slotSize);
+      const currentHover = Math.max(0, Math.min(total - 1, index + rawSlots));
+      hoverIndex.value = currentHover;
     })
-    .onEnd((e) => {
+    .onEnd((_e) => {
       'worklet';
-      isDragging.value = false;
-      scale.value = withSpring(1);
+      const targetIndex = hoverIndex.value;
+      const willSwap = targetIndex !== -1 && targetIndex !== index;
+
+      scale.value = withSpring(1, springCfg);
       zIndexVal.value = withTiming(0, { duration: 150 });
       runOnJS(setIsDraggingState)(false);
 
-      // Determine slot shift
-      const rawSlots = Math.round(e.translationX / slotSize);
-      if (rawSlots !== 0) {
-        runOnJS(handleSwapJS)(rawSlots);
+      if (willSwap) {
+        runOnJS(handleSwapJS)(index, targetIndex);
       }
 
-      translateX.value = withSpring(0, { damping: 20, stiffness: 220 });
-      translateY.value = withSpring(0, { damping: 20, stiffness: 220 });
+      activeDragIndex.value = -1;
+      hoverIndex.value = -1;
+      activeDragTranslationX.value = withSpring(0, springCfg);
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    zIndex: zIndexVal.value,
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    const isCurrentItem = activeDragIndex.value === index;
+    const isAnyItemDragging = activeDragIndex.value !== -1;
+
+    if (isCurrentItem) {
+      return {
+        zIndex: 999,
+        transform: [
+          { translateX: activeDragTranslationX.value },
+          { scale: scale.value },
+        ],
+      };
+    }
+
+    if (!isAnyItemDragging) {
+      return {
+        zIndex: 0,
+        transform: [
+          { translateX: withSpring(0, springCfg) },
+          { scale: 1 },
+        ],
+      };
+    }
+
+    // A neighboring item is being dragged: calculate dynamic slot shift
+    const from = activeDragIndex.value;
+    const to = hoverIndex.value;
+    let targetOffset = 0;
+
+    if (from < to) {
+      // Dragging right: intermediate items shift LEFT
+      if (index > from && index <= to) {
+        targetOffset = -slotSize;
+      }
+    } else if (from > to) {
+      // Dragging left: intermediate items shift RIGHT
+      if (index >= to && index < from) {
+        targetOffset = slotSize;
+      }
+    }
+
+    return {
+      zIndex: 1,
+      transform: [
+        { translateX: withSpring(targetOffset, springCfg) },
+        { scale: 1 },
+      ],
+    };
+  });
 
   const handleAccessibilityAction = (event: { nativeEvent: { actionName: string } }) => {
     if (event.nativeEvent.actionName === 'moveLeft' && index > 0) {
@@ -137,11 +194,17 @@ export default function SortableRow<T extends SortableItem>({
   items,
   onReorder,
   renderItem,
-  itemWidth = 84,
-  gap = 10,
+  itemWidth = 68,
+  gap = 8,
+  springDamping = 20,
+  springStiffness = 240,
   containerStyle,
   disabled = false,
 }: SortableRowProps<T>) {
+  const activeDragIndex = useSharedValue(-1);
+  const activeDragTranslationX = useSharedValue(0);
+  const hoverIndex = useSharedValue(-1);
+
   const handleSwap = useCallback(
     (from: number, to: number) => {
       const copy = [...items];
@@ -162,7 +225,12 @@ export default function SortableRow<T extends SortableItem>({
           total={items.length}
           itemWidth={itemWidth}
           gap={gap}
+          springDamping={springDamping}
+          springStiffness={springStiffness}
           disabled={disabled}
+          activeDragIndex={activeDragIndex}
+          activeDragTranslationX={activeDragTranslationX}
+          hoverIndex={hoverIndex}
           renderItem={renderItem}
           onSwap={handleSwap}
         />

@@ -47,6 +47,8 @@ export function useDraggable<T = unknown>({
   const originBoundsRef = useRef<LayoutBounds | null>(null);
   const targetViewRef = useRef<View>(null);
 
+  const startOffsetX = useSharedValue(0);
+  const startOffsetY = useSharedValue(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const isDragging = useSharedValue(false);
@@ -95,6 +97,8 @@ export function useDraggable<T = unknown>({
     .onStart((e) => {
       'worklet';
       isDragging.value = true;
+      startOffsetX.value = translateX.value;
+      startOffsetY.value = translateY.value;
       zIndexVal.value = 999;
       dragScale.value = withSpring(activeScale, {
         damping: springDamping,
@@ -104,8 +108,8 @@ export function useDraggable<T = unknown>({
     })
     .onUpdate((e) => {
       'worklet';
-      translateX.value = e.translationX;
-      translateY.value = e.translationY;
+      translateX.value = startOffsetX.value + e.translationX;
+      translateY.value = startOffsetY.value + e.translationY;
 
       // Dynamic tilt based on horizontal velocity
       const tilt = interpolate(
@@ -131,6 +135,8 @@ export function useDraggable<T = unknown>({
       });
 
       if (returnOnReject) {
+        startOffsetX.value = 0;
+        startOffsetY.value = 0;
         translateX.value = withSpring(0, {
           damping: springDamping,
           stiffness: springStiffness,
@@ -139,6 +145,9 @@ export function useDraggable<T = unknown>({
           damping: springDamping,
           stiffness: springStiffness,
         });
+      } else {
+        startOffsetX.value = translateX.value;
+        startOffsetY.value = translateY.value;
       }
 
       zIndexVal.value = withTiming(0, { duration: 180 });
@@ -161,9 +170,17 @@ export function useDraggable<T = unknown>({
   });
 
   const resetPosition = useCallback(() => {
-    translateX.value = withSpring(0);
-    translateY.value = withSpring(0);
-  }, [translateX, translateY]);
+    startOffsetX.value = 0;
+    startOffsetY.value = 0;
+    translateX.value = withSpring(0, {
+      damping: springDamping,
+      stiffness: springStiffness,
+    });
+    translateY.value = withSpring(0, {
+      damping: springDamping,
+      stiffness: springStiffness,
+    });
+  }, [translateX, translateY, startOffsetX, startOffsetY, springDamping, springStiffness]);
 
   return {
     panGesture,
