@@ -23,6 +23,7 @@ import {
   Droppable,
   SortableRow,
   useDraggable,
+  type DropAnimationMode,
   type DropEvent,
   type SortableItem,
 } from '../../components/dnd';
@@ -151,10 +152,14 @@ function DndTestContent({
   const { activeDrag, hoveredZoneId, measureAllDroppables } = useDnd();
 
   // Card 1 Controls (Hand)
+  const [dropMode, setDropMode] = useState<DropAnimationMode>('seamless');
+  const [handSlowMotion, setHandSlowMotion] = useState(false);
   const [handGap, setHandGap] = useState<4 | 8 | 14>(8);
-  const [handPhysics, setHandPhysics] = useState<'snappy' | 'bouncy'>('snappy');
-  const handDamping = handPhysics === 'snappy' ? 24 : 14;
-  const handStiffness = handPhysics === 'snappy' ? 260 : 180;
+  const [handPhysics, setHandPhysics] = useState<'snappy' | 'smooth' | 'bouncy'>('snappy');
+  const [handScale, setHandScale] = useState<1.05 | 1.10 | 1.18>(1.10);
+
+  const handDamping = handPhysics === 'snappy' ? 28 : handPhysics === 'smooth' ? 20 : 14;
+  const handStiffness = handPhysics === 'snappy' ? 300 : handPhysics === 'smooth' ? 200 : 150;
 
   // Card 2 Controls (Drop Zones)
   const [glowTone, setGlowTone] = useState<'blue-purple' | 'emerald-amber'>('blue-purple');
@@ -225,6 +230,9 @@ function DndTestContent({
             gap={handGap}
             springDamping={handDamping}
             springStiffness={handStiffness}
+            dropAnimationMode={dropMode}
+            slowMotion={handSlowMotion}
+            activeScale={handScale}
             containerStyle={styles.sortableContainer}
             renderItem={(item, index, isDragging) => (
               <View
@@ -262,6 +270,47 @@ function DndTestContent({
           </View>
 
           <AppSegmentedControl
+            label="Drop Settle Animation"
+            value={dropMode}
+            onChange={(val) => setDropMode(val as DropAnimationMode)}
+            options={[
+              { value: 'seamless', label: 'Seamless' },
+              { value: 'bounce', label: 'Elastic' },
+              { value: 'impact', label: 'Impact' },
+              { value: 'instant', label: 'Instant' },
+            ]}
+          />
+
+          <AppSwitch
+            label="Slow Motion (0.25x Speed)"
+            subtitle="4x slower animation to inspect drop physics and slot transitions frame-by-frame"
+            checked={handSlowMotion}
+            onChange={setHandSlowMotion}
+          />
+
+          <AppSegmentedControl
+            label="Neighbor Shift Glide"
+            value={handPhysics}
+            onChange={(val) => setHandPhysics(val as 'snappy' | 'smooth' | 'bouncy')}
+            options={[
+              { value: 'snappy', label: 'Snappy' },
+              { value: 'smooth', label: 'Smooth' },
+              { value: 'bouncy', label: 'Bouncy' },
+            ]}
+          />
+
+          <AppSegmentedControl
+            label="Pickup Elevation Scale"
+            value={handScale}
+            onChange={(val) => setHandScale(val as 1.05 | 1.10 | 1.18)}
+            options={[
+              { value: 1.05, label: 'Calm (1.05x)' },
+              { value: 1.10, label: 'Tactile (1.10x)' },
+              { value: 1.18, label: 'Pop (1.18x)' },
+            ]}
+          />
+
+          <AppSegmentedControl
             label="Card Spacing"
             value={handGap}
             onChange={(val) => setHandGap(val as 4 | 8 | 14)}
@@ -269,16 +318,6 @@ function DndTestContent({
               { value: 4, label: 'Compact (4px)' },
               { value: 8, label: 'Normal (8px)' },
               { value: 14, label: 'Relaxed (14px)' },
-            ]}
-          />
-
-          <AppSegmentedControl
-            label="Reorder Physics Feel"
-            value={handPhysics}
-            onChange={(val) => setHandPhysics(val as 'snappy' | 'bouncy')}
-            options={[
-              { value: 'snappy', label: 'Snappy (Damping 24)' },
-              { value: 'bouncy', label: 'Bouncy (Damping 14)' },
             ]}
           />
         </View>
