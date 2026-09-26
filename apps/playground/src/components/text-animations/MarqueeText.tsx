@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { LayoutChangeEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -9,7 +9,6 @@ import Animated, {
   useSharedValue,
   withDelay,
   withRepeat,
-  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
@@ -21,19 +20,27 @@ export type MarqueeTextProps = {
   loopDelay?: number; // ms to pause between loops, default 1500
   spacing?: number; // gap between repeated text loops, default 40
   color?: string;
+  forceScroll?: boolean;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
+  onLayoutMetrics?: (metrics: {
+    containerWidth: number;
+    textWidth: number;
+    shouldScroll: boolean;
+  }) => void;
 };
 
 export default function MarqueeText({
   text,
   speed = 35,
-  initialDelay = 1200,
-  loopDelay = 1500,
+  initialDelay = 800,
+  loopDelay = 1200,
   spacing = 40,
   color,
+  forceScroll = false,
   textStyle,
   containerStyle,
+  onLayoutMetrics,
 }: MarqueeTextProps) {
   const { theme } = useLightDark();
   const isReducedMotion = useReducedMotion();
@@ -50,21 +57,26 @@ export default function MarqueeText({
     }
   };
 
-  const handleTextLayout = (e: LayoutChangeEvent) => {
-    const width = Math.round(e.nativeEvent.layout.width);
-    if (width > 0 && width !== textWidth) {
-      setTextWidth(width);
-    }
-  };
-
   const shouldScroll =
     !isReducedMotion &&
-    containerWidth !== null &&
-    textWidth !== null &&
-    textWidth > containerWidth;
+    (forceScroll ||
+      (containerWidth !== null &&
+        textWidth !== null &&
+        textWidth > containerWidth));
 
-  const scrollDistance = (textWidth ?? 0) + spacing;
-  const scrollDuration = Math.max(1000, Math.round((scrollDistance / speed) * 1000));
+  const effectiveTextWidth = textWidth ?? Math.max(containerWidth ?? 300, text.length * 9);
+  const scrollDistance = Math.ceil(effectiveTextWidth + spacing);
+  const scrollDuration = Math.max(800, Math.round((scrollDistance / Math.max(1, speed)) * 1000));
+
+  useEffect(() => {
+    if (containerWidth !== null && textWidth !== null) {
+      onLayoutMetrics?.({
+        containerWidth,
+        textWidth,
+        shouldScroll,
+      });
+    }
+  }, [containerWidth, textWidth, shouldScroll, onLayoutMetrics]);
 
   useEffect(() => {
     if (!shouldScroll) {
@@ -74,20 +86,19 @@ export default function MarqueeText({
     }
 
     translateX.value = 0;
+
+    const scrollAnim = withTiming(-scrollDistance, {
+      duration: scrollDuration,
+      easing: Easing.linear,
+    });
+
+    const cycleAnimation = loopDelay > 0
+      ? withDelay(loopDelay, scrollAnim)
+      : scrollAnim;
+
     translateX.value = withDelay(
       initialDelay,
-      withRepeat(
-        withSequence(
-          withTiming(-scrollDistance, {
-            duration: scrollDuration,
-            easing: Easing.linear,
-          }),
-          withTiming(0, { duration: 0 }),
-          withDelay(loopDelay, withTiming(0, { duration: 0 })),
-        ),
-        -1,
-        false,
-      ),
+      withRepeat(cycleAnimation, -1, false),
     );
 
     return () => {
@@ -114,30 +125,62 @@ export default function MarqueeText({
       onLayout={handleContainerLayout}
       style={[styles.container, containerStyle]}
     >
-      {/* Hidden off-screen text measuring target */}
-      <View style={styles.measureBox} pointerEvents="none">
-        <Text
-          numberOfLines={1}
-          onLayout={handleTextLayout}
-          style={[styles.text, { color: textColor }, textStyle]}
-        >
+      {/* Hidden horizontal scroll probe for unconstrained text width measuring */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled={false}
+        pointerEvents="none"
+        style={styles.hiddenProbe}
+        onContentSizeChange={(width) => {
+          const w = Math.ceil(width) + 8;
+          if (w > 0 && w !== textWidth) {
+            setTextWidth(w);
+          }
+        }}
+      >
+        <Text style={[styles.text, textStyle, { flexShrink: 0 }]}>
           {text}
         </Text>
-      </View>
+      </ScrollView>
 
-      {/* Render active content */}
+      {/* Render active scrolling content */}
       {shouldScroll ? (
-        <Animated.View style={[styles.scrollRow, animatedStyle]}>
+        <Animated.View
+          style={[
+            styles.scrollRow,
+            animatedStyle,
+            { width: (scrollDistance * 2) + 40 },
+          ]}
+        >
           <Text
             numberOfLines={1}
-            style={[styles.text, { color: textColor }, textStyle]}
+            ellipsizeMode="clip"
+            style={[
+              styles.text,
+              {
+                color: textColor,
+                width: effectiveTextWidth,
+                flexShrink: 0,
+              },
+              textStyle,
+            ]}
           >
             {text}
           </Text>
-          <View style={{ width: spacing }} />
+          <View style={{ width: spacing, flexShrink: 0 }} />
           <Text
             numberOfLines={1}
-            style={[styles.text, { color: textColor }, textStyle]}
+            ellipsizeMode="clip"
+            style={[
+              styles.text,
+              {
+                color: textColor,
+                width: effectiveTextWidth,
+                flexShrink: 0,
+              },
+              textStyle,
+            ]}
           >
             {text}
           </Text>
@@ -168,10 +211,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  measureBox: {
+  hiddenProbe: {
     position: 'absolute',
     opacity: 0,
-    top: -9999,
-    left: -9999,
+    height: 0,
+    zIndex: -1,
   },
 });

@@ -318,3 +318,58 @@ Enforce that screens rendered inside `AppNavigatorBody` render a root `<View sty
 3. Enforce deterministic accessibility semantics: expose the final target value in `accessibilityLabel` so screen readers announce the accurate settled value immediately rather than streaming intermediate numbers.
 
 **Status: PROPOSAL.** Implemented and validated in playground. Ready for evaluation in game HUDs and financial summaries.
+
+## Decoupling inner height disclosure from parent layout transition springs (`AppAccordion`)
+
+**Pattern:** When height-expanding disclosure components (like `AppAccordion`) are placed inside parent containers that attach Reanimated layout transitions (e.g. `LinearTransition.springify()` in `AnimatedCascade`), the expanding inner height continuously triggers the parent layout transition on every frame. This creates conflicting physics and violent shaking/jittering artifacts.
+
+**Where it appeared:** `apps/playground/src/components/AppAccordion.tsx` and `apps/playground/src/views/components-test/ComponentsTest.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Dynamic disclosure accordions should not be wrapped inside spring-based layout transition choreographers (`AnimatedCascade`). They manage their own internal height interpolation.
+2. Provide configurable motion dynamics: support both cubic-bezier `timing` (for predictable corporate/settings flows) and physics `spring` (with customizable damping and stiffness for tactile interactions).
+3. Always clamp spring-interpolated height values (`Math.max(0, progress.value * measuredHeight)`) to prevent negative height values during spring bounce-back, which crashes React Native Yoga on Android.
+4. Support both 180° chevrons (down-to-up flip) and 90° chevrons (right-to-down quarter turn) to match different mobile design systems.
+
+**Status: PROPOSAL.** Implemented and validated in `apps/playground`.
+
+## Native text line measurement and unclipped layout for marquee tickers (`MarqueeText`)
+
+**Pattern:** Horizontally scrolling tickers require comparing text width to container width. Measuring text using absolute positioning with large negative coordinates (`left: -9999`) causes Android Yoga to clamp the measurement bounds or return 0, leaving the scroller permanently static. Furthermore, when `<Text numberOfLines={1}>` is rendered inside a flex container without an explicit width, Yoga constraints the child `TextView` to the container bounds, causing native Android `TextView` to truncate the text with ellipses (`...`) mid-scroll. Additionally, nesting `withDelay` on zero-duration `withTiming` steps inside `withSequence` silently terminates the Reanimated 3 animation driver.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/MarqueeText.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Use an off-screen `<ScrollView horizontal>` probe with `onContentSizeChange` to read the true unconstrained text width across all platforms.
+2. Prevent native Android ellipsis clipping by explicitly setting `width: effectiveTextWidth`, `ellipsizeMode="clip"`, and sizing the animated row container to `(scrollDistance * 2) + 40`.
+3. Structure the Reanimated loop using `withRepeat(cycleAnimation, -1, false)` with `initialDelay`, where `cycleAnimation` uses `withDelay(loopDelay, withTiming(-scrollDistance, ...))` when a loop pause is requested, and direct `withTiming(-scrollDistance, ...)` for continuous seamless tickers.
+4. Keep the secondary cloned text element spaced by `spacing` with matching `scrollDistance = effectiveTextWidth + spacing`, guaranteeing a seamless reset from `-scrollDistance` to `0` without visual jump.
+
+**Status: PROPOSAL.** Implemented and validated live on Android emulator in `apps/playground`.
+
+## Input contracts and robust focus interpolation (`AppTextInput`)
+
+**Pattern:** Standard React Native text inputs often lack smooth kinetic feedback on focus/blur. However, attempts to implement custom character-by-character native text erasure hacks inside native `TextInput` encounter severe Android `EditText` IME/keyboard driver limitations.
+
+**Where it appeared:** `apps/playground/src/components/AppTextInput.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Keep `AppTextInput` focused on clean, robust core contracts: smooth border color interpolation on focus, spring-driven clear button transitions, and standard platform touch mechanics.
+2. Defer complex character erasure kinetics to dedicated custom display components (like `DisguiseText`) rather than compromising the native keyboard input pipeline.
+
+**Status: PROPOSAL.** Implemented and validated in `apps/playground`.
+
+## Staggered character disguise and kinetic reveal (`DisguiseText`)
+
+**Pattern:** Revealing or concealing sensitive text (tokens, passwords, game stats) usually occurs as an instantaneous binary swap, lacking tactile feedback.
+
+**Where it appeared:** `apps/playground/src/components/text-animations/DisguiseText.tsx`.
+
+**Solution / Architectural Evaluation:**
+1. Leverage `useStagger` from `alambre` to compute staggered delay curves per character index, respecting user reduced-motion preferences.
+2. Provide two kinetic physics modes:
+   - **Gravity Drop (`mode="drop"`):** Letters fall downwards with opacity fade, while mask glyphs (`•`, `.`, `*`, `#`) drop from above with spring physics.
+   - **In-Place Morph (`mode="morph"`):** Simultaneous rotational and scale cross-fade in place.
+3. Use `pointerEvents="none"` on the inner mask slots and single-node accessible labels (`accessibilityLabel={masked ? 'Masked text' : text}`) to adhere to TalkBack/VoiceOver rules.
+
+**Status: PROPOSAL.** Implemented and validated in `apps/playground`.

@@ -16,3 +16,6 @@ export type { CountUpTextProps } from './CountUpText';
 export { default as MarqueeText } from './MarqueeText';
 export type { MarqueeTextProps } from './MarqueeText';
 
+export { default as DisguiseText } from './DisguiseText';
+export type { DisguiseTextProps } from './DisguiseText';
+

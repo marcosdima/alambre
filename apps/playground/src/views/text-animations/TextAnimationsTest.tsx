@@ -9,6 +9,7 @@ import AppCard from '../../components/AppCard';
 import AppSwitch from '../../components/AppSwitch';
 import AppTextInput from '../../components/AppTextInput';
 import AppBadge, { AppChip } from '../../components/AppBadge';
+import AppSegmentedControl from '../../components/AppSegmentedControl';
 import {
   TickerText,
   TypewriterText,
@@ -16,6 +17,7 @@ import {
   ScrambleText,
   CountUpText,
   MarqueeText,
+  DisguiseText,
 } from '../../components/text-animations';
 
 export default function TextAnimationsTest() {
@@ -62,7 +64,38 @@ export default function TextAnimationsTest() {
     'DECRYPTING_ENCRYPTED_SIGNATURE...',
   ];
 
-  // 6. Game HUD Mockup state
+  // 6. Marquee state
+  const [marqueeSpeed, setMarqueeSpeed] = useState<number>(45);
+  const [marqueeSpacing, setMarqueeSpacing] = useState<number>(48);
+  const [marqueeLoopDelay, setMarqueeLoopDelay] = useState<number>(1200);
+  const [marqueeTextIndex, setMarqueeTextIndex] = useState<number>(0);
+  const [marqueeForceScroll, setMarqueeForceScroll] = useState<boolean>(true);
+  const [marqueeMetrics, setMarqueeMetrics] = useState<{
+    containerWidth: number;
+    textWidth: number;
+    shouldScroll: boolean;
+  } | null>(null);
+
+  const marqueePresets = [
+    '🎵 Now Playing: Neon Cyberpunk Symphony (Extended Synthwave Mix 2026) • Exclusive Track by Alambre Audio',
+    '🚨 SYSTEM ALERT: Memory allocation exceeded optimal runtime threshold in node cluster 4B',
+    'Short Track Title',
+  ];
+
+  // 7. Disguise / Mask state
+  const [disguiseMasked, setDisguiseMasked] = useState(true);
+  const [disguiseMode, setDisguiseMode] = useState<'drop' | 'morph'>('drop');
+  const [disguiseChar, setDisguiseChar] = useState<string>('•');
+  const [disguiseStagger, setDisguiseStagger] = useState<number>(45);
+  const [disguiseSampleIndex, setDisguiseSampleIndex] = useState(0);
+
+  const disguiseSamples = [
+    'SuperSecretToken2026',
+    'Quantum_Key_9874',
+    'alambre.mobile.preview',
+  ];
+
+  // 8. Game HUD Mockup state
   const [gameHp, setGameHp] = useState(100);
   const [gameGold, setGameGold] = useState(350);
   const [gameTurn, setGameTurn] = useState(1);
@@ -546,28 +579,219 @@ export default function TextAnimationsTest() {
           badge="MarqueeText"
           badgeTone="neutral"
         >
+          {/* Live Layout & Diagnostics Bar */}
+          <View style={styles.metricsRow}>
+            <AppBadge
+              label={`Container: ${marqueeMetrics ? `${marqueeMetrics.containerWidth}px` : 'measuring...'}`}
+              variant="outline"
+              tone="neutral"
+              size="sm"
+            />
+            <AppBadge
+              label={`Text: ${marqueeMetrics ? `${marqueeMetrics.textWidth}px` : 'measuring...'}`}
+              variant="outline"
+              tone="neutral"
+              size="sm"
+            />
+            <AppBadge
+              label={
+                marqueeMetrics?.shouldScroll
+                  ? 'Status: Scrolling'
+                  : 'Status: Fits (Static)'
+              }
+              variant="soft"
+              tone={marqueeMetrics?.shouldScroll ? 'success' : 'warning'}
+              size="sm"
+            />
+          </View>
+
+          {/* Scrolling Preview Container */}
           <View
             style={[
               styles.combatLogBox,
-              { backgroundColor: theme.surfaceAlt, borderColor: theme.border, marginVertical: 12 },
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.border, marginVertical: 10 },
             ]}
           >
             <MarqueeText
-              text="🎵 Now Playing: Neon Cyberpunk Symphony (Extended Synthwave Mix 2026) • Exclusive Track by Alambre Audio"
-              speed={35}
-              spacing={48}
+              key={`${marqueeSpeed}-${marqueeSpacing}-${marqueeLoopDelay}-${marqueeTextIndex}-${marqueeForceScroll}`}
+              text={marqueePresets[marqueeTextIndex]}
+              speed={marqueeSpeed}
+              spacing={marqueeSpacing}
+              loopDelay={marqueeLoopDelay}
+              forceScroll={marqueeForceScroll}
               color={theme.primary}
               textStyle={{ fontSize: 15, fontWeight: '700' }}
+              onLayoutMetrics={setMarqueeMetrics}
             />
           </View>
-          <AppText variant="caption" style={styles.centerMuted}>
-            Scrolls continuously only when content exceeds available width. Pauses between loops.
-          </AppText>
+
+          {/* Interactive Controls */}
+          <View style={{ gap: 10, marginTop: 4 }}>
+            <AppSwitch
+              label="Force Continuous Ticker"
+              subtitle="Keep ticking even if text fits within viewport bounds"
+              checked={marqueeForceScroll}
+              onChange={setMarqueeForceScroll}
+              activeTone="primary"
+              size="sm"
+            />
+
+            <AppSegmentedControl<number>
+              label="Scroll Speed"
+              value={marqueeSpeed}
+              onChange={setMarqueeSpeed}
+              options={[
+                { label: 'Chill (25px/s)', value: 25 },
+                { label: 'Default (45px/s)', value: 45 },
+                { label: 'Fast (80px/s)', value: 80 },
+              ]}
+            />
+
+            <View style={styles.controlsRow}>
+              <View style={{ flex: 1, minWidth: 140 }}>
+                <AppSegmentedControl<number>
+                  label="Loop Pause"
+                  value={marqueeLoopDelay}
+                  onChange={setMarqueeLoopDelay}
+                  options={[
+                    { label: 'Seamless (0ms)', value: 0 },
+                    { label: 'Pause (1.2s)', value: 1200 },
+                  ]}
+                />
+              </View>
+
+              <View style={{ flex: 1, minWidth: 140 }}>
+                <AppSegmentedControl<number>
+                  label="Loop Gap"
+                  value={marqueeSpacing}
+                  onChange={setMarqueeSpacing}
+                  options={[
+                    { label: '24px', value: 24 },
+                    { label: '48px', value: 48 },
+                    { label: '80px', value: 80 },
+                  ]}
+                />
+              </View>
+            </View>
+
+            <AppButton
+              size="sm"
+              variant="outline"
+              tone="primary"
+              label={`Switch Sample Text (${marqueeTextIndex + 1}/${marqueePresets.length})`}
+              onPress={() => setMarqueeTextIndex((i) => (i + 1) % marqueePresets.length)}
+            />
+          </View>
         </AppCard>
       </Animated.View>
 
-      {/* 7. Real-World Card Game HUD Mockup */}
-      <Animated.View entering={FadeInDown.duration(260).delay(320)}>
+      {/* 7. Character Disguise & Morph (DisguiseText) */}
+      <Animated.View entering={FadeInDown.duration(260).delay(310)}>
+        <AppCard
+          variant="outlined"
+          title="Character Disguise & Morph"
+          subtitle="Staggered kinetic transformation replacing letters with dots or falling glyphs"
+          badge="DisguiseText"
+          badgeTone="primary"
+        >
+          {/* Live Preview Box */}
+          <View
+            style={[
+              styles.combatLogBox,
+              {
+                backgroundColor: theme.surfaceAlt,
+                borderColor: theme.border,
+                marginVertical: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 80,
+              },
+            ]}
+          >
+            <DisguiseText
+              text={disguiseSamples[disguiseSampleIndex]}
+              masked={disguiseMasked}
+              mode={disguiseMode}
+              maskChar={disguiseChar}
+              staggerMs={disguiseStagger}
+              style={{
+                fontSize: 22,
+                fontWeight: '800',
+                color: disguiseMasked ? theme.muted : theme.primary,
+                letterSpacing: 2,
+              }}
+            />
+          </View>
+
+          {/* Action Trigger */}
+          <AppButton
+            variant="solid"
+            tone={disguiseMasked ? 'primary' : 'warning'}
+            label={disguiseMasked ? 'Action: REVEAL TEXT' : 'Action: DISGUISE TEXT'}
+            leftIcon={
+              disguiseMasked ? (
+                <AlambreIcons.Eye style={{ width: 18, height: 18 }} color={theme.onPrimary} />
+              ) : (
+                <AlambreIcons.EyeOff style={{ width: 18, height: 18 }} color={theme.onPrimary} />
+              )
+            }
+            onPress={() => setDisguiseMasked((m) => !m)}
+          />
+
+          {/* Interactive Controls */}
+          <View style={{ gap: 10, marginTop: 12 }}>
+            <AppSegmentedControl<'drop' | 'morph'>
+              label="Animation Physics"
+              value={disguiseMode}
+              onChange={setDisguiseMode}
+              options={[
+                { label: 'Drop & Fall (Gravity)', value: 'drop' },
+                { label: 'In-Place Morph (Scale/Spin)', value: 'morph' },
+              ]}
+            />
+
+            <View style={styles.controlsRow}>
+              <View style={{ flex: 1, minWidth: 140 }}>
+                <AppSegmentedControl<string>
+                  label="Mask Glyph"
+                  value={disguiseChar}
+                  onChange={setDisguiseChar}
+                  options={[
+                    { label: 'Bullet (•)', value: '•' },
+                    { label: 'Dot (.)', value: '.' },
+                    { label: 'Star (*)', value: '*' },
+                    { label: 'Hash (#)', value: '#' },
+                  ]}
+                />
+              </View>
+
+              <View style={{ flex: 1, minWidth: 140 }}>
+                <AppSegmentedControl<number>
+                  label="Stagger Delay"
+                  value={disguiseStagger}
+                  onChange={setDisguiseStagger}
+                  options={[
+                    { label: 'Snappy (25ms)', value: 25 },
+                    { label: 'Standard (45ms)', value: 45 },
+                    { label: 'Cinematic (80ms)', value: 80 },
+                  ]}
+                />
+              </View>
+            </View>
+
+            <AppButton
+              size="sm"
+              variant="outline"
+              tone="neutral"
+              label={`Switch Secret Text (${disguiseSampleIndex + 1}/${disguiseSamples.length})`}
+              onPress={() => setDisguiseSampleIndex((i) => (i + 1) % disguiseSamples.length)}
+            />
+          </View>
+        </AppCard>
+      </Animated.View>
+
+      {/* 8. Real-World Card Game HUD Mockup */}
+      <Animated.View entering={FadeInDown.duration(260).delay(340)}>
         <AppCard
           variant="elevated"
           title="Card Game HUD Prototype"
@@ -799,5 +1023,11 @@ const styles = StyleSheet.create({
   },
   logHeader: {
     marginBottom: 6,
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
   },
 });

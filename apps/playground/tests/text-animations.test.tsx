@@ -8,6 +8,7 @@ import WavyText from '../src/components/text-animations/WavyText';
 import CountUpText from '../src/components/text-animations/CountUpText';
 import ScrambleText from '../src/components/text-animations/ScrambleText';
 import MarqueeText from '../src/components/text-animations/MarqueeText';
+import DisguiseText from '../src/components/text-animations/DisguiseText';
 
 const renderWithTheme = async (ui: ReactElement) => {
   return await render(<LightDarkProvider>{ui}</LightDarkProvider>);
@@ -202,5 +203,64 @@ describe('MarqueeText component contract', () => {
     expect(element).toBeDefined();
     expect(element.props.accessibilityRole).toBe('text');
   });
+
+  it('accepts speed, spacing, and loopDelay configurations', async () => {
+    const onMetrics = vi.fn();
+    const screen = await renderWithTheme(
+      <MarqueeText
+        text="Custom Ticker Announcement"
+        speed={60}
+        spacing={32}
+        loopDelay={0}
+        onLayoutMetrics={onMetrics}
+      />,
+    );
+
+    expect(screen.getByLabelText('Custom Ticker Announcement')).toBeDefined();
+  });
 });
+
+describe('DisguiseText component contract', () => {
+  it('renders with accessibilityRole="text" and accessible label when masked', async () => {
+    const screen = await renderWithTheme(
+      <DisguiseText text="Secret123" masked={true} />,
+    );
+
+    const element = screen.getByLabelText('Masked text');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+  });
+
+  it('renders with text as accessible label when unmasked', async () => {
+    const screen = await renderWithTheme(
+      <DisguiseText text="Secret123" masked={false} />,
+    );
+
+    const element = screen.getByLabelText('Secret123');
+    expect(element).toBeDefined();
+    expect(element.props.accessibilityRole).toBe('text');
+  });
+
+  it('renders mask characters and supports custom maskChar', async () => {
+    const screen = await renderWithTheme(
+      <DisguiseText text="ABC" masked={true} maskChar="*" />,
+    );
+
+    const maskDots = screen.getAllByText('*');
+    expect(maskDots.length).toBe(3);
+  });
+
+  it('supports drop and morph animation modes', async () => {
+    const dropScreen = await renderWithTheme(
+      <DisguiseText text="XYZ" mode="drop" />,
+    );
+    expect(dropScreen.getByLabelText('Masked text')).toBeDefined();
+
+    const morphScreen = await renderWithTheme(
+      <DisguiseText text="XYZ" mode="morph" />,
+    );
+    expect(morphScreen.getByLabelText('Masked text')).toBeDefined();
+  });
+});
+
 
