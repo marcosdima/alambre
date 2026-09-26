@@ -5,6 +5,7 @@ import AnimationTest from '../views/animation-test/AnimationTest';
 import ToastTest from '../views/toast-test/ToastTest';
 import ComponentsTest from '../views/components-test/ComponentsTest';
 import TextAnimationsTest from '../views/text-animations/TextAnimationsTest';
+import DndTest from '../views/dnd-test/DndTest';
 import type { NavigatorTypes } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -43,6 +44,10 @@ export const pages: Record<string, AppPage> = {
   textAnimations: {
     title: { es: 'Animaciones de Texto', en: 'Text Animations' },
     component: <TextAnimationsTest />,
+  },
+  dnd: {
+    title: { es: 'Drag & Drop', en: 'Drag & Drop' },
+    component: <DndTest />,
   },
 };
 

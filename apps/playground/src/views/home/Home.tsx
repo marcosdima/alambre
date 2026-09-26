@@ -16,6 +16,7 @@ export default () => {
   const { getDelay } = useStagger({ initialDelay: 80, staggerMs: 60 });
 
   const navItems = [
+    { key: 'dnd', label: 'Drag & Drop (Sortable Hand & Zones)', onPress: () => navigate('dnd') },
     { key: 'components', label: 'UI Components (Buttons & Typography)', onPress: () => navigate('components') },
     { key: 'textAnimations', label: 'Text Animations (Ticker, Typewriter, Wave)', onPress: () => navigate('textAnimations') },
     { key: 'animations', label: 'Animation Playground (Timing & Mag.)', onPress: () => navigate('animations') },
