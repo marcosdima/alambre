@@ -19,6 +19,7 @@ export const light = {
   success: '#16a34a',
   warning: '#d97706',
   danger: '#dc2626',
+  dangerSoft: '#fee2e2',
   overlay: 'rgba(15, 23, 42, 0.45)',
   overlayBar: 'rgba(15, 23, 42, 0.05)',
 };
@@ -41,6 +42,7 @@ export const dark = {
   success: '#34d399',
   warning: '#fbbf24',
   danger: '#f87171',
+  dangerSoft: '#381619',
   overlay: 'rgba(2, 6, 14, 0.65)',
   overlayBar: 'rgba(96, 165, 250, 0.15)',
 };

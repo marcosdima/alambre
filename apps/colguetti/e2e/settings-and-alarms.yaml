@@ -1,5 +1,7 @@
 appId: host.exp.exponent
 ---
+- tapOn:
+    id: "settings-button"
 - assertVisible: "Ajustes"
 - assertVisible: "Idioma"
 - tapOn: "EN"

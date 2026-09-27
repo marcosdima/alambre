@@ -17,8 +17,8 @@ import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppBadge from '../../components/AppBadge';
+import HangingTitle from '../../components/HangingTitle';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
-import LetterReveal from '../../components/LetterReveal';
 import { weekdayNames } from '../../utils/weekday-names';
 
 const MISSING_ITEMS_BODY = /\{items\}/g;
@@ -390,85 +390,150 @@ export default () => {
     );
   };
 
-  const nextLabel = upcoming
-    ? `${upcoming.alarm.label} · ${upcoming.date.toLocaleDateString()} ${upcoming.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    : lang.home.noNextAlarms;
-
   return (
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}
       showsVerticalScrollIndicator={false}
     >
-      <AppCard variant="outlined" style={styles.heroCard}>
-        <View style={styles.heroHeader}>
-          <AppBadge label="COLGUETTI" tone="primary" variant="solid" size="sm" />
-          <LetterReveal key={lang.home.title} text={lang.home.title} style={[styles.heroTitle, { color: theme.color }]} />
-        </View>
-        <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-      </AppCard>
+      {/* Header superior con badge y acceso a Ajustes en su propia categoría */}
+      <View style={styles.topBar}>
+        <AppBadge label="COLGUETTI" tone="primary" variant="solid" size="sm" />
+        <Pressable
+          testID="settings-button"
+          onPress={() => navigate('settings')}
+          accessibilityLabel={lang.home.guideSettings}
+          accessibilityRole="button"
+          style={({ pressed }) => [
+            styles.settingsBtn,
+            { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft },
+            pressed && styles.pressed,
+          ]}
+        >
+          <AlambreIcons.Gear color={theme.color} lineWidth={2} style={styles.gearIcon} />
+        </Pressable>
+      </View>
+
+      {/* Título animado standalone HangingTitle */}
+      <HangingTitle
+        title="Colguetti"
+        subtitle={lang.home.subtitle}
+      />
 
       {renderMissed()}
 
       {routine ? renderRoutine() : (
         <>
-          <AppCard variant="soft" style={styles.nextCard}>
-            <View style={styles.nextCardContent}>
-              <View style={styles.nextAlarmRow}>
-                <AlambreIcons.Watch
-                  drawIt
-                  color={theme.primary}
-                  lineWidth={2}
-                  style={styles.clockIcon}
-                />
-                <Text style={[styles.nextLabel, { color: theme.color }]}>{nextLabel}</Text>
+          {/* Card Hub de Mis Ítems */}
+          <AppCard
+            variant="outlined"
+            style={styles.hubCard}
+            bodyStyle={styles.hubBody}
+            onPress={() => navigate('items')}
+          >
+            <View style={styles.hubHeader}>
+              <View style={styles.hubTitleRow}>
+                <AlambreIcons.Backpack color={theme.primary} lineWidth={2} style={styles.hubIcon} />
+                <Text style={[styles.hubTitle, { color: theme.color }]}>{lang.home.guideItems}</Text>
               </View>
+              <AppBadge
+                label={`${items.length} ${items.length === 1 ? 'ítem' : 'ítems'}`}
+                tone={items.length > 0 ? 'primary' : 'neutral'}
+                variant="soft"
+                size="sm"
+              />
+            </View>
+
+            {items.length === 0 ? (
+              <Text style={[styles.hubEmptyText, { color: theme.muted }]}>
+                {lang.items.empty}
+              </Text>
+            ) : (
+              <View style={styles.itemsPreviewRow}>
+                {items.slice(0, 5).map((it) => (
+                  <View
+                    key={it.id}
+                    style={[styles.itemMiniBubble, { borderColor: theme.borderSoft, backgroundColor: theme.surfaceAlt }]}
+                  >
+                    <ItemIcon icon={it.icon} color={it.color} lineWidth={2} />
+                  </View>
+                ))}
+                {items.length > 5 ? (
+                  <Text style={[styles.moreItemsText, { color: theme.muted }]}>
+                    +{items.length - 5}
+                  </Text>
+                ) : null}
+              </View>
+            )}
+
+            <View style={styles.hubFooter}>
+              <Text style={[styles.hubCtaText, { color: theme.primary }]}>
+                Ver, ordenar y agregar ítems →
+              </Text>
+            </View>
+          </AppCard>
+
+          {/* Card Hub de Alarmas & Próxima Rutina */}
+          <AppCard
+            variant="outlined"
+            style={styles.hubCard}
+            bodyStyle={styles.hubBody}
+            onPress={() => navigate('alarms')}
+          >
+            <View style={styles.hubHeader}>
+              <View style={styles.hubTitleRow}>
+                <AlambreIcons.Watch color={theme.secondary} lineWidth={2} style={styles.hubIcon} />
+                <Text style={[styles.hubTitle, { color: theme.color }]}>{lang.home.guideAlarms}</Text>
+              </View>
+              <AppBadge
+                label={`${alarms.length} ${alarms.length === 1 ? 'alarma' : 'alarmas'}`}
+                tone={alarms.length > 0 ? 'primary' : 'neutral'}
+                variant="soft"
+                size="sm"
+              />
+            </View>
+
+            <View style={styles.nextAlarmInfo}>
+              <Text style={[styles.nextAlarmHeadline, { color: theme.color }]}>
+                {upcoming ? upcoming.alarm.label : lang.home.noNextAlarms}
+              </Text>
               {upcoming && (
-                <Text style={[styles.nextWeekdays, { color: theme.muted }]}>
-                  {weekdayNames(upcoming.alarm.weekdays, currentLang)}
-                </Text>
+                <View style={styles.nextTimeRow}>
+                  <Text style={[styles.nextTimeDisplay, { color: theme.secondary }]}>
+                    {upcoming.alarm.time}
+                  </Text>
+                  <Text style={[styles.nextDateDisplay, { color: theme.muted }]}>
+                    {upcoming.date.toLocaleDateString()} · {weekdayNames(upcoming.alarm.weekdays, currentLang)}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.hubFooter}>
+              <Text style={[styles.hubCtaText, { color: theme.secondary }]}>
+                Configurar alarmas y horarios →
+              </Text>
+              {upcoming && (
+                <AppButton
+                  variant="soft"
+                  tone="primary"
+                  size="sm"
+                  label="¡Salgo ahora!"
+                  onPress={(e) => {
+                    e?.stopPropagation?.();
+                    activate(upcoming.alarm);
+                  }}
+                />
               )}
             </View>
           </AppCard>
 
-          <View style={styles.proposalsSection}>
-            {proposals.length === 0 ? (
-              <AppCard variant="outlined" style={styles.emptyProposalCard}>
-                <Text style={[styles.emptyProposalTitle, { color: theme.muted }]}>
-                  {lang.home.noProposals}
-                </Text>
-              </AppCard>
-            ) : (
-              proposals.map(({ alarm, due }) => renderProposal(alarm, due))
-            )}
-          </View>
-
-          <View style={styles.guideRow}>
-            <AppButton
-              variant="soft"
-              tone="primary"
-              size="sm"
-              label={lang.home.guideItems}
-              style={styles.guideBtn}
-              onPress={() => navigate('items')}
-            />
-            <AppButton
-              variant="soft"
-              tone="secondary"
-              size="sm"
-              label={lang.home.guideAlarms}
-              style={styles.guideBtn}
-              onPress={() => navigate('alarms')}
-            />
-            <AppButton
-              variant="soft"
-              tone="neutral"
-              size="sm"
-              label={lang.home.guideSettings}
-              style={styles.guideBtn}
-              onPress={() => navigate('settings')}
-            />
-          </View>
+          {/* Propuestas del día si las hay */}
+          {proposals.length > 0 && (
+            <View style={styles.proposalsSection}>
+              {proposals.map(({ alarm, due }) => renderProposal(alarm, due))}
+            </View>
+          )}
         </>
       )}
     </ScrollView>
@@ -481,41 +546,108 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingBottom: 40,
   },
-  heroCard: {
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+  },
+  settingsBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  heroHeader: {
-    gap: 8,
+  gearIcon: {
+    width: 22,
+    height: 22,
   },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+  pressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.94 }],
   },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 4,
+  hubCard: {
+    // Outer pressable container
   },
-  nextCard: {
-    borderWidth: 1.5,
+  hubBody: {
+    gap: 12,
   },
-  nextCardContent: {
-    gap: 6,
+  hubHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  nextAlarmRow: {
+  hubTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  clockIcon: {
-    width: 16,
-    height: 16,
+  hubIcon: {
+    width: 22,
+    height: 22,
   },
-  nextLabel: {
+  hubTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  hubEmptyText: {
+    fontSize: 13,
+    fontStyle: 'italic',
+    paddingVertical: 4,
+  },
+  itemsPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  itemMiniBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
+  },
+  moreItemsText: {
+    fontSize: 12,
+    fontWeight: '700',
+    paddingLeft: 4,
+  },
+  hubFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 4,
+  },
+  hubCtaText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  nextAlarmInfo: {
+    gap: 4,
+  },
+  nextAlarmHeadline: {
     fontSize: 15,
     fontWeight: '700',
-    flex: 1,
+  },
+  nextTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  nextTimeDisplay: {
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  nextDateDisplay: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   nextWeekdays: {
     fontSize: 13,
