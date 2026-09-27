@@ -1,0 +1,20 @@
+appId: host.exp.exponent
+---
+- assertVisible: "Ajustes"
+- assertVisible: "Idioma"
+- tapOn: "EN"
+- assertVisible: "Settings"
+- assertVisible: "Language"
+- tapOn: "ES"
+- assertVisible: "Ajustes"
+- assertVisible: "Idioma"
+- back
+- assertVisible: "COLGUETTI"
+- tapOn: "Alarmas"
+- assertVisible: "Alarmas"
+- tapOn: "Agregar"
+- assertVisible: "Nueva alarma"
+- back
+- assertVisible: "Alarmas"
+- back
+- assertVisible: "COLGUETTI"

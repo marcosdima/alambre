@@ -447,6 +447,7 @@ export default () => {
             <AppButton
               variant="soft"
               tone="primary"
+              size="sm"
               label={lang.home.guideItems}
               style={styles.guideBtn}
               onPress={() => navigate('items')}
@@ -454,6 +455,7 @@ export default () => {
             <AppButton
               variant="soft"
               tone="secondary"
+              size="sm"
               label={lang.home.guideAlarms}
               style={styles.guideBtn}
               onPress={() => navigate('alarms')}
@@ -461,6 +463,7 @@ export default () => {
             <AppButton
               variant="soft"
               tone="neutral"
+              size="sm"
               label={lang.home.guideSettings}
               style={styles.guideBtn}
               onPress={() => navigate('settings')}

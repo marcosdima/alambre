@@ -122,7 +122,8 @@ export default () => {
                   icon={key}
                   color={color}
                   lineWidth={2}
-                  delay={380 + index * 60}
+                  style={styles.cellIcon}
+                  delay={100 + index * 40}
                   iconAnimation={catalogDrawAnimation}
                 />
               </Pressable>
@@ -188,11 +189,15 @@ const styles = StyleSheet.create({
   },
   iconCell: {
     width: 48,
-    height: 34,
+    height: 38,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
+  },
+  cellIcon: {
+    width: 28,
+    height: 22,
   },
   actions: {
     flexDirection: 'row',
