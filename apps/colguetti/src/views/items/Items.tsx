@@ -1,5 +1,5 @@
-import { Text, View, StyleSheet, Pressable } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -7,6 +7,7 @@ import { useAlarms } from '../../alarms/alarms-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
+import AppCard from '../../components/AppCard';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -56,44 +57,71 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {items.length === 0 ? (
-        <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
-      ) : (
-        <View style={styles.list}>
-          {items.map((item, index) => (
-            <Pressable
-              key={item.id}
-              onPress={() => openForm(item)}
-              style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: theme.surface, borderColor: theme.border },
-                pressed && styles.cardPressed,
-              ]}
-            >
-              <View style={styles.cardIcon}>
-                <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
-              </View>
-              <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>{item.name}</Text>
-              <Pressable
-                onPress={() => void tryDelete(item)}
-                hitSlop={10}
-                style={({ pressed }) => [
-                  styles.delete,
-                  { borderColor: theme.border },
-                  pressed && styles.deletePressed,
-                ]}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {items.length === 0 ? (
+          <AppCard variant="outlined" style={styles.emptyCard}>
+            <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
+          </AppCard>
+        ) : (
+          <View style={styles.list}>
+            {items.map((item, index) => (
+              <AppCard
+                key={item.id}
+                variant="outlined"
+                padding="sm"
+                onPress={() => openForm(item)}
+                style={styles.card}
               >
-                <Text style={{ color: theme.danger, fontWeight: '700' }}>×</Text>
-              </Pressable>
-            </Pressable>
-          ))}
-        </View>
-      )}
+                <View style={styles.cardRow}>
+                  <View style={styles.cardIcon}>
+                    <ItemIcon
+                      icon={item.icon}
+                      color={item.color}
+                      lineWidth={2}
+                      delay={350 + index * 80}
+                      iconAnimation={catalogDrawAnimation}
+                    />
+                  </View>
+                  <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <AppButton
+                    variant="ghost"
+                    tone="danger"
+                    size="sm"
+                    iconOnly
+                    onPress={(e) => {
+                      e?.stopPropagation?.();
+                      void tryDelete(item);
+                    }}
+                    leftIcon={
+                      <AlambreIcons.Cross
+                        drawIt
+                        color={theme.danger}
+                        lineWidth={2}
+                        style={styles.crossIcon}
+                      />
+                    }
+                  />
+                </View>
+              </AppCard>
+            ))}
+          </View>
+        )}
+      </ScrollView>
 
-      <View style={styles.footer}>
-        <AppButton style={styles.addButton} onPress={() => openForm()}>
-          <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.items.add}</Text>
-        </AppButton>
+      <View style={[styles.footer, { backgroundColor: theme.background }]}>
+        <AppButton
+          variant="solid"
+          tone="primary"
+          size="lg"
+          fullWidth
+          label={lang.items.add}
+          onPress={() => openForm()}
+        />
       </View>
     </View>
   );
@@ -102,25 +130,31 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
-    gap: 12,
+    paddingBottom: 90,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 32,
   },
   empty: {
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   list: {
     flexDirection: 'column',
     gap: 10,
   },
   card: {
+    borderWidth: 1.5,
+  },
+  cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
   },
   cardIcon: {
     width: 44,
@@ -128,28 +162,21 @@ const styles = StyleSheet.create({
   },
   cardName: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.1,
   },
-  cardPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.99 }],
-  },
-  delete: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-  },
-  deletePressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.9 }],
+  crossIcon: {
+    width: 14,
+    height: 14,
   },
   footer: {
-    marginTop: 'auto',
-  },
-  addButton: {
-    minWidth: 160,
-    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingTop: 12,
   },
 });
+

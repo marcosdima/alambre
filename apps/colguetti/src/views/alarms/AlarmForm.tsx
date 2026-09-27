@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Text, TextInput, View, StyleSheet, Pressable, Switch, ScrollView } from 'react-native';
-import { useNavigator, useToast, TimePicker } from 'alambre';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Stepper, TimePicker, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -8,6 +8,10 @@ import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppButton from '../../components/AppButton';
+import AppCard from '../../components/AppCard';
+import AppTextInput from '../../components/AppTextInput';
+import AppSwitch from '../../components/AppSwitch';
+import { AppChip } from '../../components/AppBadge';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
 import type { Weekday } from '../../alarms/alarm-types';
 
@@ -78,118 +82,197 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.labelLabel}</Text>
-        <TextInput
+        <AppTextInput
+          label={lang.alarms.labelLabel}
+          required
           value={label}
           onChangeText={(value) => {
             setLabel(value);
             if (labelError && value.trim()) setLabelError(false);
           }}
           placeholder={lang.alarms.labelPlaceholder}
-          placeholderTextColor={theme.muted}
-          style={[styles.input, { color: theme.color, borderColor: labelError ? theme.danger : theme.border }]}
+          clearable
+          errorMessage={labelError ? lang.alarms.labelRequired : undefined}
         />
-        {labelError && <Text style={[styles.errorText, { color: theme.danger }]}>{lang.alarms.labelRequired}</Text>}
-        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.timeLabel}</Text>
-        <TimePicker value={time} onChange={setTime} accentColor={theme.primary} testID="alarm-time" />
 
-        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.weekdaysLabel}</Text>
-        <View style={styles.weekdays}>
-          {(lang.alarms.weekdays as readonly string[]).map((letter, index) => {
-            const day = index as Weekday;
-            const active = weekdays.includes(day);
-            return (
-              <Pressable
-                key={day}
-                onPress={() => toggleWeekday(day)}
-                style={({ pressed }) => [
-                  styles.dayChip,
-                  {
-                    borderColor: active ? theme.primary : theme.border,
-                    backgroundColor: active ? theme.primary : 'transparent',
-                  },
-                  pressed && styles.pressed,
-                ]}
-              >
-                <Text style={{ color: active ? theme.onPrimary : theme.color, fontWeight: '700' }}>{letter}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <AppCard
+          variant="outlined"
+          title={lang.alarms.timeLabel}
+          style={styles.card}
+        >
+          <View style={styles.timePickerContainer}>
+            <TimePicker
+              value={time}
+              onChange={setTime}
+              accentColor={theme.primary}
+              testID="alarm-time"
+            />
+          </View>
+        </AppCard>
 
-        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.itemsLabel}</Text>
-        {items.length === 0 ? (
-          <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
-        ) : (
-          <View style={styles.itemsList}>
-            {items.map((item, index) => {
-              const active = itemIds.includes(item.id);
+        <AppCard
+          variant="outlined"
+          title={lang.alarms.weekdaysLabel}
+          style={styles.card}
+        >
+          <View style={styles.weekdaysRow}>
+            {(lang.alarms.weekdays as readonly string[]).map((letter, index) => {
+              const day = index as Weekday;
+              const active = weekdays.includes(day);
               return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => toggleItem(item.id)}
-                  style={({ pressed }) => [
-                    styles.itemCell,
-                    {
-                      borderColor: active ? theme.primary : theme.border,
-                      backgroundColor: active ? theme.primarySoft : 'transparent',
-                    },
-                    pressed && styles.pressed,
-                  ]}
-                >
-                  <View style={styles.itemIcon}>
-                    <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={350 + index * 80} iconAnimation={catalogDrawAnimation} />
-                  </View>
-                  <Text style={[styles.itemName, { color: active ? theme.primary : theme.color }]} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <View style={[styles.itemCheck, { borderColor: active ? theme.primary : theme.border }]}>
-                    {active && <Text style={[styles.itemCheckMark, { color: theme.primary }]}>✓</Text>}
-                  </View>
-                </Pressable>
+                <AppChip
+                  key={day}
+                  label={letter}
+                  selected={active}
+                  onPress={() => toggleWeekday(day)}
+                  style={styles.dayChip}
+                />
               );
             })}
           </View>
-        )}
+        </AppCard>
 
-        <Text style={[styles.fieldLabel, { color: theme.color }]}>{lang.alarms.windowLabel}</Text>
-        <View style={styles.windowRow}>
-          <Pressable
-            onPress={() => setActiveWindowMinutes((minutes) => clampActiveWindowMinutes(minutes - 1))}
-            style={[styles.windowButton, { borderColor: theme.border }]}
-            hitSlop={8}
-          >
-            <Text style={{ color: theme.color, fontSize: 18, fontWeight: '800', lineHeight: 22 }}>−</Text>
-          </Pressable>
-          <Text style={{ color: theme.color, fontWeight: '700' }}>
-            {activeWindowMinutes} {lang.alarms.minutes}
-          </Text>
-          <Pressable
-            onPress={() => setActiveWindowMinutes((minutes) => clampActiveWindowMinutes(minutes + 1))}
-            style={[styles.windowButton, { borderColor: theme.border }]}
-            hitSlop={8}
-          >
-            <Text style={{ color: theme.color, fontSize: 18, fontWeight: '800', lineHeight: 22 }}>+</Text>
-          </Pressable>
-        </View>
+        <AppCard
+          variant="outlined"
+          title={lang.alarms.itemsLabel}
+          subtitle={
+            itemIds.length > 0
+              ? lang.alarms.count.replace('{count}', String(itemIds.length))
+              : undefined
+          }
+          style={styles.card}
+        >
+          {items.length === 0 ? (
+            <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
+          ) : (
+            <View style={styles.itemsList}>
+              {items.map((item, index) => {
+                const active = itemIds.includes(item.id);
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => toggleItem(item.id)}
+                    style={({ pressed }) => [
+                      styles.itemCell,
+                      {
+                        borderColor: active ? theme.primary : theme.borderSoft,
+                        backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                        borderWidth: active ? 2 : 1,
+                      },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <View style={styles.itemIcon}>
+                      <ItemIcon
+                        icon={item.icon}
+                        color={item.color}
+                        lineWidth={2}
+                        delay={350 + index * 80}
+                        iconAnimation={catalogDrawAnimation}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.itemName,
+                        { color: active ? theme.primary : theme.color, fontWeight: active ? '700' : '600' },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.name}
+                    </Text>
+                    <View
+                      style={[
+                        styles.itemCheck,
+                        {
+                          borderColor: active ? theme.primary : theme.border,
+                          backgroundColor: active ? theme.primary : 'transparent',
+                        },
+                      ]}
+                    >
+                      {active && (
+                        <Text style={[styles.itemCheckMark, { color: theme.onPrimary }]}>✓</Text>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+        </AppCard>
 
-        <View style={styles.enabledRow}>
-          <Text style={{ color: theme.color }}>{lang.alarms.enabledLabel}</Text>
-          <Switch
-            value={enabled}
-            onValueChange={setEnabled}
-            trackColor={{ true: theme.success, false: theme.border }}
+        <AppCard
+          variant="outlined"
+          title={lang.alarms.windowLabel}
+          style={styles.card}
+        >
+          <View style={styles.stepperContainer}>
+            <Stepper
+              value={activeWindowMinutes}
+              onChange={setActiveWindowMinutes}
+              min={1}
+              max={60}
+              step={1}
+            >
+              {({ value: currentVal, increment, decrement, canIncrement, canDecrement }) => (
+                <View style={styles.windowRow}>
+                  <AppButton
+                    variant="outline"
+                    tone="neutral"
+                    size="sm"
+                    iconOnly
+                    disabled={!canDecrement}
+                    onPress={decrement}
+                    label="−"
+                    style={styles.windowBtn}
+                  />
+                  <Text style={[styles.windowValueText, { color: theme.color }]}>
+                    {currentVal} {lang.alarms.minutes}
+                  </Text>
+                  <AppButton
+                    variant="outline"
+                    tone="neutral"
+                    size="sm"
+                    iconOnly
+                    disabled={!canIncrement}
+                    onPress={increment}
+                    label="+"
+                    style={styles.windowBtn}
+                  />
+                </View>
+              )}
+            </Stepper>
+          </View>
+        </AppCard>
+
+
+        <AppCard
+          variant="outlined"
+          style={styles.card}
+        >
+          <AppSwitch
+            checked={enabled}
+            onChange={setEnabled}
+            label={lang.alarms.enabledLabel}
+            activeTone="primary"
           />
-        </View>
+        </AppCard>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <AppButton style={styles.footerButton} onPress={close}>
-          <Text style={{ color: theme.muted, fontWeight: '700' }}>{lang.common.cancel}</Text>
-        </AppButton>
-        <AppButton style={styles.footerButton} onPress={onSave}>
-          <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.common.save}</Text>
-        </AppButton>
+      <View style={[styles.footer, { backgroundColor: theme.background }]}>
+        <AppButton
+          variant="outline"
+          tone="neutral"
+          style={styles.footerBtn}
+          label={lang.common.cancel}
+          onPress={close}
+        />
+        <AppButton
+          variant="solid"
+          tone="primary"
+          style={styles.footerBtn}
+          label={lang.common.save}
+          onPress={onSave}
+        />
       </View>
     </View>
   );
@@ -198,43 +281,33 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
   },
   body: {
-    gap: 10,
-    paddingBottom: 20,
+    padding: 20,
+    gap: 16,
+    paddingBottom: 90,
   },
-  fieldLabel: {
-    fontWeight: '700',
-    marginTop: 6,
+  card: {
+    borderWidth: 1.5,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
+  timePickerContainer: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
-  errorText: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: -2,
-  },
-  weekdays: {
+  weekdaysRow: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingTop: 6,
+    gap: 6,
   },
   dayChip: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 999,
-    borderWidth: 1,
   },
   itemsList: {
     flexDirection: 'column',
     gap: 8,
+    paddingTop: 6,
   },
   itemCell: {
     flexDirection: 'row',
@@ -243,7 +316,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
-    borderWidth: 1,
   },
   itemIcon: {
     width: 40,
@@ -252,13 +324,12 @@ const styles = StyleSheet.create({
   itemName: {
     flex: 1,
     fontSize: 14,
-    fontWeight: '600',
   },
   itemCheck: {
     width: 22,
     height: 22,
     borderRadius: 7,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -267,39 +338,43 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: 16,
   },
+  stepperContainer: {
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
   windowRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-    marginTop: 4,
   },
-  windowButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  windowBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+  },
+  windowValueText: {
+    fontSize: 16,
+    fontWeight: '700',
+    minWidth: 100,
+    textAlign: 'center',
   },
   pressed: {
     opacity: 0.85,
-    transform: [{ scale: 0.97 }],
-  },
-  enabledRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
+    transform: [{ scale: 0.98 }],
   },
   footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
-    marginBottom: 4,
+    padding: 20,
+    paddingTop: 12,
   },
-  footerButton: {
+  footerBtn: {
     flex: 1,
-    alignItems: 'center',
   },
 });
+

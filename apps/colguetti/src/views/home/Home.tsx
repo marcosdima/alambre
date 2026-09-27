@@ -14,8 +14,9 @@ import { isConfirmedAfter } from '../../checklist/checklist-model';
 import { cancelAlarmAlerts, cancelExpiryReminder, cancelSuccessReminder, scheduleExpiryReminder, scheduleSuccessReminder, SNOOZE_MINUTES } from '../../notifications/expiry';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import type { Alarm } from '../../alarms/alarm-types';
-import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
+import AppCard from '../../components/AppCard';
+import AppBadge from '../../components/AppBadge';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import LetterReveal from '../../components/LetterReveal';
 import { weekdayNames } from '../../utils/weekday-names';
@@ -211,37 +212,50 @@ export default () => {
   const renderMissed = () => {
     if (!missed) return null;
     return (
-      <View style={[styles.missedCard, { backgroundColor: theme.warning, borderColor: theme.warning }]}>
-        <Text style={[styles.missedTitle, { color: '#fff' }]}>
-          {lang.home.missedTitle}: {missed.label} ({missed.time})
-        </Text>
+      <AppCard
+        variant="outlined"
+        style={[styles.missedCard, { backgroundColor: theme.surfaceAlt, borderColor: theme.warning }]}
+      >
+        <View style={styles.missedHeader}>
+          <AppBadge label={lang.home.missedTitle} tone="warning" variant="solid" size="sm" />
+          <Text style={[styles.missedTitle, { color: theme.color }]}>
+            {missed.label} ({missed.time})
+          </Text>
+        </View>
         {missed.items.length > 0 && (
-          <Text style={{ color: '#fff', fontWeight: '600' }}>
+          <Text style={[styles.missedItemsText, { color: theme.muted }]}>
             {lang.home.missedItems}: {missed.items.join(', ')}
           </Text>
         )}
-      </View>
+      </AppCard>
     );
   };
 
   const renderProposal = (alarm: Alarm, due: Date) => {
     const alreadyConfirmed = isConfirmedAfter(confirmations, alarm.id, due);
     return (
-      <View key={alarm.id} style={[styles.proposalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <View style={styles.proposalInfo}>
-          <Text style={[styles.proposalTitle, { color: theme.color }]}>{alarm.label}</Text>
-          <Text style={{ color: theme.muted }}>{alarm.time}</Text>
+      <AppCard
+        key={alarm.id}
+        variant="outlined"
+        style={styles.proposalCard}
+      >
+        <View style={styles.proposalContent}>
+          <View style={styles.proposalInfo}>
+            <View style={styles.proposalTitleRow}>
+              <Text style={[styles.proposalTitle, { color: theme.color }]}>{alarm.label}</Text>
+              <AppBadge label={alarm.time} tone="primary" variant="soft" size="sm" />
+            </View>
+          </View>
+          <AppButton
+            variant={alreadyConfirmed ? 'outline' : 'solid'}
+            tone="primary"
+            size="sm"
+            disabled={alreadyConfirmed}
+            label={alreadyConfirmed ? lang.common.confirm : lang.home.activate}
+            onPress={() => void activateAlarm(alarm)}
+          />
         </View>
-        <AppButton
-          style={styles.activateButton}
-          disabled={alreadyConfirmed}
-          onPress={() => void activateAlarm(alarm)}
-        >
-          <Text style={[styles.activateLabel, { color: alreadyConfirmed ? theme.muted : theme.success }]}>
-            {lang.home.activate}
-          </Text>
-        </AppButton>
-      </View>
+      </AppCard>
     );
   };
 
@@ -251,11 +265,19 @@ export default () => {
     const checkedCount = routineItems.filter((item) => ticked[item.id]).length;
 
     return (
-      <View style={[styles.routineCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      <AppCard variant="outlined" style={styles.routineCard}>
         <View style={styles.routineHeader}>
-          <View style={{ flex: 1 }}>
-            <AppTitle style={[styles.routineTitle, { color: theme.color }]}>{routine.label}</AppTitle>
-            <Text style={{ color: theme.muted }}>{routine.time}</Text>
+          <View style={styles.routineInfoCol}>
+            <Text style={[styles.routineTitle, { color: theme.color }]}>{routine.label}</Text>
+            <View style={styles.routineSubRow}>
+              <AppBadge label={routine.time} tone="primary" variant="soft" size="sm" />
+              <AppBadge
+                label={`${checkedCount}/${allItems}`}
+                tone={checkedCount === allItems && allItems > 0 ? 'success' : 'neutral'}
+                variant="solid"
+                size="sm"
+              />
+            </View>
           </View>
           {success ? (
             <View style={styles.tickBox}>
@@ -264,60 +286,107 @@ export default () => {
                 drawIt={success}
                 iconAnimation={iconAnimation}
                 color={theme.success}
-                lineWidth={5}
+                lineWidth={4}
               />
             </View>
           ) : (
-            <Text style={{ color: theme.warning, fontWeight: '800' }}>
-              {lang.home.expiresIn} {formatCountdown(remaining)}
-            </Text>
+            <AppBadge
+              label={`${lang.home.expiresIn} ${formatCountdown(remaining)}`}
+              tone="warning"
+              variant="soft"
+              size="sm"
+            />
           )}
         </View>
 
         {allItems === 0 ? (
-          <Text style={{ color: theme.muted }}>{lang.home.routineNoItems}</Text>
+          <Text style={[styles.emptyRoutineText, { color: theme.muted }]}>{lang.home.routineNoItems}</Text>
         ) : (
-          routineItems.map((item, index) => {
-            const checked = ticked[item.id];
-            return (
-              <Pressable
-                key={item.id}
-                onPress={() => toggleItem(item.id)}
-                style={[styles.itemRow, { borderColor: theme.border, backgroundColor: checked ? theme.surfaceAlt : 'transparent' }]}
-              >
-                <View style={styles.itemIcon}>
-                  <ItemIcon icon={item.icon} color={item.color} lineWidth={2} delay={index * 80} iconAnimation={catalogDrawAnimation} />
-                </View>
-                <Text style={[styles.itemName, { color: theme.color, textDecorationLine: checked ? 'line-through' : 'none' }]}>
-                  {item.name}
-                </Text>
-                <View style={[styles.checkbox, { borderColor: theme.border, backgroundColor: checked ? theme.success : 'transparent' }]}>
-                  {checked && <Text style={{ color: '#fff', fontWeight: '800' }}>✓</Text>}
-                </View>
-              </Pressable>
-            );
-          })
+          <View style={styles.routineItemsContainer}>
+            {routineItems.map((item, index) => {
+              const checked = ticked[item.id];
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleItem(item.id)}
+                  style={({ pressed }) => [
+                    styles.itemRow,
+                    {
+                      borderColor: checked ? theme.primary : theme.borderSoft,
+                      backgroundColor: checked ? theme.primarySoft : theme.surfaceAlt,
+                      borderWidth: checked ? 2 : 1,
+                    },
+                    pressed && styles.itemRowPressed,
+                  ]}
+                >
+                  <View style={styles.itemIcon}>
+                    <ItemIcon
+                      icon={item.icon}
+                      color={item.color}
+                      lineWidth={2}
+                      delay={index * 80}
+                      iconAnimation={catalogDrawAnimation}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.itemName,
+                      {
+                        color: checked ? theme.primary : theme.color,
+                        textDecorationLine: checked ? 'line-through' : 'none',
+                        fontWeight: checked ? '700' : '600',
+                      },
+                    ]}
+                  >
+                    {item.name}
+                  </Text>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        borderColor: checked ? theme.primary : theme.border,
+                        backgroundColor: checked ? theme.primary : 'transparent',
+                      },
+                    ]}
+                  >
+                    {checked && <Text style={{ color: theme.onPrimary, fontWeight: '800' }}>✓</Text>}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
         )}
 
-        <Text style={{ color: theme.muted, fontSize: 12 }}>
-          {checkedCount}/{allItems}
-        </Text>
-
-        <AppButton onPress={onConfirm} disabled={success}>
-          <Text style={[styles.confirmLabel, { color: theme.success }]}>{lang.home.routineCta}</Text>
-        </AppButton>
+        <AppButton
+          variant="solid"
+          tone="primary"
+          size="lg"
+          fullWidth
+          label={lang.home.routineCta}
+          onPress={onConfirm}
+          disabled={success}
+          style={styles.ctaButton}
+        />
 
         {!success && (
           <View style={styles.routineActions}>
-            <Pressable onPress={onSnooze} style={styles.routineAction}>
-              <Text style={{ color: theme.primary }}>{lang.home.snooze}</Text>
-            </Pressable>
-            <Pressable onPress={closeRoutine} style={styles.routineAction}>
-              <Text style={{ color: theme.muted }}>{lang.common.cancel}</Text>
-            </Pressable>
+            <AppButton
+              variant="ghost"
+              tone="secondary"
+              size="sm"
+              label={lang.home.snooze}
+              onPress={onSnooze}
+            />
+            <AppButton
+              variant="ghost"
+              tone="neutral"
+              size="sm"
+              label={lang.common.cancel}
+              onPress={closeRoutine}
+            />
           </View>
         )}
-      </View>
+      </AppCard>
     );
   };
 
@@ -326,43 +395,76 @@ export default () => {
     : lang.home.noNextAlarms;
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.hero, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <LetterReveal key={lang.home.title} text={lang.home.title} style={{ color: theme.color }} />
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}
+      showsVerticalScrollIndicator={false}
+    >
+      <AppCard variant="outlined" style={styles.heroCard}>
+        <View style={styles.heroHeader}>
+          <AppBadge label="COLGUETTI" tone="primary" variant="solid" size="sm" />
+          <LetterReveal key={lang.home.title} text={lang.home.title} style={[styles.heroTitle, { color: theme.color }]} />
+        </View>
         <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-      </View>
+      </AppCard>
 
       {renderMissed()}
 
       {routine ? renderRoutine() : (
         <>
-          <View style={[styles.nextRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
-            <Text style={[styles.nextLabel, { color: theme.color }]}>{nextLabel}</Text>
-            {upcoming && (
-              <Text style={{ color: theme.muted, fontSize: 13 }}>
-                {weekdayNames(upcoming.alarm.weekdays, currentLang)}
-              </Text>
+          <AppCard variant="soft" style={styles.nextCard}>
+            <View style={styles.nextCardContent}>
+              <View style={styles.nextAlarmRow}>
+                <AlambreIcons.Watch
+                  drawIt
+                  color={theme.primary}
+                  lineWidth={2}
+                  style={styles.clockIcon}
+                />
+                <Text style={[styles.nextLabel, { color: theme.color }]}>{nextLabel}</Text>
+              </View>
+              {upcoming && (
+                <Text style={[styles.nextWeekdays, { color: theme.muted }]}>
+                  {weekdayNames(upcoming.alarm.weekdays, currentLang)}
+                </Text>
+              )}
+            </View>
+          </AppCard>
+
+          <View style={styles.proposalsSection}>
+            {proposals.length === 0 ? (
+              <AppCard variant="outlined" style={styles.emptyProposalCard}>
+                <Text style={[styles.emptyProposalTitle, { color: theme.muted }]}>
+                  {lang.home.noProposals}
+                </Text>
+              </AppCard>
+            ) : (
+              proposals.map(({ alarm, due }) => renderProposal(alarm, due))
             )}
           </View>
 
-          {proposals.length === 0 ? (
-            <View style={[styles.proposalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.proposalTitle, { color: theme.color }]}>{lang.home.noProposals}</Text>
-            </View>
-          ) : (
-            proposals.map(({ alarm, due }) => renderProposal(alarm, due))
-          )}
-
           <View style={styles.guideRow}>
-            <AppButton style={styles.ghost} onPress={() => navigate('items')}>
-              <Text style={{ color: theme.primary }}>{lang.home.guideItems}</Text>
-            </AppButton>
-            <AppButton style={styles.ghost} onPress={() => navigate('alarms')}>
-              <Text style={{ color: theme.primary }}>{lang.home.guideAlarms}</Text>
-            </AppButton>
-            <AppButton style={styles.ghost} onPress={() => navigate('settings')}>
-              <Text style={{ color: theme.primary }}>{lang.home.guideSettings}</Text>
-            </AppButton>
+            <AppButton
+              variant="soft"
+              tone="primary"
+              label={lang.home.guideItems}
+              style={styles.guideBtn}
+              onPress={() => navigate('items')}
+            />
+            <AppButton
+              variant="soft"
+              tone="secondary"
+              label={lang.home.guideAlarms}
+              style={styles.guideBtn}
+              onPress={() => navigate('alarms')}
+            />
+            <AppButton
+              variant="soft"
+              tone="neutral"
+              label={lang.home.guideSettings}
+              style={styles.guideBtn}
+              onPress={() => navigate('settings')}
+            />
           </View>
         </>
       )}
@@ -374,100 +476,149 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     gap: 16,
+    paddingBottom: 40,
   },
-  hero: {
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 18,
+  heroCard: {
+    borderWidth: 1.5,
+  },
+  heroHeader: {
     gap: 8,
   },
-  subtitle: {
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  nextRow: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    gap: 4,
-  },
-  nextLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  missedCard: {
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 6,
-    borderWidth: 1,
-  },
-  missedTitle: {
+  heroTitle: {
+    fontSize: 22,
     fontWeight: '800',
+    letterSpacing: -0.3,
   },
-  proposalCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 4,
+  },
+  nextCard: {
+    borderWidth: 1.5,
+  },
+  nextCardContent: {
+    gap: 6,
+  },
+  nextAlarmRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  clockIcon: {
+    width: 16,
+    height: 16,
+  },
+  nextLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+    flex: 1,
+  },
+  nextWeekdays: {
+    fontSize: 13,
+    paddingLeft: 24,
+  },
+  missedCard: {
+    borderWidth: 1.5,
+  },
+  missedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  missedTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  missedItemsText: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  proposalsSection: {
+    gap: 10,
+  },
+  proposalCard: {
+    borderWidth: 1.5,
+  },
+  proposalContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 12,
   },
   proposalInfo: {
     flex: 1,
-    gap: 2,
+  },
+  proposalTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   proposalTitle: {
     fontWeight: '700',
     fontSize: 16,
   },
-  activateButton: {
-    paddingHorizontal: 18,
+  emptyProposalCard: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderWidth: 1.5,
   },
-  activateLabel: {
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  guideRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  ghost: {
-    flexGrow: 1,
+  emptyProposalTitle: {
+    fontSize: 14,
   },
   routineCard: {
-    borderRadius: 18,
-    borderWidth: 1,
-    padding: 16,
-    gap: 12,
+    borderWidth: 1.5,
+    gap: 14,
   },
   routineHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  routineInfoCol: {
+    flex: 1,
+    gap: 6,
   },
   routineTitle: {
     fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  routineSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   tickBox: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyRoutineText: {
+    fontSize: 14,
+    paddingVertical: 8,
+  },
+  routineItemsContainer: {
+    gap: 8,
   },
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderRadius: 12,
-    borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
+  itemRowPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
   itemIcon: {
-    width: 48,
-    height: 32,
+    width: 44,
+    height: 30,
   },
   itemName: {
     flex: 1,
@@ -477,20 +628,26 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 7,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  confirmLabel: {
-    fontWeight: '800',
-    fontSize: 16,
+  ctaButton: {
+    marginTop: 6,
   },
   routineActions: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 24,
+    gap: 20,
+    marginTop: 4,
   },
-  routineAction: {
-    paddingVertical: 6,
+  guideRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  guideBtn: {
+    flex: 1,
   },
 });
+

@@ -1,5 +1,5 @@
-import { Text, View, StyleSheet, Pressable, Switch } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -7,6 +7,9 @@ import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelAlarmAlerts } from '../../notifications/expiry';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
+import AppCard from '../../components/AppCard';
+import AppBadge from '../../components/AppBadge';
+import AppSwitch from '../../components/AppSwitch';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -42,58 +45,105 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {alarms.length === 0 ? (
-        <Text style={[styles.empty, { color: theme.muted }]}>{lang.alarms.empty}</Text>
-      ) : (
-        alarms.map((alarm) => {
-          const next = nextOccurrence(alarm, now);
-          const display = next
-            ? `${alarm.time} · ${next.toLocaleDateString()}`
-            : alarm.time;
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {alarms.length === 0 ? (
+          <AppCard variant="outlined" style={styles.emptyCard}>
+            <Text style={[styles.empty, { color: theme.muted }]}>{lang.alarms.empty}</Text>
+          </AppCard>
+        ) : (
+          <View style={styles.list}>
+            {alarms.map((alarm) => {
+              const next = nextOccurrence(alarm, now);
+              const display = next
+                ? `${alarm.time} · ${next.toLocaleDateString()}`
+                : alarm.time;
 
-          return (
-            <View
-              key={alarm.id}
-              style={[styles.row, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            >
-              <Pressable style={styles.rowBody} onPress={() => openForm(alarm)}>
-                <Text style={[styles.label, { color: theme.color }]}>{alarm.label}</Text>
-                <Text style={[styles.meta, { color: theme.muted }]}>
-                  {display} · {alarm.weekdays.map((d) => weekdayLabels[d]).join(' ')}
-                </Text>
-                <Text style={[styles.meta, { color: theme.muted }]}>
-                  {alarm.itemIds.length
-                    ? lang.alarms.count.replace('{count}', String(alarm.itemIds.length))
-                    : lang.alarms.itemsLabel}
-                </Text>
-              </Pressable>
-              <View style={styles.rowActions}>
-                <Switch
-                  value={alarm.enabled}
-                  onValueChange={(enabled) => updateAlarm(alarm.id, { enabled })}
-                  trackColor={{ true: theme.success, false: theme.border }}
-                />
-                <Pressable
-                  onPress={() => void tryDelete(alarm)}
-                  hitSlop={10}
-                  style={({ pressed }) => [
-                    styles.delete,
-                    { borderColor: theme.border },
-                    pressed && styles.deletePressed,
-                  ]}
+              const weekdaysString = alarm.weekdays
+                .map((d) => weekdayLabels[d])
+                .join(' · ');
+
+              const itemsCountText = alarm.itemIds.length
+                ? lang.alarms.count.replace('{count}', String(alarm.itemIds.length))
+                : lang.alarms.itemsLabel;
+
+              return (
+                <AppCard
+                  key={alarm.id}
+                  variant="outlined"
+                  padding="md"
+                  onPress={() => openForm(alarm)}
+                  style={styles.card}
                 >
-                  <Text style={{ color: theme.danger, fontWeight: '700' }}>{lang.items.delete}</Text>
-                </Pressable>
-              </View>
-            </View>
-          );
-        })
-      )}
+                  <View style={styles.cardHeader}>
+                    <View style={styles.headerLeft}>
+                      <Text style={[styles.label, { color: theme.color }]} numberOfLines={1}>
+                        {alarm.label}
+                      </Text>
+                      <AppBadge
+                        label={display}
+                        tone={alarm.enabled ? 'primary' : 'neutral'}
+                        variant={alarm.enabled ? 'soft' : 'outline'}
+                        size="sm"
+                      />
+                    </View>
+                    <AppSwitch
+                      checked={alarm.enabled}
+                      onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
+                      size="sm"
+                    />
+                  </View>
 
-      <View style={styles.footer}>
-        <AppButton style={styles.addButton} onPress={() => openForm()}>
-          <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.alarms.add}</Text>
-        </AppButton>
+                  <View style={styles.metaRow}>
+                    <Text style={[styles.metaText, { color: theme.muted }]}>
+                      {weekdaysString}
+                    </Text>
+                  </View>
+
+                  <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
+                    <AppBadge
+                      label={itemsCountText}
+                      tone="neutral"
+                      variant="soft"
+                      size="sm"
+                    />
+                    <AppButton
+                      variant="ghost"
+                      tone="danger"
+                      size="sm"
+                      iconOnly
+                      onPress={(e) => {
+                        e?.stopPropagation?.();
+                        void tryDelete(alarm);
+                      }}
+                      leftIcon={
+                        <AlambreIcons.Cross
+                          drawIt
+                          color={theme.danger}
+                          lineWidth={2}
+                          style={styles.crossIcon}
+                        />
+                      }
+                    />
+                  </View>
+                </AppCard>
+              );
+            })}
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={[styles.footer, { backgroundColor: theme.background }]}>
+        <AppButton
+          variant="solid"
+          tone="primary"
+          size="lg"
+          fullWidth
+          label={lang.alarms.add}
+          onPress={() => openForm()}
+        />
       </View>
     </View>
   );
@@ -102,52 +152,71 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
-    gap: 12,
+    paddingBottom: 90,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 32,
   },
   empty: {
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 22,
+    textAlign: 'center',
   },
-  row: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+  list: {
+    flexDirection: 'column',
     gap: 12,
   },
-  rowBody: {
-    flex: 1,
-    gap: 2,
+  card: {
+    borderWidth: 1.5,
   },
-  rowActions: {
+  cardHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  headerLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
   },
   label: {
     fontSize: 16,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
-  meta: {
+  metaRow: {
+    marginTop: 6,
+  },
+  metaText: {
     fontSize: 13,
+    lineHeight: 18,
   },
-  delete: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  deletePressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.97 }],
+  crossIcon: {
+    width: 14,
+    height: 14,
   },
   footer: {
-    marginTop: 'auto',
-  },
-  addButton: {
-    minWidth: 160,
-    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingTop: 12,
   },
 });
+

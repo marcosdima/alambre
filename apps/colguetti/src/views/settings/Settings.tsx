@@ -1,8 +1,11 @@
-import { Text, View, StyleSheet, Pressable } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
-import { useToast } from 'alambre';
 import ToggleLightDark from '../../components/ToggleLightDark';
+import AppCard from '../../components/AppCard';
+import AppButton from '../../components/AppButton';
+import { AppChip } from '../../components/AppBadge';
 import { useNotificationPermission } from '../../notifications/notification-permission-context';
 
 export default () => {
@@ -41,87 +44,82 @@ export default () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
+      <AppCard
+        variant="outlined"
+        title={lang.settings.language}
+        style={styles.card}
+      >
         <View style={styles.row}>
           {(['es', 'en'] as const).map((code) => {
             const active = currentLang === code;
             return (
-              <Pressable
+              <AppChip
                 key={code}
+                label={code.toUpperCase()}
+                selected={active}
                 onPress={() => changeLang(code)}
-                style={({ pressed }) => [
-                  styles.langChip,
-                  { borderColor: active ? theme.primary : theme.border, backgroundColor: active ? theme.primarySoft : theme.surfaceAlt },
-                  pressed && styles.langChipPressed,
-                ]}
-              >
-                <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase', fontWeight: active ? '800' : '600' }}>
-                  {code}
-                </Text>
-              </Pressable>
+                style={styles.langChip}
+              />
             );
           })}
         </View>
-      </View>
+      </AppCard>
 
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
-        <ToggleLightDark
-          toggle={toggleTheme}
-          setLeft={currThemeName === 'light'}
-          style={styles.toggle}
-          colors={{
-            light: {
-              background: theme.surfaceAlt,
-              border: theme.border,
-              circle: '#0b525b',
-              sun: '#f59e0b',
-              moon: '#5b6572',
-            },
-            dark: {
-              background: theme.surface,
-              border: theme.border,
-              circle: '#9eebce',
-              sun: '#ffc266',
-              moon: '#9eb0c8',
-            },
-          }}
-        />
-      </View>
-
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.notifications}</Text>
-        <Text style={{ color: theme.muted }}>{permissionHint}</Text>
-        <View style={styles.row}>
-          {permission !== 'granted' && (
-            <Pressable
-              onPress={onRequestPermission}
-              style={({ pressed }) => [
-                styles.actionButton,
-                { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-                pressed && styles.langChipPressed,
-              ]}
-            >
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>
-                {lang.settings.requestPermission}
-              </Text>
-            </Pressable>
-          )}
-          <Pressable
-            onPress={onTestNotification}
-            style={({ pressed }) => [
-              styles.actionButton,
-              { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-              pressed && styles.langChipPressed,
-            ]}
-          >
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>
-              {lang.settings.testNotification}
-            </Text>
-          </Pressable>
+      <AppCard
+        variant="outlined"
+        title={lang.settings.theme}
+        style={styles.card}
+      >
+        <View style={styles.toggleRow}>
+          <ToggleLightDark
+            toggle={toggleTheme}
+            setLeft={currThemeName === 'light'}
+            style={styles.toggle}
+            colors={{
+              light: {
+                background: theme.surfaceAlt,
+                border: theme.border,
+                circle: '#15803d',
+                sun: '#d97706',
+                moon: '#64748b',
+              },
+              dark: {
+                background: theme.surfaceAlt,
+                border: theme.border,
+                circle: '#4ade80',
+                sun: '#fbbf24',
+                moon: '#94a3b8',
+              },
+            }}
+          />
         </View>
-      </View>
+      </AppCard>
+
+      <AppCard
+        variant="outlined"
+        title={lang.settings.notifications}
+        subtitle={permissionHint}
+        style={styles.card}
+      >
+        <View style={styles.btnRow}>
+          {permission !== 'granted' && (
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.requestPermission}
+              onPress={onRequestPermission}
+              style={styles.actionBtn}
+            />
+          )}
+          <AppButton
+            variant="soft"
+            tone="primary"
+            label={lang.settings.testNotification}
+            onPress={onTestNotification}
+            style={styles.actionBtn}
+          />
+        </View>
+      </AppCard>
     </View>
   );
 };
@@ -133,38 +131,32 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    gap: 14,
-  },
-  sectionLabel: {
-    fontWeight: '700',
-    fontSize: 16,
+    borderWidth: 1.5,
   },
   row: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
+    paddingTop: 4,
   },
   langChip: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 2,
   },
-  langChipPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.97 }],
-  },
-  actionButton: {
-    flex: 1,
+  toggleRow: {
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: 4,
   },
   toggle: {
-    height: 64,
+    height: 60,
     aspectRatio: 3.2,
   },
+  btnRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingTop: 4,
+  },
+  actionBtn: {
+    flex: 1,
+  },
 });
+
