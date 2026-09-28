@@ -42,3 +42,4 @@ export { default as CreditCard } from './CreditCard';
 export { default as Eye } from './Eye';
 export { default as EyeOff } from './EyeOff';
 export { default as Search } from './Search';
+export { default as Trash, default as Bin, default as Trash2 } from './Trash';
