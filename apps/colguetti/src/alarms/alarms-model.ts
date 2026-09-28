@@ -9,8 +9,11 @@ export const clampActiveWindowMinutes = (minutes: number): number => (
   Math.min(MAX_ACTIVE_WINDOW_MINUTES, Math.max(MIN_ACTIVE_WINDOW_MINUTES, minutes))
 );
 
-export const withActiveWindowDefault = (minutes?: number): number => (
-  clampActiveWindowMinutes(minutes ?? DEFAULT_ACTIVE_WINDOW_MINUTES)
+export const withActiveWindowDefault = (
+  minutes?: number,
+  fallback = DEFAULT_ACTIVE_WINDOW_MINUTES,
+): number => (
+  clampActiveWindowMinutes(minutes ?? fallback)
 );
 
 export const createAlarm = (input: AlarmInput): Alarm => ({

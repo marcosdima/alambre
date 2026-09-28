@@ -108,8 +108,8 @@ export default function AppBadge({
     switch (size) {
       case 'sm':
         return {
-          paddingHorizontal: 6,
-          paddingVertical: 1,
+          paddingHorizontal: 7,
+          paddingVertical: 2,
           fontSize: 10,
           borderRadius: 6,
           gap: 4,
@@ -292,7 +292,6 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
     justifyContent: 'center',
     flexShrink: 0,
   },
@@ -301,6 +300,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   chip: {
     flexDirection: 'row',

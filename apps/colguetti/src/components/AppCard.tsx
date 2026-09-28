@@ -153,7 +153,12 @@ export default function AppCard({
 
               {badge ? (
                 typeof badge === 'string' ? (
-                  <AppBadge label={badge} tone={badgeTone} size="sm" />
+                  <AppBadge
+                    label={badge}
+                    tone={badgeTone}
+                    size="sm"
+                    style={styles.headerBadge}
+                  />
                 ) : (
                   badge
                 )
@@ -260,6 +265,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
     flexShrink: 1,
+    includeFontPadding: false,
+  },
+  headerBadge: {
+    alignSelf: 'center',
   },
   subtitleText: {
     fontSize: 13,

@@ -1,16 +1,20 @@
-import { StyleSheet, View } from 'react-native';
-import { useToast } from 'alambre';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AlambreIcons, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import ToggleLightDark from '../../components/ToggleLightDark';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
-import { AppChip } from '../../components/AppBadge';
 import { useNotificationPermission } from '../../notifications/notification-permission-context';
+
+const CAFECITO_URL = 'https://cafecito.app/marcosdima';
+const GITHUB_URL = 'https://github.com/marcosdima';
 
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
   const { lang, currentLang, changeLang } = useLang();
+  const { config, saveField } = useConfig();
   const { show } = useToast();
   const { permission, loading, requestPermission, sendTestNotification } =
     useNotificationPermission();
@@ -22,6 +26,16 @@ export default () => {
       : permission === 'denied'
         ? lang.settings.notificationsDenied
         : lang.settings.notificationsUndetermined;
+
+  const permissionBadge = loading
+    ? { label: lang.settings.notificationsBadgeUndetermined, tone: 'warning' as const }
+    : permission === 'granted'
+      ? { label: lang.settings.notificationsBadgeGranted, tone: 'success' as const }
+      : permission === 'denied'
+        ? { label: lang.settings.notificationsBadgeDenied, tone: 'danger' as const }
+        : { label: lang.settings.notificationsBadgeUndetermined, tone: 'warning' as const };
+
+  const currentGrace = parseInt(config.leaveGraceMinutes || '10', 10);
 
   const onRequestPermission = () => {
     void requestPermission();
@@ -42,32 +56,78 @@ export default () => {
     })();
   };
 
+  const handleOpenCafecito = () => {
+    void Linking.openURL(CAFECITO_URL);
+  };
+
+  const handleOpenGithub = () => {
+    void Linking.openURL(GITHUB_URL);
+  };
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Idioma / Language */}
       <AppCard
         variant="outlined"
         title={lang.settings.language}
         style={styles.card}
       >
-        <View style={styles.row}>
+        <View
+          style={[
+            styles.segmentedContainer,
+            { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+          ]}
+        >
           {(['es', 'en'] as const).map((code) => {
             const active = currentLang === code;
+            const label = code === 'es' ? 'Español' : 'English';
             return (
-              <AppChip
+              <Pressable
                 key={code}
-                label={code.toUpperCase()}
-                selected={active}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => changeLang(code)}
-                style={styles.langChip}
-              />
+                style={[
+                  styles.segmentedButton,
+                  active && [
+                    styles.segmentedButtonActive,
+                    {
+                      backgroundColor: theme.surface,
+                      borderColor: theme.primary,
+                    },
+                  ],
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentedText,
+                    {
+                      color: active ? theme.primary : theme.muted,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </Pressable>
             );
           })}
         </View>
       </AppCard>
 
+      {/* Tema / Theme */}
       <AppCard
         variant="outlined"
         title={lang.settings.theme}
+        subtitle={
+          currThemeName === 'light'
+            ? lang.settings.themeSubtitleLight
+            : lang.settings.themeSubtitleDark
+        }
         style={styles.card}
       >
         <View style={styles.toggleRow}>
@@ -95,20 +155,64 @@ export default () => {
         </View>
       </AppCard>
 
+      {/* Tiempo de preparación predeterminado / Routine duration */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.routineDuration}
+        subtitle={lang.settings.routineDurationHint}
+        style={styles.card}
+      >
+        <View style={styles.durationRow}>
+          {[5, 10, 15, 20].map((mins) => {
+            const active = currentGrace === mins;
+            return (
+              <Pressable
+                key={mins}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => void saveField('leaveGraceMinutes', String(mins))}
+                style={[
+                  styles.durationChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.durationText,
+                    {
+                      color: active ? theme.primary : theme.color,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {mins} min
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </AppCard>
+
+      {/* Notificaciones */}
       <AppCard
         variant="outlined"
         title={lang.settings.notifications}
         subtitle={permissionHint}
+        badge={permissionBadge.label}
+        badgeTone={permissionBadge.tone}
         style={styles.card}
       >
-        <View style={styles.btnRow}>
+        <View style={styles.notificationsStack}>
           {permission !== 'granted' && (
             <AppButton
               variant="outline"
               tone="primary"
               label={lang.settings.requestPermission}
               onPress={onRequestPermission}
-              style={styles.actionBtn}
+              fullWidth
             />
           )}
           <AppButton
@@ -116,31 +220,118 @@ export default () => {
             tone="primary"
             label={lang.settings.testNotification}
             onPress={onTestNotification}
-            style={styles.actionBtn}
+            fullWidth
           />
         </View>
       </AppCard>
-    </View>
+
+      {/* Apoyar el proyecto / Support */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.supportTitle}
+        subtitle={lang.settings.supportHint}
+        style={styles.card}
+      >
+        <AppButton
+          variant="soft"
+          tone="primary"
+          label={lang.settings.supportAction}
+          onPress={handleOpenCafecito}
+          rightIcon={
+            <AlambreIcons.Coffee
+              color={theme.primary}
+              lineWidth={2.2}
+              style={styles.coffeeIcon}
+            />
+          }
+          fullWidth
+        />
+      </AppCard>
+
+      {/* Acerca de / About (no identity badges per user explicit request) */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.aboutTitle}
+        style={styles.card}
+      >
+        <View style={styles.aboutContent}>
+          <View style={styles.aboutRow}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+              {lang.settings.version}
+            </Text>
+            <Text style={[styles.aboutValue, { color: theme.color }]}>
+              1.0.0
+            </Text>
+          </View>
+          <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
+          <View style={styles.aboutRow}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+              {lang.settings.developer}
+            </Text>
+            <Text style={[styles.aboutValue, { color: theme.primary }]}>
+              @marcosdima
+            </Text>
+          </View>
+
+          <View style={styles.aboutActions}>
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.viewGithub}
+              onPress={handleOpenGithub}
+              rightIcon={
+                <AlambreIcons.Arrow
+                  drawIt
+                  color={theme.primary}
+                  lineWidth={16}
+                  style={styles.arrowIcon}
+                />
+              }
+              fullWidth
+            />
+          </View>
+        </View>
+      </AppCard>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
+    paddingBottom: 48,
     gap: 16,
   },
   card: {
     borderWidth: 1.5,
   },
-  row: {
+  segmentedContainer: {
     flexDirection: 'row',
-    gap: 12,
-    paddingTop: 4,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    padding: 4,
+    gap: 6,
+    marginTop: 4,
   },
-  langChip: {
+  segmentedButton: {
     flex: 1,
+    paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  segmentedButtonActive: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+  },
+  segmentedText: {
+    fontSize: 14,
+    letterSpacing: 0.2,
   },
   toggleRow: {
     alignItems: 'center',
@@ -150,13 +341,59 @@ const styles = StyleSheet.create({
     height: 60,
     aspectRatio: 3.2,
   },
-  btnRow: {
+  durationRow: {
     flexDirection: 'row',
-    gap: 12,
-    paddingTop: 4,
+    gap: 8,
+    marginTop: 6,
   },
-  actionBtn: {
+  durationChip: {
     flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  durationText: {
+    fontSize: 13,
+  },
+  notificationsStack: {
+    flexDirection: 'column',
+    gap: 10,
+    marginTop: 6,
+  },
+  aboutContent: {
+    gap: 10,
+    marginTop: 4,
+  },
+  aboutRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  aboutLabel: {
+    fontSize: 14,
+  },
+  aboutValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  aboutDivider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
+  },
+  aboutActions: {
+    marginTop: 4,
+  },
+  coffeeIcon: {
+    width: 18,
+    height: 18,
+  },
+  arrowIcon: {
+    width: 22,
+    height: 16,
   },
 });
+
 

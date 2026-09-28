@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stepper, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
+import { useConfig } from '../../providers/config';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
@@ -19,6 +20,7 @@ import type { Weekday } from '../../alarms/alarm-types';
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
+  const { config } = useConfig();
   const { alarms, addAlarm, updateAlarm } = useAlarms();
   const { items } = useItems();
   const { previous } = useNavigator();
@@ -26,6 +28,7 @@ export default () => {
   const { intent, setIntent } = useRouteIntent();
 
   const editing = alarms.find((a) => a.id === intent.alarmId);
+  const defaultGraceMinutes = parseInt(config.leaveGraceMinutes, 10) || 10;
 
   const [label, setLabel] = useState(editing?.label ?? '');
   const [labelError, setLabelError] = useState(false);
@@ -34,7 +37,7 @@ export default () => {
   const [itemIds, setItemIds] = useState<string[]>(editing?.itemIds ?? []);
   const [enabled, setEnabled] = useState(editing?.enabled ?? true);
   const [activeWindowMinutes, setActiveWindowMinutes] = useState(
-    withActiveWindowDefault(editing?.activeWindowMinutes),
+    withActiveWindowDefault(editing?.activeWindowMinutes, defaultGraceMinutes),
   );
 
   const orderedItems = useMemo(() => {
