@@ -224,6 +224,7 @@ export function AppChip({
 
   return (
     <Pressable
+      accessibilityLabel={label}
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
@@ -293,11 +294,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   badgeText: {
     fontWeight: '800',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
+    includeFontPadding: false,
   },
   chip: {
     flexDirection: 'row',

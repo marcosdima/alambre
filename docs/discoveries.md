@@ -390,3 +390,20 @@ Enforce that screens rendered inside `AppNavigatorBody` render a root `<View sty
 5. **Screen Reader Accessibility:** Screen readers cannot operate spatial drag gestures. Primitives provide `accessibilityRole="button"`, semantic labels, and `SortableRow` equips items with `accessibilityActions: [{ name: 'moveLeft' }, { name: 'moveRight' }]` and `onAccessibilityAction` handlers so TalkBack and VoiceOver users can reorder items sequentially.
 
 **Status: PROPOSAL.** Implemented and validated in `apps/playground`, rescued into `packages/alambre`. Awaiting second consumer validation before graduation to `ADOPTED`.
+
+## Persistent frame carousel with kinetic child transitions (Static Container, Morphing Children)
+
+**Pattern:** Cycling through carousel content (alarms, routine items, status cards) by swapping entire card containers via absolute transitions (`slideAbsolute`, `FadeInRight`/`FadeOutLeft`) introduces layout thrashing, height flickering, fragile `overflow: hidden` assumptions, and visual heaviness. Swapping entire view containers breaks kinetic continuity and complicates gesture handling.
+
+**Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (Alarms and Items carousels) and `apps/colguetti/src/views/alarms/Alarms.tsx` (AlarmItemsCarousel).
+
+**Solution / Architectural Evaluation:**
+1. **Persistent Frame:** The card shell/container (`AppCard`) remains structurally anchored in the layout without unmounting, resizing, or translating.
+2. **Kinetic Child Choreography:** Content changes animate at the subcomponent level:
+   - **Title / Text:** Smooth vertical cross-fade or text roll (e.g. current text slides up slightly and fades out; new text emerges from below with cubic easing) without container reflow.
+   - **Icon Stage:** Stays in place while triggering an in-place redraw/re-stroke animation (`catalogDrawAnimation` / `drawIt`) or micro-spring scale pop (`0.85 -> 1`).
+   - **Accent / Border:** Smoothly interpolates to the new record's theme color via `withTiming`.
+   - **Weekdays & Badges:** Pills and tags update their active/inactive states with subtle opacity/color transitions.
+3. **Direct Gesture Navigation:** Horizontal pan gesture allows manual swiping (next/prev) with tactile feedback, advancing content while the outer container remains firmly grounded.
+
+**Status: PROPOSAL.** First consumer implementation in `apps/colguetti` (`Home.tsx` alarm card).

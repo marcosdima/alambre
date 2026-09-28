@@ -68,6 +68,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -82,6 +83,7 @@ export default () => {
                 key={item.id}
                 onDelete={() => void tryDelete(item)}
                 onPress={() => openForm(item)}
+                peekIndex={index}
               >
                 <AppCard
                   variant="outlined"
@@ -146,7 +148,6 @@ export default () => {
                           </Pressable>
                         </View>
                       )}
-                      <Text style={[styles.swipeHint, { color: theme.muted }]}>‹ Deslizar</Text>
                     </View>
                   </View>
                 </AppCard>
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 90,
+    paddingBottom: 20,
   },
   emptyCard: {
     alignItems: 'center',
@@ -234,22 +235,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
   },
-  swipeHint: {
-    fontSize: 11,
-    fontWeight: '600',
-    opacity: 0.5,
-  },
   pressed: {
     opacity: 0.7,
     transform: [{ scale: 0.94 }],
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     padding: 20,
     paddingTop: 12,
+    paddingBottom: 24,
   },
 });
 

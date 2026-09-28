@@ -11,5 +11,21 @@ if [ ! -x "${MAESTRO_BIN}" ]; then
   fi
 fi
 
+clean_maestro_server() {
+  if command -v adb >/dev/null 2>&1; then
+    adb shell am force-stop dev.mobile.maestro dev.mobile.maestro.test >/dev/null 2>&1 || true
+    sleep 0.5
+  fi
+}
+
 TARGET="${1:-apps/colguetti/e2e}"
-"${MAESTRO_BIN}" test "${TARGET}"
+if [ -d "${TARGET}" ]; then
+  for flow in "${TARGET}"/*.yaml; do
+    echo "=== Running Flow: ${flow} ==="
+    clean_maestro_server
+    "${MAESTRO_BIN}" test "${flow}"
+  done
+else
+  clean_maestro_server
+  "${MAESTRO_BIN}" test "${TARGET}"
+fi

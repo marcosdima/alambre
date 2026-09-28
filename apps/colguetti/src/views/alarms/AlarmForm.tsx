@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stepper, TimePicker, useNavigator, useToast } from 'alambre';
+import { Stepper, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -11,7 +11,8 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
 import AppSwitch from '../../components/AppSwitch';
-import { AppChip } from '../../components/AppBadge';
+import SwipeableTimePicker from '../../components/SwipeableTimePicker';
+import AnimatedCounter from '../../components/AnimatedCounter';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
 import type { Weekday } from '../../alarms/alarm-types';
 
@@ -36,6 +37,14 @@ export default () => {
     withActiveWindowDefault(editing?.activeWindowMinutes),
   );
 
+  const orderedItems = useMemo(() => {
+    const included = itemIds
+      .map((id) => items.find((it) => it.id === id))
+      .filter((it): it is (typeof items)[number] => it !== undefined);
+    const unselected = items.filter((it) => !itemIds.includes(it.id));
+    return [...included, ...unselected];
+  }, [items, itemIds]);
+
   const close = () => {
     setIntent({});
     previous();
@@ -51,6 +60,17 @@ export default () => {
     setItemIds((current) => (
       current.includes(id) ? current.filter((i) => i !== id) : [...current, id]
     ));
+  };
+
+  const moveIncludedItem = (id: string, direction: 'up' | 'down') => {
+    const currentIndex = itemIds.indexOf(id);
+    if (currentIndex < 0) return;
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= itemIds.length) return;
+    const next = [...itemIds];
+    const [moved] = next.splice(currentIndex, 1);
+    next.splice(targetIndex, 0, moved);
+    setItemIds(next);
   };
 
   const onSave = async () => {
@@ -101,7 +121,7 @@ export default () => {
           style={styles.card}
         >
           <View style={styles.timePickerContainer}>
-            <TimePicker
+            <SwipeableTimePicker
               value={time}
               onChange={setTime}
               accentColor={theme.primary}
@@ -120,13 +140,29 @@ export default () => {
               const day = index as Weekday;
               const active = weekdays.includes(day);
               return (
-                <AppChip
+                <Pressable
                   key={day}
-                  label={letter}
-                  selected={active}
+                  accessibilityLabel={`Día ${letter}`}
+                  accessibilityRole="button"
                   onPress={() => toggleWeekday(day)}
-                  style={styles.dayChip}
-                />
+                  style={({ pressed }) => [
+                    styles.daySquare,
+                    {
+                      backgroundColor: active ? theme.primary : theme.surfaceAlt,
+                      borderColor: active ? theme.primary : theme.borderSoft,
+                    },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      { color: active ? theme.onPrimary : theme.muted },
+                    ]}
+                  >
+                    {letter}
+                  </Text>
+                </Pressable>
               );
             })}
           </View>
@@ -146,8 +182,9 @@ export default () => {
             <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
           ) : (
             <View style={styles.itemsList}>
-              {items.map((item, index) => {
+              {orderedItems.map((item, index) => {
                 const active = itemIds.includes(item.id);
+                const orderIndex = itemIds.indexOf(item.id);
                 return (
                   <Pressable
                     key={item.id}
@@ -180,6 +217,42 @@ export default () => {
                     >
                       {item.name}
                     </Text>
+
+                    {active && itemIds.length > 1 && (
+                      <View style={styles.itemOrderControls}>
+                        <Pressable
+                          disabled={orderIndex === 0}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            moveIncludedItem(item.id, 'up');
+                          }}
+                          accessibilityLabel="Subir prioridad"
+                          style={({ pressed }) => [
+                            styles.orderBtn,
+                            { backgroundColor: theme.surfaceAlt, opacity: orderIndex === 0 ? 0.3 : 1 },
+                            pressed && styles.pressed,
+                          ]}
+                        >
+                          <Text style={[styles.orderArrow, { color: theme.color }]}>▲</Text>
+                        </Pressable>
+                        <Pressable
+                          disabled={orderIndex === itemIds.length - 1}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            moveIncludedItem(item.id, 'down');
+                          }}
+                          accessibilityLabel="Bajar prioridad"
+                          style={({ pressed }) => [
+                            styles.orderBtn,
+                            { backgroundColor: theme.surfaceAlt, opacity: orderIndex === itemIds.length - 1 ? 0.3 : 1 },
+                            pressed && styles.pressed,
+                          ]}
+                        >
+                          <Text style={[styles.orderArrow, { color: theme.color }]}>▼</Text>
+                        </Pressable>
+                      </View>
+                    )}
+
                     <View
                       style={[
                         styles.itemCheck,
@@ -225,9 +298,12 @@ export default () => {
                     label="−"
                     style={styles.windowBtn}
                   />
-                  <Text style={[styles.windowValueText, { color: theme.color }]}>
-                    {currentVal} {lang.alarms.minutes}
-                  </Text>
+                  <AnimatedCounter
+                    value={currentVal}
+                    suffix={lang.alarms.minutes}
+                    color={theme.color}
+                    fontSize={20}
+                  />
                   <AppButton
                     variant="outline"
                     tone="neutral"
@@ -300,9 +376,17 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     gap: 6,
   },
-  dayChip: {
+  daySquare: {
     flex: 1,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1.5,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
   itemsList: {
     flexDirection: 'column',
@@ -324,6 +408,24 @@ const styles = StyleSheet.create({
   itemName: {
     flex: 1,
     fontSize: 14,
+  },
+  itemOrderControls: {
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center',
+  },
+  orderBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orderArrow: {
+    fontSize: 10,
+    fontWeight: '800',
   },
   itemCheck: {
     width: 22,
@@ -352,12 +454,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-  },
-  windowValueText: {
-    fontSize: 16,
-    fontWeight: '700',
-    minWidth: 100,
-    textAlign: 'center',
   },
   pressed: {
     opacity: 0.85,

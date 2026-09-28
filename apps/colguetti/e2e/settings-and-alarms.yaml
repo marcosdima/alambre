@@ -2,8 +2,8 @@ appId: host.exp.exponent
 ---
 - tapOn:
     id: "settings-button"
-- assertVisible: "Ajustes"
-- assertVisible: "Idioma"
+- assertVisible: ".*(Ajustes|Settings).*"
+- assertVisible: ".*(Idioma|Language).*"
 - tapOn: "EN"
 - assertVisible: "Settings"
 - assertVisible: "Language"
@@ -11,12 +11,16 @@ appId: host.exp.exponent
 - assertVisible: "Ajustes"
 - assertVisible: "Idioma"
 - back
-- assertVisible: "COLGUETTI"
-- tapOn: "Alarmas"
-- assertVisible: "Alarmas"
-- tapOn: "Agregar"
-- assertVisible: "Nueva alarma"
+- assertVisible: "Colguetti"
+- tapOn: ".*(Alarmas|Alarms).*"
+- assertVisible: ".*(Alarmas|Alarms).*"
+- scrollUntilVisible:
+    element:
+      text: ".*(Agregar|Add).*"
+    direction: DOWN
+- tapOn: ".*(Agregar|Add).*"
+- assertVisible: ".*(Nueva alarma|New alarm).*"
 - back
-- assertVisible: "Alarmas"
+- assertVisible: ".*(Alarmas|Alarms).*"
 - back
-- assertVisible: "COLGUETTI"
+- assertVisible: "Colguetti"

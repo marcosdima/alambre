@@ -222,6 +222,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
       <Pressable
         onPress={() => innerRef.current?.focus()}
         accessible={false}
+        style={styles.pressableWrap}
       >
         <Animated.View
           style={[
@@ -359,6 +360,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  pressableWrap: {
+    width: '100%',
+  },
   shell: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -372,6 +376,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    minWidth: 0,
     padding: 0,
     margin: 0,
   },

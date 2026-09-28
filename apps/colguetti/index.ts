@@ -1,4 +1,10 @@
 import { registerRootComponent } from 'expo';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'expo-notifications',
+  '[Reanimated]',
+]);
 
 import App from './App';
 

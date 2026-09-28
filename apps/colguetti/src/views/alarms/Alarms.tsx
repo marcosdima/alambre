@@ -1,8 +1,14 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { FadeIn, runOnJS } from 'react-native-reanimated';
+import { useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
+import { useItems } from '../../items/items-context';
+import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
+import type { Item } from '../../items/item-types';
 import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelAlarmAlerts } from '../../notifications/expiry';
 import type { Alarm } from '../../alarms/alarm-types';
@@ -10,12 +16,146 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppBadge from '../../components/AppBadge';
 import AppSwitch from '../../components/AppSwitch';
+import SwipeableItemRow from '../../components/SwipeableItemRow';
+import TypewriterText from '../../components/TypewriterText';
 import { useRouteIntent } from '../../navigator/RouteIntent';
+
+const AlarmItemsCarousel = ({
+  items,
+  theme,
+  emptyLabel,
+}: {
+  items: Item[];
+  theme: {
+    color: string;
+    borderSoft: string;
+    surfaceAlt: string;
+    surface?: string;
+    primary: string;
+  };
+  emptyLabel: string;
+}) => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const timer = setTimeout(() => {
+      setIndex((prev) => (prev + 1) % items.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [items.length, index]);
+
+  const nextItem = useCallback(() => {
+    if (items.length <= 1) return;
+    setIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
+  const prevItem = useCallback(() => {
+    if (items.length <= 1) return;
+    setIndex((prev) => (prev - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(items.length > 1)
+        .activeOffsetX([-15, 15])
+        .failOffsetY([-12, 12])
+        .onEnd((e) => {
+          'worklet';
+          if (e.translationX < -25 || e.velocityX < -350) {
+            runOnJS(nextItem)();
+          } else if (e.translationX > 25 || e.velocityX > 350) {
+            runOnJS(prevItem)();
+          }
+        }),
+    [items.length, nextItem, prevItem],
+  );
+
+  if (items.length === 0) {
+    return (
+      <View style={styles.itemCarouselRow}>
+        <AppBadge label={emptyLabel} tone="neutral" variant="soft" size="sm" />
+      </View>
+    );
+  }
+
+  const safeIndex = index % items.length;
+  const currentItem = items[safeIndex];
+
+  return (
+    <View style={styles.itemCarouselWrapper}>
+      <GestureDetector gesture={panGesture}>
+        <View style={styles.itemCarouselRow}>
+          <View
+            style={[
+              styles.itemCarouselBubble,
+              {
+                borderColor: currentItem.color || theme.borderSoft,
+                backgroundColor: theme.surfaceAlt,
+              },
+            ]}
+          >
+            <ItemIcon
+              key={currentItem.id}
+              icon={currentItem.icon}
+              color={currentItem.color}
+              lineWidth={1.8}
+              iconAnimation={catalogDrawAnimation}
+            />
+          </View>
+          <TypewriterText
+            key={currentItem.id}
+            text={currentItem.name}
+            speed={24}
+            initialDelay={40}
+            cursor={false}
+            numberOfLines={1}
+            textStyle={[styles.itemCarouselName, { color: theme.color }]}
+          />
+          {items.length > 1 && (
+            <Animated.View key={safeIndex} entering={FadeIn.duration(160)}>
+              <AppBadge
+                label={`${safeIndex + 1}/${items.length}`}
+                tone="neutral"
+                variant="outline"
+                size="sm"
+              />
+            </Animated.View>
+          )}
+        </View>
+      </GestureDetector>
+
+      {items.length > 1 && (
+        <View style={styles.itemCarouselDots}>
+          {items.map((it, idx) => (
+            <Pressable
+              key={it.id}
+              hitSlop={6}
+              onPress={(e) => {
+                e.stopPropagation();
+                setIndex(idx);
+              }}
+              style={[
+                styles.itemCarouselDot,
+                {
+                  backgroundColor: idx === safeIndex ? theme.primary : theme.borderSoft,
+                  width: idx === safeIndex ? 10 : 4,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
+  const { items } = useItems();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
@@ -46,6 +186,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -55,80 +196,60 @@ export default () => {
           </AppCard>
         ) : (
           <View style={styles.list}>
-            {alarms.map((alarm) => {
+            {alarms.map((alarm, index) => {
               const next = nextOccurrence(alarm, now);
-              const display = next
-                ? `${alarm.time} · ${next.toLocaleDateString()}`
-                : alarm.time;
-
               const weekdaysString = alarm.weekdays
                 .map((d) => weekdayLabels[d])
                 .join(' · ');
 
-              const itemsCountText = alarm.itemIds.length
-                ? lang.alarms.count.replace('{count}', String(alarm.itemIds.length))
-                : lang.alarms.itemsLabel;
+              const alarmItems = items.filter((it) => alarm.itemIds.includes(it.id));
 
               return (
-                <AppCard
+                <SwipeableItemRow
                   key={alarm.id}
-                  variant="outlined"
-                  padding="md"
+                  onDelete={() => void tryDelete(alarm)}
                   onPress={() => openForm(alarm)}
-                  style={styles.card}
+                  peekIndex={index}
                 >
-                  <View style={styles.cardHeader}>
-                    <View style={styles.headerLeft}>
-                      <Text style={[styles.label, { color: theme.color }]} numberOfLines={1}>
-                        {alarm.label}
-                      </Text>
-                      <AppBadge
-                        label={display}
-                        tone={alarm.enabled ? 'primary' : 'neutral'}
-                        variant={alarm.enabled ? 'soft' : 'outline'}
+                  <AppCard
+                    variant="outlined"
+                    padding="md"
+                    style={styles.card}
+                  >
+                    <View style={styles.cardHeader}>
+                      <View style={styles.headerLeft}>
+                        <Text style={[styles.label, { color: theme.color }]} numberOfLines={1}>
+                          {alarm.label}
+                        </Text>
+                        <AppBadge
+                          label={alarm.time}
+                          tone={alarm.enabled ? 'primary' : 'neutral'}
+                          variant={alarm.enabled ? 'soft' : 'outline'}
+                          size="md"
+                        />
+                      </View>
+                      <AppSwitch
+                        checked={alarm.enabled}
+                        onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                         size="sm"
                       />
                     </View>
-                    <AppSwitch
-                      checked={alarm.enabled}
-                      onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
-                      size="sm"
-                    />
-                  </View>
 
-                  <View style={styles.metaRow}>
-                    <Text style={[styles.metaText, { color: theme.muted }]}>
-                      {weekdaysString}
-                    </Text>
-                  </View>
+                    <View style={styles.metaRow}>
+                      <Text style={[styles.metaText, { color: theme.muted }]}>
+                        {weekdaysString}{next ? ` · Próx: ${next.toLocaleDateString()}` : ''}
+                      </Text>
+                    </View>
 
-                  <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
-                    <AppBadge
-                      label={itemsCountText}
-                      tone="neutral"
-                      variant="soft"
-                      size="sm"
-                    />
-                    <AppButton
-                      variant="ghost"
-                      tone="danger"
-                      size="sm"
-                      iconOnly
-                      onPress={(e) => {
-                        e?.stopPropagation?.();
-                        void tryDelete(alarm);
-                      }}
-                      leftIcon={
-                        <AlambreIcons.Cross
-                          drawIt
-                          color={theme.danger}
-                          lineWidth={2}
-                          style={styles.crossIcon}
-                        />
-                      }
-                    />
-                  </View>
-                </AppCard>
+                    <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
+                      <AlarmItemsCarousel
+                        items={alarmItems}
+                        theme={theme}
+                        emptyLabel={lang.alarms.itemsLabel}
+                      />
+                    </View>
+                  </AppCard>
+                </SwipeableItemRow>
               );
             })}
           </View>
@@ -155,7 +276,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 90,
+    paddingBottom: 20,
   },
   emptyCard: {
     alignItems: 'center',
@@ -181,15 +302,16 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    flexWrap: 'wrap',
   },
   label: {
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
+    flexShrink: 1,
   },
   metaRow: {
     marginTop: 6,
@@ -199,24 +321,53 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginTop: 12,
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  crossIcon: {
-    width: 14,
-    height: 14,
+  pressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.95 }],
+  },
+  itemCarouselWrapper: {
+    width: '100%',
+    gap: 6,
+    overflow: 'hidden',
+  },
+  itemCarouselRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 32,
+  },
+  itemCarouselBubble: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 2,
+  },
+  itemCarouselName: {
+    fontSize: 14,
+    fontWeight: '700',
+    flex: 1,
+  },
+  itemCarouselDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingLeft: 2,
+  },
+  itemCarouselDot: {
+    height: 4,
+    borderRadius: 2,
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     padding: 20,
     paddingTop: 12,
+    paddingBottom: 24,
   },
 });
 

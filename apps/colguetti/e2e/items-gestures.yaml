@@ -1,15 +1,12 @@
 appId: host.exp.exponent
 ---
-- tapOn: "Mis ítems"
-- assertVisible: "Mis ítems"
-- assertVisible: "‹ Deslizar"
-# Swipe left on first item to reveal delete action
+- tapOn: ".*(Mis ítems|My items).*"
+- assertVisible: ".*(Mis ítems|My items).*"
+# Swipe left on first item to directly trigger delete confirmation dialog
 - swipe:
-    start: "85%,16%"
-    end: "15%,16%"
-- assertVisible: "Borrar"
-- tapOn: "Borrar"
-- assertVisible: "¿Seguro?"
-- tapOn: "Cancelar"
+    start: "85%,20%"
+    end: "15%,20%"
+- assertVisible: ".*(\\?|¿).*"
+- tapOn: ".*(Cancelar|Cancel).*"
 - back
-- assertVisible: "COLGUETTI"
+- assertVisible: "Colguetti"

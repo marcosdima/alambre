@@ -56,6 +56,7 @@ export default () => {
       keyboardShouldPersistTaps="handled"
     >
       <AppTextInput
+        testID="item-name-input"
         label={lang.items.nameLabel}
         required
         value={name}

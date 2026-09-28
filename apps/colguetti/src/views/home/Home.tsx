@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useNavigator, useToast, AlambreIcons } from 'alambre';
-import { withTiming, Easing } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  runOnJS,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -9,7 +15,7 @@ import { useItems } from '../../items/items-context';
 import { useConfirmations } from '../../checklist/confirmations-context';
 import { useActivation } from '../../checklist/activation-context';
 import { isExpired, missingItemNames, remainingMs } from '../../checklist/activation-model';
-import { dayMatches, nextOccurrence, nextUpcoming } from '../../alarms/alarms-model';
+import { dayMatches, nextOccurrence } from '../../alarms/alarms-model';
 import { isConfirmedAfter } from '../../checklist/checklist-model';
 import { cancelAlarmAlerts, cancelExpiryReminder, cancelSuccessReminder, scheduleExpiryReminder, scheduleSuccessReminder, SNOOZE_MINUTES } from '../../notifications/expiry';
 import { useRouteIntent } from '../../navigator/RouteIntent';
@@ -18,8 +24,16 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppBadge from '../../components/AppBadge';
 import HangingTitle from '../../components/HangingTitle';
+import SupportModal from '../../components/SupportModal';
+import TypewriterText from '../../components/TypewriterText';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { weekdayNames } from '../../utils/weekday-names';
+
+const WEEKDAY_KEYS = [0, 1, 2, 3, 4, 5, 6] as const;
+const WEEKDAY_LABELS: Record<'es' | 'en', Record<number, string>> = {
+  es: { 0: 'D', 1: 'L', 2: 'M', 3: 'Mi', 4: 'J', 5: 'V', 6: 'S' },
+  en: { 0: 'S', 1: 'M', 2: 'T', 3: 'W', 4: 'Th', 5: 'F', 6: 'S' },
+};
 
 const MISSING_ITEMS_BODY = /\{items\}/g;
 
@@ -34,7 +48,6 @@ const iconAnimation = {
   }),
 };
 
-type ProposalEntry = { alarm: Alarm; due: Date };
 
 type MissedRoutine = {
   alarmId: string;
@@ -61,11 +74,13 @@ export default () => {
   const { show } = useToast();
   const { intent, setIntent } = useRouteIntent();
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [ticked, setTicked] = useState<Record<string, boolean>>({});
   const [success, setSuccess] = useState(false);
   const [missed, setMissed] = useState<MissedRoutine | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [alarmCarouselIndex, setAlarmCarouselIndex] = useState(0);
+  const [itemCarouselIndex, setItemCarouselIndex] = useState(0);
 
   const routine = useMemo(
     () => (active ? alarms.find((alarm) => alarm.id === active.alarmId) ?? null : null),
@@ -77,8 +92,109 @@ export default () => {
     [routine, items],
   );
 
-  const upcoming = nextUpcoming(alarms, new Date());
   const remaining = active ? remainingMs(active, new Date(now)) : 0;
+
+  const sortedRoutines = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return [...alarms].sort((a, b) => {
+      const aToday = a.enabled && dayMatches(a.weekdays, today);
+      const bToday = b.enabled && dayMatches(b.weekdays, today);
+      if (aToday && !bToday) return -1;
+      if (!aToday && bToday) return 1;
+      return a.time.localeCompare(b.time);
+    });
+  }, [alarms]);
+
+  const activeAlarms = useMemo(
+    () => sortedRoutines.filter((alarm) => alarm.enabled),
+    [sortedRoutines],
+  );
+
+  useEffect(() => {
+    if (activeAlarms.length <= 1) return;
+    const timer = setTimeout(() => {
+      setAlarmCarouselIndex((prev) => (prev + 1) % activeAlarms.length);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [activeAlarms.length, alarmCarouselIndex]);
+
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const timer = setTimeout(() => {
+      setItemCarouselIndex((prev) => (prev + 1) % items.length);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [items.length, itemCarouselIndex]);
+
+  const safeItemIndex = items.length > 0 ? itemCarouselIndex % items.length : 0;
+  const safeAlarmIndex = activeAlarms.length > 0 ? alarmCarouselIndex % activeAlarms.length : 0;
+
+  const nextAlarm = useCallback(() => {
+    if (activeAlarms.length <= 1) return;
+    setAlarmCarouselIndex((prev) => (prev + 1) % activeAlarms.length);
+  }, [activeAlarms.length]);
+
+  const prevAlarm = useCallback(() => {
+    if (activeAlarms.length <= 1) return;
+    setAlarmCarouselIndex((prev) => (prev - 1 + activeAlarms.length) % activeAlarms.length);
+  }, [activeAlarms.length]);
+
+  const alarmPanGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-15, 15])
+        .failOffsetY([-12, 12])
+        .onEnd((e) => {
+          'worklet';
+          if (e.translationX < -25 || e.velocityX < -350) {
+            runOnJS(nextAlarm)();
+          } else if (e.translationX > 25 || e.velocityX > 350) {
+            runOnJS(prevAlarm)();
+          }
+        }),
+    [nextAlarm, prevAlarm],
+  );
+
+  const nextItem = useCallback(() => {
+    if (items.length <= 1) return;
+    setItemCarouselIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
+  const prevItem = useCallback(() => {
+    if (items.length <= 1) return;
+    setItemCarouselIndex((prev) => (prev - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  const itemPanGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-15, 15])
+        .failOffsetY([-12, 12])
+        .onEnd((e) => {
+          'worklet';
+          if (e.translationX < -25 || e.velocityX < -350) {
+            runOnJS(nextItem)();
+          } else if (e.translationX > 25 || e.velocityX > 350) {
+            runOnJS(prevItem)();
+          }
+        }),
+    [nextItem, prevItem],
+  );
+
+  const openAlarms = useCallback(() => {
+    navigate('alarms');
+  }, [navigate]);
+
+  const openItems = useCallback(() => {
+    navigate('items');
+  }, [navigate]);
+
+  const isAlarmToday = useCallback((alarm: Alarm) => {
+    const today = new Date();
+    return alarm.enabled && dayMatches(alarm.weekdays, today);
+  }, []);
 
   useEffect(() => {
     if (!active) return;
@@ -89,7 +205,6 @@ export default () => {
 
   useEffect(() => {
     if (!intent.alarmId) return;
-    setSelectedId(intent.alarmId);
     if (intent.missing) {
       const alarm = alarms.find((current) => current.id === intent.alarmId);
       setMissed({
@@ -101,27 +216,6 @@ export default () => {
     }
     setIntent({});
   }, [intent.alarmId, intent.missing, alarms, setIntent]);
-
-  const proposals = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const entries: ProposalEntry[] = alarms
-      .filter((alarm) => alarm.enabled && dayMatches(alarm.weekdays, today))
-      .flatMap((alarm) => {
-        const due = nextOccurrence(alarm, today);
-        return due ? [{ alarm, due }] : [];
-      })
-      .filter(({ alarm, due }) => !isConfirmedAfter(confirmations, alarm.id, due))
-      .sort((a, b) => a.due.getTime() - b.due.getTime());
-
-    if (selectedId && !entries.some((entry) => entry.alarm.id === selectedId)) {
-      const target = alarms.find((alarm) => alarm.id === selectedId);
-      if (target) entries.unshift({ alarm: target, due: nextOccurrence(target, today) ?? today });
-    }
-
-    return entries;
-  }, [alarms, confirmations, selectedId]);
 
   useEffect(() => {
     if (!active || !isExpired(active)) return;
@@ -231,76 +325,117 @@ export default () => {
     );
   };
 
-  const renderProposal = (alarm: Alarm, due: Date) => {
-    const alreadyConfirmed = isConfirmedAfter(confirmations, alarm.id, due);
-    return (
-      <AppCard
-        key={alarm.id}
-        variant="outlined"
-        style={styles.proposalCard}
-      >
-        <View style={styles.proposalContent}>
-          <View style={styles.proposalInfo}>
-            <View style={styles.proposalTitleRow}>
-              <Text style={[styles.proposalTitle, { color: theme.color }]}>{alarm.label}</Text>
-              <AppBadge label={alarm.time} tone="primary" variant="soft" size="sm" />
-            </View>
-          </View>
-          <AppButton
-            variant={alreadyConfirmed ? 'outline' : 'solid'}
-            tone="primary"
-            size="sm"
-            disabled={alreadyConfirmed}
-            label={alreadyConfirmed ? lang.common.confirm : lang.home.activate}
-            onPress={() => void activateAlarm(alarm)}
-          />
-        </View>
-      </AppCard>
-    );
-  };
 
   const renderRoutine = () => {
     if (!routine) return null;
     const allItems = routineItems.length;
     const checkedCount = routineItems.filter((item) => ticked[item.id]).length;
+    const allChecked = allItems > 0 && checkedCount === allItems;
+    const progressPercent = allItems > 0 ? Math.round((checkedCount / allItems) * 100) : 0;
 
     return (
-      <AppCard variant="outlined" style={styles.routineCard}>
-        <View style={styles.routineHeader}>
-          <View style={styles.routineInfoCol}>
-            <Text style={[styles.routineTitle, { color: theme.color }]}>{routine.label}</Text>
-            <View style={styles.routineSubRow}>
-              <AppBadge label={routine.time} tone="primary" variant="soft" size="sm" />
-              <AppBadge
-                label={`${checkedCount}/${allItems}`}
-                tone={checkedCount === allItems && allItems > 0 ? 'success' : 'neutral'}
-                variant="solid"
-                size="sm"
-              />
-            </View>
+      <AppCard
+        variant="outlined"
+        style={[
+          styles.departureHeroCard,
+          {
+            backgroundColor: theme.surface,
+            borderColor: success ? theme.success : allChecked ? theme.primary : theme.borderSoft,
+          },
+        ]}
+      >
+        <View style={styles.departureTopRow}>
+          <View style={styles.departureLiveTag}>
+            <View
+              style={[
+                styles.livePulseDot,
+                { backgroundColor: success ? theme.success : theme.primary },
+              ]}
+            />
+            <Text
+              style={[
+                styles.livePulseText,
+                { color: success ? theme.success : theme.primary },
+              ]}
+            >
+              {success ? lang.home.routineConfirmed : lang.home.activeRoutineBadge}
+            </Text>
           </View>
           {success ? (
-            <View style={styles.tickBox}>
+            <View style={styles.heroTickBox}>
               <AlambreIcons.Tick
                 key={`ok-${routine.id}`}
                 drawIt={success}
                 iconAnimation={iconAnimation}
                 color={theme.success}
-                lineWidth={4}
+                lineWidth={3.5}
               />
             </View>
           ) : (
             <AppBadge
               label={`${lang.home.expiresIn} ${formatCountdown(remaining)}`}
-              tone="warning"
-              variant="soft"
+              tone={remaining < 180000 ? 'danger' : 'warning'}
+              variant="solid"
               size="sm"
             />
           )}
         </View>
 
+        <View style={styles.departureTitleRow}>
+          <Text
+            numberOfLines={1}
+            style={[styles.departureTitle, { color: theme.color }]}
+          >
+            {routine.label}
+          </Text>
+          <AppBadge
+            label={routine.time}
+            tone="primary"
+            variant="soft"
+            size="md"
+          />
+        </View>
+
+        {allItems > 0 && (
+          <View style={styles.departureProgressSection}>
+            <View style={styles.departureProgressMeta}>
+              <Text style={[styles.departureProgressLabel, { color: theme.muted }]}>
+                {lang.home.itemsReady
+                  .replace('{checked}', String(checkedCount))
+                  .replace('{total}', String(allItems))}
+              </Text>
+              <Text
+                style={[
+                  styles.departureProgressPercent,
+                  { color: allChecked ? theme.success : theme.primary },
+                ]}
+              >
+                {allChecked ? '✓ ¡Todo listo!' : `${progressPercent}%`}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.departureProgressTrack,
+                { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft },
+              ]}
+            >
+              <View
+                style={[
+                  styles.departureProgressBar,
+                  {
+                    width: `${progressPercent}%`,
+                    backgroundColor: allChecked ? theme.success : theme.primary,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+
         {allItems === 0 ? (
-          <Text style={[styles.emptyRoutineText, { color: theme.muted }]}>{lang.home.routineNoItems}</Text>
+          <Text style={[styles.emptyRoutineText, { color: theme.muted }]}>
+            {lang.home.routineNoItems}
+          </Text>
         ) : (
           <View style={styles.routineItemsContainer}>
             {routineItems.map((item, index) => {
@@ -310,7 +445,7 @@ export default () => {
                   key={item.id}
                   onPress={() => toggleItem(item.id)}
                   style={({ pressed }) => [
-                    styles.itemRow,
+                    styles.departureItemRow,
                     {
                       borderColor: checked ? theme.primary : theme.borderSoft,
                       backgroundColor: checked ? theme.primarySoft : theme.surfaceAlt,
@@ -319,7 +454,7 @@ export default () => {
                     pressed && styles.itemRowPressed,
                   ]}
                 >
-                  <View style={styles.itemIcon}>
+                  <View style={styles.departureItemIcon}>
                     <ItemIcon
                       icon={item.icon}
                       color={item.color}
@@ -330,7 +465,7 @@ export default () => {
                   </View>
                   <Text
                     style={[
-                      styles.itemName,
+                      styles.departureItemName,
                       {
                         color: checked ? theme.primary : theme.color,
                         textDecorationLine: checked ? 'line-through' : 'none',
@@ -342,14 +477,18 @@ export default () => {
                   </Text>
                   <View
                     style={[
-                      styles.checkbox,
+                      styles.departureCheckbox,
                       {
                         borderColor: checked ? theme.primary : theme.border,
                         backgroundColor: checked ? theme.primary : 'transparent',
                       },
                     ]}
                   >
-                    {checked && <Text style={{ color: theme.onPrimary, fontWeight: '800' }}>✓</Text>}
+                    {checked && (
+                      <Text style={{ color: theme.onPrimary, fontWeight: '800', fontSize: 13 }}>
+                        ✓
+                      </Text>
+                    )}
                   </View>
                 </Pressable>
               );
@@ -359,22 +498,22 @@ export default () => {
 
         <AppButton
           variant="solid"
-          tone="primary"
+          tone={allChecked ? 'success' : 'primary'}
           size="lg"
           fullWidth
           label={lang.home.routineCta}
           onPress={onConfirm}
           disabled={success}
-          style={styles.ctaButton}
+          style={styles.departureCta}
         />
 
         {!success && (
-          <View style={styles.routineActions}>
+          <View style={styles.departureSecondaryActions}>
             <AppButton
               variant="ghost"
               tone="secondary"
               size="sm"
-              label={lang.home.snooze}
+              label={lang.home.snoozeCta ?? lang.home.snooze}
               onPress={onSnooze}
             />
             <AppButton
@@ -390,152 +529,475 @@ export default () => {
     );
   };
 
+  const upcomingRoutines = useMemo(() => {
+    const today = new Date();
+    const startOfToday = new Date(today);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    return sortedRoutines.filter((alarm) => {
+      if (!alarm.enabled) return false;
+      const due = nextOccurrence(alarm, startOfToday);
+      if (!due) return false;
+
+      // An alarm is considered "próxima" if it's scheduled for today
+      // (or within the next 4 hours)
+      const isToday = dayMatches(alarm.weekdays, today);
+      const diffMs = due.getTime() - today.getTime();
+      const isUpcoming =
+        (isToday && diffMs >= -30 * 60 * 1000) ||
+        (diffMs >= 0 && diffMs <= 4 * 60 * 60 * 1000);
+      if (!isUpcoming) return false;
+
+      // And it has NOT been confirmed recently for this occurrence
+      const alreadyConfirmed = isConfirmedAfter(confirmations, alarm.id, due);
+      return !alreadyConfirmed;
+    });
+  }, [sortedRoutines, confirmations]);
+
   return (
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header superior con badge y acceso a Ajustes en su propia categoría */}
+      {/* Header superior: Título y caption a la izquierda, Donaciones y Ajustes a la derecha */}
       <View style={styles.topBar}>
-        <AppBadge label="COLGUETTI" tone="primary" variant="solid" size="sm" />
-        <Pressable
-          testID="settings-button"
-          onPress={() => navigate('settings')}
-          accessibilityLabel={lang.home.guideSettings}
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.settingsBtn,
-            { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft },
-            pressed && styles.pressed,
-          ]}
-        >
-          <AlambreIcons.Gear color={theme.color} lineWidth={2} style={styles.gearIcon} />
-        </Pressable>
+        <View style={styles.titleCol}>
+          <HangingTitle
+            title="Colguetti"
+            subtitle={lang.home.subtitle}
+          />
+        </View>
+        <View style={styles.headerActions}>
+          <Pressable
+            testID="support-button"
+            onPress={() => setSupportOpen(true)}
+            accessibilityLabel="Apoyar a Colguetti"
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft },
+              pressed && styles.pressed,
+            ]}
+          >
+            <AlambreIcons.Heart color={theme.primary} lineWidth={2} style={styles.actionIcon} />
+          </Pressable>
+          <Pressable
+            testID="settings-button"
+            onPress={() => navigate('settings')}
+            accessibilityLabel={lang.home.guideSettings}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft },
+              pressed && styles.pressed,
+            ]}
+          >
+            <AlambreIcons.Gear color={theme.color} lineWidth={2} style={styles.actionIcon} />
+          </Pressable>
+        </View>
       </View>
-
-      {/* Título animado standalone HangingTitle */}
-      <HangingTitle
-        title="Colguetti"
-        subtitle={lang.home.subtitle}
-      />
 
       {renderMissed()}
 
       {routine ? renderRoutine() : (
         <>
-          {/* Card Hub de Mis Ítems */}
+          {/* Rutinas de salida: SOLO se muestran si hay una alarma próxima y no confirmada */}
+          {upcomingRoutines.length > 0 && (
+            <View style={styles.routinesSection}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionTitleRow}>
+                  <AlambreIcons.Play color={theme.primary} lineWidth={2} style={styles.sectionIcon} />
+                  <Text style={[styles.sectionTitle, { color: theme.color }]}>
+                    {lang.home.quickRoutines}
+                  </Text>
+                </View>
+                <AppBadge
+                  label={`${upcomingRoutines.length} ${upcomingRoutines.length === 1 ? 'rutina' : 'rutinas'}`}
+                  tone="primary"
+                  variant="soft"
+                  size="sm"
+                />
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.carouselContainer}
+              >
+                {upcomingRoutines.map((alarm) => {
+                  const today = new Date();
+                  const isToday = alarm.enabled && dayMatches(alarm.weekdays, today);
+                  const routineItemList = items.filter((it) => alarm.itemIds.includes(it.id));
+
+                  return (
+                    <View
+                      key={alarm.id}
+                      style={[
+                        styles.routineQuickCard,
+                        {
+                          backgroundColor: theme.surface,
+                          borderColor: isToday ? theme.primary : theme.border,
+                        },
+                      ]}
+                    >
+                      <View style={styles.routineQuickHeader}>
+                        <Text
+                          numberOfLines={1}
+                          style={[styles.routineQuickTitle, { color: theme.color }]}
+                        >
+                          {alarm.label}
+                        </Text>
+                        <AppBadge
+                          label={alarm.time}
+                          tone={isToday ? 'primary' : 'neutral'}
+                          variant="soft"
+                          size="sm"
+                        />
+                      </View>
+
+                      <View style={styles.routineQuickMeta}>
+                        <Text style={[styles.routineQuickDays, { color: theme.muted }]}>
+                          {weekdayNames(alarm.weekdays, currentLang)}
+                        </Text>
+                      </View>
+
+                      {routineItemList.length > 0 ? (
+                        <View style={styles.routineQuickItems}>
+                          {routineItemList.slice(0, 3).map((it) => (
+                            <View
+                              key={it.id}
+                              style={[
+                                styles.routineQuickItemBubble,
+                                { borderColor: theme.borderSoft, backgroundColor: theme.surfaceAlt },
+                              ]}
+                            >
+                              <ItemIcon icon={it.icon} color={it.color} lineWidth={1.8} />
+                            </View>
+                          ))}
+                          {routineItemList.length > 3 ? (
+                            <Text style={[styles.routineQuickMore, { color: theme.muted }]}>
+                              +{routineItemList.length - 3}
+                            </Text>
+                          ) : null}
+                        </View>
+                      ) : (
+                        <Text style={[styles.routineQuickNoItems, { color: theme.muted }]}>
+                          {lang.home.routineNoItems}
+                        </Text>
+                      )}
+
+                      <AppButton
+                        variant="solid"
+                        tone="primary"
+                        size="sm"
+                        fullWidth
+                        label={lang.home.goNow ?? '¡Salgo ahora!'}
+                        onPress={() => void activateAlarm(alarm)}
+                      />
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Card Hub de Mis Ítems: Carrusel rotativo con dots */}
           <AppCard
             variant="outlined"
             style={styles.hubCard}
             bodyStyle={styles.hubBody}
-            onPress={() => navigate('items')}
           >
-            <View style={styles.hubHeader}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={lang.home.guideItems}
+              onPress={openItems}
+              style={styles.hubHeader}
+            >
               <View style={styles.hubTitleRow}>
                 <AlambreIcons.Backpack color={theme.primary} lineWidth={2} style={styles.hubIcon} />
                 <Text style={[styles.hubTitle, { color: theme.color }]}>{lang.home.guideItems}</Text>
               </View>
-              <AppBadge
-                label={`${items.length} ${items.length === 1 ? 'ítem' : 'ítems'}`}
-                tone={items.length > 0 ? 'primary' : 'neutral'}
-                variant="soft"
-                size="sm"
-              />
-            </View>
+              <View style={styles.hubHeaderRight}>
+                <AppBadge
+                  label={`${items.length} ${items.length === 1 ? 'ítem' : 'ítems'}`}
+                  tone={items.length > 0 ? 'primary' : 'neutral'}
+                  variant="soft"
+                  size="sm"
+                />
+              </View>
+            </Pressable>
 
             {items.length === 0 ? (
               <Text style={[styles.hubEmptyText, { color: theme.muted }]}>
                 {lang.items.empty}
               </Text>
             ) : (
-              <View style={styles.itemsPreviewRow}>
-                {items.slice(0, 5).map((it) => (
-                  <View
-                    key={it.id}
-                    style={[styles.itemMiniBubble, { borderColor: theme.borderSoft, backgroundColor: theme.surfaceAlt }]}
-                  >
-                    <ItemIcon icon={it.icon} color={it.color} lineWidth={2} />
-                  </View>
-                ))}
-                {items.length > 5 ? (
-                  <Text style={[styles.moreItemsText, { color: theme.muted }]}>
-                    +{items.length - 5}
-                  </Text>
-                ) : null}
-              </View>
-            )}
+              (() => {
+                const currentItem = items[safeItemIndex];
+                if (!currentItem) return null;
+                const linkedAlarms = alarms.filter((a) => a.itemIds.includes(currentItem.id));
+                const linkedText =
+                  linkedAlarms.length > 0
+                    ? lang.home.inRoutines.replace(
+                      '{routines}',
+                      linkedAlarms.map((a) => a.label).join(', '),
+                    )
+                    : lang.home.noRoutinesAssigned;
 
-            <View style={styles.hubFooter}>
-              <Text style={[styles.hubCtaText, { color: theme.primary }]}>
-                Ver, ordenar y agregar ítems →
-              </Text>
-            </View>
+                return (
+                  <View style={styles.carouselSlideContainer}>
+                    <GestureDetector gesture={itemPanGesture}>
+                      <Pressable
+                        style={[styles.itemSlideContent, { backgroundColor: theme.surface }]}
+                        onPress={openItems}
+                        accessibilityRole="button"
+                        accessibilityLabel={currentItem.name}
+                      >
+                        <View
+                          style={[
+                            styles.itemSlideBubble,
+                            {
+                              borderColor: currentItem.color || theme.primary,
+                              backgroundColor: theme.surfaceAlt,
+                            },
+                          ]}
+                        >
+                          <ItemIcon
+                            key={currentItem.id}
+                            icon={currentItem.icon}
+                            color={currentItem.color}
+                            lineWidth={2}
+                            iconAnimation={catalogDrawAnimation}
+                          />
+                        </View>
+                        <View style={styles.itemSlideInfo}>
+                          <TypewriterText
+                            key={currentItem.id}
+                            text={currentItem.name}
+                            speed={24}
+                            initialDelay={40}
+                            cursor={false}
+                            numberOfLines={1}
+                            textStyle={[styles.itemSlideName, { color: theme.color }]}
+                          />
+                          <Animated.View key={`${currentItem.id}-meta`} entering={FadeIn.duration(200)}>
+                            <Text
+                              numberOfLines={1}
+                              style={[styles.itemSlideMeta, { color: theme.muted }]}
+                            >
+                              {linkedText}
+                            </Text>
+                          </Animated.View>
+                        </View>
+                      </Pressable>
+                    </GestureDetector>
+
+                    {items.length > 1 && (
+                      <View style={styles.carouselDotsRow}>
+                        {items.map((it, idx) => (
+                          <Pressable
+                            key={it.id}
+                            hitSlop={6}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              setItemCarouselIndex(idx);
+                            }}
+                            style={[
+                              styles.carouselDot,
+                              {
+                                backgroundColor:
+                                  idx === safeItemIndex ? theme.primary : theme.borderSoft,
+                                width: idx === safeItemIndex ? 16 : 6,
+                              },
+                            ]}
+                          />
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })()
+            )}
           </AppCard>
 
-          {/* Card Hub de Alarmas & Próxima Rutina */}
+          {/* Card Hub de Alarmas: Carrusel rotativo con borde, sólo activas, play shortcut y dots */}
           <AppCard
             variant="outlined"
             style={styles.hubCard}
             bodyStyle={styles.hubBody}
-            onPress={() => navigate('alarms')}
           >
-            <View style={styles.hubHeader}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={lang.home.guideAlarms}
+              onPress={openAlarms}
+              style={styles.hubHeader}
+            >
               <View style={styles.hubTitleRow}>
                 <AlambreIcons.Watch color={theme.secondary} lineWidth={2} style={styles.hubIcon} />
                 <Text style={[styles.hubTitle, { color: theme.color }]}>{lang.home.guideAlarms}</Text>
               </View>
-              <AppBadge
-                label={`${alarms.length} ${alarms.length === 1 ? 'alarma' : 'alarmas'}`}
-                tone={alarms.length > 0 ? 'primary' : 'neutral'}
-                variant="soft"
-                size="sm"
-              />
-            </View>
-
-            <View style={styles.nextAlarmInfo}>
-              <Text style={[styles.nextAlarmHeadline, { color: theme.color }]}>
-                {upcoming ? upcoming.alarm.label : lang.home.noNextAlarms}
-              </Text>
-              {upcoming && (
-                <View style={styles.nextTimeRow}>
-                  <Text style={[styles.nextTimeDisplay, { color: theme.secondary }]}>
-                    {upcoming.alarm.time}
-                  </Text>
-                  <Text style={[styles.nextDateDisplay, { color: theme.muted }]}>
-                    {upcoming.date.toLocaleDateString()} · {weekdayNames(upcoming.alarm.weekdays, currentLang)}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.hubFooter}>
-              <Text style={[styles.hubCtaText, { color: theme.secondary }]}>
-                Configurar alarmas y horarios →
-              </Text>
-              {upcoming && (
-                <AppButton
+              <View style={styles.hubHeaderRight}>
+                <AppBadge
+                  label={`${activeAlarms.length} ${activeAlarms.length === 1 ? 'activa' : 'activas'}`}
+                  tone={activeAlarms.length > 0 ? 'primary' : 'neutral'}
                   variant="soft"
-                  tone="primary"
                   size="sm"
-                  label="¡Salgo ahora!"
-                  onPress={(e) => {
-                    e?.stopPropagation?.();
-                    activate(upcoming.alarm);
-                  }}
                 />
-              )}
-            </View>
-          </AppCard>
+              </View>
+            </Pressable>
 
-          {/* Propuestas del día si las hay */}
-          {proposals.length > 0 && (
-            <View style={styles.proposalsSection}>
-              {proposals.map(({ alarm, due }) => renderProposal(alarm, due))}
-            </View>
-          )}
+            {activeAlarms.length === 0 ? (
+              <Text style={[styles.hubEmptyText, { color: theme.muted }]}>
+                {alarms.length === 0 ? lang.alarms.empty : 'No hay alarmas activadas'}
+              </Text>
+            ) : (
+              (() => {
+                const currentAlarm = activeAlarms[safeAlarmIndex];
+                if (!currentAlarm) return null;
+                const isToday = isAlarmToday(currentAlarm);
+                const todayDayIndex = new Date().getDay();
+
+                return (
+                  <View style={styles.carouselSlideContainer}>
+                    <GestureDetector gesture={alarmPanGesture}>
+                      <View
+                        style={[
+                          styles.alarmPreviewBox,
+                          {
+                            borderColor: isToday ? theme.primary : theme.borderSoft,
+                            backgroundColor: theme.surfaceAlt,
+                          },
+                        ]}
+                      >
+                        {/* Fila superior: Título de la rutina a la izquierda, Botón Play a la derecha */}
+                        <View style={styles.alarmSlideTopRow}>
+                          <Pressable
+                            style={styles.alarmTitleLockup}
+                            onPress={openAlarms}
+                            accessibilityRole="button"
+                            accessibilityLabel={currentAlarm.label}
+                          >
+                            <TypewriterText
+                              key={currentAlarm.id}
+                              text={currentAlarm.label}
+                              speed={28}
+                              initialDelay={60}
+                              cursor={false}
+                              numberOfLines={1}
+                              textStyle={[styles.alarmSlideTitle, { color: theme.color }]}
+                            />
+                          </Pressable>
+
+                          <Pressable
+                            accessibilityLabel={`Activar alarma ${currentAlarm.label}`}
+                            accessibilityRole="button"
+                            onPress={() => {
+                              void activateAlarm(currentAlarm);
+                            }}
+                            style={({ pressed }) => [
+                              styles.alarmPlayBtn,
+                              { backgroundColor: theme.primary },
+                              pressed && styles.pressed,
+                            ]}
+                          >
+                            <AlambreIcons.Play color={theme.onPrimary} lineWidth={2.5} style={styles.playIcon} />
+                          </Pressable>
+                        </View>
+
+                        {/* Fila inferior: Hora en pill/badge + fila de 7 días D L M Mi J V S */}
+                        <Pressable
+                          style={styles.alarmSlideMetaRow}
+                          onPress={openAlarms}
+                          accessibilityRole="button"
+                        >
+                          <Animated.View key={currentAlarm.time} entering={FadeIn.duration(200)}>
+                            <AppBadge
+                              label={currentAlarm.time}
+                              tone={isToday ? 'primary' : 'neutral'}
+                              variant="soft"
+                              size="md"
+                            />
+                          </Animated.View>
+                          <View style={styles.weekdayPillsRow}>
+                            {WEEKDAY_KEYS.map((day) => {
+                              const isSelected = currentAlarm.weekdays.includes(day);
+                              const isScheduledToday = isSelected && day === todayDayIndex;
+                              const label = (WEEKDAY_LABELS[currentLang as 'es' | 'en'] ?? WEEKDAY_LABELS.es)[day];
+                              return (
+                                <Animated.View
+                                  key={`${currentAlarm.id}-${day}`}
+                                  entering={FadeIn.duration(160).delay(day * 22)}
+                                  style={[
+                                    styles.weekdayPill,
+                                    {
+                                      backgroundColor: isScheduledToday
+                                        ? theme.warning
+                                        : isSelected
+                                          ? theme.primary
+                                          : theme.surface,
+                                      borderColor: isScheduledToday
+                                        ? theme.warning
+                                        : isSelected
+                                          ? theme.primary
+                                          : theme.borderSoft,
+                                    },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.weekdayPillText,
+                                      {
+                                        color: isScheduledToday
+                                          ? '#1e1e1e'
+                                          : isSelected
+                                            ? theme.onPrimary
+                                            : theme.muted,
+                                        fontWeight: isSelected ? '800' : '600',
+                                      },
+                                    ]}
+                                  >
+                                    {label}
+                                  </Text>
+                                </Animated.View>
+                              );
+                            })}
+                          </View>
+                        </Pressable>
+                      </View>
+                    </GestureDetector>
+
+                    {activeAlarms.length > 1 && (
+                      <View style={styles.carouselDotsRow}>
+                        {activeAlarms.map((al, idx) => (
+                          <Pressable
+                            key={al.id}
+                            hitSlop={6}
+                            onPress={() => {
+                              setAlarmCarouselIndex(idx);
+                            }}
+                            style={[
+                              styles.carouselDot,
+                              {
+                                backgroundColor:
+                                  idx === safeAlarmIndex ? theme.primary : theme.borderSoft,
+                                width: idx === safeAlarmIndex ? 16 : 6,
+                              },
+                            ]}
+                          />
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })()
+            )}
+          </AppCard>
         </>
       )}
+
+      {/* Modal de Donaciones y Soporte al Proyecto */}
+      <SupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
     </ScrollView>
   );
 };
@@ -548,26 +1010,254 @@ const styles = StyleSheet.create({
   },
   topBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
+    gap: 12,
     paddingTop: 8,
   },
-  settingsBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  titleCol: {
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 10,
+  },
+  actionBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gearIcon: {
-    width: 22,
-    height: 22,
+  actionIcon: {
+    width: 20,
+    height: 20,
   },
   pressed: {
     opacity: 0.85,
     transform: [{ scale: 0.94 }],
   },
+  missedCard: {
+    borderWidth: 1.5,
+  },
+  missedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  missedTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  missedItemsText: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  // Departure Hero Card
+  departureHeroCard: {
+    borderWidth: 2,
+    borderRadius: 22,
+    gap: 20,
+    padding: 20,
+  },
+  departureTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 2,
+  },
+  departureLiveTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  livePulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  livePulseText: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  heroTickBox: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  departureTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  departureTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+    flex: 1,
+  },
+  departureProgressSection: {
+    gap: 8,
+    marginVertical: 4,
+  },
+  departureProgressMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  departureProgressLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  departureProgressPercent: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  departureProgressTrack: {
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  departureProgressBar: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  emptyRoutineText: {
+    fontSize: 14,
+    paddingVertical: 8,
+  },
+  routineItemsContainer: {
+    gap: 10,
+    marginVertical: 4,
+  },
+  departureItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  itemRowPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  departureItemIcon: {
+    width: 36,
+    height: 32,
+  },
+  departureItemName: {
+    flex: 1,
+    fontSize: 16,
+  },
+  departureCheckbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  departureCta: {
+    marginTop: 8,
+  },
+  departureSecondaryActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 24,
+    marginTop: 6,
+  },
+  // Routines Section (quick list when next alarm is upcoming)
+  routinesSection: {
+    gap: 12,
+    marginVertical: 4,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionIcon: {
+    width: 20,
+    height: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  carouselContainer: {
+    gap: 12,
+    paddingVertical: 4,
+  },
+  routineQuickCard: {
+    width: 220,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+    gap: 10,
+  },
+  routineQuickHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  routineQuickTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    flex: 1,
+  },
+  routineQuickMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  routineQuickDays: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  routineQuickItems: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 2,
+  },
+  routineQuickItemBubble: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 3,
+  },
+  routineQuickMore: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  routineQuickNoItems: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    paddingVertical: 4,
+  },
+  // Hub Cards (Mis Ítems & Alarmas)
   hubCard: {
     // Outer pressable container
   },
@@ -578,6 +1268,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  hubHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   hubTitleRow: {
     flexDirection: 'row',
@@ -598,191 +1292,112 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     paddingVertical: 4,
   },
-  itemsPreviewRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 4,
-  },
-  itemMiniBubble: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 4,
-  },
-  moreItemsText: {
-    fontSize: 12,
-    fontWeight: '700',
-    paddingLeft: 4,
-  },
-  hubFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 4,
-  },
-  hubCtaText: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  nextAlarmInfo: {
-    gap: 4,
-  },
-  nextAlarmHeadline: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  nextTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-  },
-  nextTimeDisplay: {
-    fontSize: 26,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  nextDateDisplay: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  nextWeekdays: {
-    fontSize: 13,
-    paddingLeft: 24,
-  },
-  missedCard: {
-    borderWidth: 1.5,
-  },
-  missedHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  missedTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  missedItemsText: {
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  proposalsSection: {
+  // Hub Carousel & Slides
+  carouselSlideContainer: {
     gap: 10,
+    paddingTop: 4,
+    overflow: 'hidden',
   },
-  proposalCard: {
-    borderWidth: 1.5,
-  },
-  proposalContent: {
+  itemSlideContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  proposalInfo: {
-    flex: 1,
-  },
-  proposalTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  proposalTitle: {
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  emptyProposalCard: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    borderWidth: 1.5,
-  },
-  emptyProposalTitle: {
-    fontSize: 14,
-  },
-  routineCard: {
-    borderWidth: 1.5,
     gap: 14,
+    minHeight: 48,
   },
-  routineHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  routineInfoCol: {
-    flex: 1,
-    gap: 6,
-  },
-  routineTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-  },
-  routineSubRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  tickBox: {
+  itemSlideBubble: {
     width: 44,
     height: 44,
+    borderRadius: 12,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 6,
   },
-  emptyRoutineText: {
-    fontSize: 14,
-    paddingVertical: 8,
+  itemSlideInfo: {
+    flex: 1,
+    gap: 3,
   },
-  routineItemsContainer: {
+  itemSlideName: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  itemSlideMeta: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  alarmPreviewBox: {
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 14,
+    gap: 12,
+  },
+  alarmSlideTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  alarmTitleLockup: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  alarmSlideTitle: {
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+    flexShrink: 1,
+    includeFontPadding: false,
   },
-  itemRowPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
-  },
-  itemIcon: {
-    width: 44,
-    height: 30,
-  },
-  itemName: {
-    flex: 1,
-    fontSize: 15,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 7,
-    borderWidth: 1.5,
+  alarmPlayBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaButton: {
-    marginTop: 6,
+  playIcon: {
+    width: 20,
+    height: 20,
+    marginLeft: 2,
   },
-  routineActions: {
+  alarmSlideMetaRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  weekdayPillsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  weekdayPill: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
-    marginTop: 4,
+    paddingHorizontal: 3,
   },
-  guideRow: {
+  weekdayPillText: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  carouselDotsRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingTop: 4,
   },
-  guideBtn: {
-    flex: 1,
+  carouselDot: {
+    height: 6,
+    borderRadius: 3,
   },
 });
 

@@ -1,28 +1,36 @@
 appId: host.exp.exponent
 ---
-- assertVisible: "COLGUETTI"
 - assertVisible: "Colguetti"
-- assertVisible: "Mis ítems"
-- assertVisible: "Alarmas"
-- tapOn: "Mis ítems"
-- assertVisible: "Mis ítems"
-- tapOn: "Agregar"
+- assertVisible: ".*(Mis ítems|My items).*"
+- assertVisible: ".*(Alarmas|Alarms).*"
 - tapOn:
-    text: "Ej.: llaves"
+    id: "support-button"
+- assertVisible: ".*Apoyá.*"
+- tapOn:
+    id: "support-close-button"
+- tapOn: ".*(Mis ítems|My items).*"
+- assertVisible: ".*(Mis ítems|My items).*"
+- scrollUntilVisible:
+    element:
+      text: ".*(Agregar|Add).*"
+    direction: DOWN
+- tapOn: ".*(Agregar|Add).*"
+- tapOn:
+    id: "item-name-input"
 - eraseText
 - inputText: "Llaves"
 - hideKeyboard
 - scrollUntilVisible:
     element:
-      text: "Guardar"
+      text: ".*(Guardar|Save).*"
     direction: DOWN
-- tapOn: "Guardar"
+- tapOn: ".*(Guardar|Save).*"
 - assertVisible: "Llaves"
 - back
-- assertVisible: "COLGUETTI"
-- assertVisible: ".*ÍTEMS.*"
+- assertVisible: "Colguetti"
+- assertVisible: ".*(ÍTEMS|ITEMS).*"
 - tapOn:
     id: "settings-button"
-- assertVisible: "Ajustes"
+- assertVisible: ".*(Ajustes|Settings).*"
 - back
-- assertVisible: "COLGUETTI"
+- assertVisible: "Colguetti"

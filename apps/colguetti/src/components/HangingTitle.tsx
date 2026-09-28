@@ -1,14 +1,10 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
-  withRepeat,
-  withSequence,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
 
@@ -17,60 +13,26 @@ type LetterProps = {
   index: number;
   total: number;
   textColor: string;
-  bounceTrigger: number;
+  isLifted: boolean;
 };
 
-const HangingLetter = memo(({ char, index, textColor, bounceTrigger }: LetterProps) => {
-  const rotation = useSharedValue(0);
-  const translateY = useSharedValue(0);
+const HangingLetter = memo(({ char, index, textColor, isLifted }: LetterProps) => {
+  const liftY = useSharedValue(0);
+  const staticRot = (index % 2 === 0 ? 1 : -1) * (1.5 + (index % 3) * 0.8);
 
-  // Subtle hanging oscillation
+  // Toggle lift on tap (staggered wave up on tap, lowers back down on second tap)
   useEffect(() => {
-    const delay = index * 75;
-    const maxRot = (index % 2 === 0 ? 1 : -1) * (3.5 + (index % 3) * 1.5);
-
-    rotation.value = withDelay(
+    const delay = index * 25;
+    liftY.value = withDelay(
       delay,
-      withRepeat(
-        withSequence(
-          withTiming(maxRot, { duration: 1200 + index * 80, easing: Easing.inOut(Easing.quad) }),
-          withTiming(-maxRot, { duration: 1200 + index * 80, easing: Easing.inOut(Easing.quad) }),
-        ),
-        -1,
-        true,
-      ),
+      withSpring(isLifted ? -12 : 0, { damping: 18, stiffness: 220 }),
     );
-
-    translateY.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(-2.5, { duration: 1100 + index * 60, easing: Easing.inOut(Easing.quad) }),
-          withTiming(2, { duration: 1100 + index * 60, easing: Easing.inOut(Easing.quad) }),
-        ),
-        -1,
-        true,
-      ),
-    );
-  }, [index, rotation, translateY]);
-
-  // Touch bounce
-  useEffect(() => {
-    if (bounceTrigger === 0) return;
-    const delay = index * 35;
-    translateY.value = withDelay(
-      delay,
-      withSequence(
-        withSpring(-10, { damping: 10, stiffness: 350 }),
-        withSpring(0, { damping: 12, stiffness: 250 }),
-      ),
-    );
-  }, [bounceTrigger, index, translateY]);
+  }, [isLifted, index, liftY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: translateY.value },
-      { rotate: `${rotation.value}deg` },
+      { translateY: liftY.value },
+      { rotate: `${staticRot}deg` },
     ],
   }));
 
@@ -93,18 +55,24 @@ export default function HangingTitle({
   onPress,
 }: HangingTitleProps) {
   const { theme } = useLightDark();
-  const bounceTrigger = useSharedValue(0);
+  const [isLifted, setIsLifted] = useState(false);
 
   const chars = title.split('');
 
   const handlePress = () => {
-    bounceTrigger.value = Date.now();
+    setIsLifted((prev) => !prev);
     onPress?.();
   };
 
   return (
     <Pressable onPress={handlePress} style={styles.container}>
-      <View style={styles.wordRow}>
+      <Text style={styles.hiddenText}>{title}</Text>
+      <View
+        style={styles.wordRow}
+        accessible={true}
+        accessibilityRole="header"
+        accessibilityLabel={title}
+      >
         {chars.map((char, idx) => (
           <HangingLetter
             key={`char-${idx}-${char}`}
@@ -112,7 +80,7 @@ export default function HangingTitle({
             index={idx}
             total={chars.length}
             textColor={theme.color}
-            bounceTrigger={bounceTrigger.value}
+            isLifted={isLifted}
           />
         ))}
       </View>
@@ -124,6 +92,12 @@ export default function HangingTitle({
 }
 
 const styles = StyleSheet.create({
+  hiddenText: {
+    position: 'absolute',
+    opacity: 0,
+    height: 0,
+    width: 0,
+  },
   container: {
     paddingVertical: 12,
     alignItems: 'flex-start',

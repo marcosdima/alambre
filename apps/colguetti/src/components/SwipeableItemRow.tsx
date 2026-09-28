@@ -1,11 +1,14 @@
-import { useCallback } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withDelay,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../providers/theme';
@@ -15,49 +18,57 @@ type SwipeableItemRowProps = {
   onDelete: () => void;
   onPress?: () => void;
   disabled?: boolean;
+  peekIndex?: number;
 };
 
-const DELETE_ACTION_WIDTH = 84;
-const SWIPE_THRESHOLD = 40;
+const REST_OFFSET = 0;
+const SWIPE_TRIGGER_THRESHOLD = 35;
+const RESISTANCE = 0.25;
+const MAX_SWIPE = -55;
 
 export default function SwipeableItemRow({
   children,
   onDelete,
   onPress,
   disabled = false,
+  peekIndex,
 }: SwipeableItemRowProps) {
   const { theme } = useLightDark();
-  const translateX = useSharedValue(0);
-  const isOpen = useSharedValue(false);
+  const translateX = useSharedValue(REST_OFFSET);
 
-  const closeRow = useCallback(() => {
-    translateX.value = withSpring(0, { damping: 22, stiffness: 280 });
-    isOpen.value = false;
-  }, [translateX, isOpen]);
-
-  const handleDelete = useCallback(() => {
-    closeRow();
-    onDelete();
-  }, [closeRow, onDelete]);
+  useEffect(() => {
+    if (peekIndex === undefined || disabled) return;
+    const baseDelay = 350;
+    const staggerDelay = peekIndex * 110;
+    const timer = setTimeout(() => {
+      translateX.value = withSequence(
+        withTiming(-22, { duration: 180, easing: Easing.out(Easing.cubic) }),
+        withDelay(140, withTiming(0, { duration: 200, easing: Easing.inOut(Easing.quad) })),
+      );
+    }, baseDelay + staggerDelay);
+    return () => clearTimeout(timer);
+  }, [peekIndex, disabled, translateX]);
 
   const panGesture = Gesture.Pan()
     .enabled(!disabled)
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-8, 8])
+    .activeOffsetX([-15, 15])
+    .failOffsetY([-12, 12])
     .onUpdate((e) => {
       'worklet';
-      const offset = isOpen.value ? -DELETE_ACTION_WIDTH : 0;
-      const nextX = offset + e.translationX;
-      translateX.value = Math.max(-DELETE_ACTION_WIDTH - 15, Math.min(0, nextX));
+      const delta = e.translationX;
+      if (delta < 0) {
+        translateX.value = Math.max(MAX_SWIPE, delta * RESISTANCE);
+      } else {
+        translateX.value = Math.min(0, delta * 0.05);
+      }
     })
     .onEnd((e) => {
       'worklet';
-      if (translateX.value < -SWIPE_THRESHOLD || e.velocityX < -250) {
-        translateX.value = withSpring(-DELETE_ACTION_WIDTH, { damping: 22, stiffness: 280 });
-        isOpen.value = true;
+      if (translateX.value <= -SWIPE_TRIGGER_THRESHOLD || (e.velocityX < -450 && translateX.value < -20)) {
+        translateX.value = withTiming(0, { duration: 160, easing: Easing.out(Easing.cubic) });
+        runOnJS(onDelete)();
       } else {
-        translateX.value = withSpring(0, { damping: 22, stiffness: 280 });
-        isOpen.value = false;
+        translateX.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.cubic) });
       }
     });
 
@@ -65,46 +76,43 @@ export default function SwipeableItemRow({
     transform: [{ translateX: translateX.value }],
   }));
 
+  const animatedBgStyle = useAnimatedStyle(() => ({
+    opacity: translateX.value < -2 ? 1 : 0,
+  }));
+
   const animatedActionStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: Math.max(0, translateX.value + DELETE_ACTION_WIDTH) }],
+    opacity: Math.min(1, Math.max(0, (Math.abs(translateX.value) - 6) / 20)),
+    transform: [
+      {
+        scale: Math.min(1.05, Math.max(0.75, Math.abs(translateX.value) / SWIPE_TRIGGER_THRESHOLD)),
+      },
+    ],
   }));
 
   return (
     <View style={styles.container}>
-      {/* 1. Foreground Card */}
+      {/* 1. Background reveal: Red zone strictly on the right, only visible when swiping or peeking */}
+      <Animated.View
+        style={[
+          styles.actionBackground,
+          { backgroundColor: theme.danger },
+          animatedBgStyle,
+        ]}
+      >
+        <Animated.View style={[styles.actionContent, animatedActionStyle]}>
+          <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
+          <Text style={styles.deleteLabel}>Borrar</Text>
+        </Animated.View>
+      </Animated.View>
+
+      {/* 2. Foreground Card */}
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.frontCard, animatedCardStyle]}>
-          <Pressable
-            onPress={() => {
-              if (isOpen.value) {
-                closeRow();
-              } else {
-                onPress?.();
-              }
-            }}
-            style={({ pressed }) => pressed && styles.pressed}
-          >
+          <Pressable onPress={onPress}>
             {children}
           </Pressable>
         </Animated.View>
       </GestureDetector>
-
-      {/* 2. Action Button rendered on top, slides in from right edge */}
-      <Animated.View style={[styles.actionWrapper, animatedActionStyle]}>
-        <Pressable
-          onPress={handleDelete}
-          accessibilityLabel="Eliminar ítem"
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.deleteBtn,
-            { backgroundColor: theme.danger },
-            pressed && styles.pressed,
-          ]}
-        >
-          <AlambreIcons.Cross color="#ffffff" lineWidth={2.5} style={styles.deleteIcon} />
-          <Text style={styles.deleteLabel}>Borrar</Text>
-        </Pressable>
-      </Animated.View>
     </View>
   );
 }
@@ -118,36 +126,30 @@ const styles = StyleSheet.create({
   frontCard: {
     width: '100%',
   },
-  actionWrapper: {
+  actionBackground: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     right: 0,
-    width: DELETE_ACTION_WIDTH,
-    alignItems: 'center',
+    width: 120,
     justifyContent: 'center',
-    padding: 4,
+    alignItems: 'flex-end',
+    paddingRight: 12,
+    borderTopRightRadius: 14,
+    borderBottomRightRadius: 14,
   },
-  deleteBtn: {
-    flexDirection: 'column',
+  actionContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-    gap: 3,
+    gap: 4,
   },
   deleteIcon: {
-    width: 16,
-    height: 16,
+    width: 22,
+    height: 22,
   },
   deleteLabel: {
     color: '#ffffff',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
-  },
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
   },
 });

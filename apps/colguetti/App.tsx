@@ -1,3 +1,4 @@
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LightDarkProvider } from './src/providers/theme';
 import { ConfigProvider } from './src/providers/config';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -16,32 +17,34 @@ import { NotificationPermissionProvider } from './src/notifications/notification
 
 export default function App() {
   return (
-    <ConfigProvider>
-      <LightDarkProvider>
-        <LangProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <RouteIntentProvider>
-              <ItemsProvider>
-                <AlarmsProvider>
-                  <ConfirmationsProvider>
-                    <ActivationProvider>
-                      <NotificationPermissionProvider>
-                        <NavigatorProvider pages={navigator}>
-                          <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                            <ToastProvider ToastComponent={ColguettiToast}>
-                              <Root />
-                            </ToastProvider>
-                          </ConfirmProvider>
-                        </NavigatorProvider>
-                      </NotificationPermissionProvider>
-                    </ActivationProvider>
-                  </ConfirmationsProvider>
-                </AlarmsProvider>
-              </ItemsProvider>
-            </RouteIntentProvider>
-          </GestureHandlerRootView>
-        </LangProvider>
-      </LightDarkProvider>
-    </ConfigProvider>
+    <SafeAreaProvider>
+      <ConfigProvider>
+        <LightDarkProvider>
+          <LangProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <RouteIntentProvider>
+                <ItemsProvider>
+                  <AlarmsProvider>
+                    <ConfirmationsProvider>
+                      <ActivationProvider>
+                        <NotificationPermissionProvider>
+                          <NavigatorProvider pages={navigator}>
+                            <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                              <ToastProvider ToastComponent={ColguettiToast}>
+                                <Root />
+                              </ToastProvider>
+                            </ConfirmProvider>
+                          </NavigatorProvider>
+                        </NotificationPermissionProvider>
+                      </ActivationProvider>
+                    </ConfirmationsProvider>
+                  </AlarmsProvider>
+                </ItemsProvider>
+              </RouteIntentProvider>
+            </GestureHandlerRootView>
+          </LangProvider>
+        </LightDarkProvider>
+      </ConfigProvider>
+    </SafeAreaProvider>
   );
 }

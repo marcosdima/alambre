@@ -27,6 +27,7 @@ export type AppCardProps = {
   chevron?: boolean;
   selected?: boolean;
   onPress?: () => void;
+  interactive?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
@@ -47,6 +48,7 @@ export default function AppCard({
   chevron = false,
   selected = false,
   onPress,
+  interactive = false,
   disabled = false,
   style,
   headerStyle,
@@ -57,7 +59,7 @@ export default function AppCard({
   const { theme } = useLightDark();
   const scale = useSharedValue(1);
 
-  const isInteractive = Boolean(onPress) && !disabled;
+  const isInteractive = (Boolean(onPress) || Boolean(interactive)) && !disabled;
 
   const handlePressIn = () => {
     if (!isInteractive) return;
@@ -66,7 +68,7 @@ export default function AppCard({
 
   const handlePressOut = () => {
     if (!isInteractive) return;
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    scale.value = withSpring(1, { damping: 18, stiffness: 280 });
   };
 
   const animatedScaleStyle = useAnimatedStyle(() => ({
@@ -208,6 +210,20 @@ export default function AppCard({
         onPressOut={handlePressOut}
         disabled={disabled}
         accessibilityRole="button"
+        accessibilityState={{ selected, disabled }}
+        style={style}
+      >
+        {cardContent}
+      </Pressable>
+    );
+  }
+
+  if (interactive) {
+    return (
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
         accessibilityState={{ selected, disabled }}
         style={style}
       >
