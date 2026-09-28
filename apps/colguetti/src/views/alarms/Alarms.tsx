@@ -17,7 +17,6 @@ import AppCard from '../../components/AppCard';
 import AppBadge from '../../components/AppBadge';
 import AppSwitch from '../../components/AppSwitch';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
-import TypewriterText from '../../components/TypewriterText';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 const AlarmItemsCarousel = ({
@@ -104,15 +103,14 @@ const AlarmItemsCarousel = ({
               iconAnimation={catalogDrawAnimation}
             />
           </View>
-          <TypewriterText
-            key={currentItem.id}
-            text={currentItem.name}
-            speed={24}
-            initialDelay={40}
-            cursor={false}
-            numberOfLines={1}
-            textStyle={[styles.itemCarouselName, { color: theme.color }]}
-          />
+          <Animated.View key={currentItem.id} entering={FadeIn.duration(160)} style={{ flex: 1 }}>
+            <Text
+              numberOfLines={1}
+              style={[styles.itemCarouselName, { color: theme.color }]}
+            >
+              {currentItem.name}
+            </Text>
+          </Animated.View>
           {items.length > 1 && (
             <Animated.View key={safeIndex} entering={FadeIn.duration(160)}>
               <AppBadge
@@ -209,7 +207,7 @@ export default () => {
                   key={alarm.id}
                   onDelete={() => void tryDelete(alarm)}
                   onPress={() => openForm(alarm)}
-                  peekIndex={index}
+                  peekIndex={index === 0 ? 0 : undefined}
                 >
                   <AppCard
                     variant="outlined"

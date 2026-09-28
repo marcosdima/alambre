@@ -83,7 +83,7 @@ export default () => {
                 key={item.id}
                 onDelete={() => void tryDelete(item)}
                 onPress={() => openForm(item)}
-                peekIndex={index}
+                peekIndex={index === 0 ? 0 : undefined}
               >
                 <AppCard
                   variant="outlined"
@@ -96,7 +96,7 @@ export default () => {
                         icon={item.icon}
                         color={item.color}
                         lineWidth={2}
-                        delay={150 + index * 60}
+                        delay={340 + index * 40}
                         iconAnimation={catalogDrawAnimation}
                       />
                     </View>

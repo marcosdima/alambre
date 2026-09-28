@@ -53,17 +53,22 @@ export default function TypewriterText({
 
   const actualEraseSpeed = eraseSpeed ?? Math.max(15, Math.round(speed / 2));
 
-  // Blinking cursor only when typing has finished (idle)
+  // Blinking cursor only when typing has finished (idle) and cursor is enabled
   useEffect(() => {
-    if (!isDone) {
+    if (!cursor || !isDone) {
       setBlink(true);
       return;
     }
+    let count = 0;
     const interval = setInterval(() => {
+      count += 1;
       setBlink((b) => !b);
+      if (count >= 6) {
+        clearInterval(interval);
+      }
     }, 530);
     return () => clearInterval(interval);
-  }, [isDone]);
+  }, [cursor, isDone]);
 
   useEffect(() => {
     // Immediate full display if user requested reduced motion

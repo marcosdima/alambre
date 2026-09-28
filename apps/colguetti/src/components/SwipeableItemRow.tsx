@@ -37,15 +37,15 @@ export default function SwipeableItemRow({
   const translateX = useSharedValue(REST_OFFSET);
 
   useEffect(() => {
-    if (peekIndex === undefined || disabled) return;
-    const baseDelay = 350;
-    const staggerDelay = peekIndex * 110;
+    // Only peek the first item once page transition finishes (educational affordance)
+    if (peekIndex !== 0 || disabled) return;
+    const baseDelay = 420;
     const timer = setTimeout(() => {
       translateX.value = withSequence(
-        withTiming(-22, { duration: 180, easing: Easing.out(Easing.cubic) }),
-        withDelay(140, withTiming(0, { duration: 200, easing: Easing.inOut(Easing.quad) })),
+        withTiming(-20, { duration: 180, easing: Easing.out(Easing.cubic) }),
+        withDelay(120, withTiming(0, { duration: 180, easing: Easing.inOut(Easing.quad) })),
       );
-    }, baseDelay + staggerDelay);
+    }, baseDelay);
     return () => clearTimeout(timer);
   }, [peekIndex, disabled, translateX]);
 
