@@ -41,7 +41,7 @@ Follow this checklist during manual testing or emulator inspection (e.g. via `ad
   - The animated disc/circle behind the icons dynamically interpolates color according to the active theme rather than staying constant.
 - [ ] **Language Switching:** Tapping language chips ("Español" / "English") dynamically updates all visible strings and immediately reflects the active chip style (`surface` background, `primary` border).
 - [ ] **System Permissions Subpage Navigation:** Tapping the Permissions action navigates to `navigate('settings', { subpage: 'permissions' })`, rendering the unified header with back arrow.
-- [ ] **Support Modal Integration:** Tapping "Invitar un café" opens `SupportModal` with backdrop blur/darkening, heart emblem, donation action, GitHub link, and accessible close button.
+- [ ] **Support Action Direct Link:** Tapping "Invitame un cafecito" in the settings support card opens the external Cafecito link directly. The reusable `SupportModal` component provides the modal experience with dynamic `[app]` quotes and donation links.
 - [ ] **About & Diagnostics Card:** Displays version ("1.0.0"), framework version ("alambre v0.1.0"), and author link ("@marcosdima"). Tapping "Copiar diagnóstico" triggers a confirmation toast notification.
 - [ ] **Preferences Reset:** Tapping "Restablecer" triggers a blocking confirmation dialog via `useConfirm`. Confirming resets language and theme to default states and triggers a success toast.
 

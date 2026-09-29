@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../providers/theme';
@@ -7,25 +8,64 @@ import AppButton from './AppButton';
 export type SupportModalProps = {
   visible: boolean;
   onClose: () => void;
+  appName?: string;
   cafecitoUrl?: string;
   githubUrl?: string;
+  title?: string;
 };
 
 const DEFAULT_GITHUB_URL = 'https://github.com/marcosdima';
 const DEFAULT_CAFECITO_URL = 'https://cafecito.app/marcosdima';
 
+const SUPPORT_QUOTES = [
+  {
+    es: 'Yo soy Rudolph Giuliani... debes apoyar a [app]... cero tolerancia...',
+    en: 'I am Rudolph Giuliani... you must support [app]... zero tolerance...',
+  },
+  {
+    es: '[app] es un proyecto libre y artesanal, como el dulce de leche ¿)',
+    en: '[app] is open-source and handcrafted, just like dulce de leche (I dare you to try to pronounce it gringitou)',
+  },
+  {
+    es: '[app] fue hecho con amor... amor al dinero ¿)',
+    en: '[app] was made with love... love for money ¿)',
+  },
+  {
+    es: 'Apoyar a [app] es como comer una naranja.',
+    en: 'Supporting [app] is like eating an orange.',
+  },
+];
+
 export default function SupportModal({
   visible,
   onClose,
+  appName = '[app]',
   cafecitoUrl = DEFAULT_CAFECITO_URL,
   githubUrl = DEFAULT_GITHUB_URL,
+  title,
 }: SupportModalProps) {
   const { theme } = useLightDark();
-  const { lang } = useLang();
+  const { currentLang } = useLang();
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  useEffect(() => {
+    if (visible) {
+      const randomIndex = Math.floor(Math.random() * SUPPORT_QUOTES.length);
+      setQuoteIndex(randomIndex);
+    }
+  }, [visible]);
 
   const handleOpenLink = (url: string) => {
     void Linking.openURL(url);
   };
+
+  const activeQuote = SUPPORT_QUOTES[quoteIndex] ?? SUPPORT_QUOTES[0];
+  const rawQuote = (currentLang === 'en' ? activeQuote.en : activeQuote.es) || activeQuote.es;
+  const quoteText = rawQuote.replaceAll('[app]', appName);
+
+  const resolvedTitle =
+    title ??
+    (currentLang === 'en' ? `Support ${appName}!` : `¡Apoyá a ${appName}!`);
 
   return (
     <Modal
@@ -39,7 +79,7 @@ export default function SupportModal({
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel={lang.support.close}
+          accessibilityLabel={currentLang === 'en' ? 'Close' : 'Cerrar'}
         />
         <View
           style={[styles.modalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -55,10 +95,10 @@ export default function SupportModal({
               <AlambreIcons.Heart color={theme.primary} lineWidth={2.5} style={styles.heartIcon} />
             </View>
             <Text style={[styles.title, { color: theme.color }]}>
-              {lang.support.title}
+              {resolvedTitle}
             </Text>
             <Text style={[styles.subtitle, { color: theme.muted }]}>
-              {lang.support.subtitle}
+              {quoteText}
             </Text>
           </View>
 
@@ -68,7 +108,7 @@ export default function SupportModal({
               tone="primary"
               size="md"
               fullWidth
-              label={lang.support.buyCoffee}
+              label={currentLang === 'en' ? 'Buy me a coffee' : 'Invitame un cafecito'}
               rightIcon={<AlambreIcons.Coffee color={theme.onPrimary} lineWidth={2.2} style={styles.btnIcon} />}
               onPress={() => handleOpenLink(cafecitoUrl)}
             />
@@ -77,7 +117,7 @@ export default function SupportModal({
               tone="neutral"
               size="md"
               fullWidth
-              label={lang.support.viewGithub}
+              label={currentLang === 'en' ? 'View on GitHub' : 'Ver en GitHub'}
               rightIcon={<AlambreIcons.Arrow drawIt color={theme.color} lineWidth={16} style={styles.arrowIcon} />}
               onPress={() => handleOpenLink(githubUrl)}
             />
@@ -89,7 +129,7 @@ export default function SupportModal({
               variant="ghost"
               tone="neutral"
               size="sm"
-              label={lang.support.close}
+              label={currentLang === 'en' ? 'Close' : 'Cerrar'}
               onPress={onClose}
             />
           </View>
