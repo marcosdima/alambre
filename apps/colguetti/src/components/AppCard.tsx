@@ -14,6 +14,7 @@ import type { BadgeTone } from './AppBadge';
 
 export type CardVariant = 'outlined' | 'elevated' | 'soft';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
+export type BadgePosition = 'right' | 'inline';
 
 export type AppCardProps = {
   variant?: CardVariant;
@@ -22,6 +23,7 @@ export type AppCardProps = {
   subtitle?: ReactNode;
   badge?: ReactNode;
   badgeTone?: BadgeTone;
+  badgePosition?: BadgePosition;
   headerAction?: ReactNode;
   footer?: ReactNode;
   chevron?: boolean;
@@ -43,6 +45,7 @@ export default function AppCard({
   subtitle,
   badge,
   badgeTone = 'primary',
+  badgePosition = 'right',
   headerAction,
   footer,
   chevron = false,
@@ -142,28 +145,36 @@ export default function AppCard({
       {hasHeader && (
         <View style={[styles.headerRow, headerStyle]}>
           <View style={styles.titleColumn}>
-            <View style={styles.titleBadgeRow}>
-              {typeof title === 'string' ? (
-                <Text style={[styles.titleText, { color: theme.color }]}>
-                  {title}
-                </Text>
-              ) : (
-                title
-              )}
-
-              {badge ? (
-                typeof badge === 'string' ? (
-                  <AppBadge
-                    label={badge}
-                    tone={badgeTone}
-                    size="sm"
-                    style={styles.headerBadge}
-                  />
+            {badgePosition === 'inline' ? (
+              <View style={styles.titleBadgeRow}>
+                {typeof title === 'string' ? (
+                  <Text style={[styles.titleText, { color: theme.color }]}>
+                    {title}
+                  </Text>
                 ) : (
-                  badge
-                )
-              ) : null}
-            </View>
+                  title
+                )}
+
+                {badge ? (
+                  typeof badge === 'string' ? (
+                    <AppBadge
+                      label={badge}
+                      tone={badgeTone}
+                      size="sm"
+                      style={styles.headerBadge}
+                    />
+                  ) : (
+                    badge
+                  )
+                ) : null}
+              </View>
+            ) : typeof title === 'string' ? (
+              <Text style={[styles.titleText, { color: theme.color }]}>
+                {title}
+              </Text>
+            ) : (
+              title
+            )}
 
             {subtitle ? (
               typeof subtitle === 'string' ? (
@@ -178,6 +189,18 @@ export default function AppCard({
 
           {/* Right Header Slot */}
           <View style={styles.headerRightSlot}>
+            {badge && badgePosition === 'right' ? (
+              typeof badge === 'string' ? (
+                <AppBadge
+                  label={badge}
+                  tone={badgeTone}
+                  size="sm"
+                  style={styles.headerBadge}
+                />
+              ) : (
+                badge
+              )
+            ) : null}
             {headerAction}
             {chevron && (
               <AlambreIcons.Arrow
@@ -278,7 +301,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 2,
   },
   chevronIcon: {
     width: 16,
