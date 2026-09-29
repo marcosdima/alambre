@@ -1,4 +1,6 @@
 appId: host.exp.exponent
+tags:
+  - settings
 ---
 - tapOn:
     id: "settings-button"
@@ -17,17 +19,14 @@ appId: host.exp.exponent
 - assertVisible: ".*(Notificaciones|Notifications).*"
 - tapOn: ".*(prueba|Test).*"
 - assertVisible: ".*(enviada|sent).*"
-- back
-- assertVisible: "Colguetti"
-- tapOn: ".*(Alarmas|Alarms).*"
-- assertVisible: ".*(Alarmas|Alarms).*"
 - scrollUntilVisible:
     element:
-      text: ".*(Agregar|Add).*"
+      text: ".*(Apoyar|Support).*"
     direction: DOWN
-- tapOn: ".*(Agregar|Add).*"
-- assertVisible: ".*(Nueva alarma|New alarm).*"
-- back
-- assertVisible: ".*(Alarmas|Alarms).*"
+- tapOn:
+    id: "support-button"
+- assertVisible: ".*(Apoyá|Support).*"
+- tapOn:
+    id: "support-close-button"
 - back
 - assertVisible: "Colguetti"

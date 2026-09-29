@@ -106,6 +106,7 @@ export default () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <AppTextInput
+          testID="alarm-label-input"
           label={lang.alarms.labelLabel}
           required
           value={label}

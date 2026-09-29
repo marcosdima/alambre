@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "../../scripts/e2e.sh e2e"
+    "test:e2e": "../../scripts/e2e.sh"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
