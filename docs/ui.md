@@ -131,3 +131,19 @@ Following the principle that the framework defines behavior while the applicatio
 * **Non-responsibilities:** The framework does NOT choose visual entrance animations (`FadeInDown`, `FadeInUp`, `ZoomIn`, springs, keyframes, or easing curves) and does NOT impose animation wrappers. Applications pair the computed delays (`getDelay(index)`) with whatever presentation or Reanimated builder they choose.
 * **Accessibility:** Automatically integrates with `useReducedMotion()`. When reduced motion is preferred by the user, `calculateStaggerDelay` returns `0` immediately to avoid unnatural delayed stalls without breaking layout.
 * **Optional composition:** `StaggerProvider` and `useStaggerItem` allow deep component trees to consume stagger timing without manual prop drilling, falling back gracefully to local calculations when no provider is present.
+
+---
+
+## 6. Gesture Contention & Hierarchy in Compound Rows
+
+When designing compound list rows that support swipe-to-action behaviors (such as `SwipeableItemRow` / swipe-to-delete), touch responder hierarchy rules must be strictly respected:
+
+### Prohibited: Nested horizontal drag responders
+
+Embedding child components that register continuous horizontal pan gestures (such as gesture-driven carousels or horizontal sliders) inside a list row that itself listens to horizontal swipes creates unresolvable responder contention in `react-native-gesture-handler`. The inner pan gesture steals the drag events or locks up the parent row, preventing users from revealing actions or deleting items.
+
+### Adopted solutions for compound rows
+
+1. **Static preview summaries with overflow badges:** Display up to a fixed number $K$ of static preview chips (e.g. icon + label) followed by a `+N` badge indicating remaining elements. This pattern eliminates gesture conflict entirely and keeps row scrolling smooth (validated in `apps/colguetti` `Alarms.tsx`).
+2. **Discrete tap controls:** If interactive cycling or stepped input is required inside a swipeable row, use discrete tap controls (such as steppers or chevrons) with bounded touch hit bounds (`hitSlop`), never continuous pan drag responders.
+3. **Dedicated screen / modal for interactive collections:** When complex gesture-driven reordering or sliding is necessary, the interaction belongs on a dedicated subpage or modal dialog where the full screen gesture namespace is available without competing list responders.
