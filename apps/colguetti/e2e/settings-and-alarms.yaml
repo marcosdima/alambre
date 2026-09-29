@@ -10,6 +10,13 @@ appId: host.exp.exponent
 - tapOn: "ES"
 - assertVisible: "Ajustes"
 - assertVisible: "Idioma"
+- scrollUntilVisible:
+    element:
+      text: ".*(Notificaciones|Notifications).*"
+    direction: DOWN
+- assertVisible: ".*(Notificaciones|Notifications).*"
+- tapOn: ".*(prueba|Test).*"
+- assertVisible: ".*(enviada|sent).*"
 - back
 - assertVisible: "Colguetti"
 - tapOn: ".*(Alarmas|Alarms).*"
