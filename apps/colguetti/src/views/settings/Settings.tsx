@@ -16,7 +16,7 @@ export default () => {
   const { lang, currentLang, changeLang } = useLang();
   const { config, saveField } = useConfig();
   const { show } = useToast();
-  const { permission, loading, requestPermission, sendTestNotification } =
+  const { permission, loading, requestPermission, openSettings, sendTestNotification } =
     useNotificationPermission();
 
   const permissionHint = loading
@@ -39,6 +39,10 @@ export default () => {
 
   const onRequestPermission = () => {
     void requestPermission();
+  };
+
+  const onOpenSettings = () => {
+    void openSettings();
   };
 
   const onTestNotification = () => {
@@ -206,12 +210,21 @@ export default () => {
         style={styles.card}
       >
         <View style={styles.notificationsStack}>
-          {permission !== 'granted' && (
+          {permission === 'undetermined' && (
             <AppButton
               variant="outline"
               tone="primary"
               label={lang.settings.requestPermission}
               onPress={onRequestPermission}
+              fullWidth
+            />
+          )}
+          {permission === 'denied' && (
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.openSettings}
+              onPress={onOpenSettings}
               fullWidth
             />
           )}
@@ -222,7 +235,19 @@ export default () => {
             onPress={onTestNotification}
             fullWidth
           />
+          {permission === 'granted' && (
+            <AppButton
+              variant="ghost"
+              tone="neutral"
+              label={lang.settings.openSettings}
+              onPress={onOpenSettings}
+              fullWidth
+            />
+          )}
         </View>
+        <Text style={[styles.batteryHintText, { color: theme.muted }]}>
+          {lang.settings.batteryOptimizationHint}
+        </Text>
       </AppCard>
 
       {/* Apoyar el proyecto / Support */}
@@ -361,6 +386,12 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 10,
     marginTop: 6,
+  },
+  batteryHintText: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 8,
+    paddingHorizontal: 2,
   },
   aboutContent: {
     gap: 10,

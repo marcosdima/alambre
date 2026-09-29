@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { AppState, Text, View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useNavigator, useToast, AlambreIcons } from 'alambre';
 import Animated, {
@@ -204,6 +204,15 @@ export default () => {
   }, [active]);
 
   useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        setNow(Date.now());
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
     if (!intent.alarmId) return;
     if (intent.missing) {
       const alarm = alarms.find((current) => current.id === intent.alarmId);
@@ -213,12 +222,15 @@ export default () => {
         time: alarm?.time ?? '',
         items: intent.missing,
       });
+      void deactivate();
     }
     setIntent({});
-  }, [intent.alarmId, intent.missing, alarms, setIntent]);
+  }, [intent.alarmId, intent.missing, alarms, setIntent, deactivate]);
 
   useEffect(() => {
-    if (!active || !isExpired(active)) return;
+    if (!active) return;
+    const currentNow = new Date(now);
+    if (!isExpired(active, currentNow)) return;
     const alarm = alarms.find((a) => a.id === active.alarmId);
     const unchecked = alarm ? missingItemNames(alarm.itemIds, items, ticked) : [];
     void cancelAlarmAlerts(active.alarmId);
@@ -231,7 +243,7 @@ export default () => {
     setTicked({});
     setSuccess(false);
     void deactivate();
-  }, [active, alarms, items, ticked, deactivate]);
+  }, [active, now, alarms, items, ticked, deactivate]);
 
   useEffect(() => {
     if (!active) return;

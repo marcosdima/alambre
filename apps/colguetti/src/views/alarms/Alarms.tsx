@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { FadeIn, runOnJS } from 'react-native-reanimated';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
-import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
+import { ItemIcon } from '../../items/icon-catalog';
 import type { Item } from '../../items/item-types';
 import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelAlarmAlerts } from '../../notifications/expiry';
@@ -19,7 +16,9 @@ import AppSwitch from '../../components/AppSwitch';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
-const AlarmItemsCarousel = ({
+const MAX_VISIBLE_ITEMS = 3;
+
+const AlarmItemsSummary = ({
   items,
   theme,
   emptyLabel,
@@ -29,121 +28,57 @@ const AlarmItemsCarousel = ({
     color: string;
     borderSoft: string;
     surfaceAlt: string;
-    surface?: string;
     primary: string;
   };
   emptyLabel: string;
 }) => {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (items.length <= 1) return;
-    const timer = setTimeout(() => {
-      setIndex((prev) => (prev + 1) % items.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [items.length, index]);
-
-  const nextItem = useCallback(() => {
-    if (items.length <= 1) return;
-    setIndex((prev) => (prev + 1) % items.length);
-  }, [items.length]);
-
-  const prevItem = useCallback(() => {
-    if (items.length <= 1) return;
-    setIndex((prev) => (prev - 1 + items.length) % items.length);
-  }, [items.length]);
-
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .enabled(items.length > 1)
-        .activeOffsetX([-15, 15])
-        .failOffsetY([-12, 12])
-        .onEnd((e) => {
-          'worklet';
-          if (e.translationX < -25 || e.velocityX < -350) {
-            runOnJS(nextItem)();
-          } else if (e.translationX > 25 || e.velocityX > 350) {
-            runOnJS(prevItem)();
-          }
-        }),
-    [items.length, nextItem, prevItem],
-  );
-
   if (items.length === 0) {
     return (
-      <View style={styles.itemCarouselRow}>
+      <View style={styles.itemSummaryRow}>
         <AppBadge label={emptyLabel} tone="neutral" variant="soft" size="sm" />
       </View>
     );
   }
 
-  const safeIndex = index % items.length;
-  const currentItem = items[safeIndex];
+  const visible = items.slice(0, MAX_VISIBLE_ITEMS);
+  const remaining = items.length - MAX_VISIBLE_ITEMS;
 
   return (
-    <View style={styles.itemCarouselWrapper}>
-      <GestureDetector gesture={panGesture}>
-        <View style={styles.itemCarouselRow}>
-          <View
-            style={[
-              styles.itemCarouselBubble,
-              {
-                borderColor: currentItem.color || theme.borderSoft,
-                backgroundColor: theme.surfaceAlt,
-              },
-            ]}
-          >
+    <View style={styles.itemSummaryRow}>
+      {visible.map((item) => (
+        <View
+          key={item.id}
+          style={[
+            styles.itemChip,
+            {
+              borderColor: item.color || theme.borderSoft,
+              backgroundColor: theme.surfaceAlt,
+            },
+          ]}
+        >
+          <View style={styles.itemIconBubble}>
             <ItemIcon
-              key={currentItem.id}
-              icon={currentItem.icon}
-              color={currentItem.color}
+              icon={item.icon}
+              color={item.color}
               lineWidth={1.8}
-              iconAnimation={catalogDrawAnimation}
             />
           </View>
-          <Animated.View key={currentItem.id} entering={FadeIn.duration(160)} style={{ flex: 1 }}>
-            <Text
-              numberOfLines={1}
-              style={[styles.itemCarouselName, { color: theme.color }]}
-            >
-              {currentItem.name}
-            </Text>
-          </Animated.View>
-          {items.length > 1 && (
-            <Animated.View key={safeIndex} entering={FadeIn.duration(160)}>
-              <AppBadge
-                label={`${safeIndex + 1}/${items.length}`}
-                tone="neutral"
-                variant="outline"
-                size="sm"
-              />
-            </Animated.View>
-          )}
+          <Text
+            numberOfLines={1}
+            style={[styles.itemChipName, { color: theme.color }]}
+          >
+            {item.name}
+          </Text>
         </View>
-      </GestureDetector>
+      ))}
 
-      {items.length > 1 && (
-        <View style={styles.itemCarouselDots}>
-          {items.map((it, idx) => (
-            <Pressable
-              key={it.id}
-              hitSlop={6}
-              onPress={(e) => {
-                e.stopPropagation();
-                setIndex(idx);
-              }}
-              style={[
-                styles.itemCarouselDot,
-                {
-                  backgroundColor: idx === safeIndex ? theme.primary : theme.borderSoft,
-                  width: idx === safeIndex ? 10 : 4,
-                },
-              ]}
-            />
-          ))}
-        </View>
+      {remaining > 0 && (
+        <AppBadge
+          label={`+${remaining}`}
+          tone="neutral"
+          variant="outline"
+          size="sm"
+        />
       )}
     </View>
   );
@@ -240,7 +175,7 @@ export default () => {
                     </View>
 
                     <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
-                      <AlarmItemsCarousel
+                      <AlarmItemsSummary
                         items={alarmItems}
                         theme={theme}
                         emptyLabel={lang.alarms.itemsLabel}
@@ -327,40 +262,33 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  itemCarouselWrapper: {
-    width: '100%',
-    gap: 6,
-    overflow: 'hidden',
-  },
-  itemCarouselRow: {
+  itemSummaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    minHeight: 32,
+    gap: 6,
+    minHeight: 28,
   },
-  itemCarouselBubble: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 2,
-  },
-  itemCarouselName: {
-    fontSize: 14,
-    fontWeight: '700',
-    flex: 1,
-  },
-  itemCarouselDots: {
+  itemChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingLeft: 2,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
+    borderRadius: 8,
+    borderWidth: 1.2,
+    maxWidth: 110,
+    flexShrink: 1,
   },
-  itemCarouselDot: {
-    height: 4,
-    borderRadius: 2,
+  itemIconBubble: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemChipName: {
+    fontSize: 12,
+    fontWeight: '600',
+    flexShrink: 1,
   },
   footer: {
     padding: 20,
