@@ -1,409 +1,255 @@
 ---
-title: Discoveries
-summary: Reusable patterns observed in app development that could be rescued into the alambre framework.
+title: Discoveries & Pattern Registry
+summary: Registry of reusable patterns, OS integrations, UI behaviors, and laboratory experiments observed in app development.
 ---
 
-# Discoveries
-
-Register of reusable patterns observed while building the reference application Colguetti (`apps/colguetti`) that could be rescued into `alambre`.
-
-Each entry captures the pattern, where it appeared, and the candidate abstraction (if any). Nothing here is an adopted decision until it is validated and discussed in a design review.
-
-## Structured collection persistence (discovered in I2)
-
-**Pattern:** the app needs persisted collections of typed records (items, later alarms) with add/update/remove, plus plain JSON get/set/remove helpers.
-
-**Where it appears:** `apps/colguetti/src/storage/` (json-storage, collection), `apps/colguetti/src/items/` (items-context, items-model).
-
-**Current alambre surface is a poor fit:** `Storage` only supports string get/set (`packages/alambre/src/types/actions.ts`); there is no remove and no JSON handling. The config capability is flat string fields, not typed lists.
-
-**Candidate for alambre:**
-
-- Extend the `Storage` contract with an optional `remove` (`get(key)`, `set(key, value)`, `remove(key)`). Optional method keeps it additive; contract test in `tests/public-api.test.ts` must be updated.
-- A content-driven capability factory `createCollectionProvider` — content = key + initial records, framework supplies load/CRUD/persist, mirroring the existing `createConfigProvider` shape.
-- Validate against a second consumer (alarms in I3) before proposing.
-
-**Status (I6): ADOPTED.** `Storage.remove` (optional) and `createCollectionProvider` ship with `alambre` (see `packages/alambre/CHANGELOG.md`, `docs/architecture.md` §8, and the Q3 decision log). Colguetti's items and alarms are the validating consumers.
-
-## Screen forms need navigation params (discovered in I2)
-
-**Pattern:** edit screens need to know which record they are editing, but the navigator behavior does not carry params.
-
-**Where it appears:** `apps/colguetti/src/views/items/ItemForm.tsx` uses a `RouteIntent` context (`apps/colguetti/src/navigator/RouteIntent.tsx`) to pass `itemId` from the list into the form subpage.
-
-**Candidate for alambre:** the navigator `navigate(target, { subpage })` settings could accept arbitrary params carried by the page path, or expose an optional `params` on the navigation settings. The `RouteIntent` context is the app-level prototype.
-
-**Status (I6): NOT EXTRACTED.** Navigational params keep their app-level prototype (`RouteIntent`) until a second consumer demonstrates reuse. Same for the shared `createId` util (trivial, app-owned).
-
-## The app re-implements the capability pattern with React context (discovered in I2)
-
-**Pattern:** `ItemsProvider` (`apps/colguetti/src/items/items-context.tsx`) is essentially a content-driven provider: load on mount, typed actions, persist, context + hook. It reads like a manual rewrite of `createConfigProvider` with a richer (non-string) payload and async load.
-
-**Candidate for alambre:** feeds into the `createCollectionProvider` idea above; also suggests a generic "async-loading provider" shape. If a `createCollectionProvider` lands in alambre, Colguetti's items and alarms both become its consumers.
-
-**Status (I6): ADOPTED — superseded by `createCollectionProvider`.** `ItemsProvider` and `AlarmsProvider` are thin adapters now wrapping the shipped capability (see the first entry).
-
-## Local-notification plan differs structurally from framework value (I4)
-
-**Pattern:** recurring alarms must produce one repeating notification per selected weekday, with a persisted scheduling plan that is diffed against storage on every change (`ambos keys: schedule plan + reminders`).
-
-**Where it appears:** `apps/colguetti/src/notifications/` (schedule, sync, NotificationsWatcher) and `apps/colguetti/src/checklist/checklist-model.ts` (pending detection, resend cadence).
-
-**Assessment:** the scheduling/diff logic is lean and reusable, but it sits inside the `expo-notifications` ecosystem the app owns (ecosystem-first). The `Storage` contract (`remove`) + `createCollectionProvider` candidates remain the framework takeaways. Not planned for extraction without a second consumer.
-
-## Delight kept in the app (I4-I5)
-
-**Pattern:** checkbox strikes through item names; confirmed routine flashes a drawn tick (`AlambreIcons.Tick` + `iconAnimation`) before navigating; reminders re-alert only while within the resend window so the app never spams.
-
-**Where it appears:** `apps/colguetti/src/views/home/Home.tsx`.
-
-**Assessment:** presentation and identity stay in the app per §2/§6. No alambre surface change needed.
-
-## Undo / Redo history state behavior (discovered in cross-logic)
-
-**Pattern:** interactive stateful experiences (board games, logic puzzles, form editors, canvases) require an undo/redo stack (`past`, `present`, `future`, `undo()`, `redo()`, `canUndo`, `canRedo`, optional `maxLimit`).
-
-**Where it appears:** `apps/cross-logic/src/domain/history-model.ts` and `apps/cross-logic/src/session/game-context.tsx`.
-
-**Candidate for alambre:**
-- A pure headless hook `useHistoryState<T>(initialState, options)` and core history helpers `createHistory<T>`, `pushHistory`, `undoHistory`, `redoHistory`, `canUndo`, `canRedo`.
-- Fully decoupled from UI and presentation.
-
-**Status: ADOPTED (cross-logic).** Shipped in `alambre` (`src/hooks/use-history-state.ts`) and exported top-level as `useHistoryState` and history helpers. Validated with unit tests in `packages/alambre/tests/hooks/use-history-state.test.ts`.
-
-## Elapsed time / stopwatch behavior (discovered in cross-logic & colguetti)
-
-**Pattern:** apps require elapsed time tracking, pauses, countdowns or formatted time representations (logic puzzle timer in Cross Logic, routine activation windows in Colguetti).
-
-**Where it appears:** `apps/cross-logic/src/session/game-context.tsx` and `apps/colguetti/src/checklist/activation-context.tsx`.
-
-**Candidate for alambre:**
-- A headless `useStopwatch` hook exposing `{ seconds, isRunning, start, pause, reset, formattedTime }` and pure helper `formatStopwatchTime`.
-- Presentation remains 100% owned by the application.
-
-**Status: ADOPTED (cross-logic, colguetti).** Shipped in `alambre` (`src/hooks/use-stopwatch.ts`) and exported top-level as `useStopwatch` and `formatStopwatchTime`. Validated with unit tests in `packages/alambre/tests/hooks/use-stopwatch.test.ts`.
-
-## Headless animation stagger coordination (discovered in cross-logic, base-template, playground)
-
-**Pattern:** sequential UI elements (menu buttons, list cards, settings sections) benefit from staggered entrance timing, but coupling timing to specific visual transitions (`FadeInDown`, `FadeInLeft`, springs) or layout containers causes awkward abstractions and restricts design freedom.
-
-**Where it appeared:** `cross-logic` animation experiments, `base-template` navigation menus, and `playground` test cards.
-
-**Candidate for alambre:**
-- A pure headless delay calculation `calculateStaggerDelay(index, options, isReducedMotion)`.
-- A headless hook `useStagger(options)` returning `{ getDelay(index), isReducedMotion }`.
-- Automatically respects accessibility preferences: returns `0` when `useReducedMotion()` is active to prevent sluggish stalls.
-- Optional context propagation (`StaggerProvider`, `useStaggerItem`) for deep trees.
-- Concrete visual animations, curves, and wrappers remain 100% owned by the application.
-
-**Status: ADOPTED.** Shipped in `alambre` (`src/hooks/use-stagger.tsx`) and exported top-level (`useStagger`, `calculateStaggerDelay`, `StaggerProvider`, `useStaggerItem`). Validated with unit tests in `packages/alambre/tests/hooks/use-stagger.test.tsx`.
-
-## Decoupled two-layer layout and gesture animation for swipe-to-dismiss (discovered in playground & base-template)
-
-**Pattern:** transient cards (such as toasts, modals, banners, or dismissible list rows) combining gesture-driven swipe-to-dismiss (`Gesture.Pan`) with Reanimated unmount layout animations (`exiting={FadeOut*}`) suffer from a severe visual glitch: when dismissed via swipe, the view is translated off-screen; upon unmount, Reanimated's exiting layout animation takes over native positioning starting from the layout origin (`translateX: 0`), instantaneously teleporting the card back into the screen center and playing the exit animation on an already-dismissed element.
-
-**Where it appeared:** `apps/playground/src/providers/toast.tsx` and `apps/base-template/src/providers/toast.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Decouple into two layers:**
-   - Outer layout container (`cardWrapper`): owns `key={id}`, `entering={FadeInDown / FadeInUp}`, and `exiting={isGestureDismissed ? undefined : exitAnimation}`.
-   - Inner interactive element (`card`): owns gesture styles from `useAnimatedStyle` (`translateX`, `translateY`, clamped `opacity`).
-2. **Dynamic `exiting` suppression:**
-   - Track `isGestureDismissed`. When the user flings/swipes past the dismissal threshold, immediately set `isGestureDismissed = true` before invoking `dismiss()`.
-   - When the component unmounts, Reanimated evaluates `exiting` as `undefined` and cleanly unmounts without creating an exiting snapshot at the origin.
-   - For auto-dismiss timers and explicit close button taps (where no gesture occurred), `isGestureDismissed` remains `false`, seamlessly executing `FadeOutDown` or `FadeOutUp`.
-3. **Clamped opacity during drag:**
-   - Use `Extrapolation.CLAMP` on gesture drag interpolation so opacity smoothly transitions from `1` to `0` without negative opacity glitches.
-
-**Status: ADOPTED.** Standardized in `apps/base-template/src/providers/toast.tsx` and documented in `docs/reference/behaviors.md` §3.
-
-## Outer Pressable layout propagation in composite touchables (discovered in playground)
-
-**Pattern:** When building interactive composite components (such as pressable cards `AppCard` or button shells `AppButton` wrapping an inner `Animated.View`), applying caller styles (`flex: 1`, `margin`, `width`) only to the inner animated view while leaving the outer `<Pressable>` unstyled causes flex containers to treat the touchable as unconstrained in cross/main axes, leading to horizontal blowouts and layout overflows on narrow mobile screens.
-
-**Where it appeared:** `apps/playground/src/components/AppCard.tsx` and `apps/playground/src/views/components-test/ComponentsTest.tsx`.
-
-**Solution / Architectural Pattern:**
-1. Forward layout and sizing styles (`style`) directly to the outer `<Pressable>` element so parent flexbox layouts can calculate bounds accurately.
-2. Maintain `width: '100%'` on the inner `Animated.View` so it fully expands into the measured touchable container.
-3. Apply `flexShrink: 1` on title and text elements inside flex rows to guarantee clean truncation and prevent child elements from forcing container expansion.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppCard.tsx` and `AppBadge.tsx`.
-
-## Tactile micro-physics for mobile components (discovered in playground)
-
-**Pattern:** Standard flat press feedback (`opacity: 0.7`) often feels ungrounded or web-like. Mobile users expect tactile physical feedback that responds immediately to finger contact.
-
-**Where it appeared:** `apps/playground/src/components/AppButton.tsx`, `apps/playground/src/components/AppSwitch.tsx`, `apps/playground/src/components/AppCard.tsx`, and `apps/playground/src/components/AppBadge.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Compress on press-in:** Use a rapid timing animation (`withTiming(0.95 - 0.98, { duration: 80 - 90 })`) upon `onPressIn` to mimic physical surface compression or thumb squish (`scaleX: 1.15` on switches).
-2. **Elastic snap on release:** Use a tuned spring animation (`withSpring(1, { damping: 14 - 16, stiffness: 300 - 320 })`) upon `onPressOut` to produce a springy return without sluggish oscillation.
-3. **UI-thread color interpolation:** Animate focus and active states using `interpolateColor` on shared values (`focusProgress`, `switchProgress`) to achieve 60fps color morphing without React re-renders.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/`.
-
-## Gesture-driven bottom sheets and animated modal mounting (discovered in playground)
-
-**Pattern:** Building custom animated modals (`AppDialog`) and bottom action sheets (`AppActionSheet`) in React Native often runs into two traps:
-1. Native `<Modal visible={visible}>` instantly unmounts children as soon as `visible` becomes false, cutting off exit animations.
-2. Pan gestures inside native modals on Android fail to respond because `<Modal>` creates a separate native window hierarchy that bypasses the root `GestureHandlerRootView`.
-
-**Where it appeared:** `apps/playground/src/components/AppDialog.tsx` and `apps/playground/src/components/AppActionSheet.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Deferred unmounting via Reanimated callback:** Maintain an internal `mounted` state initialized to `visible`. When `visible` changes to false, run closing animations (`withTiming(0)` on backdrop, `withTiming(400)` on sheet `translateY`), and inside the animation completion callback invoke `runOnJS(setMounted)(false)`. Render `<Modal visible={mounted}>` so the native modal remains alive until exit animations complete.
-2. **GestureHandlerRootView inside Modal:** Wrap the modal root layout with `<GestureHandlerRootView style={{ flex: 1 }}>` so PanGesture detectors receive touch events reliably across iOS and Android.
-3. **Drag-to-dismiss resistance & backdrop interpolation:** During downward drag (`translationY > 0`), update sheet position directly, while applying strong rubber-band resistance clamped at -45px on upward over-dragging. Interpolate backdrop opacity dynamically against `translateY` so dragging down smoothly reveals the background.
-4. **Bottom overshoot skirt:** Position an absolute view (`bottom: -350, height: 370`) matching the sheet's surface background that overlaps inside the container. When the sheet overshoots slightly upwards or the user pulls it up, this skirt moves synchronously, completely preventing background viewport see-through.
-5. **Critically-damped spring default:** Use a higher damping ratio (`damping: 32, stiffness: 220, mass: 0.9`) to achieve a calm, swift entry without oscillating bounce, while exposing a `springConfig` prop for configurable dynamics.
-6. **Edge-to-edge modal windows on Android (`navigationBarTranslucent`):** On Android, setting only `statusBarTranslucent` on `<Modal>` leaves the native system navigation bar opaque black at the bottom of the screen. Supplying `navigationBarTranslucent={true}` alongside `statusBarTranslucent={true}` extends the modal window edge-to-edge to the physical display bezel, eliminating black navigation bar gaps beneath bottom sheets.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppActionSheet.tsx` and `AppDialog.tsx`.
-
-## Single accessibility node for compound controls (discovered in playground hardening)
-
-**Pattern:** When a switch or checkbox is embedded in a row with a label and subtitle (`AppSwitch`), rendering both the outer row and the inner toggle as nested interactive `<Pressable accessibilityRole="switch">` elements creates duplicate TalkBack and VoiceOver navigation targets. Screen readers announce the switch twice, confusing users who navigate sequentially with screen reader swipe gestures.
-
-**Where it appeared:** `apps/playground/src/components/AppSwitch.tsx`.
-
-**Solution / Architectural Pattern:**
-1. In compound row mode (`label || subtitle`), mark the outer row container as the sole accessible switch node (`accessibilityRole="switch"`, `accessibilityLabel={label}`, `accessibilityState={{ checked, disabled }}`).
-2. Render the inner switch toggle track as an inert, non-interactive visual representation wrapped in `<View pointerEvents="none">`.
-3. In standalone mode (no label/subtitle), render the switch track directly as the accessible `<Pressable accessibilityRole="switch">`.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppSwitch.tsx`.
-
-## Imperative focus chaining for styled text inputs (discovered in playground hardening)
-
-**Pattern:** In mobile login, registration, and survey forms, users expect tapping "Next" on the soft keyboard (`onSubmitEditing`) to smoothly advance focus to the next field (`passwordRef.current?.focus()`). Wrapping `TextInput` in an animated shell container without forwarding the native ref prevents callers from accessing the native focus methods.
-
-**Where it appeared:** `apps/playground/src/components/AppTextInput.tsx`.
-
-**Solution / Architectural Pattern:**
-Wrap the component in `React.forwardRef<TextInput, AppTextInputProps>` and attach `useImperativeHandle(ref, () => innerRef.current as TextInput)`. The outer container forwards all standard `TextInput` imperative methods (`focus()`, `blur()`, `isFocused()`, `clear()`) to callers seamlessly while maintaining internal focus listeners for animated label and border effects.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppTextInput.tsx`.
-
-## iOS drop-shadow preservation via conditional overflow (discovered in playground hardening)
-
-**Pattern:** On iOS, setting `overflow: 'hidden'` on any `UIView` that also defines shadow properties (`shadowColor`, `shadowOffset`, `shadowRadius`, `shadowOpacity`) causes iOS UIKit to clip all drop shadows outside the view bounds to transparent, completely nullifying the elevated appearance.
-
-**Where it appeared:** `apps/playground/src/components/AppCard.tsx`.
-
-**Solution / Architectural Pattern:**
-Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'` on the card container. Outlined and soft cards retain clipping to enforce border-radius boundary containment, while elevated cards allow their native drop shadows to project freely beyond the card boundaries without clipping.
-
-**Status: ADOPTED in base-template.** Shipped in `apps/base-template/src/components/AppCard.tsx`.
-
-## Tabular numeral alignment and staggered digit column rolls for animated counters (discovered in playground text-animations)
-
-**Pattern:** Building animated numerical counters (slot machine tickers, health meters, score displays, currency counters) with standard proportional font metrics causes horizontal jitter and layout vibration during digit transitions because digits like `1` are substantially narrower than digits like `8`. Furthermore, spinning all columns in unison feels artificial.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/TickerText.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Tabular Numerals:** Apply `fontVariant: ['tabular-nums']` to digit text styles. This forces all numeral glyphs to render with fixed, equal column widths regardless of font weight or numeral value, completely eliminating horizontal vibration during animations.
-2. **Stacked Column Strip:** Render numbers 0 through 9 in a vertical column clipped by a fixed line height (`height: itemHeight, overflow: 'hidden'`).
-3. **Staggered Spin Wave:** Introduce a calculated delay per digit column (`withDelay(index * staggerMs, withSpring(...))`), allowing callers to select between right-to-left (place value order, starting from units) and left-to-right cascades. Non-digit symbols (currency signs, commas, decimal points) remain static inline without jumping.
-
-**Status: ADOPTED in playground.** Ready for evaluation in game development and financial metrics.
-
-## Eliminating Android native text layout tearing in rapid typewriter streams (discovered in playground text-animations)
-
-**Pattern:** Simulating conversational dialogues, terminal outputs, or RPG typewriter text by rapidly appending characters into a parent `<Text>` component while simultaneously hosting an inline `<Animated.Text>` (e.g., a blinking cursor driven by an active 60fps Reanimated loop `withRepeat(withSequence(...))`) causes severe graphical corruption on Android: duplicate character painting, phantom line duplication, and tearing at line wraps.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/TypewriterText.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Never combine inline Reanimated loops with mutating parent text:** Android's native `TextLayout` recomputes line breaks and glyph measurements on every character append. Concurrently mutating inline opacity via native Reanimated ticks corrupts Android's native layout cache.
-2. **Phase-separated cursor states:** Keep the cursor solid (`opacity: 1`) during active character generation (`!isDone`). Once typing settles (`isDone`), switch to a standard discrete interval blink (`setInterval(..., 530)`).
-3. **Avoid flex wrapping around native text:** Do not use `flexDirection: 'row', flexWrap: 'wrap'` on outer containers that wrap standard `<Text>` elements. Let native text layout manage natural line breaks.
-
-**Status: ADOPTED in playground.** Ready for evaluation in dialogue systems.
-
-## Digit column stabilization via zero-opacity placeholders (discovered in playground text-animations)
-
-**Pattern:** In numeric counters or game HUDs where digit counts vary dynamically (such as HP dropping from 100 to 50), removing a column causes trailing labels or suffixes (e.g. `/ 100`) to abruptly jump horizontally. Forcing leading zeros (`050`) solves the layout shift but degrades visual presentation.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/TickerText.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Configurable Minimum Columns:** Support a `minDigits` prop alongside an optional `padZero?: boolean`.
-2. **Invisible Tabular Spacer Glyphs:** When `padZero` is false, pad the string with whitespace characters and render spaces as digit `'0'` glyphs styled with `opacity: 0` and `fontVariant: ['tabular-nums']`.
-3. **Metric Parity:** Because the invisible glyph shares the exact font size, line height, and tabular numeral bounding box as active digits, the overall component dimensions remain pixel-stable across orders of magnitude without showing artificial leading zeros.
-
-**Status: ADOPTED in playground.** Ready for evaluation in game HUDs and metric displays.
-
-## Nested scroll entrapment in navigator pages (discovered in playground text-animations)
-
-**Pattern:** Embedding an inner `<ScrollView>` inside a screen rendered within `AppNavigatorBody` causes Android gesture responders to lock onto the inner scroll container before layout measurements settle, preventing vertical scrolling and hiding UI components located below the fold.
-
-**Where it appeared:** `apps/playground/src/views/text-animations/TextAnimationsTest.tsx`.
-
-**Solution / Architectural Pattern:**
-Enforce that screens rendered inside `AppNavigatorBody` render a root `<View style={styles.container}>` rather than a `<ScrollView>`, allowing the outer navigator container to cleanly manage page scrolling, momentum, and scroll position restoration across route transitions.
-
-**Status: ADOPTED in playground & base-template.**
-
-## Harmonic phase decoupling for dynamic wave amplitude in Reanimated (discovered in playground text-animations)
-
-**Pattern:** In undulating wave animations (`WavyText`) where individual characters follow a staggered cyclic motion (`withDelay(index * staggerMs, withRepeat(withSequence(...)))`), updating the wave amplitude dynamically (e.g., via a live slider or state toggle) causes severe phase disruption: letters mid-flight snap to baseline, wave synchronization collapses, and characters jump abruptly.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/WavyText.tsx`.
-
-**Solution / Architectural Pattern:**
-1. **Decouple oscillation phase from amplitude scaling:** Never bundle the amplitude scalar into the repeat sequence or hook dependency array. Harmonic phase depends strictly on `[active, duration, index, staggerMs]`.
-2. **Normalized Unit Wave Driver:** Let the cyclic Reanimated driver cycle between normalized values `0 -> 1 -> 0`.
-3. **Independent Amplitude Shared Value:** Track amplitude in an independent shared value (`animAmplitude`) that updates smoothly via `withTiming(amplitude, { duration: 250, easing: Easing.out(Easing.cubic) })`.
-4. **Multiplicative Transform:** In `useAnimatedStyle`, evaluate `translateY = -progress.value * animAmplitude.value`. The cyclic wave continues without phase resets while the amplitude smoothly scales up or down in real-time.
-
-**Status: ADOPTED in playground.** Ready for evaluation in playful UI and game titles.
-
-## Greedy break strategy to prevent Knuth-Plass retro-balancing (discovered in playground text-animations)
-
-**Pattern:** In typewriter / streaming text rendering (`TypewriterText`), words near the right margin unexpectedly snap down to the next line right as the typing animation finishes, even though they previously appeared to fit on the current line.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/TypewriterText.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. **Knuth-Plass Line Balancing on Android:** React Native `<Text>` on Android defaults to `textBreakStrategy="highQuality"`, which runs full-paragraph Knuth-Plass line balancing. When rendering partial substrings (`text.slice(0, N)`), the layout engine measures only visible words. As subsequent words arrive, the engine retroactively rebalances earlier lines, pulling completed words to the next line to minimize raggedness.
-2. **Greedy First-Fit Line Breaking (`textBreakStrategy="simple"`): ADOPTED.** Setting `textBreakStrategy="simple"` disables full-paragraph retro-balancing, enforcing deterministic line breaks based strictly on line-width constraints. This cleanly prevents completed words from jumping between lines during typing.
-3. **Ghost Text Pre-Layout with `color: 'transparent'`: REJECTED (Fabric/Android color inheritance defect).**
-   - *Attempted hack:* Rendering unrevealed characters inside `<Text style={{ color: 'transparent' }}>{remainingText}</Text>` to pre-calculate line layout.
-   - *Engine-level failure:* In React Native Fabric (and Android `ForegroundColorSpan`), `'transparent'` normalizes to `0x00000000` (`0`). In React Native's C++ core (`HostPlatformColor.h`), `UndefinedColor = 0`. The wrapper `SharedColor(0)` evaluates `operator bool()` as `false`. In `TextAttributes::apply`:
-     `foregroundColor = textAttributes.foregroundColor ? textAttributes.foregroundColor : foregroundColor;`
-     Because `SharedColor(0)` evaluates to `false`, the transparent style is discarded and falls back to the parent's `foregroundColor`. Furthermore, inline `<Text>` spans do not support `opacity: 0` in React Native.
-   - *Visual failure:* The "ghost" text rendered 100% opaque from frame 0, causing the entire string to be visible immediately while the cursor moved through it, creating the appearance of rewriting over existing text without clearing.
-   - *Standard pattern:* Use `textBreakStrategy="simple"` with pure progressive slicing (`text.slice(0, displayedLength)`), combined with container `minHeight` for viewport stability.
-
-**Status: ADOPTED (textBreakStrategy="simple" only; ghost text rejected).** Standard pattern for typewriter and streaming dialogue systems.
-
-## Declarative child animation choreography via headless stagger (`AnimatedCascade`)
-
-**Pattern:** Manually wiring sequential entrance delays (`index * staggerMs`) and layout transitions across child elements in menus, cards, and list groups results in high boilerplate and inconsistent reduced-motion handling.
-
-**Where it appeared:** `apps/playground/src/components/AnimatedCascade.tsx` and `apps/playground/src/views/animation-test/AnimationTest.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Compose over `alambre`'s headless `useStagger` hook to automatically calculate item delays while honoring `useReducedMotion()`.
-2. Inspect children via `Children.toArray` and attach parameterized entrance animations (`FadeInDown`, `FadeInUp`, `FadeInLeft`/`FadeInRight` alternating, `ZoomIn`) alongside Reanimated's `LinearTransition.springify()` for smooth item insertions/removals.
-3. Decouple layout styles: caller forwards container `style` and child `itemStyle` without intrusive markup.
-
-**Status: PROPOSAL.** Implemented and validated in playground. Awaiting secondary consumer validation before graduation to `apps/base-template`.
-
-## Dynamic height disclosure without layout jump (`AppAccordion`)
-
-**Pattern:** In React Native, animating container height for collapsible sections (e.g. FAQs, filters, setting disclosures) is prone to clipping glitches or layout jumps because `height: 'auto'` cannot be animated via Reanimated shared values.
-
-**Where it appeared:** `apps/playground/src/components/AppAccordion.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Maintain an off-screen/zero-opacity measurement probe (`position: 'absolute', top: -9999`) to dynamically record inner content height via `onLayout`.
-2. Drive visible container height via `progress.value * measuredHeight` with `overflow: 'hidden'`.
-3. Provide single-node accessible button semantics (`accessibilityRole="button"`, `accessibilityState={{ expanded }}`) on the header with synchronized chevron rotation.
-4. Support controlled (`expanded`) and uncontrolled (`defaultExpanded`) states.
-
-**Status: PROPOSAL.** Implemented and validated in playground. Awaiting secondary consumer validation before graduation to `apps/base-template`.
-
-## Continuous numeric interpolation via frame cadence (`CountUpText`)
-
-**Pattern:** Animating continuous numeric shifts (such as currency counters, balances, or experience gains) using vertical column reels (`TickerText`) introduces excessive DOM/view nodes and layout constraints when formatting arbitrary decimal places or localized currency symbols.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/CountUpText.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Drive numerical interpolation on the animation frame cadence (`globalThis.requestAnimationFrame`) with cubic ease-out curves rather than multi-column reel views.
-2. Apply `fontVariant: ['tabular-nums']` to ensure numeric characters retain fixed horizontal metrics without jitter during counting.
-3. Enforce deterministic accessibility semantics: expose the final target value in `accessibilityLabel` so screen readers announce the accurate settled value immediately rather than streaming intermediate numbers.
-
-**Status: PROPOSAL.** Implemented and validated in playground. Ready for evaluation in game HUDs and financial summaries.
-
-## Decoupling inner height disclosure from parent layout transition springs (`AppAccordion`)
-
-**Pattern:** When height-expanding disclosure components (like `AppAccordion`) are placed inside parent containers that attach Reanimated layout transitions (e.g. `LinearTransition.springify()` in `AnimatedCascade`), the expanding inner height continuously triggers the parent layout transition on every frame. This creates conflicting physics and violent shaking/jittering artifacts.
-
-**Where it appeared:** `apps/playground/src/components/AppAccordion.tsx` and `apps/playground/src/views/components-test/ComponentsTest.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Dynamic disclosure accordions should not be wrapped inside spring-based layout transition choreographers (`AnimatedCascade`). They manage their own internal height interpolation.
-2. Provide configurable motion dynamics: support both cubic-bezier `timing` (for predictable corporate/settings flows) and physics `spring` (with customizable damping and stiffness for tactile interactions).
-3. Always clamp spring-interpolated height values (`Math.max(0, progress.value * measuredHeight)`) to prevent negative height values during spring bounce-back, which crashes React Native Yoga on Android.
-4. Support both 180° chevrons (down-to-up flip) and 90° chevrons (right-to-down quarter turn) to match different mobile design systems.
-
-**Status: PROPOSAL.** Implemented and validated in `apps/playground`.
-
-## Native text line measurement and unclipped layout for marquee tickers (`MarqueeText`)
-
-**Pattern:** Horizontally scrolling tickers require comparing text width to container width. Measuring text using absolute positioning with large negative coordinates (`left: -9999`) causes Android Yoga to clamp the measurement bounds or return 0, leaving the scroller permanently static. Furthermore, when `<Text numberOfLines={1}>` is rendered inside a flex container without an explicit width, Yoga constraints the child `TextView` to the container bounds, causing native Android `TextView` to truncate the text with ellipses (`...`) mid-scroll. Additionally, nesting `withDelay` on zero-duration `withTiming` steps inside `withSequence` silently terminates the Reanimated 3 animation driver.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/MarqueeText.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Use an off-screen `<ScrollView horizontal>` probe with `onContentSizeChange` to read the true unconstrained text width across all platforms.
-2. Prevent native Android ellipsis clipping by explicitly setting `width: effectiveTextWidth`, `ellipsizeMode="clip"`, and sizing the animated row container to `(scrollDistance * 2) + 40`.
-3. Structure the Reanimated loop using `withRepeat(cycleAnimation, -1, false)` with `initialDelay`, where `cycleAnimation` uses `withDelay(loopDelay, withTiming(-scrollDistance, ...))` when a loop pause is requested, and direct `withTiming(-scrollDistance, ...)` for continuous seamless tickers.
-4. Keep the secondary cloned text element spaced by `spacing` with matching `scrollDistance = effectiveTextWidth + spacing`, guaranteeing a seamless reset from `-scrollDistance` to `0` without visual jump.
-
-**Status: PROPOSAL.** Implemented and validated live on Android emulator in `apps/playground`.
-
-## Input contracts and robust focus interpolation (`AppTextInput`)
-
-**Pattern:** Standard React Native text inputs often lack smooth kinetic feedback on focus/blur. However, attempts to implement custom character-by-character native text erasure hacks inside native `TextInput` encounter severe Android `EditText` IME/keyboard driver limitations.
-
-**Where it appeared:** `apps/playground/src/components/AppTextInput.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Keep `AppTextInput` focused on clean, robust core contracts: smooth border color interpolation on focus, spring-driven clear button transitions, and standard platform touch mechanics.
-2. Defer complex character erasure kinetics to dedicated custom display components (like `DisguiseText`) rather than compromising the native keyboard input pipeline.
-
-**Status: PROPOSAL.** Implemented and validated in `apps/playground`.
-
-## Staggered character disguise and kinetic reveal (`DisguiseText`)
-
-**Pattern:** Revealing or concealing sensitive text (tokens, passwords, game stats) usually occurs as an instantaneous binary swap, lacking tactile feedback.
-
-**Where it appeared:** `apps/playground/src/components/text-animations/DisguiseText.tsx`.
-
-**Solution / Architectural Evaluation:**
-1. Leverage `useStagger` from `alambre` to compute staggered delay curves per character index, respecting user reduced-motion preferences.
-2. Provide two kinetic physics modes:
-   - **Gravity Drop (`mode="drop"`):** Letters fall downwards with opacity fade, while mask glyphs (`•`, `.`, `*`, `#`) drop from above with spring physics.
-   - **In-Place Morph (`mode="morph"`):** Simultaneous rotational and scale cross-fade in place.
-3. Use `pointerEvents="none"` on the inner mask slots and single-node accessible labels (`accessibilityLabel={masked ? 'Masked text' : text}`) to adhere to TalkBack/VoiceOver rules.
-
-**Status: PROPOSAL.** Implemented and validated in `apps/playground`.
-
-## Headless drag-and-drop primitives and 1D sortable containers (`DndProvider`, `Draggable`, `Droppable`, `SortableRow`)
-
-**Pattern:** Interactive card decks, item inventories, reorderable task lists, and physics sandboxes require drag-and-drop gestures with 60fps responsiveness, continuous spatial hit-testing, dynamic neighbor shifting, velocity tilt, and screen reader accessibility. Coupling drag gestures to rigid layout opinions or specific visual designs makes components unadaptable across applications.
-
-**Where it appeared:** `apps/playground/src/components/dnd/` (Sortable card deck with multiple easing curves, bidirectional slot swapping, recycling drop zones, and micro-physics sandboxes).
-
-**Solution / Architectural Evaluation:**
-1. **Headless Separation:** Decouple gesture tracking, coordinate calculation, and reordering state math into framework primitives (`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`) while leaving visual styles (colors, shadows, margins, cards) 100% to the application.
-2. **Central Spatial Hit-Testing:** `DndProvider` maintains a registry of screen-relative window bounds (`LayoutBounds`), remeasuring on drag start to prevent coordinate drift caused by parent scroll containers.
-3. **UI-Thread 60fps Worklets:** Continuous pan gestures run on the Reanimated UI thread. Dynamic rotation tilt (`interpolate` against `velocityX`), pickup scale, and 2D boundary clamping (`boundsConstraint`) execute with zero bridge latency.
-4. **Customizable Kinetic Dynamics:**
-   - Neighbor shift modes in `SortableRow`: `'glide'` (cubic timing), `'linear'` (linear timing), `'damped'` (critically-damped spring), `'bounce'` (elastic spring), and `'instant'`.
-   - Drop animation modes: `'seamless'` (140ms crisp glide, zero lingering delay), `'bounce'` (elastic settle), `'impact'` (compression sequence), and `'instant'`.
-5. **Screen Reader Accessibility:** Screen readers cannot operate spatial drag gestures. Primitives provide `accessibilityRole="button"`, semantic labels, and `SortableRow` equips items with `accessibilityActions: [{ name: 'moveLeft' }, { name: 'moveRight' }]` and `onAccessibilityAction` handlers so TalkBack and VoiceOver users can reorder items sequentially.
-
-**Status: PROPOSAL.** Implemented and validated in `apps/playground`, rescued into `packages/alambre`. Awaiting second consumer validation before graduation to `ADOPTED`.
-
-## Persistent frame carousel with kinetic child transitions (Static Container, Morphing Children)
-
-**Pattern:** Cycling through carousel content (alarms, routine items, status cards) by swapping entire card containers via absolute transitions (`slideAbsolute`, `FadeInRight`/`FadeOutLeft`) introduces layout thrashing, height flickering, fragile `overflow: hidden` assumptions, and visual heaviness. Swapping entire view containers breaks kinetic continuity and complicates gesture handling.
-
-**Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (Alarms and Items carousels) and `apps/colguetti/src/views/alarms/Alarms.tsx` (AlarmItemsCarousel).
-
-**Solution / Architectural Evaluation:**
-1. **Persistent Frame:** The card shell/container (`AppCard`) remains structurally anchored in the layout without unmounting, resizing, or translating.
-2. **Kinetic Child Choreography:** Content changes animate at the subcomponent level:
-   - **Title / Text:** Smooth vertical cross-fade or text roll (e.g. current text slides up slightly and fades out; new text emerges from below with cubic easing) without container reflow.
-   - **Icon Stage:** Stays in place while triggering an in-place redraw/re-stroke animation (`catalogDrawAnimation` / `drawIt`) or micro-spring scale pop (`0.85 -> 1`).
-   - **Accent / Border:** Smoothly interpolates to the new record's theme color via `withTiming`.
-   - **Weekdays & Badges:** Pills and tags update their active/inactive states with subtle opacity/color transitions.
-3. **Direct Gesture Navigation:** Horizontal pan gesture allows manual swiping (next/prev) with tactile feedback, advancing content while the outer container remains firmly grounded.
-
-**Status: PROPOSAL.** First consumer implementation in `apps/colguetti` (`Home.tsx` alarm card).
+# Discoveries & Pattern Registry
+
+Register of reusable patterns, system integration rules, UI behaviors, and kinetic experiments observed across applications (`apps/colguetti`, `apps/cross-logic`, `apps/playground`) and candidate for adoption in `packages/alambre` or `apps/base-template`.
+
+---
+
+## 1. Governance & Double-Signature Lifecycle
+
+Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governed by strict lifecycle gates to prevent premature abstraction and undocumented drift:
+
+```
+[ EXPERIMENT / OBSERVATION ]
+             │
+             ▼
+       ┌───────────┐
+       │ PROPOSAL  │ ──> Identified in 1 consumer or in apps/playground. Not public framework API.
+       └─────┬─────┘
+             │ Second consumer adopts pattern
+             ▼
+       ┌───────────┐
+       │VALIDATING │ ──> Exercised across 2 consumers; candidate abstraction drafted.
+       └─────┬─────┘
+             │ @integrity audit + contract tests in packages/alambre
+             ▼
+       ┌───────────┐
+       │  ADOPTED  │ ──> Shipped in packages/alambre or apps/base-template; documented in architecture.md / ui.md.
+       └───────────┘
+```
+
+- **`PROPOSAL`**: Initial discovery logged by an agent or author. Retained in the app/playground until proven reusable.
+- **`VALIDATING`**: Adopted by a second consumer to test interface generality without freezing premature abstractions.
+- **`ADOPTED`**: Double-signature gate passed. Formally rescued into `alambre` or `base-template`, covered by contract tests, and documented in `architecture.md` or `ui.md`.
+- **`REJECTED`**: Experiment concluded negatively (e.g. native OS bug, engine defect, or architectural mismatch). Preserved as **negative knowledge** to prevent regressions.
+
+---
+
+## 2. Catalog Index
+
+| ID | Discovery / Pattern | Layer | Status | Validating Consumers |
+|:---|:---|:---|:---:|:---|
+| **F-01** | Structured Collection Persistence | `alambre` | `ADOPTED` | Colguetti (items, alarms) |
+| **F-02** | Headless History State (`useHistoryState`) | `alambre` | `ADOPTED` | Cross-Logic, generic undo/redo |
+| **F-03** | Headless Elapsed Stopwatch (`useStopwatch`) | `alambre` | `ADOPTED` | Cross-Logic, Colguetti (activation) |
+| **F-04** | Headless Animation Stagger (`useStagger`) | `alambre` | `ADOPTED` | Cross-Logic, base-template, playground |
+| **F-05** | Headless Height Disclosure (`useCollapsible`) | `alambre` | `ADOPTED` | Playground, base-template |
+| **F-06** | Headless Drag & Drop (`DndProvider`, `SortableRow`) | `alambre` | `VALIDATING` | Playground (dnd sandbox) |
+| **F-07** | Headless Content Carousel (`useCarousel`) | `alambre` | `PROPOSAL` | Colguetti (home alarms) |
+| **OS-01** | Exact Alarms & Battery Doze (`USE_EXACT_ALARM`) | Native / OS | `ADOPTED` | Colguetti 1.0 |
+| **OS-02** | Reactive `AppState` Permissions & Resume Sync | Native / OS | `ADOPTED` | Colguetti 1.0 |
+| **OS-03** | Edge-to-Edge Android Window (`navigationBarTranslucent`) | Native / OS | `ADOPTED` | Base-template (`AppDialog`, sheets) |
+| **UI-01** | Touch Gesture Disambiguation in Swipeable Rows | `base-template` | `ADOPTED` | Colguetti 1.0 (`Alarms.tsx`) |
+| **UI-02** | Decoupled Two-Layer Swipe-to-Dismiss | `base-template` | `ADOPTED` | Base-template, playground (`toast`) |
+| **UI-03** | Outer Pressable Layout Propagation in Cards | `base-template` | `ADOPTED` | Base-template (`AppCard`, `AppBadge`) |
+| **UI-04** | Tactile Micro-Physics (Compression & Snap) | `base-template` | `ADOPTED` | Base-template (`AppButton`, `AppSwitch`) |
+| **UI-05** | Single Accessibility Node for Compound Controls | `base-template` | `ADOPTED` | Base-template (`AppSwitch`) |
+| **UI-06** | Imperative Focus Chaining in Form Inputs | `base-template` | `ADOPTED` | Base-template (`AppTextInput`) |
+| **UI-07** | iOS Drop-Shadow Preservation via Overflow | `base-template` | `ADOPTED` | Base-template (`AppCard`) |
+| **UI-08** | Nested Scroll Entrapment Prevention | `base-template` | `ADOPTED` | Base-template, playground |
+| **LAB-01** | Tabular Numeral Rollers (`TickerText`) | `playground` | `PROPOSAL` | Playground (text-animations) |
+| **LAB-02** | Harmonic Phase Decoupling (`WavyText`) | `playground` | `PROPOSAL` | Playground (text-animations) |
+| **LAB-03** | Continuous Numeric Frame Cadence (`CountUpText`) | `playground` | `PROPOSAL` | Playground (text-animations) |
+| **LAB-04** | Line Measurement for Seamless Marquee (`MarqueeText`) | `playground` | `PROPOSAL` | Playground (text-animations) |
+| **LAB-05** | Staggered Mask Disguise (`DisguiseText`) | `playground` | `PROPOSAL` | Playground (text-animations) |
+| **LAB-06** | Declarative Cascade Entrance (`AnimatedCascade`) | `playground` | `PROPOSAL` | Playground (animation-test) |
+| **NEG-01** | Fabric Transparent Ghost Text Pre-Layout | Architecture | `REJECTED` | React Native Fabric core defect |
+| **NEG-02** | Destructive Confirmations via Transient Toast | Architecture | `REJECTED` | Replaced by `ConfirmProvider` |
+| **NEG-03** | Nested Pan Drag Inside Swipeable List Rows | Architecture | `REJECTED` | Responder contention in GestureHandler |
+
+---
+
+## 3. Framework Infrastructure & Headless Behaviors (`packages/alambre`)
+
+### [F-01] Structured Collection Persistence
+* **Pattern:** Persisted collections of typed records with add/update/remove, plus JSON get/set helpers over `Storage`.
+* **Where it appeared:** `apps/colguetti/src/storage/` and `apps/colguetti/src/items/`.
+* **Abstraction:** Additive `Storage.remove` method + `createCollectionProvider({ key, initialRecords })`.
+* **Status: ADOPTED.** Shipped in `packages/alambre` (`src/capabilities/collection/`). Validated by Colguetti items and alarms. Covered by `tests/capabilities/collection-provider.test.tsx` and `tests/public-api.test.ts`.
+
+### [F-02] Headless Undo / Redo History State (`useHistoryState`)
+* **Pattern:** Stateful experiences (logic puzzles, canvases, editors) require past/present/future stacks with undo/redo capabilities and memory caps.
+* **Where it appeared:** `apps/cross-logic/src/domain/history-model.ts` and `apps/cross-logic/src/session/game-context.tsx`.
+* **Abstraction:** Pure headless hook `useHistoryState<T>(initialState, options)` and immutable stack helpers (`createHistory`, `pushHistory`, `undoHistory`, `redoHistory`). Decoupled from UI.
+* **Status: ADOPTED.** Shipped in `packages/alambre` (`src/hooks/use-history-state.ts`). Validated with unit tests in `packages/alambre/tests/hooks/use-history-state.test.ts`.
+
+### [F-03] Headless Elapsed Time & Stopwatch (`useStopwatch`)
+* **Pattern:** Elapsed time tracking, countdowns, and formatted representation across game sessions and routine activation windows.
+* **Where it appeared:** `apps/cross-logic/src/session/game-context.tsx` and `apps/colguetti/src/checklist/activation-context.tsx`.
+* **Abstraction:** Headless hook `useStopwatch` exposing `{ seconds, isRunning, start, pause, reset, formattedTime }` and helper `formatStopwatchTime`. Presentation is 100% app-owned.
+* **Status: ADOPTED.** Shipped in `packages/alambre` (`src/hooks/use-stopwatch.ts`). Validated by `packages/alambre/tests/hooks/use-stopwatch.test.ts`.
+
+### [F-04] Headless Animation Stagger Coordination (`useStagger`)
+* **Pattern:** Sequential UI entrances (menus, cards, setting rows) benefit from staggered delays without coupling timing to concrete visual transforms or wrapping views.
+* **Where it appeared:** `cross-logic` animation experiments, `base-template` menus, and `playground` test cards.
+* **Abstraction:** `calculateStaggerDelay(index, options, isReducedMotion)` + hook `useStagger(options)` + `StaggerProvider`/`useStaggerItem`. Automatically sets delay to `0` when `useReducedMotion()` is active.
+* **Status: ADOPTED.** Shipped in `packages/alambre` (`src/hooks/use-stagger.tsx`). Validated by `packages/alambre/tests/hooks/use-stagger.test.tsx`.
+
+### [F-05] Headless Height Disclosure (`useCollapsible`)
+* **Pattern:** Animating container height for collapsible sections without layout jumps or clipping bugs caused by Reanimated inability to animate `height: auto`.
+* **Where it appeared:** `apps/playground/src/components/AppAccordion.tsx`.
+* **Abstraction:** Off-screen zero-opacity measurement probe reading `onLayout`, driving height via `progress.value * measuredHeight` with clamped physics and reduced-motion fallbacks.
+* **Status: ADOPTED.** Shipped in `packages/alambre` (`src/hooks/use-collapsible.ts`). Validated by `packages/alambre/tests/hooks/use-collapsible.test.tsx`.
+
+### [F-06] Headless Drag & Drop Primitives (`DndProvider`, `SortableRow`)
+* **Pattern:** 60fps pan gestures with screen-relative spatial hit-testing, dynamic neighbor shifting, velocity tilt, and TalkBack/VoiceOver accessibility actions (`moveLeft`/`moveRight`).
+* **Where it appeared:** `apps/playground/src/components/dnd/`.
+* **Abstraction:** `DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`. Decouples spatial tracking and array math from visual design.
+* **Status: VALIDATING.** Rescued into `packages/alambre` (`src/components/dnd/`). Covered by unit tests in `packages/alambre/tests/components/`. Awaiting second production consumer before graduation to `ADOPTED`.
+
+### [F-07] Headless Content Carousel (`useCarousel`)
+* **Pattern:** Persistent container frames cycling through dynamic children with auto-rotation, interaction pausing, wrap-around index calculation, and indicator dot states without remounting outer cards.
+* **Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (alarms and items carousels).
+* **Candidate Abstraction:** Headless hook exposing `{ activeIndex, total, next, previous, goTo, isPlaying, play, pause, dots }` with strict isolation from parent list gestures.
+* **Status: PROPOSAL.** Prototyped in `apps/colguetti`. Candidate for framework upstreaming.
+
+---
+
+## 4. Mobile OS & Hardware Integrations (Android, iOS)
+
+### [OS-01] Exact Background Alarms & Battery Doze (`USE_EXACT_ALARM`)
+* **Pattern:** Background alarms, medication reminders, or critical scheduled alerts failing to fire or delaying by 9–15+ minutes when the device is locked in Android Doze mode.
+* **Where it appeared:** `apps/colguetti` Android testing (alarms and post-activation reminders).
+* **Technical Analysis:**
+  1. On Android 12+ (API 31+), `expo-notifications` requires `android.permission.SCHEDULE_EXACT_ALARM`. On Android 13/14 (API 33+), apps categorized as alarms/reminders must declare `android.permission.USE_EXACT_ALARM`, which is auto-granted at install time.
+  2. Without these permissions, `AlarmManager.setAndAllowWhileIdle()` is throttled into OS maintenance windows during Doze.
+  3. Notification channels must specify `AndroidImportance.MAX` with `sound: true` and `vibrate: true` to trigger heads-up banners. Channel importance cannot be elevated post-creation on Android, requiring a dedicated channel (`colguetti-alarms`).
+  4. Triggers must use exact `DATE` triggers rather than relative time intervals when waking from background.
+* **Status: ADOPTED in Colguetti 1.0.** Documented in `docs/project.md` §12.
+
+### [OS-02] Reactive `AppState` Synchronization for System Settings & Resumes
+* **Pattern:** When users navigate to Android/iOS Settings via `Linking.openSettings()` to enable permissions or when the app is suspended while timers elapse, the JS runtime does not receive callback events while paused. Returning to the app left stale permission states and frozen countdowns.
+* **Where it appeared:** `apps/colguetti/src/notifications/notification-permission-context.tsx` and `apps/colguetti/src/views/home/Home.tsx`.
+* **Technical Pattern:**
+  1. Subscribe to `AppState.addEventListener('change', (state) => { if (state === 'active') ... })`.
+  2. On `'active'`, immediately re-read OS permissions via `getPermissionsAsync()` and synchronize state without requiring an app restart.
+  3. Re-evaluate `new Date()` to trigger expiration effects on backgrounded timers immediately upon foregrounding.
+* **Status: ADOPTED in Colguetti 1.0.** Pattern identified for `apps/base-template/src/views/settings/Settings.tsx`.
+
+### [OS-03] Edge-to-Edge Android Window (`navigationBarTranslucent`)
+* **Pattern:** Bottom sheets and full-height modals on Android displaying an opaque black rectangle behind the system navigation bar when only `statusBarTranslucent` is supplied.
+* **Where it appeared:** `apps/playground/src/components/AppActionSheet.tsx` and `AppDialog.tsx`.
+* **Technical Pattern:** Supply `navigationBarTranslucent={true}` alongside `statusBarTranslucent={true}` on `<Modal>` to extend the native view hierarchy completely edge-to-edge.
+* **Status: ADOPTED in base-template.** Standardized in `AppActionSheet.tsx` and `AppDialog.tsx`.
+
+---
+
+## 5. Application & Compound UI Patterns (`apps/base-template`)
+
+### [UI-01] Touch Gesture Disambiguation in Swipeable Rows
+* **Pattern:** Nesting interactive horizontal gestures (such as Pan carousels or horizontal sliders) inside list rows wrapped by `SwipeableItemRow` causes severe responder contention: `Gesture.Pan()` steals horizontal drag events, making swipe-to-delete erratic or impossible.
+* **Where it appeared:** `apps/colguetti/src/views/alarms/Alarms.tsx` (`AlarmItemsCarousel`).
+* **Technical Solution:**
+  1. **Primary rule:** Never nest horizontal Pan gesture listeners inside parent horizontal swipeable containers.
+  2. **Static summary with overflow badge:** Display up to $K$ static preview chips (icon + color dot) followed by a `+N` badge indicating remaining elements.
+  3. **Alternative:** If interaction is required inside a swipeable row, use discrete tap controls (steppers or arrow chevrons) with bounded `hitSlop`, never drag responders.
+* **Status: ADOPTED.** Standardized in `apps/colguetti` (`Alarms.tsx`) and candidate for compound row design in `base-template`.
+
+### [UI-02] Decoupled Two-Layer Swipe-to-Dismiss
+* **Pattern:** Transient cards (toasts, banners) combining swipe-to-dismiss gestures with Reanimated unmount animations (`exiting={FadeOut*}`) teleporting back to layout origin `(0, 0)` upon unmount.
+* **Where it appeared:** `apps/playground/src/providers/toast.tsx` and `apps/base-template/src/providers/toast.tsx`.
+* **Technical Solution:** Decouple into outer layout container (`cardWrapper` with dynamic suppression `isGestureDismissed ? undefined : exitAnimation`) and inner interactive card with clamped opacity (`Extrapolation.CLAMP`).
+* **Status: ADOPTED.** Shipped in `apps/base-template/src/providers/toast.tsx`.
+
+### [UI-03] Outer Pressable Layout Propagation in Cards
+* **Pattern:** Applying flex styles only to inner animated views while leaving outer `<Pressable>` unstyled causes layout blowouts and overflows on narrow screens.
+* **Where it appeared:** `apps/playground/src/components/AppCard.tsx`.
+* **Technical Solution:** Forward layout and sizing styles directly to the outer touchable; maintain `width: '100%'` on inner animated view; enforce `flexShrink: 1` on text rows.
+* **Status: ADOPTED in base-template.** Shipped in `AppCard.tsx` and `AppBadge.tsx`.
+
+### [UI-04] Tactile Micro-Physics (Compression & Snap)
+* **Pattern:** Flat opacity changes feel floaty and unresponsive on physical mobile touchscreens.
+* **Where it appeared:** `AppButton.tsx`, `AppSwitch.tsx`, `AppCard.tsx`.
+* **Technical Solution:** Rapid compression on press-in (`withTiming(0.96, { duration: 80 })`), tuned elastic snap on release (`withSpring(1, { damping: 15, stiffness: 310 })`), and UI-thread `interpolateColor` morphing.
+* **Status: ADOPTED in base-template.** Standardized across all interactive components.
+
+### [UI-05] Single Accessibility Node for Compound Controls
+* **Pattern:** Compound switches or checkboxes with labels announce the toggle twice on TalkBack/VoiceOver when both row and switch are accessible.
+* **Where it appeared:** `apps/playground/src/components/AppSwitch.tsx`.
+* **Technical Solution:** Mark outer row as sole accessible node (`role="switch"`, `accessibilityLabel={label}`, `accessibilityState={{ checked }}`); wrap visual switch track in `pointerEvents="none"` and `accessible={false}`.
+* **Status: ADOPTED in base-template.** Shipped in `AppSwitch.tsx`.
+
+### [UI-06] Imperative Focus Chaining in Form Inputs
+* **Pattern:** Wrapping `TextInput` in animated styling shells breaks `onSubmitEditing` focus chaining (`nextRef.current?.focus()`).
+* **Where it appeared:** `apps/playground/src/components/AppTextInput.tsx`.
+* **Technical Solution:** Wrap shell in `React.forwardRef` and expose native methods via `useImperativeHandle(ref, () => innerRef.current)`.
+* **Status: ADOPTED in base-template.** Shipped in `AppTextInput.tsx`.
+
+### [UI-07] iOS Drop-Shadow Preservation via Conditional Overflow
+* **Pattern:** Setting `overflow: 'hidden'` on iOS views defining `shadow*` properties causes UIKit to clip drop shadows to transparent.
+* **Where it appeared:** `apps/playground/src/components/AppCard.tsx`.
+* **Technical Solution:** Conditionally set `overflow: variant === 'elevated' ? 'visible' : 'hidden'`.
+* **Status: ADOPTED in base-template.** Shipped in `AppCard.tsx`.
+
+### [UI-08] Nested Scroll Entrapment Prevention
+* **Pattern:** Embedding `<ScrollView>` inside screen bodies managed by `AppNavigatorBody` causes Android gesture responders to lock prematurely, trapping vertical scroll.
+* **Where it appeared:** `apps/playground/src/views/text-animations/TextAnimationsTest.tsx`.
+* **Technical Solution:** Screens inside `AppNavigatorBody` must render a root `<View>` layout, allowing outer navigator container to manage momentum and scroll position restoration.
+* **Status: ADOPTED in base-template.**
+
+---
+
+## 6. Motion & Kinetic Prototyping (`apps/playground`)
+
+### [LAB-01] Tabular Numeral Rollers (`TickerText`)
+* **Pattern:** Animated counters with proportional font metrics jitter horizontally because digits vary in width.
+* **Solution:** Apply `fontVariant: ['tabular-nums']` and stacked column strips with right-to-left cascade. Use zero-opacity tabular spacers for digit stabilization.
+* **Status: PROPOSAL.** Prototyped and validated in `apps/playground/src/components/text-animations/TickerText.tsx`.
+
+### [LAB-02] Harmonic Phase Decoupling (`WavyText`)
+* **Pattern:** Modifying wave amplitude mid-animation causes characters to snap to baseline and resets wave phase.
+* **Solution:** Decouple harmonic phase driver (`0 -> 1 -> 0`) from amplitude scaling shared value (`animAmplitude`).
+* **Status: PROPOSAL.** Prototyped and validated in `apps/playground/src/components/text-animations/WavyText.tsx`.
+
+### [LAB-03] Continuous Numeric Frame Cadence (`CountUpText`)
+* **Pattern:** High-frequency numeric shifts (currency, exp) create excess view hierarchy when built with column reels.
+* **Solution:** Drive interpolation on `requestAnimationFrame` with cubic ease-out curves and static accessibility labels announcing the settled target.
+* **Status: PROPOSAL.** Prototyped in `apps/playground/src/components/text-animations/CountUpText.tsx`.
+
+### [LAB-04] Line Measurement for Seamless Marquee (`MarqueeText`)
+* **Pattern:** Android Yoga clamps large negative coordinates and native `TextView` ellipses text mid-scroll.
+* **Solution:** Off-screen `<ScrollView horizontal>` probe reading true unconstrained width + setting `width: effectiveTextWidth` and `ellipsizeMode="clip"`.
+* **Status: PROPOSAL.** Prototyped in `apps/playground/src/components/text-animations/MarqueeText.tsx`.
+
+### [LAB-05] Staggered Mask Disguise (`DisguiseText`)
+* **Pattern:** Binary password/token reveal lacks tactile feedback.
+* **Solution:** Staggered per-character gravity drop or in-place rotation morph honoring `useReducedMotion()`.
+* **Status: PROPOSAL.** Prototyped in `apps/playground/src/components/text-animations/DisguiseText.tsx`.
+
+### [LAB-06] Declarative Cascade Entrance (`AnimatedCascade`)
+* **Pattern:** Manual wiring of sequential entrance delays (`index * staggerMs`) across menus and lists produces boilerplate.
+* **Solution:** Composition wrapper over `useStagger` applying parameterized entrance transitions to `Children.toArray`. (Note: Accordions must not be nested inside cascade springs).
+* **Status: PROPOSAL.** Prototyped in `apps/playground/src/components/AnimatedCascade.tsx`.
+
+---
+
+## 7. Architectural Anti-Patterns & Negative Knowledge
+
+### [NEG-01] Fabric Transparent Ghost Text Pre-Layout (REJECTED)
+* **Attempted hack:** Rendering unrevealed typewriter text inside `<Text style={{ color: 'transparent' }}>` to pre-calculate line breaks and prevent Knuth-Plass retro-balancing.
+* **Core engine failure:** In React Native Fabric (and Android `ForegroundColorSpan`), `'transparent'` normalizes to `0x00000000` (`0`). In React Native C++ core (`HostPlatformColor.h`), `UndefinedColor = 0`. The wrapper `SharedColor(0)` evaluates `operator bool()` as `false`. `TextAttributes::apply` discards it and falls back to parent foreground color. The text renders 100% opaque.
+* **Correct pattern:** Use `textBreakStrategy="simple"` with progressive string slicing (`text.slice(0, N)`) and container `minHeight`.
+
+### [NEG-02] Destructive Confirmations via Transient Toast (REJECTED)
+* **Attempted design:** Using toast notification action buttons for destructive operations (e.g. "Eliminar ítem").
+* **UX/Architecture mismatch:** A destructive confirmation is a blocking modal decision requiring explicit user consent. A toast is a transient, non-modal, auto-dismissing affordance.
+* **Adopted solution:** Shipped `ConfirmProvider` / `useConfirm` behavior in `packages/alambre`.
+
+### [NEG-03] Nested Pan Drag Inside Swipeable List Rows (REJECTED)
+* **Attempted design:** Hosting a touch-draggable carousel inside an item card wrapped by `SwipeableItemRow`.
+* **GestureHandler failure:** Both handlers compete for horizontal pan gestures. The inner gesture either steals the swipe completely (user cannot reveal delete action) or locks up dragging entirely.
+* **Adopted solution:** Static item preview with `+N` badge or non-gesture stepper controls.
