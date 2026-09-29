@@ -33,16 +33,25 @@ Follow this checklist during manual testing or emulator inspection (e.g. via `ad
 - [ ] **Press Feedback:** Tapping each button triggers the standard scale press feedback without delayed latency.
 
 ### B. Settings Screen
-- [ ] **Header Alignment:** When navigating into Settings, the page title ("Ajustes" / "Settings") appears in the header row, strictly aligned vertically with the back arrow button.
-- [ ] **Directional Alternation Motion:** The first semantic section (Language card) enters from the left (`FadeInLeft`), and the second section (Theme card) enters from the right (`FadeInRight`), keeping motion subtle (260ms) and independent from the header.
+- [ ] **Header Alignment:** When navigating into Settings, the page title ("Ajustes" / "Settings") appears in the header row, strictly aligned vertically with the back arrow button. Titles are centralized via dynamic `PageTitleFn` in `providers/lang.tsx`.
 - [ ] **Theme Switcher Alignment:** The theme switcher toggle is horizontally centered (`alignSelf: 'center'`) within the Theme card.
 - [ ] **Theme Switcher Colors:**
   - In **Light mode**: Background is `surfaceAlt` (`#e8eef7`), border is `theme.border` (`#c9d6ea`), active circle is `#0b525b`, Sun icon is amber (`#f59e0b`), Moon icon is `theme.muted` (`#5e6a7f`).
   - In **Dark mode**: Background is `surfaceAlt` (`#1d2d45`), border is `theme.border` (`#32455f`), active circle is `#9eebce`, Sun icon is light amber (`#ffc266`), Moon icon is `theme.muted` (`#9eb0c8`).
   - The animated disc/circle behind the icons dynamically interpolates color according to the active theme rather than staying constant.
-- [ ] **Language Switching:** Tapping language chips ("ES" / "EN") dynamically updates all visible strings and immediately reflects the active chip style (`primarySoft` background, `primary` border).
+- [ ] **Language Switching:** Tapping language chips ("Español" / "English") dynamically updates all visible strings and immediately reflects the active chip style (`surface` background, `primary` border).
+- [ ] **System Permissions Subpage Navigation:** Tapping the Permissions action navigates to `navigate('settings', { subpage: 'permissions' })`, rendering the unified header with back arrow.
+- [ ] **Support Modal Integration:** Tapping "Invitar un café" opens `SupportModal` with backdrop blur/darkening, heart emblem, donation action, GitHub link, and accessible close button.
+- [ ] **About & Diagnostics Card:** Displays version ("1.0.0"), framework version ("alambre v0.1.0"), and author link ("@marcosdima"). Tapping "Copiar diagnóstico" triggers a confirmation toast notification.
+- [ ] **Preferences Reset:** Tapping "Restablecer" triggers a blocking confirmation dialog via `useConfirm`. Confirming resets language and theme to default states and triggers a success toast.
 
-### C. Details Screen
+### C. System Permissions Subpage (`views/settings/Permissions.tsx`)
+- [ ] **Header Alignment:** "Permisos" appears in the navigation bar alongside the return arrow `←`.
+- [ ] **Transparency Card:** Outlines privacy guarantees and minimal permissions philosophy.
+- [ ] **Notifications & Battery Cards:** Each permission entry shows title, descriptive rationale, status badge, and direct shortcut button to `Linking.openSettings()`.
+- [ ] **Lifecycle Awareness:** Listens to `AppState` active changes to refresh permissions state when returning from the system settings panel.
+
+### D. Details Screen
 - [ ] **Header Alignment:** Subpage title ("Subpágina" / "Subpage") is cleanly displayed in the navigation header beside the back arrow.
 - [ ] **Back Navigation:** Tapping the back arrow or triggering hardware back navigates back to Home with a smooth reverse transition (`FadeInLeft`), resetting scroll position.
 

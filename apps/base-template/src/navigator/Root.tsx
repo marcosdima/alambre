@@ -8,12 +8,12 @@ import { useNavigator } from 'alambre';
 import type { NavigatorTypes } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
-import { pages, type PageTitle } from './navigator';
+import { pages, type PageTitleFn } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 
 const resolvePageTitle = (
   page: NavigatorTypes.Page,
-): PageTitle | undefined => {
+): PageTitleFn | undefined => {
   for (const entry of Object.values(pages)) {
     if (entry === page) return entry.title;
     if (entry.subpages) {
@@ -27,11 +27,12 @@ const resolvePageTitle = (
 
 export default () => {
   const { theme } = useLightDark();
-  const { currentLang } = useLang();
+  const { lang } = useLang();
   const { currentPage } = useNavigator();
 
-  const title = resolvePageTitle(currentPage);
-  const headerTitle = title?.[currentLang as 'es' | 'en'];
+  const titleFn = resolvePageTitle(currentPage);
+  const headerTitle = titleFn ? titleFn(lang) : undefined;
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

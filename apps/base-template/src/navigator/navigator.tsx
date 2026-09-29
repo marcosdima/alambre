@@ -1,12 +1,14 @@
 import Home from '../views/home/Home';
 import Details from '../views/home/Details';
 import Settings from '../views/settings/Settings';
+import Permissions from '../views/settings/Permissions';
 import type { NavigatorTypes } from 'alambre';
+import type { AppLang } from '../providers/lang';
 
-export type PageTitle = Record<'es' | 'en', string>;
+export type PageTitleFn = (lang: AppLang) => string;
 
 export type AppPage = NavigatorTypes.Page & {
-  title?: PageTitle;
+  title?: PageTitleFn;
   subpages?: Record<string, AppPage>;
 };
 
@@ -15,15 +17,22 @@ export const pages: Record<string, AppPage> = {
     component: <Home />,
     subpages: {
       details: {
-        title: { es: 'Subpágina', en: 'Subpage' },
+        title: (lang) => lang.details.title,
         component: <Details />,
       },
     },
   },
   settings: {
-    title: { es: 'Ajustes', en: 'Settings' },
+    title: (lang) => lang.settings.title,
     component: <Settings />,
+    subpages: {
+      permissions: {
+        title: (lang) => lang.permissions.title,
+        component: <Permissions />,
+      },
+    },
   },
 };
 
 export default pages;
+
