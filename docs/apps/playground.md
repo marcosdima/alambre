@@ -1,51 +1,51 @@
 ---
 title: Playground App Verification & Documentation
-summary: Interactive proving ground and test app for animations, toast queue behaviors, and behavior-first UI primitives.
+summary: Interactive proving ground and testbed for UI primitives, gesture physics, carousels, and rich parameter sandboxes.
 ---
 
 # Playground (`apps/playground`)
 
-`apps/playground` (`@alambre/playground`) is the dedicated interactive proving ground in the monorepo. It isolates UI experiments, animation tuning, and edge-case testing so that `apps/base-template` remains a clean starter template.
+`apps/playground` (`@alambre/playground`) is the dedicated interactive proving ground in the monorepo. It isolates UI experiments, kinetic physics, and edge-case parameter testing so that `apps/base-template` remains a clean, production-ready starter template.
 
 ---
 
-## 1. Views and Capabilities
+## 1. Playground Directives & Principles
 
-### A. Animation Playground (`AnimationTest`)
-Interactive screen to test motion timing, distance magnitudes, easing curves, and engines:
+To maintain agility and prevent playground from becoming an unmaintained graveyard of dead tests:
 
-* **Magnitudes via `AppSlider`:**
-  * **Duration**: `50ms` - `1000ms` (step `25ms`).
-  * **Delay / Stagger**: `0ms` - `500ms` (step `25ms`).
-  * **Distance / Offset**: `5px` - `120px` (step `5px`).
-  * **Initial Scale**: `0.50` - `1.00` (step `0.05`, active in Pop / Zoom mode).
-* **Patterns via `AppSegmentedControl`:**
-  * `Alternado`: Left / Right alternating entrances.
-  * `Cascada`: Sequential top-to-bottom cascade.
-  * `Pop / Zoom`: Scale + opacity entering transition.
-* **Easing Curves via `AppSelect` Dropdown:**
-  * `Cubic Out`: Smooth, natural interface curve.
-  * `Quad Out`: Uniform acceleration and quick response.
-  * `Back Out (Springy)`: Elastic overshoot rebound.
-  * `Bounce Out`: Physical multi-bounce response.
-* **Render Engines:**
-  * `Reanimated Presets`: Built-in entering builders (`FadeInLeft`, `FadeInRight`, `FadeInDown`).
-  * `Dynamic Keyframe`: Dynamic runtime `Keyframe` definitions.
-* **Slow Motion Toggle:**
-  * Switch between `1.0x` and `0.25x` (4x slower) to inspect frame transitions frame-by-frame.
-* **Live Replay (`↺`):**
-  * Remounts the preview container with Alambre vector icons (`Sun`, `Zap`, `Tick`), tags, and parameter readout footer.
+1. **Rich Configuration Sandboxes:** Every experimental view MUST provide interactive controllers (`AppSlider`, `AppSegmentedControl`, `AppSwitch`, `AppButton`) rather than static, read-only mockups. Parameters like velocity, damping, scale, gaps, and intervals must be tunable in real time.
+2. **Real-Time Interactive Evaluation:** Sliders and toggles immediately reflect changes on active physics and layout, paired with live numeric readouts, status badges, and reset/replay triggers (`↺`).
+3. **Zero Consolidated Clutter:** When an experimental feature or component is consolidated, formalized into `packages/alambre`, and adopted in `apps/base-template` (e.g. `ToastProvider`, `useStagger`, base navigation), its scratch views in playground are retired. Playground only hosts active frontiers.
+4. **Empirical Multiplatform Verification:** Touch gestures, spring physics, and container transitions must be verified on live emulators/devices across Android, iOS, and Web before proposing framework extraction.
+5. **Pure Math Isolation:** Motion and layout calculations (e.g. snap intervals, active index derivation, scroll targets) are isolated as pure, testable functions before being bound to Reanimated worklets.
 
-### B. Toast Laboratory (`ToastTest`)
-Proving ground for transient feedback and layout adaptation:
+---
 
-* **Duration Slider:** Test custom toast durations from `1000ms` to `8000ms`.
-* **Queue Testing:** Test enqueuing multiple items (3 toasts) and inspecting active `queueLength`.
-* **Dismiss & Clear:** Verify `dismiss()` for immediate transition to the next queue item, and `clear()` to cancel the entire pending queue.
-* **Navigation Gliding:** Launch a long-running toast on Home or Subpage and navigate across screens to verify that the Toast smoothly glides vertically (`insets.top` vs `headerHeight`) without unmounting or snapping.
-* **Gesture Exit Decoupling:** Decoupled outer layout wrapper and inner card prevents the swipe-dismiss unmount teleportation glitch.
+## 2. Active Testbeds and Capabilities
 
-### C. UI Components Catalog (`ComponentsTest`)
+### A. Dynamic Carousel & Containers (`CarouselTest`)
+Experimental laboratory for horizontal snapping containers, 3D card physics, and native gesture synchronization:
+
+* **Snapping Architecture:**
+  * Uses native `Animated.ScrollView` with `snapToInterval = cardWidth + cardGap` and `decelerationRate="fast"`.
+  * Computes `sideInset = (SCREEN_WIDTH - cardWidth) / 2` with `contentContainerStyle={{ paddingHorizontal: sideInset }}` so the active card is always centered in the viewport.
+  * UI-thread scroll synchronization via Reanimated `useAnimatedScrollHandler` updating `scrollX` with zero JS bridge lag.
+* **Transition Effects:**
+  * **Scale Mode:** Continuous interpolation (`interpolate(scrollX, [(i-1)*interval, i*interval, (i+1)*interval], [minScale, 1.0, minScale])`).
+  * **Cover Flow 3D Mode:** Card rotation around Y-axis (`rotateY: [-36deg, 0deg, 36deg]`) combined with 3D `perspective: 800` and scale transformation.
+  * **Flat Mode:** Crisp snapping without scale or rotation transformations.
+* **Interactive Pagination Dots:**
+  * Active dot expands dynamically from `8px` to `24px` pill indicator.
+  * Color morphing using `interpolateColor` between `theme.border` and `theme.primary`.
+  * Touch-to-jump: Tapping any dot smoothly invokes `scrollTo({ x: targetX, animated: true })`.
+* **Rich Sandbox Controls:**
+  * **Card Width Slider:** `50%` to `95%` of screen width.
+  * **Card Gap Slider:** `4px` to `28px` spacing.
+  * **Min Scale Slider:** `70%` to `100%` scale for adjacent cards.
+  * **Auto-Play Switch & Interval Slider:** Configurable auto-rotation from `1.5s` to `6.0s` with auto-reset cleanup.
+  * **Manual Navigation & Reset:** Previous/Next buttons and `↺` reset trigger to quickly restore default values.
+
+### B. UI Components Catalog (`ComponentsTest`)
 Comprehensive living catalog and testbed for tactile, accessible components before promoting them to `packages/alambre` or `apps/base-template`:
 
 #### 1. Buttons & Typography
@@ -111,7 +111,7 @@ Comprehensive living catalog and testbed for tactile, accessible components befo
   * **Dynamic Backdrop Interpolation:** Dimmed overlay fades out proportionally as the sheet is dragged downward.
   * **Inner `GestureHandlerRootView`:** Guarantees touch and gesture dispatching across Android modal windows.
 
-### D. Text Animations Laboratory (`TextAnimationsTest`)
+### C. Text Animations Laboratory (`TextAnimationsTest`)
 Interactive proving ground and showcase for kinetic typography, number counters, and wave motion:
 
 * **`TickerText` (`src/components/text-animations/TickerText.tsx`):**
@@ -129,9 +129,17 @@ Interactive proving ground and showcase for kinetic typography, number counters,
 * **Card Game HUD Prototype:**
   * Living integration mockup simulating a turn-based card game: real-time HP depletion/restoration, gold loot counter, turn progression, and dynamic typewriter combat dialogue log.
 
+### D. Drag & Drop Proving Ground (`DndTest`)
+Physical micro-interactions and gesture collisions testbed:
+
+* **`DndProvider` & Primitives:** Context-driven spatial coordinate tracking (`Draggable`, `Droppable`, `SortableRow`).
+* **Neighbor Shift Physics:** Real-time geometric displacement of adjacent items during active card drag.
+* **Drop Target Detection:** Mathematical overlap calculations against target zones with auto-rebound upon cancel.
+* **Rich Sandbox Toggles:** Switchable drop animations (instant, spring snap, dissolve), neighbor shifting modes, and live hand reset.
+
 ---
 
-## 2. Validation
+## 3. Validation
 
 Run linting, typechecking, and tests:
 ```bash

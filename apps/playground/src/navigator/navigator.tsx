@@ -1,8 +1,5 @@
 import Home from '../views/home/Home';
-import Details from '../views/home/Details';
-import Settings from '../views/settings/Settings';
-import AnimationTest from '../views/animation-test/AnimationTest';
-import ToastTest from '../views/toast-test/ToastTest';
+import CarouselTest from '../views/carousel/CarouselTest';
 import ComponentsTest from '../views/components-test/ComponentsTest';
 import TextAnimationsTest from '../views/text-animations/TextAnimationsTest';
 import DndTest from '../views/dnd-test/DndTest';
@@ -18,24 +15,10 @@ export type AppPage = NavigatorTypes.Page & {
 export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
-    subpages: {
-      details: {
-        title: { es: 'Subpágina', en: 'Subpage' },
-        component: <Details />,
-      },
-    },
   },
-  settings: {
-    title: { es: 'Ajustes', en: 'Settings' },
-    component: <Settings />,
-  },
-  animations: {
-    title: { es: 'Test de Animaciones', en: 'Animation Test' },
-    component: <AnimationTest />,
-  },
-  toast: {
-    title: { es: 'Test de Toast', en: 'Toast Test' },
-    component: <ToastTest />,
+  carousel: {
+    title: { es: 'Carruseles', en: 'Carousels' },
+    component: <CarouselTest />,
   },
   components: {
     title: { es: 'UI Components', en: 'UI Components' },

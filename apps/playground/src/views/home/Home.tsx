@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
-import { useNavigator, useToast, useStagger } from 'alambre';
+import { useNavigator, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
@@ -12,17 +12,29 @@ export default () => {
   const { lang } = useLang();
   const { config } = useConfig();
   const { navigate } = useNavigator();
-  const { show: _show } = useToast();
   const { getDelay } = useStagger({ initialDelay: 80, staggerMs: 60 });
 
   const navItems = [
-    { key: 'dnd', label: 'Drag & Drop (Sortable Hand & Zones)', onPress: () => navigate('dnd') },
-    { key: 'components', label: 'UI Components (Buttons & Typography)', onPress: () => navigate('components') },
-    { key: 'textAnimations', label: 'Text Animations (Ticker, Typewriter, Wave)', onPress: () => navigate('textAnimations') },
-    { key: 'animations', label: 'Animation Playground (Timing & Mag.)', onPress: () => navigate('animations') },
-    { key: 'toast', label: 'Toast Playground (Gliding & Queue)', onPress: () => navigate('toast') },
-    { key: 'settings', label: lang.home.openSettings, onPress: () => navigate('settings') },
-    { key: 'details', label: lang.home.openDetails, onPress: () => navigate('home', { subpage: 'details' }) },
+    {
+      key: 'carousel',
+      label: 'Carruseles y Contenedores (Snap & Microfísica)',
+      onPress: () => navigate('carousel'),
+    },
+    {
+      key: 'dnd',
+      label: 'Drag & Drop (Sortable Hand, Drop Zones & Physics)',
+      onPress: () => navigate('dnd'),
+    },
+    {
+      key: 'components',
+      label: 'Catálogo de Componentes UI (Design System)',
+      onPress: () => navigate('components'),
+    },
+    {
+      key: 'textAnimations',
+      label: 'Animaciones de Texto (Ticker, Typewriter, Wave)',
+      onPress: () => navigate('textAnimations'),
+    },
   ];
 
   return (
