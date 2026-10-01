@@ -17,6 +17,7 @@ All roles share the retrieval protocol defined in `.agents/skills/docs-retrieval
 | **Test & QA Engineer** | `@tester` | `flash` | Gemini 3.8 Flash | Test suite authoring, edge case generation, mocks/fixtures setup, and test execution. High volume of tool calls, so the flash tier keeps cost low. |
 | **Integrity & Docs** | `@integrity` | `flash` | Gemini 3.8 Flash | Strict auditing against specs/docs, detecting architectural drift, and API consistency against the public contract. |
 | **Discoveries Logger** | `@scribe` | `flash` | Gemini 3.8 Flash | Capturing implementation discoveries, technical debt, trade-offs, and updating ADRs/logs. |
+| **Agent Experience** | `@ax` | `flash` | Gemini 3.8 Flash | AX / Agent-DX crash-test dummy. Blindly consumes `alambre` APIs to validate if headless hooks and stores are LLM-friendly and prevent hallucinations. |
 
 ### Agent definition files
 
