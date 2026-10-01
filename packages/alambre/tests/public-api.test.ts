@@ -45,6 +45,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
+    expect(typeof Alambre.initNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
     expect(typeof Alambre.ConfirmProvider).toBe('function');
@@ -76,6 +77,11 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.Draggable).toBe('function');
     expect(typeof Alambre.Droppable).toBe('function');
     expect(typeof Alambre.SortableRow).toBe('function');
+    expect(typeof Alambre.useCarousel).toBe('function');
+    expect(typeof Alambre.calculateSnapInterval).toBe('function');
+    expect(typeof Alambre.calculateActiveIndex).toBe('function');
+    expect(typeof Alambre.getScrollTargetForIndex).toBe('function');
+    expect(typeof Alambre.useDeck).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 
@@ -215,6 +221,14 @@ describe('public API — type surface', () => {
     const sortableItem: Alambre.SortableItem = { id: 'item-1' };
     const dropMode: Alambre.DropAnimationMode = 'seamless';
     const neighborMode: Alambre.NeighborShiftMode = 'glide';
+    const carouselConfig: Alambre.UseCarouselConfig = {
+      cardWidth: 300,
+      cardGap: 16,
+      totalItems: 5,
+    };
+    const deckConfig: Alambre.UseDeckConfig<string> = {
+      initialCards: ['a', 'b'],
+    };
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
@@ -242,6 +256,8 @@ describe('public API — type surface', () => {
     expect(sortableItem).toBeDefined();
     expect(dropMode).toBeDefined();
     expect(neighborMode).toBeDefined();
+    expect(carouselConfig).toBeDefined();
+    expect(deckConfig).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {

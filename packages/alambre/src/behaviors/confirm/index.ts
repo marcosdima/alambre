@@ -2,7 +2,6 @@ export { default as ConfirmHost, ConfirmHost as ConfirmProvider } from './Confir
 export { default as useConfirm, confirm, dismissConfirm } from './use-confirm';
 export { createConfirmStore } from './confirm-store';
 export type {
-  ConfirmAction,
   RegisterConfirm,
   Confirm,
   ConfirmComponentProps,

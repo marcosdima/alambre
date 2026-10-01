@@ -1,6 +1,6 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createLangProvider from '../../src/capabilities/lang/lang-provider';
+import createLang from '../../src/capabilities/lang/create-lang';
 import type { Langs, UseLangType } from '../../src/capabilities/lang/lang-types';
 import { createMemoryStorage } from '../helpers/storage';
 
@@ -9,10 +9,10 @@ const langs: Langs = {
   es: { hello: 'Hola' },
 } as Langs;
 
-describe('createLangProvider', () => {
+describe('createLang', () => {
   it('defaults to the first language', async () => {
     const storage = createMemoryStorage();
-    const { LangProvider, useLang } = createLangProvider(langs, storage);
+    const { useLang } = createLang(langs, storage);
 
     const holder: { current?: UseLangType<typeof langs> } = {};
     const Consumer = () => {
@@ -20,7 +20,7 @@ describe('createLangProvider', () => {
       return null;
     };
 
-    render(<LangProvider><Consumer /></LangProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.currentLang).toBe('en'));
     expect(holder.current?.lang).toEqual(langs.en);
@@ -28,7 +28,7 @@ describe('createLangProvider', () => {
 
   it('loads a persisted valid language', async () => {
     const storage = createMemoryStorage({ currentLanguage: 'es' });
-    const { LangProvider, useLang } = createLangProvider(langs, storage);
+    const { useLang } = createLang(langs, storage);
 
     const holder: { current?: UseLangType<typeof langs> } = {};
     const Consumer = () => {
@@ -36,7 +36,7 @@ describe('createLangProvider', () => {
       return null;
     };
 
-    render(<LangProvider><Consumer /></LangProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.currentLang).toBe('es'));
     expect(holder.current?.lang).toEqual(langs.es);
@@ -45,7 +45,7 @@ describe('createLangProvider', () => {
 
   it('keeps the first language when the persisted value is not a known language', async () => {
     const storage = createMemoryStorage({ currentLanguage: 'fr' });
-    const { LangProvider, useLang } = createLangProvider(langs, storage);
+    const { useLang } = createLang(langs, storage);
 
     const holder: { current?: UseLangType<typeof langs> } = {};
     const Consumer = () => {
@@ -53,7 +53,7 @@ describe('createLangProvider', () => {
       return null;
     };
 
-    render(<LangProvider><Consumer /></LangProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.currentLang).toBe('en'));
     expect(holder.current?.lang).toEqual(langs.en);
@@ -61,7 +61,7 @@ describe('createLangProvider', () => {
 
   it('changes the language and persists the new key', async () => {
     const storage = createMemoryStorage();
-    const { LangProvider, useLang } = createLangProvider(langs, storage);
+    const { useLang } = createLang(langs, storage);
 
     const holder: { current?: UseLangType<typeof langs> } = {};
     const Consumer = () => {
@@ -69,7 +69,7 @@ describe('createLangProvider', () => {
       return null;
     };
 
-    render(<LangProvider><Consumer /></LangProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current).toBeDefined());
 
@@ -84,7 +84,7 @@ describe('createLangProvider', () => {
 
   it('falls back to the first language when changing to an unknown key', async () => {
     const storage = createMemoryStorage();
-    const { LangProvider, useLang } = createLangProvider(langs, storage);
+    const { useLang } = createLang(langs, storage);
 
     const holder: { current?: UseLangType<typeof langs> } = {};
     const Consumer = () => {
@@ -92,7 +92,7 @@ describe('createLangProvider', () => {
       return null;
     };
 
-    render(<LangProvider><Consumer /></LangProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current).toBeDefined());
 
@@ -107,20 +107,19 @@ describe('createLangProvider', () => {
 
   it('throws when no languages are provided', () => {
     const storage = createMemoryStorage();
-    const { LangProvider } = createLangProvider({} as Langs, storage);
 
-    expect(() => render(<LangProvider>a</LangProvider>)).toThrow(/requires at least one language/);
+    expect(() => createLang({} as Langs, storage)).toThrow(/requires at least one language/);
   });
 
-  it('throws when the hook is used outside the provider', () => {
+  it('can be accessed directly via actions and store without React render', async () => {
     const storage = createMemoryStorage();
-    const { useLang } = createLangProvider(langs, storage);
+    const { store, actions } = createLang(langs, storage);
 
-    const Consumer = () => {
-      useLang();
-      return null;
-    };
+    await waitFor(() => expect(store.getState().currentLang).toBe('en'));
 
-    expect(() => render(<Consumer />)).toThrow(/useLang must be used within a LangProvider/);
+    await actions.changeLang('es');
+
+    expect(store.getState().currentLang).toBe('es');
+    expect(storage.setCalls).toContainEqual(['currentLanguage', 'es']);
   });
 });

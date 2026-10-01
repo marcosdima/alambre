@@ -1,9 +1,12 @@
+import type { FC, ReactNode, ReactElement } from 'react';
 import type { Storage } from '../../types/actions';
 import createStore from '../../core/create-store';
 import { useExternalStore } from '../../core/use-external-store';
 import type { Langs, LangState, UseLangType } from './lang-types';
 
 const langKey = 'currentLanguage';
+
+const LangProvider: FC<{ children?: ReactNode }> = ({ children }) => (children ?? null) as ReactElement | null;
 
 const createLang = <T extends Langs>(
   langs: T,
@@ -47,6 +50,7 @@ const createLang = <T extends Langs>(
     store,
     actions: { changeLang },
     useLang,
+    LangProvider,
   };
 };
 

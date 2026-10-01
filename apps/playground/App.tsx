@@ -4,9 +4,11 @@ import { LightDarkProvider } from './src/providers/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LangProvider } from './src/providers/lang';
 import Root from './src/navigator/Root';
-import { NavigatorProvider, ToastProvider } from 'alambre';
+import { ToastProvider, initNavigator } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { TemplateToast } from './src/providers/toast';
+
+initNavigator(navigator);
 
 export default function App() {
   return (
@@ -15,11 +17,9 @@ export default function App() {
         <LightDarkProvider>
           <LangProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <NavigatorProvider pages={navigator}>
-                <ToastProvider ToastComponent={TemplateToast}>
-                  <Root />
-                </ToastProvider>
-              </NavigatorProvider>
+              <ToastProvider ToastComponent={TemplateToast}>
+                <Root />
+              </ToastProvider>
             </GestureHandlerRootView>
           </LangProvider>
         </LightDarkProvider>

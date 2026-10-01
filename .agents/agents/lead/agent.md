@@ -11,7 +11,8 @@ tools:
   - run_command
   - send_message
   - manage_task
-  - replace_file_content
+  - invoke_subagent
+  - manage_subagents
 skills:
   - skills/docs-retrieval
 ---

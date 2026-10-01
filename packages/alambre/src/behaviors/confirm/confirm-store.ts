@@ -1,5 +1,5 @@
 import createStore from '../../core/create-store';
-import type { Confirm, ConfirmStateType, RegisterConfirm } from './confirm-types';
+import type { Confirm, RegisterConfirm } from './confirm-types';
 
 type ConfirmState = {
   current: Confirm | null;

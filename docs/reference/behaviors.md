@@ -1,6 +1,6 @@
 ---
 title: Behaviors Reference
-summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmProvider, ToastProvider, and createApiProvider.
+summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, and useDeck.
 ---
 
 # Behaviors Reference
@@ -138,36 +138,45 @@ const styles = StyleSheet.create({
 ---
 
 
-## 2. `ConfirmProvider` & `useConfirm`
+## 2. `ConfirmHost`, `confirm`, and `useConfirm`
 
-Provides blocking confirmation dialogs resolved via Promises. The framework manages the pending request state; the application registers its own `ConfirmComponent` to define visual presentation.
+Provides blocking confirmation dialogs resolved via Promises. The underlying store is external (`core/use-external-store.ts`), meaning confirmations can be triggered **imperatively from anywhere** (inside components, service modules, or background tasks) without needing a React context.
 
-### Provider Setup
+The application mounts `ConfirmHost` (alias `ConfirmProvider`) once near the root of the UI tree to render its custom `ConfirmComponent`.
+
+### Host Setup
 ```typescript
-import { ConfirmProvider, type ConfirmComponentProps } from 'alambre';
+import { ConfirmHost, type ConfirmComponentProps } from 'alambre';
 
 export function ConfirmDialog({ confirm, onConfirm, onCancel }: ConfirmComponentProps) {
   return (
-    <Modal visible transparent>
-      <View>
-        <Text>{confirm.title}</Text>
-        <Button onPress={onCancel} title={confirm.cancelLabel ?? 'Cancel'} />
-        <Button onPress={onConfirm} title={confirm.confirmLabel} />
+    <Modal visible transparent animationType="fade">
+      <View style={styles.overlay}>
+        <View style={styles.dialog}>
+          <Text style={styles.title}>{confirm.title}</Text>
+          {confirm.message && <Text style={styles.message}>{confirm.message}</Text>}
+          <Button onPress={onCancel} title={confirm.cancelLabel ?? 'Cancel'} />
+          <Button onPress={onConfirm} title={confirm.confirmLabel ?? 'Confirm'} />
+        </View>
       </View>
     </Modal>
   );
 }
 
-<ConfirmProvider ConfirmComponent={ConfirmDialog}>
-  <App />
-</ConfirmProvider>
+// In your root layout or screen overlay container:
+export function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <ConfirmHost ConfirmComponent={ConfirmDialog} />
+    </>
+  );
+}
 ```
 
-### Hook Usage
+### Imperative Usage (Anywhere)
 ```typescript
-import { useConfirm } from 'alambre';
-
-const { confirm } = useConfirm();
+import { confirm } from 'alambre';
 
 const handleDelete = async () => {
   // Returns Promise<boolean>: resolves to true if confirmed, false if cancelled
@@ -185,18 +194,29 @@ const handleDelete = async () => {
 };
 ```
 
-### Promise Lifecycle & Props Contract (`ConfirmComponentProps`)
-The `confirm()` method pushes a pending confirmation request into the provider queue. When the user interacts with your custom `ConfirmComponent`:
+> **Note:** `dismissConfirm()` is also exported top-level to cancel any pending confirmation dialog programmatically.
+
+### Reactive Hook Usage (`useConfirm`)
+If a component needs reactive access to the pending confirmation state or wants component-bound actions:
+```typescript
+import { useConfirm } from 'alambre';
+
+const { current, confirm, dismiss, settle } = useConfirm();
+```
+
+### Props Contract (`ConfirmComponentProps`)
+When `ConfirmHost` mounts your custom `ConfirmComponent`:
 * **`confirm`**: The active configuration payload `{ title, message, confirmLabel, cancelLabel, tone }`.
 * **`onConfirm()`**: Settles the pending Promise with `true` and closes the modal.
 * **`onCancel()`**: Settles the pending Promise with `false` and closes the modal.
-* **`visible: boolean`**: True while a confirmation request is actively pending.
 
 ---
 
-## 3. `ToastProvider` & `useToast`
+## 3. `ToastHost`, `toast`, and `useToast`
 
-Provides non-blocking, queued transient notification toasts. The framework provides the state machine, queue management, and contracts; the application provides the concrete visual component (`ToastComponent`).
+Provides non-blocking, queued transient notification toasts. Toast state runs on a decoupled external store (`createToastStore`), enabling **direct imperative calls (`toast.show()`) from anywhere** in your application without requiring a React component tree or context provider.
+
+The application mounts `ToastHost` (alias `ToastProvider`) once near the root of the screen hierarchy to render the visual `ToastComponent`.
 
 ### Types & Contracts
 ```typescript
@@ -220,39 +240,36 @@ import type {
 - **`ToastPayload`**: `string | StandardToastPayload` — backward-compatible payload accepting plain text or structured properties.
 - **`parseToastPayload(raw: unknown): StandardToastPayload`** — utility helper that normalizes strings and partial objects into a valid structured payload with defaults (`tone: 'info'`, `position: 'top'`).
 
-### Provider Setup
+### Host Setup
 ```typescript
-import { ToastProvider, type ToastComponentProps } from 'alambre';
+import { ToastHost, type ToastComponentProps } from 'alambre';
 import { TemplateToast } from './src/providers/toast';
 
-<ToastProvider
-  ToastComponent={TemplateToast}
-  defaultDuration={4000}       // optional, default 4000ms
-  delay={0}                    // optional, delay between consecutive toasts
-  queueMode="queue"            // optional, 'queue' (default) or 'replace'
->
-  <App />
-</ToastProvider>
+// Mount once in your root layout:
+export function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      <ToastHost ToastComponent={TemplateToast} />
+    </>
+  );
+}
 ```
 
-### Hook Usage (`useToast`)
-```typescript
-import { useToast } from 'alambre';
+### Imperative Usage (`toast.show()`) — Anywhere
+You can import `toast` directly into services, network clients, background tasks, or component event handlers:
 
-const { show, dismiss, clear, queueLength, toast } = useToast();
-```
-
-#### 1. Simple Quick Toast
 ```typescript
-show({
+import { toast } from 'alambre';
+
+// 1. Simple Quick Toast
+toast.show({
   payload: 'Preferences saved successfully.',
   duration: 3000,
 });
-```
 
-#### 2. Structured Semantic Toast (Top or Bottom)
-```typescript
-show({
+// 2. Structured Semantic Toast (Top or Bottom)
+toast.show({
   duration: 4000,
   payload: {
     title: 'Sync Complete',
@@ -261,11 +278,9 @@ show({
     position: 'bottom',     // 'top' (default) | 'bottom'
   },
 });
-```
 
-#### 3. Actionable Interactive Toast
-```typescript
-show({
+// 3. Actionable Interactive Toast
+toast.show({
   payload: {
     title: 'Item Deleted',
     content: 'The item was removed from your collection.',
@@ -282,6 +297,13 @@ show({
 });
 ```
 
+### Reactive Hook Usage (`useToast`)
+If a component needs reactive state to render its own toast counter or dismiss controls:
+```typescript
+import { useToast } from 'alambre';
+
+const { toast: currentToast, queueLength, show, dismiss, clear, next } = useToast();
+```
 ### Lifecycle & Queue Semantics
 - **Auto-Dismiss**: Standard toasts automatically dismiss after `duration ?? defaultDuration` milliseconds.
 - **Actionable & Persistent Toasts**: Toasts with `persistent: true` or active `actions` **never auto-dismiss** prematurely. They remain visible until the user interacts with an action button, clicks the close button (✕), or swipes them away.
@@ -307,22 +329,30 @@ The reference production component implementing this pattern is exported in [`ap
 
 ---
 
-## 4. `createApiProvider`
+## 4. `createApi` (alias `createApiProvider`)
 
-Integrates TanStack React Query (`QueryClientProvider`) into an application and generates typed route/query/mutation helpers around a `fetch`-based request function.
+Integrates TanStack React Query (`QueryClientProvider`) into an application and generates typed route/query/mutation hooks around a `fetch`-based request function without creating any internal Alambre React Context.
 
 ### Signature
 ```typescript
-import { createApiProvider } from 'alambre';
+import { createApi } from 'alambre';
 
-const api = createApiProvider({
+const api = createApi({
   baseUrl: 'https://api.example.com',
   getHeaders: async () => ({ Authorization: `Bearer ${token}` }), // optional
   createQueryClient: () => new QueryClient(),                     // optional
 });
 
-const { ApiProvider, useApi, createRoute, createRoutes,
-        createQueryHook, createMutationHook } = api;
+const {
+  ApiProvider,
+  createRoute,
+  createRoutes,
+  createQueryHook,
+  createQueryHookFromRoute,
+  createMutationHook,
+  createMutationHookFromRoute,
+  request,
+} = api;
 ```
 
 ### Options (`CreateApiProviderOptions`)
@@ -331,12 +361,12 @@ const { ApiProvider, useApi, createRoute, createRoutes,
 * `createQueryClient?(): QueryClient`: Custom `QueryClient` factory; defaults to `new QueryClient()`.
 
 ### Return
-* `ApiProvider`: Wraps the app in `QueryClientProvider` + the API context.
-* `useApi()`: Returns `{ request }`, a typed `fetch` helper.
-* `createRoute` / `createRoutes`: Type helpers to declare an endpoint/catalog (`ApiEndpoint`).
-* `createQueryHook(endpoint)`: Builds a query hook from an `ApiEndpoint`.
+* `ApiProvider`: Wraps children in TanStack's `<QueryClientProvider>`.
+* `request`: Typed `fetch` helper for direct requests.
+* `createRoute` / `createRoutes`: Type helpers to declare an endpoint or catalog (`ApiEndpoint`).
+* `createQueryHook(endpoint)`: Builds a React Query query hook from an `ApiEndpoint`.
 * `createQueryHookFromRoute(route)`: Same, from a typed route.
-* `createMutationHook(endpoint, settings?)`: Builds a mutation hook; `settings.invalidateKeys` invalidates queries on success.
+* `createMutationHook(endpoint, settings?)`: Builds a mutation hook; `settings.invalidateKeys` automatically invalidates queries on success.
 * `createMutationHookFromRoute(route, settings?)`: Same, from a typed route.
 
 ### Endpoint shape (`ApiEndpoint`)
@@ -437,5 +467,170 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: '#ffffff', fontWeight: '600' },
 });
+```
+
+---
+
+## 5. `useCarousel` & Math Kinematics
+
+Provides a headless content carousel interaction driver for horizontal card carousels with continuous Reanimated scroll tracking, discrete snap interval calculations, active index synchronization, and auto-play capabilities.
+
+### Math Helpers
+`alambre` exports pure mathematical calculations decoupled from React:
+* `calculateSnapInterval(cardWidth: number, cardGap: number): number`: Computes total stride length for snapping (`Math.round(cardWidth + cardGap)`).
+* `calculateActiveIndex(scrollX: number, snapInterval: number, totalItems: number): number`: Clamps and calculates the closest active card index from scroll position.
+* `getScrollTargetForIndex(index: number, snapInterval: number, totalItems: number): number`: Computes target `x` coordinate for programmatic scrolling.
+
+### Hook Signature
+```typescript
+import { useCarousel, type UseCarouselConfig } from 'alambre';
+
+const {
+  scrollRef,
+  scrollX,
+  scrollHandler,
+  onMomentumScrollEnd,
+  activeIndex,
+  scrollToIndex,
+  snapInterval,
+} = useCarousel({
+  cardWidth: 280,
+  cardGap: 16,
+  totalItems: items.length,
+  autoPlay: true,          // optional, default false
+  autoPlayInterval: 3000,  // optional, default 3000ms
+});
+```
+
+### Production Example (`CarouselComponent.tsx`)
+```tsx
+import { View, Dimensions, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { useCarousel } from 'alambre';
+
+const CARD_WIDTH = Dimensions.get('window').width * 0.75;
+const CARD_GAP = 16;
+
+export function CustomCarousel({ items }: { items: { id: string; title: string }[] }) {
+  const {
+    scrollRef,
+    scrollHandler,
+    onMomentumScrollEnd,
+    activeIndex,
+    snapInterval,
+  } = useCarousel({
+    cardWidth: CARD_WIDTH,
+    cardGap: CARD_GAP,
+    totalItems: items.length,
+  });
+
+  return (
+    <View style={styles.container}>
+      <Animated.ScrollView
+        ref={scrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={snapInterval}
+        decelerationRate="fast"
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: CARD_GAP }}
+      >
+        {items.map((item, index) => (
+          <View
+            key={item.id}
+            style={[styles.card, { width: CARD_WIDTH }, activeIndex === index && styles.activeCard]}
+          >
+            {/* 100% Application-owned Card JSX */}
+          </View>
+        ))}
+      </Animated.ScrollView>
+    </View>
+  );
+}
+```
+
+---
+
+## 6. `useDeck` & Swipeable Stack Kinematics
+
+Provides a headless swipeable card deck state machine with angular translation tracking, discard history for undo operations, and programmatic swipe triggers.
+
+### Hook Signature
+```typescript
+import { useDeck, type UseDeckConfig } from 'alambre';
+
+const {
+  deck,
+  history,
+  activeIndex,
+  swipeTranslation,
+  popCard,
+  undoLast,
+  triggerProgrammaticSwipe,
+  reset,
+} = useDeck<CardItem>({
+  initialCards: cards,
+});
+```
+
+### Return Contract
+* `deck: T[]`: Array of initial cards.
+* `history: T[]`: Stack of previously dismissed cards (LIFO order).
+* `activeIndex: SharedValue<number>`: Reanimated shared value pointing to the current top card.
+* `swipeTranslation: SharedValue<number>`: Reanimated shared value tracking active drag offset.
+* `popCard(direction: 'left' | 'right'): void`: Advances `activeIndex`, pushes the dismissed card to `history`, and clears `swipeTranslation`.
+* `undoLast(): void`: Restores the top card from `history` back onto the deck and decrements `activeIndex`.
+* `triggerProgrammaticSwipe(direction: 'left' | 'right'): void`: Dispatches a swipe programmatically if cards remain.
+* `reset(): void`: Resets active index, clears history, and restores the initial deck.
+
+### Production Example (`DeckComponent.tsx`)
+```tsx
+import { View, Text, StyleSheet } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, interpolate, withSpring, runOnJS } from 'react-native-reanimated';
+import { useDeck } from 'alambre';
+
+export function CardStack({ items }: { items: { id: string; name: string }[] }) {
+  const {
+    deck,
+    activeIndex,
+    swipeTranslation,
+    popCard,
+    undoLast,
+    triggerProgrammaticSwipe,
+  } = useDeck({ initialCards: items });
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      swipeTranslation.value = e.translationX;
+    })
+    .onEnd((e) => {
+      if (Math.abs(e.translationX) > 120) {
+        const dir = e.translationX > 0 ? 'right' : 'left';
+        runOnJS(popCard)(dir);
+      } else {
+        swipeTranslation.value = withSpring(0);
+      }
+    });
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: swipeTranslation.value },
+      { rotateZ: `${interpolate(swipeTranslation.value, [-200, 200], [-15, 15])}deg` },
+    ],
+  }));
+
+  return (
+    <View style={styles.container}>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={[styles.card, cardStyle]}>
+          <Text>{deck[activeIndex.value]?.name ?? 'Deck Empty'}</Text>
+        </Animated.View>
+      </GestureDetector>
+    </View>
+  );
+}
 ```
 

@@ -1,1 +1,1 @@
-export { NavigatorProvider, useNavigator } from './navigator-provider';
+export { NavigatorProvider, useNavigator, initNavigator } from './navigator-provider';

@@ -49,23 +49,40 @@ export type { ConfirmComponentProps } from './behaviors';
 
 // Capabilities.
 export {
+  createCollection,
   createCollectionProvider,
+  createConfig,
   createConfigProvider,
+  createLang,
   createLangProvider,
+  createLightDark,
   createLightDarkProvider,
 } from './capabilities';
 
 // Behaviors.
 export {
+  createApi,
   createApiProvider,
   ConfirmProvider,
-  NavigatorProvider,
+  ConfirmHost,
   useConfirm,
+  confirm,
+  dismissConfirm,
+  NavigatorProvider,
   useNavigator,
+  initNavigator,
   ToastProvider,
+  ToastHost,
   useToast,
+  toast,
   parseToastPayload,
+  useCarousel,
+  calculateSnapInterval,
+  calculateActiveIndex,
+  getScrollTargetForIndex,
+  useDeck,
 } from './behaviors';
+export type { UseCarouselConfig, UseDeckConfig } from './behaviors';
 
 // Hooks & state utilities.
 export {
@@ -83,6 +100,7 @@ export {
   StaggerProvider,
   useStaggerItem,
   useCollapsible,
+  useSwipeableRow,
 } from './hooks';
 export type {
   HistoryState,
@@ -97,6 +115,9 @@ export type {
   CollapsibleSpringConfig,
   UseCollapsibleOptions,
   UseCollapsibleReturn,
+  UseSwipeableRowConfig,
+  UseSwipeableRowReturn,
+  SwipeDirection,
 } from './hooks';
 
 // Icons.
@@ -149,4 +170,3 @@ export type {
   NeighborShiftMode,
   SortableRowProps,
 } from './types/dnd';
-

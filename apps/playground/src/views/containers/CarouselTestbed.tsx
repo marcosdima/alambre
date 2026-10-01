@@ -1,23 +1,22 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   Dimensions,
   Pressable,
   StyleSheet,
   Text,
   View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
 } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
-  useSharedValue,
   type SharedValue,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import {
+  AlambreIcons,
+  useCarousel,
+} from 'alambre';
 import { useLightDark } from '../../providers/theme';
 
 type Theme = ReturnType<typeof useLightDark>['theme'];
@@ -27,6 +26,7 @@ import AppSwitch from '../../components/AppSwitch';
 import AppSegmentedControl from '../../components/AppSegmentedControl';
 import AppButton from '../../components/AppButton';
 import AppBadge from '../../components/AppBadge';
+import { useState } from 'react';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -90,33 +90,8 @@ const SAMPLE_CARDS: CarouselCardData[] = [
 
 type CarouselEffect = 'scale' | 'coverflow' | 'flat';
 
-export function calculateSnapInterval(cardWidth: number, cardGap: number): number {
-  return Math.round(cardWidth + cardGap);
-}
-
-export function calculateActiveIndex(
-  scrollX: number,
-  snapInterval: number,
-  totalItems: number,
-): number {
-  if (snapInterval <= 0 || totalItems <= 0) return 0;
-  const raw = Math.round(scrollX / snapInterval);
-  return Math.max(0, Math.min(raw, totalItems - 1));
-}
-
-export function getScrollTargetForIndex(
-  index: number,
-  snapInterval: number,
-  totalItems: number,
-): number {
-  if (totalItems <= 0) return 0;
-  const clamped = Math.max(0, Math.min(index, totalItems - 1));
-  return clamped * snapInterval;
-}
-
 export default function CarouselTestbed() {
   const { theme } = useLightDark();
-  const scrollRef = useRef<Animated.ScrollView>(null);
 
   // Configuration State
   const [cardWidthPercent, setCardWidthPercent] = useState(80); // 60% - 95%
@@ -126,55 +101,25 @@ export default function CarouselTestbed() {
   const [autoPlay, setAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(3000);
   const [minScalePercent, setMinScalePercent] = useState(88); // 75% - 100%
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const cardWidth = Math.round((SCREEN_WIDTH * cardWidthPercent) / 100);
-  const snapInterval = calculateSnapInterval(cardWidth, cardGap);
   const sideInset = Math.round((SCREEN_WIDTH - cardWidth) / 2);
 
-  // Reanimated scroll position
-  const scrollX = useSharedValue(0);
-
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollX.value = event.contentOffset.x;
-    },
+  const {
+    scrollRef,
+    scrollX,
+    scrollHandler,
+    onMomentumScrollEnd,
+    activeIndex,
+    scrollToIndex,
+    snapInterval,
+  } = useCarousel({
+    cardWidth,
+    cardGap,
+    totalItems: SAMPLE_CARDS.length,
+    autoPlay,
+    autoPlayInterval,
   });
-
-  const onMomentumScrollEnd = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetX = event.nativeEvent.contentOffset.x;
-      const idx = calculateActiveIndex(offsetX, snapInterval, SAMPLE_CARDS.length);
-      setActiveIndex(idx);
-    },
-    [snapInterval],
-  );
-
-  // Auto-play timer
-  useEffect(() => {
-    if (!autoPlay) return;
-
-    const timer = setInterval(() => {
-      setActiveIndex((prev) => {
-        const next = (prev + 1) % SAMPLE_CARDS.length;
-        scrollRef.current?.scrollTo({
-          x: getScrollTargetForIndex(next, snapInterval, SAMPLE_CARDS.length),
-          animated: true,
-        });
-        return next;
-      });
-    }, autoPlayInterval);
-
-    return () => clearInterval(timer);
-  }, [autoPlay, autoPlayInterval, snapInterval]);
-
-  const scrollToIndex = (index: number) => {
-    setActiveIndex(index);
-    scrollRef.current?.scrollTo({
-      x: getScrollTargetForIndex(index, snapInterval, SAMPLE_CARDS.length),
-      animated: true,
-    });
-  };
 
   const renderIcon = (name: CarouselCardData['iconName'], color: string) => {
     switch (name) {

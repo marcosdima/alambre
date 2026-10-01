@@ -147,3 +147,55 @@ Embedding child components that register continuous horizontal pan gestures (suc
 1. **Static preview summaries with overflow badges:** Display up to a fixed number $K$ of static preview chips (e.g. icon + label) followed by a `+N` badge indicating remaining elements. This pattern eliminates gesture conflict entirely and keeps row scrolling smooth (validated in `apps/colguetti` `Alarms.tsx`).
 2. **Discrete tap controls:** If interactive cycling or stepped input is required inside a swipeable row, use discrete tap controls (such as steppers or chevrons) with bounded touch hit bounds (`hitSlop`), never continuous pan drag responders.
 3. **Dedicated screen / modal for interactive collections:** When complex gesture-driven reordering or sliding is necessary, the interaction belongs on a dedicated subpage or modal dialog where the full screen gesture namespace is available without competing list responders.
+
+---
+
+## 7. Headless UI Physics: Decoupled Kinetic Containers (`useCarousel`, `useDeck`)
+
+Following the behavior-first architecture (`docs/architecture.md` §6), interactive containers and kinetic components strictly separate mathematical motion physics from visual markup.
+
+### The Problem with Monolithic Containers
+
+Standard mobile UI libraries often ship monolithic container components (e.g. `<Carousel>`, `<TinderCardDeck>`) with baked-in card wrappers, hardcoded padding, rigid gestures, and opinionated indicator styles. This creates friction:
+1. **Agent DX / CSS Battles:** AI agents and developers waste effort overriding internal flex layouts, margins, or card frames to match design specifications.
+2. **Gesture & Thread Blocking:** Coupling React component re-renders to high-frequency motion gestures causes frame drops on low-end devices.
+3. **Inflexible Composition:** Monolithic components make it difficult to plug in custom dot paginators, parallax backgrounds, dynamic peek offsets, or custom badge overlays.
+
+### The Headless UI Physics Philosophy
+
+In `alambre`, containers are implemented as **headless physics hooks**:
+
+| Layer | Responsibility | Owner |
+| --- | --- | --- |
+| **Physics & Kinematics** | Pure math (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`), card offsets, clamped snap targets, velocity decay. | **`alambre`** |
+| **Gesture & Motion State** | Reanimated worklets (`scrollHandler`), UI-thread shared values (`scrollX`, `swipeTranslation`, `activeIndex`), momentum listeners (`onMomentumScrollEnd`), auto-play intervals, stack history. | **`alambre`** |
+| **JSX Presentation** | Markup (`<Animated.ScrollView>`, `<GestureDetector>`, `<Pressable>`), card layout, header/footer chrome, indicators, peek spacing, elevation, borders. | **Application** |
+| **Visual Animation** | Interpolation worklets (`interpolate`, `interpolateColor`, `useAnimatedStyle`) for card scale, 3D tilt, fade, and shadow transforms. | **Application** |
+
+### 1. Carousel Physics (`useCarousel`)
+
+* **Framework contract:**
+  - Pure mathematical helpers: `calculateSnapInterval(cardWidth, cardGap)`, `calculateActiveIndex(scrollX, snapInterval, totalItems)`, `getScrollTargetForIndex(index, snapInterval, totalItems)`.
+  - Hook `useCarousel(config)` provides:
+    - `scrollRef`: Ref attached to the application's `<Animated.ScrollView>`.
+    - `scrollX`: Reanimated `SharedValue<number>` tracking continuous scroll offset on the UI thread.
+    - `scrollHandler`: Native scroll handler worklet passed directly to `onScroll`.
+    - `onMomentumScrollEnd`: Native callback computing discrete settled index without layout race conditions.
+    - `activeIndex`: React state exposing the settled active card index.
+    - `scrollToIndex(index)`: Programmatic scroll driver with clamping and smooth animation.
+    - `snapInterval`: Pre-calculated scroll snapping distance.
+* **Application usage:** The application passes whatever card JSX it needs, styling dimensions and layout directly. The testbed in `apps/playground/src/views/containers/CarouselTestbed.tsx` demonstrates this pattern with multi-card previews, dynamic auto-play, and custom dot indicators.
+
+### 2. Swipeable Card Deck Physics (`useDeck`)
+
+* **Framework contract:**
+  - Hook `useDeck<T>({ initialCards })` provides:
+    - `deck: T[]`: Remaining cards in the stack.
+    - `history: T[]`: Stack of previously dismissed cards for undo capabilities.
+    - `activeIndex`: Reanimated `SharedValue<number>` tracking current top card index.
+    - `swipeTranslation`: Reanimated `SharedValue<number>` tracking interactive horizontal swipe offset.
+    - `popCard(direction)`: Advances index, records the dismissed card to history, and resets translation.
+    - `undoLast()`: Restores the last popped card from history back to the top of the deck.
+    - `triggerProgrammaticSwipe(direction)`: Dispatches a swipe action programmatically (e.g. from button taps).
+    - `reset()`: Resets stack to its initial array and purges history.
+* **Application usage:** The application pairs the shared values (`swipeTranslation`, `activeIndex`) with `<GestureDetector gesture={pan}>` and drives angular rotation worklets (`rotation = interpolate(swipeTranslation.value, ...)`) without the framework dictating how cards appear. Validated in `apps/playground/src/views/containers/DeckTestbed.tsx`.

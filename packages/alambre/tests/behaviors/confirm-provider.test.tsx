@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import ConfirmProvider from '../../src/behaviors/confirm/confirm-provider';
+import { ConfirmProvider } from '../../src/behaviors/confirm';
 import useConfirm from '../../src/behaviors/confirm/use-confirm';
 import type {
   ConfirmComponentProps,
@@ -101,13 +101,16 @@ describe('ConfirmProvider', () => {
     await expect(second!).resolves.toBe(true);
   });
 
-  it('throws when used outside the provider', () => {
+  it('can be used outside the provider without throwing', () => {
+    let result: UseConfirmType | undefined;
     const Consumer = () => {
-      useConfirm();
+      result = useConfirm();
       return null;
     };
 
-    expect(() => render(<Consumer />)).toThrow(/useConfirm must be used within ConfirmProvider/);
+    expect(() => render(<Consumer />)).not.toThrow();
+    expect(result).toBeDefined();
+    expect(typeof result?.confirm).toBe('function');
   });
 
   it('forwards onConfirm/onCancel as callbacks', () => {

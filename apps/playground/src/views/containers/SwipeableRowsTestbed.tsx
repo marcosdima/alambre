@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Pressable,
   StyleSheet,
@@ -7,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSwipeableRow } from 'alambre';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 import Animated, {
@@ -196,67 +198,47 @@ function SwipeableRowItem({
   onArchive: () => void;
   theme: Theme;
 }) {
-  const translateX = useSharedValue(0);
-  const fullSwipeThreshold = 170;
+  const leftSnapPoints = enableFullSwipe ? [actionThreshold, SCREEN_WIDTH] : [actionThreshold];
+  const rightActionWidth = 160;
+  // If full swipe is enabled, allow pulling to -SCREEN_WIDTH so it doesn't clamp at -160.
+  const rightSnapPoints = enableFullSwipe ? [-actionThreshold, -rightActionWidth, -SCREEN_WIDTH] : [-actionThreshold, -rightActionWidth];
 
-  const closeRow = () => {
-    translateX.value = withSpring(0, { damping: 20, stiffness: 300 });
-    onOpenChange(false);
-  };
-
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-5, 5])
-    .onUpdate((event) => {
-      translateX.value = event.translationX;
-    })
-    .onEnd(() => {
-      const isRightSwipe = translateX.value > 0;
-      const distance = Math.abs(translateX.value);
-
-      if (enableFullSwipe && distance > fullSwipeThreshold) {
-        // Full swipe trigger
-        if (isRightSwipe) {
-          translateX.value = withTiming(SCREEN_WIDTH, { duration: 200 }, () => {
-            runOnJS(onComplete)();
-            translateX.value = 0;
-          });
-        } else {
-          translateX.value = withTiming(-SCREEN_WIDTH, { duration: 200 }, () => {
-            runOnJS(onDelete)();
-          });
-        }
-        return;
-      }
-
-      if (isRightSwipe && distance > actionThreshold) {
-        // Settle at complete action reveal
-        translateX.value = withSpring(actionThreshold, { damping: 18, stiffness: 280 });
-        runOnJS(onOpenChange)(true);
-      } else if (!isRightSwipe && distance > actionThreshold * 1.6) {
-        // Settle at delete/archive actions reveal
-        translateX.value = withSpring(-actionThreshold * 1.6, { damping: 18, stiffness: 280 });
-        runOnJS(onOpenChange)(true);
+  const { translationX, panGesture, close } = useSwipeableRow({
+    leftSnapPoints,
+    rightSnapPoints,
+    // Disable generic auto-trigger to avoid conflicts with snap points.
+    // Full swipe is handled by onSnap.
+    onSnap: (direction: any, point: number) => {
+      if (point === 0) {
+        onOpenChange(false);
       } else {
-        // Rebound back to 0
-        translateX.value = withSpring(0, { damping: 20, stiffness: 300 });
-        runOnJS(onOpenChange)(false);
+        onOpenChange(true);
+        if (enableFullSwipe) {
+          if (point === SCREEN_WIDTH) {
+            onComplete();
+            close();
+          } else if (point === -SCREEN_WIDTH) {
+            onDelete();
+            close();
+          }
+        }
       }
-    });
+    }
+  });
 
   const animatedRowStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: translateX.value }],
+      transform: [{ translateX: translationX.value }],
     };
   });
 
   const leftActionStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(translateX.value, [10, actionThreshold], [0, 1], Extrapolation.CLAMP);
+    const opacity = interpolate(translationX.value, [10, actionThreshold], [0, 1], Extrapolation.CLAMP);
     return { opacity };
   });
 
   const rightActionStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(translateX.value, [-10, -actionThreshold], [0, 1], Extrapolation.CLAMP);
+    const opacity = interpolate(translationX.value, [-10, -actionThreshold], [0, 1], Extrapolation.CLAMP);
     return { opacity };
   });
 
@@ -267,7 +249,7 @@ function SwipeableRowItem({
         <Pressable
           onPress={() => {
             onComplete();
-            closeRow();
+            close();
           }}
           style={styles.actionBtnContent}
         >
@@ -281,7 +263,7 @@ function SwipeableRowItem({
         <Pressable
           onPress={() => {
             onArchive();
-            closeRow();
+            close();
           }}
           style={[styles.actionBtnContent, { backgroundColor: '#f59e0b' }]}
         >
@@ -291,7 +273,7 @@ function SwipeableRowItem({
         <Pressable
           onPress={() => {
             onDelete();
-            closeRow();
+            close();
           }}
           style={[styles.actionBtnContent, { backgroundColor: '#ef4444' }]}
         >

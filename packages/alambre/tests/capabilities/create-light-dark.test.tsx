@@ -1,6 +1,6 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createLightDarkProvider from '../../src/capabilities/light-dark/light-dark-provider';
+import createLightDark from '../../src/capabilities/light-dark/create-light-dark';
 import type { UseLightDarkType } from '../../src/capabilities/light-dark/light-dark-types';
 import { createMemoryStorage, type StorageMock } from '../helpers/storage';
 
@@ -9,10 +9,10 @@ type Theme = { color: string };
 const light: Theme = { color: '#ffffff' };
 const dark: Theme = { color: '#000000' };
 
-describe('createLightDarkProvider', () => {
+describe('createLightDark', () => {
   it('starts in light mode with the light theme by default', async () => {
     const storage = createMemoryStorage();
-    const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { useLightDark } = createLightDark(light, dark, storage);
 
     const holder: { current?: UseLightDarkType<Theme> } = {};
     const Consumer = () => {
@@ -20,7 +20,7 @@ describe('createLightDarkProvider', () => {
       return null;
     };
 
-    render(<LightDarkProvider><Consumer /></LightDarkProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current).toBeDefined());
     expect(holder.current?.currThemeName).toBe('light');
@@ -29,7 +29,7 @@ describe('createLightDarkProvider', () => {
 
   it('loads a persisted dark preference on init', async () => {
     const storage = createMemoryStorage({ lightDarkThemeKey: 'dark' });
-    const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { useLightDark } = createLightDark(light, dark, storage);
 
     const holder: { current?: UseLightDarkType<Theme> } = {};
     const Consumer = () => {
@@ -37,7 +37,7 @@ describe('createLightDarkProvider', () => {
       return null;
     };
 
-    render(<LightDarkProvider><Consumer /></LightDarkProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.currThemeName).toBe('dark'));
     expect(holder.current?.theme).toEqual(dark);
@@ -46,7 +46,7 @@ describe('createLightDarkProvider', () => {
 
   it('ignores an invalid persisted theme name', async () => {
     const storage = createMemoryStorage({ lightDarkThemeKey: 'blue' });
-    const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { useLightDark } = createLightDark(light, dark, storage);
 
     const holder: { current?: UseLightDarkType<Theme> } = {};
     const Consumer = () => {
@@ -54,7 +54,7 @@ describe('createLightDarkProvider', () => {
       return null;
     };
 
-    render(<LightDarkProvider><Consumer /></LightDarkProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.currThemeName).toBe('light'));
     expect(holder.current?.theme).toEqual(light);
@@ -62,7 +62,7 @@ describe('createLightDarkProvider', () => {
 
   it('toggles to dark and persists the choice', async () => {
     const storage: StorageMock = createMemoryStorage();
-    const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { useLightDark } = createLightDark(light, dark, storage);
 
     const holder: { current?: UseLightDarkType<Theme> } = {};
     const Consumer = () => {
@@ -70,7 +70,7 @@ describe('createLightDarkProvider', () => {
       return null;
     };
 
-    render(<LightDarkProvider><Consumer /></LightDarkProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current).toBeDefined());
 
@@ -92,7 +92,7 @@ describe('createLightDarkProvider', () => {
 
   it('sets the theme name explicitly and persists it', async () => {
     const storage = createMemoryStorage();
-    const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { useLightDark } = createLightDark(light, dark, storage);
 
     const holder: { current?: UseLightDarkType<Theme> } = {};
     const Consumer = () => {
@@ -100,7 +100,7 @@ describe('createLightDarkProvider', () => {
       return null;
     };
 
-    render(<LightDarkProvider><Consumer /></LightDarkProvider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current).toBeDefined());
 
@@ -112,15 +112,16 @@ describe('createLightDarkProvider', () => {
     expect(storage.setCalls).toContainEqual(['lightDarkThemeKey', 'dark']);
   });
 
-  it('throws when the hook is used outside the provider', () => {
+  it('can be accessed directly via actions and store without React render', async () => {
     const storage = createMemoryStorage();
-    const { useLightDark } = createLightDarkProvider(light, dark, storage);
+    const { store, actions } = createLightDark(light, dark, storage);
 
-    const Consumer = () => {
-      useLightDark();
-      return null;
-    };
+    await waitFor(() => expect(store.getState().themeName).toBe('light'));
 
-    expect(() => render(<Consumer />)).toThrow(/useLightDark must be used within a LightDarkProvider/);
+    await actions.toggleTheme();
+
+    expect(actions.getThemeName()).toBe('dark');
+    expect(actions.getTheme()).toEqual(dark);
+    expect(storage.setCalls).toContainEqual(['lightDarkThemeKey', 'dark']);
   });
 });

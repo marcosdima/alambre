@@ -1,3 +1,4 @@
+import type { FC, ReactNode, ReactElement } from 'react';
 import type { Storage } from '../../types/actions';
 import createStore from '../../core/create-store';
 import { useExternalStore } from '../../core/use-external-store';
@@ -5,9 +6,7 @@ import type { ThemeName, ThemeState, UseLightDarkType } from './light-dark-types
 
 const lightDarkThemeKey = 'lightDarkThemeKey';
 
-type LightDarkActions = {
-  setThemeName: (theme: ThemeName) => Promise<void>;
-};
+const LightDarkProvider: FC<{ children?: ReactNode }> = ({ children }) => (children ?? null) as ReactElement | null;
 
 const createLightDark = <T extends object>(
   lightTheme: T,
@@ -59,6 +58,7 @@ const createLightDark = <T extends object>(
     store,
     actions,
     useLightDark,
+    LightDarkProvider,
   };
 };
 

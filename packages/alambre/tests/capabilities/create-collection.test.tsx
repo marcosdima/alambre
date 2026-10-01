@@ -1,6 +1,6 @@
 import { act, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import createCollectionProvider from '../../src/capabilities/collection/create-collection-provider';
+import createCollection from '../../src/capabilities/collection/create-collection';
 import type { UseCollectionType } from '../../src/capabilities/collection/collection-types';
 import { createMemoryStorage } from '../helpers/storage';
 
@@ -12,22 +12,21 @@ const items: Item[] = [
   { id: 'b', name: 'wallet' },
 ];
 
-describe('createCollectionProvider', () => {
+describe('createCollection', () => {
   it('hydrates records persisted as JSON and reports loading', async () => {
     const storage = createMemoryStorage({ items: JSON.stringify(items) });
-    const { Provider, useValue } = createCollectionProvider<Item>({
+    const { useCollection } = createCollection<Item>({
       storage,
       storageKey: 'items',
-      hookName: 'Items',
     });
 
     const holder: { current?: ItemValue } = {};
     const Consumer = () => {
-      holder.current = useValue();
+      holder.current = useCollection();
       return null;
     };
 
-    render(<Provider><Consumer /></Provider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.records).toEqual(items));
     expect(holder.current?.loading).toBe(false);
@@ -35,7 +34,7 @@ describe('createCollectionProvider', () => {
 
   it('falls back to the initial value when nothing is persisted', async () => {
     const storage = createMemoryStorage();
-    const { Provider, useValue } = createCollectionProvider<Item>({
+    const { useCollection } = createCollection<Item>({
       storage,
       storageKey: 'items',
       initialValue: [],
@@ -43,18 +42,18 @@ describe('createCollectionProvider', () => {
 
     const holder: { current?: ItemValue } = {};
     const Consumer = () => {
-      holder.current = useValue();
+      holder.current = useCollection();
       return null;
     };
 
-    render(<Provider><Consumer /></Provider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.records).toEqual([]));
   });
 
   it('recovers the initial value when the stored payload is corrupt', async () => {
     const storage = createMemoryStorage({ items: '{nope' });
-    const { Provider, useValue } = createCollectionProvider<Item>({
+    const { useCollection } = createCollection<Item>({
       storage,
       storageKey: 'items',
       initialValue: [],
@@ -62,29 +61,29 @@ describe('createCollectionProvider', () => {
 
     const holder: { current?: ItemValue } = {};
     const Consumer = () => {
-      holder.current = useValue();
+      holder.current = useCollection();
       return null;
     };
 
-    render(<Provider><Consumer /></Provider>);
+    render(<Consumer />);
 
     await waitFor(() => expect(holder.current?.records).toEqual([]));
   });
 
   it('adds, updates and removes records through the storage adapter', async () => {
     const storage = createMemoryStorage();
-    const { Provider, useValue } = createCollectionProvider<Item>({
+    const { useCollection } = createCollection<Item>({
       storage,
       storageKey: 'items',
     });
 
     const holder: { current?: ItemValue } = {};
     const Consumer = () => {
-      holder.current = useValue();
+      holder.current = useCollection();
       return null;
     };
 
-    render(<Provider><Consumer /></Provider>);
+    render(<Consumer />);
     await waitFor(() => expect(holder.current).toBeDefined());
 
     await act(async () => {
@@ -104,19 +103,24 @@ describe('createCollectionProvider', () => {
     await waitFor(() => expect(holder.current?.records).toEqual([]));
   });
 
-  it('throws when the hook is used outside the provider', () => {
+  it('can be accessed directly via actions and store without React render', async () => {
     const storage = createMemoryStorage();
-    const { useValue } = createCollectionProvider<Item>({
+    const { store, actions } = createCollection<Item>({
       storage,
       storageKey: 'items',
-      hookName: 'Items',
     });
 
-    const Consumer = () => {
-      useValue();
-      return null;
-    };
+    await waitFor(() => expect(store.getState().loading).toBe(false));
 
-    expect(() => render(<Consumer />)).toThrow(/useItems must be used within ItemsProvider/);
+    await actions.add({ id: 'x', name: 'watch' });
+
+    expect(store.getState().records).toEqual([{ id: 'x', name: 'watch' }]);
+    expect(JSON.parse(storage.data.items)).toEqual([{ id: 'x', name: 'watch' }]);
+
+    await actions.update('x', { name: 'watch-v2' });
+    expect(store.getState().records[0].name).toBe('watch-v2');
+
+    await actions.remove('x');
+    expect(store.getState().records).toEqual([]);
   });
 });

@@ -1,61 +1,95 @@
-import type { NavigatorTypes } from '../../types';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useSyncExternalStore, useEffect } from 'react';
 import { BackHandler } from 'react-native';
+import type { NavigatorTypes } from '../../types';
+import { createStore } from '../../core/store';
 
+type NavigatorState = {
+  pages: NavigatorTypes.NavigatorObject;
+  currentPage: string;
+  stack: string[];
+  scrollTop: number;
+};
 
-const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
+const navigatorStore = createStore<NavigatorState | null>(null);
+
+export const initNavigator = (pages: NavigatorTypes.NavigatorObject) => {
   const firstPage = Object.keys(pages).shift() ?? '';
-  const stack = useRef<string[]>([]);
-  const [currentPage, updatePage] = useState<string>(firstPage);
-  const [scrollTop, setScrollTop] = useState<number>(0);
+  navigatorStore.set({
+    pages,
+    currentPage: firstPage,
+    stack: [],
+    scrollTop: 0,
+  });
+};
 
-  const previous = () => {
-    const target = stack.current.pop();
-    if (!target) return;
-    setScrollTop(0);
-    updatePage(target);
-  };
-
-  const navigate = (
-    target: string,
-    settings: NavigatorTypes.NavigationSettings = {},
-  ) => {
+export const navigatorActions = {
+  navigate: (target: string, settings: NavigatorTypes.NavigationSettings = {}) => {
+    const state = navigatorStore.get();
+    if (!state) return;
     const { subpage } = settings;
-    const aux = subpage
-      ? `${target},${subpage}`
-      : String(target);
-    if (aux === currentPage) return;
-    stack.current.push(currentPage);
-    setScrollTop(0);
-    updatePage(aux);
-  };
+    const aux = subpage ? `${target},${subpage}` : String(target);
+    if (aux === state.currentPage) return;
+
+    navigatorStore.set((prev) => prev ? {
+      ...prev,
+      stack: [...prev.stack, prev.currentPage],
+      currentPage: aux,
+      scrollTop: 0,
+    } : prev);
+  },
+
+  previous: () => {
+    const state = navigatorStore.get();
+    if (!state || state.stack.length === 0) return;
+
+    navigatorStore.set((prev) => {
+      if (!prev) return prev;
+      const newStack = [...prev.stack];
+      const target = newStack.pop();
+      if (!target) return prev;
+      return {
+        ...prev,
+        stack: newStack,
+        currentPage: target,
+        scrollTop: 0,
+      };
+    });
+  },
+
+  setScrollTop: (scrollTop: number) => {
+    navigatorStore.set((prev) => prev ? { ...prev, scrollTop } : prev);
+  },
+};
+
+export const useNavigator = (): NavigatorTypes.NavigatorReturn => {
+  const state = useSyncExternalStore(navigatorStore.subscribe, navigatorStore.get);
 
   useEffect(() => {
     const onBackPress = () => {
-      if (stack.current.length > 0) {
-        previous();
+      const current = navigatorStore.get();
+      if (current && current.stack.length > 0) {
+        navigatorActions.previous();
         return true;
       }
       return false;
     };
-
     const sub = BackHandler?.addEventListener?.('hardwareBackPress', onBackPress);
     return () => {
       sub?.remove?.();
     };
   }, []);
 
+  if (!state) {
+    throw new Error('Navigator not initialized. Call initNavigator() first.');
+  }
 
   const getComponent = (path: readonly string[]) => {
-    // Get the first key; if it does not exist, go to the first page.
+    const { pages } = state;
+    const firstPage = Object.keys(pages).shift() ?? '';
     const [firstKey, ...rest] = path;
     if (!firstKey) return pages[firstPage];
-
-    // Get that page and, if that's all it is, return it.
     const first = pages[firstKey];
     if (rest.length === 0) return first;
-
-    // Follow the path.
     return rest.reduce(
       (acc, key) => acc?.subpages?.[key],
       first as NavigatorTypes.Page | undefined,
@@ -63,36 +97,19 @@ const useNavigatorContext = (pages: NavigatorTypes.NavigatorObject) => {
   };
 
   return {
-    currentPage: getComponent(currentPage.split(',')),
-    pageKey: stack.current.join(', '),
-    noPreviousPages: stack.current.length === 0,
-    scrollTop,
-    navigate,
-    previous,
-    setScrollTop,
+    currentPage: getComponent(state.currentPage.split(',')),
+    pageKey: state.stack.join(', '),
+    noPreviousPages: state.stack.length === 0,
+    scrollTop: state.scrollTop,
+    navigate: navigatorActions.navigate,
+    previous: navigatorActions.previous,
+    setScrollTop: navigatorActions.setScrollTop,
   };
 };
 
-const NavigatorContext = createContext<NavigatorTypes.NavigatorReturn | undefined>(undefined);
-
-export const NavigatorProvider = (
-  {
-    children,
-    pages,
-    ...props
-  }: NavigatorTypes.NavigatorProviderProps,
-) => {
-  const value = useNavigatorContext(pages);
-  return (
-    <NavigatorContext.Provider {...props} value={value}>
-      {children}
-    </NavigatorContext.Provider>
-  );
-};
-
-export const useNavigator = () => {
-  const ctx = useContext(NavigatorContext);
-  if (!ctx)
-    throw new Error('useNavigator must be used within a NavigatorProvider');
-  return ctx;
+export const NavigatorProvider = ({ children, pages }: NavigatorTypes.NavigatorProviderProps) => {
+  if (!navigatorStore.get()) {
+    initNavigator(pages);
+  }
+  return <>{children}</>;
 };

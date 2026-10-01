@@ -1,7 +1,10 @@
+import type { FC, ReactNode, ReactElement } from 'react';
 import type { Storage } from '../../types/actions';
 import createStore from '../../core/create-store';
 import { useExternalStore } from '../../core/use-external-store';
 import type { ConfigState, UseConfigType } from './config-types';
+
+const ConfigProvider: FC<{ children?: ReactNode }> = ({ children }) => (children ?? null) as ReactElement | null;
 
 const createConfig = <T extends Record<string, string>>(
   baseConfig: T,
@@ -45,6 +48,7 @@ const createConfig = <T extends Record<string, string>>(
     store,
     actions: { saveField },
     useConfig,
+    ConfigProvider,
   };
 };
 

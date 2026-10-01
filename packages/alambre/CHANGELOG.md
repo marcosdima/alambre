@@ -4,6 +4,22 @@ All notable changes to `alambre` are documented in this file.
 
 The package is currently in a **pre-baseline phase**: the public contract is still being defined and the current `1.0.x` version series is a frozen placeholder (see `docs/architecture.md` §9). SemVer constraints do not apply until a baseline is declared.
 
+## 1.2.0 — 2026-10-01
+
+Major structural refactor migrating global capabilities and interaction behaviors from React Context to pure reactive external stores and headless physics hooks (Agent-First DX):
+
+- [refactor] **Zero Context for Global Capabilities**: Migrated `createConfig`, `createLang`, `createLightDark`, and `createCollection` to external stores powered by `useSyncExternalStore` (`core/use-external-store.ts`). Capability factories return `{ store, actions, use... }`. Enclosing Provider components (`<ConfigProvider>`, etc.) are no longer required, and `core/create-provider.tsx` was permanently removed.
+- [refactor] **Reactive & Imperative Behaviors**:
+  - `toast`: Converted to external store with direct imperative `toast.show()`, `toast.dismiss()`, `toast.clear()`, and `toast.next()`. Introduced `ToastHost` (alias `ToastProvider` for backward compatibility) as a pure UI rendering slot.
+  - `confirm`: Converted to external store with Promise-based imperative `confirm()` and `dismissConfirm()`. Introduced `ConfirmHost` (alias `ConfirmProvider`) as UI rendering slot.
+  - `createApi`: Removed `useApi` in favor of direct hook generation (`createQueryHook`, `createMutationHook`) and TanStack `QueryClientProvider` wrapper (`ApiProvider`).
+- [add] **Headless Physics Hooks**:
+  - `useCarousel`: Pure kinetic hook with Reanimated scroll worklets (`scrollRef`, `scrollX`, `onMomentumScrollEnd`, `activeIndex`, `scrollToIndex`) and pure math helpers (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`). Decouples scrolling and snapping physics from visual cards.
+  - `useDeck`: Headless swipeable card stack managing angular kinematics, translation shared values, undo/history stack, and programmatic actions (`popCard`, `undoLast`, `triggerProgrammaticSwipe`, `reset`).
+- [fix] Fixed `create-api.tsx` extension for native JSX support in TanStack `QueryClientProvider`.
+- [test] Added unit and behavioral test suites for `carousel.test.tsx` and `deck.test.tsx`; updated `public-api.test.ts` to validate value and type contracts.
+- [docs] Full documentation corpus audit: updated `docs/architecture.md` (§4, §6, §8), added Headless UI Physics section to `docs/ui.md` (§7), rewritten `docs/reference/capabilities.md` and `docs/reference/behaviors.md`, updated `docs/reference/index.md`, and registered patterns in `docs/discoveries.md`.
+
 ## 1.1.0 — 2026-09-26
 
 Key features, structural refactors, and public type contracts graduated in this release:

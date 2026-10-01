@@ -2,7 +2,7 @@ import { render, waitFor } from '@testing-library/react';
 import { QueryClient } from '@tanstack/react-query';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import createApiProvider from '../../src/behaviors/api/api-provider';
+import createApiProvider from '../../src/behaviors/api/create-api';
 import type { ApiEndpoint } from '../../src/behaviors/api/api-types';
 
 const okResponse = (body: unknown) => ({

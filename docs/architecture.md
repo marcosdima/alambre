@@ -61,13 +61,13 @@ If the concept itself is not yet clear, do not freeze the abstraction prematurel
 
 Alambre capabilities do not need to share a single internal architecture.
 
-Different problems may justify different approaches.
+Different problems justify different approaches:
 
-Architectural uniformity is not a goal by itself.
+* **Global capabilities and state services** (`config`, `lang`, `light-dark`, `collection`, `toast`, `confirm`) use decoupled external stores synchronized via `useSyncExternalStore` (`core/use-external-store.ts`). They completely eliminate React Context and the former `create-provider.tsx` harness, allowing direct imperative access outside the render tree and preventing fragile provider cascades and context unmount crashes.
+* **Kinetic and layout behaviors** (`useCarousel`, `useDeck`, `useCollapsible`, `useStagger`) are built as pure headless mathematical/physics hooks rather than view wrappers, returning reactive shared values and event bindings without imposing visual JSX.
+* **Component-bound spatial registries** (`DndProvider`, `NavigatorProvider`) retain scoped providers only where true spatial hierarchy or page stack tree containment is structurally required.
 
-An implementation mechanism should be chosen according to the requirements of the capability rather than forcing every capability into a common pattern.
-
-Current implementation patterns are therefore not automatically architectural decisions.
+Architectural uniformity is not a goal by itself. An implementation mechanism is chosen according to the requirements of the capability rather than forcing every capability into a single pattern.
 
 ---
 
@@ -109,6 +109,8 @@ The general separation is:
 Composition should remain simple and favor React's existing composition mechanisms.
 
 Mere passthroughs of React Native components are not considered meaningful reusable behavior and are not part of the framework; applications import React Native primitives directly.
+
+In line with this behavior-first principle, interactive containers (`useCarousel`, `useDeck`) are delivered as pure **headless physics hooks**: `alambre` provides kinematic mathematics (snap intervals, clamped target indices), scroll/gesture event worklets, and Reanimated shared values on the UI thread; the application owns 100% of the JSX rendering, card views, dimensions, and visual styling.
 
 Exceptions must be explicit decisions, recorded in `docs/ui.md`. One exception is already adopted: concrete icons may remain in `alambre` when they are presentation-neutral contracts — the application still owns colors, dimensions, and animation (see `docs/ui.md` §2).
 
@@ -158,6 +160,8 @@ Intentional public type contracts:
 * `HistoryState`, `UseHistoryStateOptions`, `UseHistoryStateReturn` — the `useHistoryState` contract and its pure history helpers.
 * `UseStopwatchOptions`, `UseStopwatchReturn` — the `useStopwatch` contract.
 * `CollapsibleTransitionType`, `CollapsibleSpringConfig`, `UseCollapsibleOptions`, `UseCollapsibleReturn` — the `useCollapsible` headless disclosure contract.
+* `UseCarouselConfig` — the `useCarousel` headless carousel configuration contract (`cardWidth`, `cardGap`, `totalItems`, `autoPlay`, `autoPlayInterval`).
+* `UseDeckConfig` — the `useDeck` headless swipeable card deck configuration contract (`initialCards`).
 * `LayoutBounds`, `DroppableRegistration`, `ActiveDragState`, `DropEvent`, `DndContextValue`, `DndProviderProps`, `DraggableKineticsConfig`, `UseDraggableOptions`, `UseDraggableReturn`, `UseDroppableOptions`, `UseDroppableReturn`, `DraggableRenderProps`, `DraggableProps`, `DroppableRenderProps`, `DroppableProps`, `SortableItem`, `DropAnimationMode`, `NeighborShiftMode`, `SortableRowProps` — the headless Drag & Drop and sortable container contracts (`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`).
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
@@ -192,6 +196,14 @@ From the baseline onward:
 The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namespaces are no longer part of the public API. They were blanket re-exports of internal type modules; their members that constitute genuine public contracts now have first-class names (`Storage`, `IconAnimationConfig`, `IconProps`).
 
 `BaseModule` and `createModuleProvider` are no longer part of the public API (Q1 restructure). The shared module machinery was replaced by an internal `core` (`createStore` + `createProvider`); the public surface is the concrete capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`) and behaviors (`createApiProvider`, `NavigatorProvider`/`useNavigator`, `ToastProvider`/`useToast`). This is breaking for any consumer relying on the module machinery directly.
+
+`core/create-provider.tsx` was completely removed in favor of external stores powered by `useSyncExternalStore` (`core/use-external-store.ts`). Capability factories (`createConfig`, `createLang`, `createLightDark`, `createCollection`) return `{ store, actions, use... }`. React Context is no longer used for these capabilities, and enclosing Provider components are no longer required. The `*Provider` factory names (`createConfigProvider`, etc.) remain as alias exports to prevent breaking existing imports.
+
+`ToastProvider` and `ConfirmProvider` are retained as aliases to `ToastHost` and `ConfirmHost` (pure component hosts for rendering modals/banners), while their state is managed via external stores (`createToastStore`, `createConfirmStore`). Imperative methods (`toast.show()`, `toast.dismiss()`, `confirm()`, `dismissConfirm()`) are directly accessible outside the React component tree.
+
+`createApi` (alias `createApiProvider`) no longer exposes `useApi`. Requests are built using `createQueryHook` and `createMutationHook`, and `ApiProvider` serves strictly to inject TanStack's `QueryClientProvider` without maintaining an internal Alambre context.
+
+`useCarousel` and `useDeck` are additive headless physics hooks: `useCarousel` calculates card snap intervals, active indices, and Reanimated scroll worklets; `useDeck` provides card stack mechanics, translation shared values, and programmatic gestures. Both are covered by tests in `packages/alambre/tests/behaviors/` and validated in `tests/public-api.test.ts`.
 
 `AnimadoView` and its `AnimadoTypes` type surface were moved out of the framework to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the demo was the only known consumer and no implementation remains in the repository.
 

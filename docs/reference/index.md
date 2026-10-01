@@ -16,18 +16,20 @@ For the retrieval protocol all agents must follow when consulting this documenta
 ## Navigation & Reference Sections
 
 ### 1. [Capabilities](capabilities.md)
-State and capability providers backed by the storage contract:
-* **`createConfigProvider`**: Flat key-value configuration and preferences.
-* **`createLangProvider`**: Multi-language localization (i18n) management.
-* **`createLightDarkProvider`**: Light / Dark theme tokens and switching.
-* **`createCollectionProvider`**: Persisted, typed collections with CRUD actions (`records`, `loading`, `add`, `update`, `remove`).
+State and capability external stores backed by the storage contract and synchronized via `useSyncExternalStore` (Zero React Context, returning `{ store, actions, use... }`):
+* **`createConfig`**: Flat key-value configuration and preferences (`saveField`, `useConfig`).
+* **`createLang`**: Multi-language localization (i18n) management (`changeLang`, `useLang`).
+* **`createLightDark`**: Light / Dark theme tokens and switching (`toggleTheme`, `setThemeName`, `useLightDark`).
+* **`createCollection`**: Persisted, typed collections with CRUD actions (`records`, `loading`, `add`, `update`, `remove`, `useCollection`).
 
 ### 2. [Behaviors](behaviors.md)
-Application behavioral patterns decoupled from presentation:
+Application behavioral patterns, overlay hosts, and headless physics drivers:
 * **`NavigatorProvider` & `useNavigator`**: Page and subpage routing with history stack and scroll offset tracking.
-* **`ToastProvider` & `useToast`**: Non-blocking, transient feedback notifications.
-* **`ConfirmProvider` & `useConfirm`**: Blocking confirmation dialogs with Promise-based responses.
-* **`createApiProvider`**: TanStack React Query integration wrapper.
+* **`ConfirmHost`, `confirm`, & `useConfirm`**: Blocking confirmation dialogs with Promise-based responses and direct imperative execution.
+* **`ToastHost`, `toast`, & `useToast`**: Non-blocking transient feedback notifications with direct imperative triggers (`toast.show()`).
+* **`createApi`**: TanStack React Query integration wrapper and typed query/mutation hook generators without internal context.
+* **`useCarousel`**: Headless content carousel with Reanimated scroll worklets, snap calculations, and auto-play.
+* **`useDeck`**: Headless swipeable card stack with angular rotation kinematics, history stack, and gesture controls.
 
 ### 3. [Storage Layer](storage.md)
 Persistence abstraction and serialization helpers:
@@ -63,37 +65,34 @@ Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, a
 
 ---
 
-## 7. Canonical Root Provider Hierarchy
+## 7. Canonical Root Hierarchy (Zero-Context Architecture)
 
-When building an application with `alambre`, the composition order of providers in `App.tsx` is critical to ensure proper dependency resolution, modal layering, theme inheritance, and gesture handling.
+In Alambre's Headless architecture, global capabilities (**Config, Lang, LightDark, Collection**) run on external stores (`useSyncExternalStore`) and require **zero context providers** in `App.tsx`. Components consume them directly without wrapping providers or unmount risks.
+
+The application tree only mounts providers where true native hierarchy, safe-area insets, or structural spatial registration is physically required.
 
 ### The Canonical Tree
 
 ```
 GestureHandlerRootView (native touch root)
 └── SafeAreaProvider (safe area insets)
-    └── ConfigProvider (persisted settings & flags)
-        └── LangProvider (i18n translations)
-            └── LightDarkProvider (theme tokens & surface styles)
-                └── [Domain Collection Providers...] (typed entity stores)
-                    └── NavigatorProvider (routing & navigation history)
-                        └── ConfirmProvider (modal confirmation dialogs)
-                            └── ToastProvider (transient HUD notifications)
-                                └── DndProvider (spatial drag & drop registry)
-                                    └── ApiProvider (TanStack query cache)
-                                        └── AppNavigatorBody / Screen Content
+    └── NavigatorProvider (routing & navigation history - optional)
+        └── DndProvider (spatial drag & drop registry - optional)
+            └── ApiProvider (TanStack query cache - optional)
+                ├── AppNavigatorBody / Screen Content
+                ├── ConfirmHost (renders active confirm dialog)
+                └── ToastHost (renders active toast notification)
 ```
 
 ### Hierarchy Rationale
 
-| Level | Provider | Rationale |
+| Level | Component | Rationale |
 | --- | --- | --- |
-| **1. Platform** | `GestureHandlerRootView`, `SafeAreaProvider` | Must enclose all React Native Gesture Handler interactions (pan, swipe, DnD) on Android and supply window insets to all child components. |
-| **2. Capabilities** | `ConfigProvider`, `LangProvider`, `LightDarkProvider` | Must sit **above** all UI chrome so that navigation headers, back buttons, confirm dialogs, and toast messages inherit active theme tokens and language strings. |
-| **3. Routing** | `NavigatorProvider` | Manages page routing, transition animations, and history stack. Must sit above overlays so toasts and dialogs can inspect route state or glide when navigating. |
-| **4. Overlays** | `ConfirmProvider`, `ToastProvider` | Injected into the tree so modal dialogs and transient notifications render over the top of active screen contents without being obscured by container `overflow: hidden`. |
-| **5. Gestures** | `DndProvider` | Encloses the screens utilizing drag-and-drop, providing a unified spatial coordinate registry for draggable cards and droppable zones. |
-| **6. Data** | `ApiProvider` | Injects TanStack React Query client, ensuring any screen or modal component can perform queries and mutations. |
+| **1. Platform** | `GestureHandlerRootView`, `SafeAreaProvider` | Encloses all native gesture responders (pan, swipe, DnD) on Android/iOS and supplies window insets to child components. |
+| **2. Routing (Optional)** | `NavigatorProvider` | Manages page routing, transition animations, and history stack when using Alambre's lightweight navigator. |
+| **3. Gestures (Optional)** | `DndProvider` | Encloses screens utilizing drag-and-drop, providing a spatial coordinate registry for draggable cards and droppable zones. |
+| **4. Data (Optional)** | `ApiProvider` | Injects TanStack React Query client for query caching and mutation hooks. |
+| **5. Overlay Hosts** | `ConfirmHost`, `ToastHost` | Zero-context rendering slots mounted at root to display modal dialogs and HUD banners above all screens. |
 
 ### Canonical `App.tsx` Implementation
 
@@ -103,14 +102,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   NavigatorProvider,
-  ConfirmProvider,
-  ToastProvider,
+  ConfirmHost,
+  ToastHost,
   DndProvider,
 } from 'alambre';
 
-import { ConfigProvider } from './providers/config';
-import { LangProvider } from './providers/lang';
-import { LightDarkProvider } from './providers/theme';
 import { ApiProvider } from './services/api';
 import { navigatorConfig } from './navigation/config';
 import { AppNavigatorBody } from './navigation/AppNavigatorBody';
@@ -121,23 +117,15 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ConfigProvider>
-          <LangProvider>
-            <LightDarkProvider>
-              <NavigatorProvider pages={navigatorConfig}>
-                <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                  <ToastProvider ToastComponent={TemplateToast}>
-                    <DndProvider>
-                      <ApiProvider>
-                        <AppNavigatorBody />
-                      </ApiProvider>
-                    </DndProvider>
-                  </ToastProvider>
-                </ConfirmProvider>
-              </NavigatorProvider>
-            </LightDarkProvider>
-          </LangProvider>
-        </ConfigProvider>
+        <NavigatorProvider pages={navigatorConfig}>
+          <DndProvider>
+            <ApiProvider>
+              <AppNavigatorBody />
+              <ConfirmHost ConfirmComponent={ConfirmDialog} />
+              <ToastHost ToastComponent={TemplateToast} />
+            </ApiProvider>
+          </DndProvider>
+        </NavigatorProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

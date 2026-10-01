@@ -1,4 +1,4 @@
-import React, { useCallback, useState, type ReactElement } from 'react';
+import React, { useState, type ReactElement } from 'react';
 import {
   Dimensions,
   StyleSheet,
@@ -14,8 +14,9 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, useDeck } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
@@ -86,46 +87,22 @@ const INITIAL_DECK: DeckCard[] = [
 export default function DeckTestbed() {
   const { theme } = useLightDark();
 
-  // State
-  const [deck, setDeck] = useState<DeckCard[]>(INITIAL_DECK);
-  const [history, setHistory] = useState<DeckCard[]>([]);
+  // Microphysics configuration
   const [threshold, setThreshold] = useState(120);
   const [maxRotation, setMaxRotation] = useState(16);
   const [scaleBackCards, setScaleBackCards] = useState(true);
 
-  // Parent-owned shared values for pure UI-thread kinetic coordination
-  const swipeTranslation = useSharedValue(0);
-  const activeIndex = useSharedValue(0);
-
-  const popCard = useCallback((_direction: 'left' | 'right') => {
-    // Advance the active index natively without triggering React renders
-    activeIndex.value += 1;
-    swipeTranslation.value = 0;
-    
-    // Update history for programmatic undo, but leave the DOM intact
-    setDeck((prev) => {
-      if (prev.length === 0) return prev;
-      const [top, ...rest] = prev;
-      setHistory((hist) => [top, ...hist]);
-      return prev; // We DO NOT mutate the array anymore to prevent unmounts
-    });
-  }, [activeIndex, swipeTranslation]);
-
-  const undoLast = useCallback(() => {
-    if (history.length === 0) return;
-    const [last, ...restHistory] = history;
-    setHistory(restHistory);
-    // Move the active index back natively
-    if (activeIndex.value > 0) {
-      activeIndex.value -= 1;
-    }
-    swipeTranslation.value = 0;
-  }, [history, activeIndex, swipeTranslation]);
-
-  const triggerProgrammaticSwipe = (direction: 'left' | 'right') => {
-    if (activeIndex.value >= deck.length) return;
-    popCard(direction);
-  };
+  // Deck headless hook
+  const {
+    deck,
+    history,
+    activeIndex,
+    swipeTranslation,
+    popCard,
+    undoLast,
+    triggerProgrammaticSwipe,
+    reset,
+  } = useDeck({ initialCards: INITIAL_DECK });
 
   const renderIcon = (name: DeckCard['iconName'], color: string) => {
     switch (name) {
@@ -160,7 +137,7 @@ export default function DeckTestbed() {
 
       {/* Stage: Interactive Stack */}
       <View style={styles.stage}>
-        {activeIndex.value >= deck.length ? (
+        {history.length >= deck.length ? (
           <View style={[styles.emptyContainer, { borderColor: theme.border, backgroundColor: theme.surface }]}>
             <AlambreIcons.Tick color={theme.primary} lineWidth={2.4} style={styles.emptyIcon} />
             <Text style={[styles.emptyTitle, { color: theme.color }]}>
@@ -169,23 +146,21 @@ export default function DeckTestbed() {
             <Text style={[styles.emptySubtitle, { color: theme.muted }]}>
               Has revisado todos los elementos. Puedes reiniciar la pila o deshacer la última acción.
             </Text>
-            <AppButton onPress={() => {
-              setDeck(INITIAL_DECK);
-              setHistory([]);
-              activeIndex.value = 0;
-              swipeTranslation.value = 0;
-            }} style={styles.emptyButton}>
+            <AppButton onPress={reset} style={styles.emptyButton}>
               <Text style={{ color: theme.primary, fontWeight: '700' }}>Reiniciar Pila</Text>
             </AppButton>
           </View>
         ) : (
           <View style={styles.deckContainer}>
             {deck.map((card, absoluteIdx) => {
+              const isSwiped = absoluteIdx < history.length;
+              if (isSwiped) return null;
+
               return (
                 <UnifiedDeckCard
                   key={card.id}
                   card={card}
-                  absoluteIndex={absoluteIdx}
+                  absoluteIdx={absoluteIdx}
                   activeIndex={activeIndex}
                   swipeTranslation={swipeTranslation}
                   threshold={threshold}
@@ -194,6 +169,7 @@ export default function DeckTestbed() {
                   onSwipeOut={popCard}
                   renderIcon={renderIcon}
                   theme={theme}
+                  isTop={absoluteIdx === history.length}
                 />
               );
             }).reverse()}
@@ -205,7 +181,7 @@ export default function DeckTestbed() {
           <AppButton
             variant="outline"
             tone="danger"
-            disabled={deck.length === 0}
+            disabled={history.length >= deck.length}
             onPress={() => triggerProgrammaticSwipe('left')}
             style={styles.actionCircleButton}
           >
@@ -225,7 +201,7 @@ export default function DeckTestbed() {
           <AppButton
             variant="outline"
             tone="success"
-            disabled={deck.length === 0}
+            disabled={history.length >= deck.length}
             onPress={() => triggerProgrammaticSwipe('right')}
             style={styles.actionCircleButton}
           >
@@ -273,11 +249,7 @@ export default function DeckTestbed() {
 
         <View style={styles.buttonRow}>
           <AppButton
-            onPress={() => {
-              setDeck(INITIAL_DECK);
-              setHistory([]);
-              swipeTranslation.value = 0;
-            }}
+            onPress={reset}
           >
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Reiniciar Pila (↺)</Text>
           </AppButton>
@@ -477,7 +449,8 @@ const styles = StyleSheet.create({
 // Unified Component: Preserves the View instance when advancing through the deck.
 function UnifiedDeckCard({
   card,
-  index,
+  absoluteIdx,
+  activeIndex,
   swipeTranslation,
   threshold,
   maxRotation,
@@ -485,21 +458,22 @@ function UnifiedDeckCard({
   onSwipeOut,
   renderIcon,
   theme,
+  isTop,
 }: {
   card: DeckCard;
-  index: number;
-  swipeTranslation: Animated.SharedValue<number>;
+  absoluteIdx: number;
+  activeIndex?: SharedValue<number>;
+  swipeTranslation: SharedValue<number>;
   threshold: number;
   maxRotation: number;
   scaleBackCards: boolean;
   onSwipeOut: (direction: 'left' | 'right') => void;
   renderIcon: (name: DeckCard['iconName'], color: string) => ReactElement;
   theme: ReturnType<typeof useLightDark>['theme'];
+  isTop: boolean;
 }) {
   const localX = useSharedValue(0);
   const localY = useSharedValue(0);
-
-  const isTop = index === 0;
 
   const panGesture = Gesture.Pan()
     .enabled(isTop)
@@ -530,39 +504,44 @@ function UnifiedDeckCard({
     });
 
   const animatedStyle = useAnimatedStyle(() => {
-    if (index === 0) {
+    const currentActive = activeIndex ? activeIndex.value : 0;
+    const dragProgress = Math.min(Math.abs(swipeTranslation.value) / threshold, 1);
+    const continuousActiveIndex = currentActive + dragProgress;
+    const relIndex = absoluteIdx - continuousActiveIndex;
+
+    if (absoluteIdx <= currentActive) {
       const rotate = interpolate(localX.value, [-SCREEN_WIDTH * 0.7, 0, SCREEN_WIDTH * 0.7], [-maxRotation, 0, maxRotation], Extrapolation.CLAMP);
       return {
         zIndex: 3,
         transform: [{ translateX: localX.value }, { translateY: localY.value }, { rotate: `${rotate}deg` }],
       };
-    } else if (index === 1) {
-      if (!scaleBackCards) return { zIndex: 2, transform: [{ scale: 0.94 }, { translateY: 12 }] };
-      const scale = interpolate(Math.abs(swipeTranslation.value), [0, threshold], [0.94, 1.0], Extrapolation.CLAMP);
-      const translateYOffset = interpolate(Math.abs(swipeTranslation.value), [0, threshold], [12, 0], Extrapolation.CLAMP);
+    } else {
+      if (!scaleBackCards) {
+        const staticIndex = Math.max(0, Math.round(relIndex));
+        if (staticIndex === 1) return { zIndex: 2, transform: [{ scale: 0.94 }, { translateY: 12 }] };
+        if (staticIndex >= 2) return { zIndex: 1, transform: [{ scale: 0.88 }, { translateY: 24 }] };
+        return { zIndex: 3, transform: [{ scale: 1 }, { translateY: 0 }] };
+      }
+
+      const scale = interpolate(relIndex, [0, 1, 2], [1.0, 0.94, 0.88], Extrapolation.CLAMP);
+      const translateYOffset = interpolate(relIndex, [0, 1, 2], [0, 12, 24], Extrapolation.CLAMP);
+      
       return {
-        zIndex: 2,
-        transform: [{ scale }, { translateY: translateYOffset }],
-      };
-    } else if (index === 2) {
-      if (!scaleBackCards) return { zIndex: 1, transform: [{ scale: 0.88 }, { translateY: 24 }] };
-      const scale = interpolate(Math.abs(swipeTranslation.value), [0, threshold], [0.88, 0.94], Extrapolation.CLAMP);
-      const translateYOffset = interpolate(Math.abs(swipeTranslation.value), [0, threshold], [24, 12], Extrapolation.CLAMP);
-      return {
-        zIndex: 1,
+        zIndex: relIndex <= 1 ? 2 : 1,
         transform: [{ scale }, { translateY: translateYOffset }],
       };
     }
-    return { opacity: 0 };
   });
 
   const likeStampStyle = useAnimatedStyle(() => {
-    if (index !== 0) return { opacity: 0 };
+    const currentActive = activeIndex ? activeIndex.value : 0;
+    if (absoluteIdx > currentActive) return { opacity: 0 };
     return { opacity: interpolate(localX.value, [15, threshold * 0.8], [0, 1], Extrapolation.CLAMP) };
   });
 
   const nopeStampStyle = useAnimatedStyle(() => {
-    if (index !== 0) return { opacity: 0 };
+    const currentActive = activeIndex ? activeIndex.value : 0;
+    if (absoluteIdx > currentActive) return { opacity: 0 };
     return { opacity: interpolate(localX.value, [-15, -threshold * 0.8], [0, 1], Extrapolation.CLAMP) };
   });
 

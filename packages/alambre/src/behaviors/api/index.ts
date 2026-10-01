@@ -1,4 +1,4 @@
-export { default as createApi } from './create-api';
+export { default as createApi, default as createApiProvider } from './create-api';
 export type {
   ApiEndpoint,
   ApiRequestInput,

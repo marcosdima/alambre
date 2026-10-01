@@ -1,5 +1,5 @@
 import createStore from '../../core/create-store';
-import type { RegisterToast, Toast, UseToastType } from './toast-types';
+import type { RegisterToast, Toast } from './toast-types';
 
 type ToastState = {
   queue: RegisterToast[];
@@ -15,11 +15,17 @@ export type ToastStoreOptions = {
 const generateId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export function createToastStore(options: ToastStoreOptions = {}) {
-  const {
+  let {
     defaultDuration = 4000,
     queueMode = 'queue',
     delay = 0,
   } = options;
+
+  const configure = (opts: ToastStoreOptions) => {
+    if (opts.defaultDuration !== undefined) defaultDuration = opts.defaultDuration;
+    if (opts.queueMode !== undefined) queueMode = opts.queueMode;
+    if (opts.delay !== undefined) delay = opts.delay;
+  };
 
   const store = createStore<ToastState>({
     queue: [],
@@ -119,6 +125,7 @@ export function createToastStore(options: ToastStoreOptions = {}) {
   return {
     store,
     actions: getActions(),
+    configure,
   };
 }
 

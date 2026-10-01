@@ -46,3 +46,10 @@ export type {
   UseCollapsibleReturn,
 } from './use-collapsible';
 
+
+export { useSwipeableRow } from './use-swipeable-row';
+export type {
+  UseSwipeableRowConfig,
+  UseSwipeableRowReturn,
+  SwipeDirection,
+} from './use-swipeable-row';

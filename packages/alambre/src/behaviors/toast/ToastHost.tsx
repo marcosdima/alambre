@@ -1,10 +1,18 @@
 import type { ProviderProps } from './toast-types';
+import { defaultToastStore } from './toast-store';
 import { useToast } from './use-toast';
 
 export const ToastHost = ({
   children,
   ToastComponent,
+  defaultDuration,
+  queueMode,
+  delay,
 }: ProviderProps) => {
+  if (defaultDuration !== undefined || queueMode !== undefined || delay !== undefined) {
+    defaultToastStore.configure({ defaultDuration, queueMode, delay });
+  }
+
   const { toast, dismiss, clear, next, queueLength } = useToast();
 
   return (

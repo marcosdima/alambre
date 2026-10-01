@@ -3,10 +3,10 @@ import type { Store } from './create-store';
 
 export function useExternalStore<TState, TSelected>(
   store: Store<TState>,
-  selector: (state: TState) => TSelected
+  selector: (state: TState) => TSelected,
 ): TSelected {
   return useSyncExternalStore(
     store.subscribe,
-    () => selector(store.getState())
+    () => selector(store.getState()),
   );
 }

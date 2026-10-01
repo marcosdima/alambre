@@ -1,3 +1,4 @@
+import type { FC, ReactNode, ReactElement } from 'react';
 import type { Storage } from '../../types/actions';
 import createStore from '../../core/create-store';
 import { useExternalStore } from '../../core/use-external-store';
@@ -7,7 +8,10 @@ type CollectionOptions<T extends CollectionRecord> = {
   storage: Storage;
   storageKey: string;
   initialValue?: T[];
+  hookName?: string;
 };
+
+const Provider: FC<{ children?: ReactNode }> = ({ children }) => (children ?? null) as ReactElement | null;
 
 const parseRecords = <T extends CollectionRecord>(raw: string | null, fallback: T[]): T[] => {
   if (!raw) return fallback;
@@ -81,6 +85,8 @@ const createCollection = <T extends CollectionRecord>({
     store,
     actions: { add, update, remove },
     useCollection,
+    useValue: useCollection,
+    Provider,
   };
 };
 

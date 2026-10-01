@@ -5,16 +5,16 @@ export const ConfirmHost = ({
   children,
   ConfirmComponent,
 }: ProviderProps) => {
-  const { current, settle, dismiss } = useConfirm();
+  const { current, settle } = useConfirm();
 
   return (
     <>
       {children}
       {current ? (
         <ConfirmComponent
-          confirm={current}
-          settle={settle}
-          dismiss={dismiss}
+          confirm={current.data}
+          onConfirm={() => settle(true)}
+          onCancel={() => settle(false)}
         />
       ) : null}
     </>

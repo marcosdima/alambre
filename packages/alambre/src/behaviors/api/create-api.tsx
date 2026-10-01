@@ -1,3 +1,5 @@
+/* global fetch */
+
 import { useMemo, type ReactNode } from 'react';
 import {
   QueryClient,

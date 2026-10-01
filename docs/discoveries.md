@@ -49,7 +49,9 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 | **F-04** | Headless Animation Stagger (`useStagger`) | `alambre` | `ADOPTED` | Cross-Logic, base-template, playground |
 | **F-05** | Headless Height Disclosure (`useCollapsible`) | `alambre` | `ADOPTED` | Playground, base-template |
 | **F-06** | Headless Drag & Drop (`DndProvider`, `SortableRow`) | `alambre` | `VALIDATING` | Playground (dnd sandbox) |
-| **F-07** | Headless Content Carousel (`useCarousel`) | `alambre` | `PROPOSAL` | Colguetti (home alarms) |
+| **F-07** | Headless Content Carousel (`useCarousel`) | `alambre` | `PROPOSAL` | Colguetti, Playground (carousel testbed) |
+| **F-08** | Headless Swipeable Deck (`useDeck`) | `alambre` | `PROPOSAL` | Playground (deck testbed) |
+| **F-09** | Headless Physics Hooks vs UI Presentation | `alambre` | `PROPOSAL` | Playground (`CarouselTestbed`, `DeckTestbed`) |
 | **OS-01** | Exact Alarms & Battery Doze (`USE_EXACT_ALARM`) | Native / OS | `ADOPTED` | Colguetti 1.0 |
 | **OS-02** | Reactive `AppState` Permissions & Resume Sync | Native / OS | `ADOPTED` | Colguetti 1.0 |
 | **OS-03** | Edge-to-Edge Android Window (`navigationBarTranslucent`) | Native / OS | `ADOPTED` | Base-template (`AppDialog`, sheets) |
@@ -112,10 +114,25 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 * **Status: VALIDATING.** Rescued into `packages/alambre` (`src/components/dnd/`). Covered by unit tests in `packages/alambre/tests/components/`. Awaiting second production consumer before graduation to `ADOPTED`.
 
 ### [F-07] Headless Content Carousel (`useCarousel`)
-* **Pattern:** Persistent container frames cycling through dynamic children with auto-rotation, interaction pausing, wrap-around index calculation, and indicator dot states without remounting outer cards.
-* **Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (alarms and items carousels).
-* **Candidate Abstraction:** Headless hook exposing `{ activeIndex, total, next, previous, goTo, isPlaying, play, pause, dots }` with strict isolation from parent list gestures.
-* **Status: PROPOSAL.** Prototyped in `apps/colguetti`. Candidate for framework upstreaming.
+* **Pattern:** Persistent container frames cycling through dynamic children with snapping physics, momentum calculation, wrap-around index calculation, and indicator tracking without remounting outer cards or baking in card styling.
+* **Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (alarms/items carousels) and `apps/playground/src/views/containers/CarouselTestbed.tsx`.
+* **Poor-fit assessment:** Tightly coupled monolithic carousel components dictate card layout, sizing, and styling within the framework. This forces consumers (and AI agents) to fight inline styles and causes unnecessary component re-renders during high-frequency gesture updates.
+* **Candidate Abstraction:** Headless hook `useCarousel({ cardWidth, cardGap, totalItems, autoPlay, autoPlayInterval })` exposing `{ scrollRef, scrollX, scrollHandler, onMomentumScrollEnd, activeIndex, scrollToIndex, snapInterval }` alongside pure math helpers (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`). The visual JSX and layout remain 100% owned by the application.
+* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/carousel/` and tested in `packages/alambre/tests/behaviors/carousel.test.tsx`. Consumed by `CarouselTestbed.tsx`. Awaiting second consumer production adoption, on-device/emulator validation, and sign-off by `@integrity`.
+
+### [F-08] Headless Swipeable Deck (`useDeck`)
+* **Pattern:** Stack of swipeable cards with angular kinematics, interactive pan gestures, velocity dismissal, card history stack, and programmatic triggers (swipe left/right, undo, reset) without coupling cards to fixed visual wrappers.
+* **Where it appeared:** `apps/playground/src/views/containers/DeckTestbed.tsx`.
+* **Poor-fit assessment:** Off-the-shelf deck components bundle card styling, rigid swipe thresholds, and opinionated overlay indicators. This leads to component bloat, prevents custom card rendering, and forces agents to modify library internals for unique visual designs.
+* **Candidate Abstraction:** Headless hook `useDeck<T>({ initialCards })` managing stack state, undo history, and gesture shared values: `{ deck, history, activeIndex, swipeTranslation, popCard, undoLast, triggerProgrammaticSwipe, reset }`. Allows the consumer to drive Reanimated card transforms and gestures freely.
+* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/deck/` and covered by unit tests in `packages/alambre/tests/behaviors/deck.test.tsx`. Exercised in `DeckTestbed.tsx`. Awaiting multi-consumer adoption and `@integrity` review.
+
+### [F-09] Headless Physics Hooks vs UI Presentation (Kinetic Containers)
+* **Pattern:** Complete architectural decoupling of kinetic physics, layout mathematics, and gesture/scroll coordination from UI presentation markup. Instead of monolithic container components with rigid visual styling, behaviors expose pure mathematical utilities and headless hooks returning reactive SharedValues and native event handlers. The consuming agent or application provides 100% of the JSX and visual styling.
+* **Where it appeared:** Container sandboxes in `apps/playground/src/views/containers/` (`CarouselTestbed.tsx`, `DeckTestbed.tsx`) and extraction to `packages/alambre/src/behaviors/` (`carousel/`, `deck/`).
+* **Poor-fit assessment:** Monolithic container components in React Native create tight coupling between physics engines (Reanimated, Gesture Handler) and DOM/styling trees. When AI agents (`@ax`, `@ui`) or developers need custom layouts or different design systems, they are forced to fight rigid inline styles or fork entire components. Furthermore, bundling view markup with physics leads to unnecessary re-renders and fragile layout calculations.
+* **Candidate Abstraction:** Architecture where `packages/alambre/src/behaviors/` exports pure mathematical calculations (e.g. `calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`) and headless hooks (`useCarousel`, `useDeck`) returning driver refs, SharedValues, and callbacks. Consumers wire these directly into their own `<Animated.ScrollView>` or `<GestureDetector>` hierarchies.
+* **Status: PROPOSAL.** Exercised across carousel and deck testbeds in `apps/playground/` and covered by unit tests in `packages/alambre/tests/behaviors/`. Subject to Double-Signature Gate: requires second consumer adoption in production and `@integrity` emulator audit before advancing beyond PROPOSAL.
 
 ---
 
