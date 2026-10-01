@@ -1,5 +1,6 @@
-export { default as ToastProvider } from './toast-provider';
-export { default as useToast } from './use-toast';
+export { default as ToastHost, ToastHost as ToastProvider } from './ToastHost';
+export { default as useToast, toast } from './use-toast';
+export { createToastStore } from './toast-store';
 export { parseToastPayload } from './toast-types';
 export type {
   ToastTone,
@@ -11,6 +12,5 @@ export type {
   Toast,
   ToastComponentProps,
   UseToastType,
-  ProviderProps,
+  ProviderProps as ToastHostProps,
 } from './toast-types';
-
