@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { readCollection, writeCollection } from 'alambre';
 import type { Alarm } from '../alarms/alarm-types';
 import { storage } from '../storage';
+import { ALARM_CHANNEL_ID } from './expiry';
 import {
   buildDesiredSchedule,
   diffSchedules,
@@ -18,12 +19,15 @@ const reschedule = async (entry: StoredScheduleEntry, bodyFor: (label: string) =
     weekday: entry.weekday,
     hour: entry.hour,
     minute: entry.minute,
+    channelId: ALARM_CHANNEL_ID,
   };
   await Notifications.scheduleNotificationAsync({
     identifier: entry.id,
     content: {
       title: entry.label,
       body: bodyFor(entry.label),
+      sound: true,
+      priority: Notifications.AndroidNotificationPriority.MAX,
       data: { alarmId: entry.alarmId },
       categoryIdentifier: ACTIVATION_CATEGORY,
     },

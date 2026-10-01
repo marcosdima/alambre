@@ -8,7 +8,7 @@ import { useRouteIntent } from '../navigator/RouteIntent';
 import { useActivation } from '../checklist/activation-context';
 import { useNotificationPermission } from './notification-permission-context';
 import { ACTIVATION_CATEGORY, syncSchedule } from './sync';
-import { EXPIRY_CATEGORY, SNOOZE_ACTION, SNOOZE_MINUTES } from './expiry';
+import { ALARM_CHANNEL_ID, EXPIRY_CATEGORY, SNOOZE_ACTION, SNOOZE_MINUTES } from './expiry';
 
 type AlarmIdData = { alarmId?: unknown; missing?: unknown };
 
@@ -98,7 +98,7 @@ export const NotificationsWatcher = () => {
       handleNotification: async () => ({
         shouldShowBanner: true,
         shouldShowList: true,
-        shouldPlaySound: false,
+        shouldPlaySound: true,
         shouldSetBadge: false,
       }),
     });
@@ -123,9 +123,22 @@ export const NotificationsWatcher = () => {
       ]).catch(() => undefined);
 
       if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync(ALARM_CHANNEL_ID, {
+          name: 'Alarmas y recordatorios',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          enableLights: true,
+          enableVibrate: true,
+          sound: 'default',
+        }).catch(() => undefined);
+
         await Notifications.setNotificationChannelAsync('default', {
           name: 'Default',
-          importance: Notifications.AndroidImportance.DEFAULT,
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          enableLights: true,
+          enableVibrate: true,
+          sound: 'default',
         }).catch(() => undefined);
       }
       void requestPermission();

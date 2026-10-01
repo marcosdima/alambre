@@ -1,15 +1,22 @@
-import { Text, View, StyleSheet, Pressable } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AlambreIcons, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
-import { useToast } from 'alambre';
+import { useConfig } from '../../providers/config';
 import ToggleLightDark from '../../components/ToggleLightDark';
+import AppCard from '../../components/AppCard';
+import AppButton from '../../components/AppButton';
 import { useNotificationPermission } from '../../notifications/notification-permission-context';
+
+const CAFECITO_URL = 'https://cafecito.app/marcosdima';
+const GITHUB_URL = 'https://github.com/marcosdima';
 
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
   const { lang, currentLang, changeLang } = useLang();
+  const { config, saveField } = useConfig();
   const { show } = useToast();
-  const { permission, loading, requestPermission, sendTestNotification } =
+  const { permission, loading, requestPermission, openSettings, sendTestNotification } =
     useNotificationPermission();
 
   const permissionHint = loading
@@ -20,8 +27,22 @@ export default () => {
         ? lang.settings.notificationsDenied
         : lang.settings.notificationsUndetermined;
 
+  const permissionBadge = loading
+    ? { label: lang.settings.notificationsBadgeUndetermined, tone: 'warning' as const }
+    : permission === 'granted'
+      ? { label: lang.settings.notificationsBadgeGranted, tone: 'success' as const }
+      : permission === 'denied'
+        ? { label: lang.settings.notificationsBadgeDenied, tone: 'danger' as const }
+        : { label: lang.settings.notificationsBadgeUndetermined, tone: 'warning' as const };
+
+  const currentGrace = parseInt(config.leaveGraceMinutes || '10', 10);
+
   const onRequestPermission = () => {
     void requestPermission();
+  };
+
+  const onOpenSettings = () => {
+    void openSettings();
   };
 
   const onTestNotification = () => {
@@ -39,132 +60,371 @@ export default () => {
     })();
   };
 
+  const handleOpenCafecito = () => {
+    void Linking.openURL(CAFECITO_URL);
+  };
+
+  const handleOpenGithub = () => {
+    void Linking.openURL(GITHUB_URL);
+  };
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.language}</Text>
-        <View style={styles.row}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Idioma / Language */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.language}
+        style={styles.card}
+      >
+        <View
+          style={[
+            styles.segmentedContainer,
+            { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+          ]}
+        >
           {(['es', 'en'] as const).map((code) => {
             const active = currentLang === code;
+            const label = code === 'es' ? 'Español' : 'English';
             return (
               <Pressable
                 key={code}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => changeLang(code)}
-                style={({ pressed }) => [
-                  styles.langChip,
-                  { borderColor: active ? theme.primary : theme.border, backgroundColor: active ? theme.primarySoft : theme.surfaceAlt },
-                  pressed && styles.langChipPressed,
+                style={[
+                  styles.segmentedButton,
+                  active && [
+                    styles.segmentedButtonActive,
+                    {
+                      backgroundColor: theme.surface,
+                      borderColor: theme.primary,
+                    },
+                  ],
                 ]}
               >
-                <Text style={{ color: active ? theme.primary : theme.color, textTransform: 'uppercase', fontWeight: active ? '800' : '600' }}>
-                  {code}
+                <Text
+                  style={[
+                    styles.segmentedText,
+                    {
+                      color: active ? theme.primary : theme.muted,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {label}
                 </Text>
               </Pressable>
             );
           })}
         </View>
-      </View>
+      </AppCard>
 
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.theme}</Text>
-        <ToggleLightDark
-          toggle={toggleTheme}
-          setLeft={currThemeName === 'light'}
-          style={styles.toggle}
-          colors={{
-            light: {
-              background: theme.surfaceAlt,
-              border: theme.border,
-              circle: '#0b525b',
-              sun: '#f59e0b',
-              moon: '#5b6572',
-            },
-            dark: {
-              background: theme.surface,
-              border: theme.border,
-              circle: '#9eebce',
-              sun: '#ffc266',
-              moon: '#9eb0c8',
-            },
-          }}
-        />
-      </View>
-
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.sectionLabel, { color: theme.color }]}>{lang.settings.notifications}</Text>
-        <Text style={{ color: theme.muted }}>{permissionHint}</Text>
-        <View style={styles.row}>
-          {permission !== 'granted' && (
-            <Pressable
-              onPress={onRequestPermission}
-              style={({ pressed }) => [
-                styles.actionButton,
-                { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-                pressed && styles.langChipPressed,
-              ]}
-            >
-              <Text style={{ color: theme.primary, fontWeight: '700' }}>
-                {lang.settings.requestPermission}
-              </Text>
-            </Pressable>
-          )}
-          <Pressable
-            onPress={onTestNotification}
-            style={({ pressed }) => [
-              styles.actionButton,
-              { borderColor: theme.border, backgroundColor: theme.surfaceAlt },
-              pressed && styles.langChipPressed,
-            ]}
-          >
-            <Text style={{ color: theme.primary, fontWeight: '700' }}>
-              {lang.settings.testNotification}
-            </Text>
-          </Pressable>
+      {/* Tema / Theme */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.theme}
+        subtitle={
+          currThemeName === 'light'
+            ? lang.settings.themeSubtitleLight
+            : lang.settings.themeSubtitleDark
+        }
+        style={styles.card}
+      >
+        <View style={styles.toggleRow}>
+          <ToggleLightDark
+            toggle={toggleTheme}
+            setLeft={currThemeName === 'light'}
+            style={styles.toggle}
+            colors={{
+              light: {
+                background: theme.surfaceAlt,
+                border: theme.border,
+                circle: '#15803d',
+                sun: '#d97706',
+                moon: '#64748b',
+              },
+              dark: {
+                background: theme.surfaceAlt,
+                border: theme.border,
+                circle: '#4ade80',
+                sun: '#fbbf24',
+                moon: '#94a3b8',
+              },
+            }}
+          />
         </View>
-      </View>
-    </View>
+      </AppCard>
+
+      {/* Tiempo de preparación predeterminado / Routine duration */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.routineDuration}
+        subtitle={lang.settings.routineDurationHint}
+        style={styles.card}
+      >
+        <View style={styles.durationRow}>
+          {[5, 10, 15, 20].map((mins) => {
+            const active = currentGrace === mins;
+            return (
+              <Pressable
+                key={mins}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => void saveField('leaveGraceMinutes', String(mins))}
+                style={[
+                  styles.durationChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.durationText,
+                    {
+                      color: active ? theme.primary : theme.color,
+                      fontWeight: active ? '700' : '600',
+                    },
+                  ]}
+                >
+                  {mins} min
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </AppCard>
+
+      {/* Notificaciones */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.notifications}
+        subtitle={permissionHint}
+        badge={permissionBadge.label}
+        badgeTone={permissionBadge.tone}
+        style={styles.card}
+      >
+        <View style={styles.notificationsStack}>
+          {permission === 'undetermined' && (
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.requestPermission}
+              onPress={onRequestPermission}
+              fullWidth
+            />
+          )}
+          {permission === 'denied' && (
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.openSettings}
+              onPress={onOpenSettings}
+              fullWidth
+            />
+          )}
+          <AppButton
+            variant="soft"
+            tone="primary"
+            label={lang.settings.testNotification}
+            onPress={onTestNotification}
+            fullWidth
+          />
+          {permission === 'granted' && (
+            <AppButton
+              variant="ghost"
+              tone="neutral"
+              label={lang.settings.openSettings}
+              onPress={onOpenSettings}
+              fullWidth
+            />
+          )}
+        </View>
+        <Text style={[styles.batteryHintText, { color: theme.muted }]}>
+          {lang.settings.batteryOptimizationHint}
+        </Text>
+      </AppCard>
+
+      {/* Apoyar el proyecto / Support */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.supportTitle}
+        subtitle={lang.settings.supportHint}
+        style={styles.card}
+      >
+        <AppButton
+          variant="soft"
+          tone="primary"
+          label={lang.settings.supportAction}
+          onPress={handleOpenCafecito}
+          rightIcon={
+            <AlambreIcons.Coffee
+              color={theme.primary}
+              lineWidth={2.2}
+              style={styles.coffeeIcon}
+            />
+          }
+          fullWidth
+        />
+      </AppCard>
+
+      {/* Acerca de / About (no identity badges per user explicit request) */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.aboutTitle}
+        style={styles.card}
+      >
+        <View style={styles.aboutContent}>
+          <View style={styles.aboutRow}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+              {lang.settings.version}
+            </Text>
+            <Text style={[styles.aboutValue, { color: theme.color }]}>
+              1.0.0
+            </Text>
+          </View>
+          <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
+          <View style={styles.aboutRow}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+              {lang.settings.developer}
+            </Text>
+            <Text style={[styles.aboutValue, { color: theme.primary }]}>
+              @marcosdima
+            </Text>
+          </View>
+
+          <View style={styles.aboutActions}>
+            <AppButton
+              variant="outline"
+              tone="primary"
+              label={lang.settings.viewGithub}
+              onPress={handleOpenGithub}
+              rightIcon={
+                <AlambreIcons.Arrow
+                  drawIt
+                  color={theme.primary}
+                  lineWidth={16}
+                  style={styles.arrowIcon}
+                />
+              }
+              fullWidth
+            />
+          </View>
+        </View>
+      </AppCard>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
+    paddingBottom: 48,
     gap: 16,
   },
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    gap: 14,
+    borderWidth: 1.5,
   },
-  sectionLabel: {
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  row: {
+  segmentedContainer: {
     flexDirection: 'row',
-    gap: 10,
-  },
-  langChip: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 10,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    padding: 4,
+    gap: 6,
+    marginTop: 4,
   },
-  langChipPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.97 }],
-  },
-  actionButton: {
+  segmentedButton: {
     flex: 1,
-    alignItems: 'center',
     paddingVertical: 10,
-    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  segmentedButtonActive: {
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+  },
+  segmentedText: {
+    fontSize: 14,
+    letterSpacing: 0.2,
+  },
+  toggleRow: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   toggle: {
-    height: 64,
+    height: 60,
     aspectRatio: 3.2,
   },
+  durationRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  durationChip: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  durationText: {
+    fontSize: 13,
+  },
+  notificationsStack: {
+    flexDirection: 'column',
+    gap: 10,
+    marginTop: 6,
+  },
+  batteryHintText: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 8,
+    paddingHorizontal: 2,
+  },
+  aboutContent: {
+    gap: 10,
+    marginTop: 4,
+  },
+  aboutRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  aboutLabel: {
+    fontSize: 14,
+  },
+  aboutValue: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  aboutDivider: {
+    height: StyleSheet.hairlineWidth,
+    width: '100%',
+  },
+  aboutActions: {
+    marginTop: 4,
+  },
+  coffeeIcon: {
+    width: 18,
+    height: 18,
+  },
+  arrowIcon: {
+    width: 22,
+    height: 16,
+  },
 });
+
+

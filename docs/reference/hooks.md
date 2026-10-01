@@ -1,6 +1,6 @@
 ---
 title: Hooks & State Utilities Reference
-summary: Headless hooks and state helpers: useHistoryState, useStopwatch, and useIconAnimation.
+summary: Headless hooks and state helpers: useHistoryState, useStopwatch, useIconAnimation, useStagger, and useCollapsible.
 ---
 
 # Hooks & State Utilities Reference
@@ -119,4 +119,210 @@ formatStopwatchTime(3665); // "01:01:05"
 
 ## 3. `useIconAnimation`
 
-Low-level driver hook for animated vector SVG primitives (`Line`, `Circle`, `Path`). Connects `drawIt` prop toggles with `strokeDashoffset` Reanimated animations.
+Low-level driver hook for animating SVG stroke drawing and fill opacity on vector primitives (`Line`, `Circle`, `Path`). Connects boolean toggles or progress percentages with Reanimated `strokeDashoffset` animations.
+
+### Signature
+```typescript
+import { useIconAnimation, type IconAnimationConfig } from 'alambre';
+
+const {
+  strokeOffsetStyle,
+  draw,
+  reset,
+} = useIconAnimation(config: IconAnimationConfig);
+```
+
+### Options (`IconAnimationConfig`)
+* `strokeDasharray?: number`: Total stroke length of the path or circumference (default: `100`).
+* `fillOpacity?: number`: Maximum fill opacity applied once stroke drawing completes.
+* `drawAnimation?: (targetValue: number) => number`: Animation driver when drawing (default: `withTiming(v, { duration: 300 })`).
+* `resetAnimation?: (targetValue: number) => number`: Animation driver when resetting (default: `withTiming(v, { duration: 300 })`).
+
+### Properties & Actions
+* `strokeOffsetStyle`: Reanimated `animatedProps` object containing reactive `strokeDasharray`, `strokeDashoffset`, and `fillOpacity` for animated SVG elements.
+* `draw(percentOffset: number): void`: Triggers the draw animation. Pass `0` to draw 100% of the stroke, or a percentage offset (`0..100`).
+* `reset(): void`: Triggers the reverse animation, hiding the stroke and resetting fill opacity to `0`.
+
+### Example: Custom Animated Vector Icon
+```typescript
+import { useEffect } from 'react';
+import Svg, { Path } from 'react-native-svg';
+import Animated from 'react-native-reanimated';
+import { useIconAnimation } from 'alambre';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+
+export function AnimatedCheckmark({ drawIt, color = '#10b981', size = 32 }: { drawIt: boolean; color?: string; size?: number }) {
+  const pathLength = 60; // Approximate total length of the checkmark stroke
+  const { strokeOffsetStyle, draw, reset } = useIconAnimation({
+    strokeDasharray: pathLength,
+  });
+
+  useEffect(() => {
+    if (drawIt) {
+      draw(0);
+    } else {
+      reset();
+    }
+  }, [drawIt, draw, reset]);
+
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <AnimatedPath
+        d="M4 12l5 5L20 6"
+        fill="none"
+        stroke={color}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        animatedProps={strokeOffsetStyle}
+      />
+    </Svg>
+  );
+}
+```
+
+
+---
+
+## 4. `useStagger` & `calculateStaggerDelay`
+
+Headless hook and utility for calculating staggered entrance delays across sequential elements (menu items, list rows, form sections). Decoupled from visual styles and layout, with built-in accessibility for reduced motion.
+
+### Signature
+```typescript
+import { useStagger, type StaggerOptions } from 'alambre';
+
+const { getDelay, isReducedMotion } = useStagger(options?: StaggerOptions);
+```
+
+### Options (`StaggerOptions`)
+* `initialDelay?: number`: Delay before the first item starts animating (default: `60ms`).
+* `staggerMs?: number`: Interval delay added per consecutive index (default: `50ms`).
+* `maxDelay?: number`: Maximum delay ceiling to prevent long lists from stalling (default: `500ms`).
+
+### Properties
+* `getDelay(index: number): number`: Computes the delay in milliseconds for item at `index`. Returns `0` if reduced motion is enabled.
+* `isReducedMotion: boolean`: True if the user prefers reduced motion (derived from `useReducedMotion()` in Reanimated).
+
+### Pure Helper: `calculateStaggerDelay`
+For calculations outside React component renders or in worklets:
+```typescript
+import { calculateStaggerDelay } from 'alambre';
+
+calculateStaggerDelay(index, { initialDelay: 50, staggerMs: 40, maxDelay: 400 }, isReducedMotion);
+```
+
+### Context Propagation: `StaggerProvider` & `useStaggerItem`
+Optional Context Provider to distribute stagger timing down a deep tree without prop drilling:
+```typescript
+import { StaggerProvider, useStaggerItem } from 'alambre';
+
+function List() {
+  return (
+    <StaggerProvider initialDelay={100} staggerMs={40}>
+      <ListItem index={0} />
+      <ListItem index={1} />
+    </StaggerProvider>
+  );
+}
+
+function ListItem({ index }: { index: number }) {
+  const delay = useStaggerItem(index);
+  return (
+    <Animated.View entering={FadeInDown.duration(300).delay(delay)}>
+      {/* ... */}
+    </Animated.View>
+  );
+}
+```
+
+---
+
+## 5. `useCollapsible`
+
+Headless hook for expandable and collapsible content (accordions, disclosure sections, expandable cards). Solves the React Native limitation where `height: 'auto'` cannot be animated via Reanimated shared values, using an off-screen layout measurement probe and spring/timing interpolation with automatic reduced motion support.
+
+### Signature
+```typescript
+import {
+  useCollapsible,
+  type UseCollapsibleOptions,
+  type UseCollapsibleReturn,
+} from 'alambre';
+
+const {
+  isExpanded,
+  toggle,
+  setExpanded,
+  measuredHeight,
+  handleContentLayout,
+  progress,
+  animatedStyle,
+  probeProps,
+} = useCollapsible(options?: UseCollapsibleOptions);
+```
+
+### Options (`UseCollapsibleOptions`)
+* `expanded?: boolean`: Controlled boolean expansion state.
+* `defaultExpanded?: boolean`: Initial state when uncontrolled (default: `false`).
+* `onToggle?: (expanded: boolean) => void`: Callback fired when expansion state toggles.
+* `transitionType?: 'spring' | 'timing'`: Animation curve (default: `'spring'`).
+* `springConfig?: { damping?: number; stiffness?: number; mass?: number }`: Spring physics parameters when `transitionType === 'spring'` (default: `damping: 20, stiffness: 240, mass: 0.8`).
+* `duration?: number`: Duration in milliseconds when `transitionType === 'timing'` (default: `240`).
+
+### Properties & Actions (`UseCollapsibleReturn`)
+* `isExpanded: boolean`: Current boolean expanded state.
+* `toggle(): void`: Inverts current expansion state.
+* `setExpanded(next: boolean): void`: Sets expansion state explicitly.
+* `measuredHeight: number`: Inner content height in pixels measured via `handleContentLayout`.
+* `handleContentLayout(event: LayoutChangeEvent): void`: Layout handler to attach to the inner content container.
+* `progress: SharedValue<number>`: Reanimated shared value between `0` (closed) and `1` (open).
+* `animatedStyle: { height: number | undefined; overflow: 'hidden' }`: Animated styles to apply to the visible container.
+* `probeProps`: Helper props (`pointerEvents="none"`, off-screen styling, and `onLayout`) to spread onto a measurement probe element.
+
+### Example
+```typescript
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { useCollapsible } from 'alambre';
+
+export function AccordionSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const { isExpanded, toggle, animatedStyle, probeProps, handleContentLayout } = useCollapsible({
+    transitionType: 'spring',
+  });
+
+  return (
+    <View style={styles.card}>
+      <Pressable
+        onPress={toggle}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isExpanded }}
+        style={styles.header}
+      >
+        <Text style={styles.title}>{title}</Text>
+      </Pressable>
+
+      {/* Visible animated collapsible container */}
+      <Animated.View style={animatedStyle}>
+        <View onLayout={handleContentLayout} style={styles.content}>
+          {children}
+        </View>
+      </Animated.View>
+
+      {/* Off-screen measurement probe to handle dynamic content height */}
+      <View {...probeProps} style={[probeProps.style, styles.content]}>
+        {children}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { borderRadius: 12, backgroundColor: '#ffffff', overflow: 'hidden' },
+  header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  title: { fontSize: 16, fontWeight: '600' },
+  content: { padding: 16, borderTopWidth: StyleSheet.hairlineWidth, borderColor: '#e2e8f0' },
+});
+```
+

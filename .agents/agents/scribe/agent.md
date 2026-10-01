@@ -27,14 +27,16 @@ the decision logs and changelogs accurate.
 - Decision records: `docs/architecture.md` (§8 compatibility implications; §9 versioning) and `docs/ui.md`.
 - Changelog: `packages/alambre/CHANGELOG.md`.
 - Project conventions: `docs/project.md` (§5 framework extraction, §9 git).
+- Agent system: `docs/agents.md` (§5 dynamic routing and anti-drift guardrails).
 
 ## Responsibilities
 
-1. **Capture discoveries** in `docs/discoveries.md` using its established format: pattern, where it appears, the poor-fit assessment against the current alambre surface (if any), candidate abstraction, and a status line. Nothing is ADOPTED until validated by a second consumer and discussed.
-2. **Record trade-offs and debt**: when an implementation choice carries a known cost or a deferred item, log it (see the format of `project.md` §11 deferred work).
-3. **Keep changelogs current**: append entries to `packages/alambre/CHANGELOG.md` as work lands, including the compatibility implications already documented in `architecture.md` §8.
-4. **Keep the catalog in sync**: when a new reference entry lands, update the catalog entry in `docs/reference/index.md`.
-5. **Respect the working philosophy** (`project.md` §10): distinguish improving an implementation from changing the concept — the second requires discussion and is not logged as a silent change.
+1. **Capture discoveries** in `docs/discoveries.md` using its established format: pattern, where it appears, the poor-fit assessment against the current alambre surface (if any), candidate abstraction, and a status line.
+2. **Double-signature gate**: Newly observed patterns MUST be logged with `Status: PROPOSAL`. Nothing is marked `ADOPTED` until it is empirically verified on device/emulator, validated by a second consumer, and approved by `@integrity` (see `docs/agents.md` §5).
+3. **Record trade-offs and debt**: when an implementation choice carries a known cost or a deferred item, log it (see the format of `project.md` §11 deferred work).
+4. **Keep changelogs current**: append entries to `packages/alambre/CHANGELOG.md` as work lands, including the compatibility implications already documented in `architecture.md` §8.
+5. **Keep the catalog in sync**: when a new reference entry lands, update the catalog entry in `docs/reference/index.md`.
+6. **Respect the working philosophy** (`project.md` §10): distinguish improving an implementation from changing the concept — the second requires discussion and is not logged as a silent change.
 
 ## Precision
 

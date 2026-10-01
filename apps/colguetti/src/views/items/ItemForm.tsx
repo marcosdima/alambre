@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, Text, TextInput, View, StyleSheet, Pressable } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -8,6 +8,8 @@ import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { itemColors } from '../../items/items-model';
 import { itemIconKeys, type ItemIconKey } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
+import AppCard from '../../components/AppCard';
+import AppTextInput from '../../components/AppTextInput';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 
 export default () => {
@@ -53,65 +55,99 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={[styles.field, { backgroundColor: theme.surface, borderColor: nameError ? theme.danger : theme.border }]}>
-        <Text style={[styles.label, { color: theme.muted }]}>{lang.items.nameLabel}</Text>
-        <TextInput
-          value={name}
-          onChangeText={(value) => {
-            setName(value);
-            if (nameError && value.trim()) setNameError(false);
-          }}
-          placeholder={lang.items.namePlaceholder}
-          placeholderTextColor={theme.muted}
-          style={[styles.input, { color: theme.color }]}
-        />
-        {nameError && <Text style={[styles.error, { color: theme.danger }]}>{lang.items.nameRequired}</Text>}
-      </View>
+      <AppTextInput
+        testID="item-name-input"
+        label={lang.items.nameLabel}
+        required
+        value={name}
+        onChangeText={(value) => {
+          setName(value);
+          if (nameError && value.trim()) setNameError(false);
+        }}
+        placeholder={lang.items.namePlaceholder}
+        clearable
+        errorMessage={nameError ? lang.items.nameRequired : undefined}
+      />
 
-      <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.label, { color: theme.muted }]}>{lang.items.colorLabel}</Text>
+      <AppCard
+        variant="outlined"
+        title={lang.items.colorLabel}
+        style={styles.sectionCard}
+      >
         <View style={styles.colorRow}>
-          {itemColors.map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => setColor(c)}
-              style={({ pressed }) => [
-                styles.colorDot,
-                { backgroundColor: c, borderColor: color === c ? theme.primary : theme.border },
-                color === c && styles.colorDotActive,
-                pressed && styles.selectionPressed,
-              ]}
-            />
-          ))}
+          {itemColors.map((c) => {
+            const active = color === c;
+            return (
+              <Pressable
+                key={c}
+                onPress={() => setColor(c)}
+                style={({ pressed }) => [
+                  styles.colorDot,
+                  {
+                    backgroundColor: c,
+                    borderColor: active ? theme.color : 'transparent',
+                    borderWidth: active ? 3 : 1,
+                  },
+                  active && styles.colorDotActive,
+                  pressed && styles.selectionPressed,
+                ]}
+              />
+            );
+          })}
         </View>
-      </View>
+      </AppCard>
 
-      <View style={[styles.field, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <Text style={[styles.label, { color: theme.muted }]}>{lang.items.iconLabel}</Text>
+      <AppCard
+        variant="outlined"
+        title={lang.items.iconLabel}
+        style={styles.sectionCard}
+      >
         <View style={styles.iconGrid}>
-          {itemIconKeys.map((key, index) => (
-            <Pressable
-              key={key}
-              onPress={() => setIcon(key)}
-              style={({ pressed }) => [
-                styles.iconCell,
-                { borderColor: icon === key ? theme.primary : theme.border, backgroundColor: icon === key ? theme.primarySoft : theme.surfaceAlt },
-                pressed && styles.selectionPressed,
-              ]}
-            >
-              <ItemIcon icon={key} color={color} lineWidth={2} delay={380 + index * 60} iconAnimation={catalogDrawAnimation} />
-            </Pressable>
-          ))}
+          {itemIconKeys.map((key, index) => {
+            const active = icon === key;
+            return (
+              <Pressable
+                key={key}
+                onPress={() => setIcon(key)}
+                style={({ pressed }) => [
+                  styles.iconCell,
+                  {
+                    borderColor: active ? theme.primary : theme.border,
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderWidth: active ? 2 : 1.5,
+                  },
+                  pressed && styles.selectionPressed,
+                ]}
+              >
+                <ItemIcon
+                  icon={key}
+                  color={color}
+                  lineWidth={2}
+                  style={styles.cellIcon}
+                  delay={100 + index * 40}
+                  iconAnimation={catalogDrawAnimation}
+                />
+              </Pressable>
+            );
+          })}
         </View>
-      </View>
+      </AppCard>
 
       <View style={styles.actions}>
-        <AppButton style={styles.actionGhost} onPress={close}>
-          <Text style={{ color: theme.warning, fontWeight: '700' }}>{lang.common.cancel}</Text>
-        </AppButton>
-        <AppButton style={styles.actionPrimary} onPress={save}>
-          <Text style={{ color: theme.success, fontWeight: '700' }}>{lang.common.save}</Text>
-        </AppButton>
+        <AppButton
+          variant="outline"
+          tone="neutral"
+          style={styles.actionBtn}
+          label={lang.common.cancel}
+          onPress={close}
+        />
+        <AppButton
+          variant="solid"
+          tone="primary"
+          style={styles.actionBtn}
+          label={lang.common.save}
+          onPress={save}
+        />
       </View>
     </ScrollView>
   );
@@ -125,39 +161,22 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
-  field: {
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    gap: 10,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  input: {
-    fontSize: 16,
-    paddingVertical: 4,
-  },
-  error: {
-    fontSize: 13,
-    fontWeight: '600',
+  sectionCard: {
+    borderWidth: 1.5,
   },
   colorRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
+    paddingTop: 6,
   },
   colorDot: {
-    width: 30,
-    height: 30,
+    width: 34,
+    height: 34,
     borderRadius: 999,
-    borderWidth: 2,
   },
   colorDotActive: {
-    borderWidth: 3,
-    borderColor: '#ffffff',
+    transform: [{ scale: 1.1 }],
   },
   selectionPressed: {
     opacity: 0.85,
@@ -166,23 +185,28 @@ const styles = StyleSheet.create({
   iconGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
+    paddingTop: 6,
   },
   iconCell: {
-    width: 44,
-    height: 28,
+    width: 48,
+    height: 38,
     borderRadius: 10,
-    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 4,
+  },
+  cellIcon: {
+    width: 28,
+    height: 22,
   },
   actions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
+    marginTop: 8,
   },
-  actionGhost: {
-    flex: 1,
-  },
-  actionPrimary: {
+  actionBtn: {
     flex: 1,
   },
 });
+

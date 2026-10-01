@@ -17,6 +17,7 @@ vi.mock('react-native-reanimated', () => {
     },
     withTiming: (toValue: number) => toValue,
     useAnimatedProps: (factory: () => unknown) => factory(),
+    useReducedMotion: () => false,
   };
 });
 
@@ -30,6 +31,13 @@ vi.mock('react-native-svg', async () => {
 describe('public API — value surface', () => {
   it('exposes the intentional value contracts', () => {
     expect(typeof Alambre.Button).toBe('function');
+    expect(typeof Alambre.Stepper).toBe('function');
+    expect(typeof Alambre.useStepper).toBe('function');
+    expect(typeof Alambre.Slider).toBe('function');
+    expect(typeof Alambre.useSlider).toBe('function');
+    expect(typeof Alambre.SegmentedControl).toBe('function');
+    expect(typeof Alambre.useSelect).toBe('function');
+    expect(typeof Alambre.Input).toBe('function');
     expect(typeof Alambre.createConfigProvider).toBe('function');
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
@@ -37,6 +45,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
+    expect(typeof Alambre.initNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
     expect(typeof Alambre.ConfirmProvider).toBe('function');
@@ -56,6 +65,23 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.canRedo).toBe('function');
     expect(typeof Alambre.useStopwatch).toBe('function');
     expect(typeof Alambre.formatStopwatchTime).toBe('function');
+    expect(typeof Alambre.useStagger).toBe('function');
+    expect(typeof Alambre.calculateStaggerDelay).toBe('function');
+    expect(typeof Alambre.StaggerProvider).toBe('function');
+    expect(typeof Alambre.useStaggerItem).toBe('function');
+    expect(typeof Alambre.useCollapsible).toBe('function');
+    expect(typeof Alambre.DndProvider).toBe('function');
+    expect(typeof Alambre.useDnd).toBe('function');
+    expect(typeof Alambre.useDraggable).toBe('function');
+    expect(typeof Alambre.useDroppable).toBe('function');
+    expect(typeof Alambre.Draggable).toBe('function');
+    expect(typeof Alambre.Droppable).toBe('function');
+    expect(typeof Alambre.SortableRow).toBe('function');
+    expect(typeof Alambre.useCarousel).toBe('function');
+    expect(typeof Alambre.calculateSnapInterval).toBe('function');
+    expect(typeof Alambre.calculateActiveIndex).toBe('function');
+    expect(typeof Alambre.getScrollTargetForIndex).toBe('function');
+    expect(typeof Alambre.useDeck).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
   });
 
@@ -125,6 +151,50 @@ describe('public API — type surface', () => {
       disabled: false,
       loading: false,
     };
+    const stepperProps: Alambre.StepperProps = { value: 0 };
+    const stepperState: Alambre.StepperState = {
+      value: 0,
+      canIncrement: true,
+      canDecrement: false,
+      increment: () => undefined,
+      decrement: () => undefined,
+      setValue: () => undefined,
+      disabled: false,
+    };
+    const inputProps: Alambre.InputProps = { value: 'test' };
+    const inputState: Alambre.InputState = {
+      focused: false,
+      disabled: false,
+      hasValue: true,
+      error: false,
+    };
+    const sliderProps: Alambre.SliderProps = { value: 50 };
+    const sliderState: Alambre.SliderState = {
+      value: 50,
+      min: 0,
+      max: 100,
+      step: 1,
+      ratio: 0.5,
+      percentage: 50,
+      disabled: false,
+      setValueFromRatio: () => undefined,
+      setValue: () => undefined,
+      increment: () => undefined,
+      decrement: () => undefined,
+    };
+    const segmentedProps: Alambre.SegmentedControlProps = {
+      value: 'a',
+      options: [{ value: 'a', label: 'A' }],
+    };
+    const selectState: Alambre.SelectState = {
+      value: 'a',
+      options: [{ value: 'a', label: 'A' }],
+      disabled: false,
+      selectedIndex: 0,
+      isSelected: () => true,
+      select: () => undefined,
+      selectIndex: () => undefined,
+    };
     const toastComponentProps: Alambre.ToastComponentProps = {
       toast: { data: { id: 'toast', duration: 1000 }, startedAt: new Date() },
       dismiss: () => undefined,
@@ -140,14 +210,54 @@ describe('public API — type surface', () => {
     const page: Alambre.NavigatorTypes.Page = { component: null };
     const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
     const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
+    const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };
+    const staggerContext: Alambre.StaggerContextValue = { getDelay: () => 50, isReducedMotion: false };
+    const staggerProps: Alambre.StaggerProviderProps = { children: null, initialDelay: 50 };
+    const layoutBounds: Alambre.LayoutBounds = { x: 0, y: 0, width: 100, height: 100 };
+    const droppableRegistration: Alambre.DroppableRegistration = { id: 'zone-1', bounds: layoutBounds };
+    const activeDragState: Alambre.ActiveDragState = { id: 'drag-1', touchX: 10, touchY: 10, originBounds: null, hoveredZoneId: null };
+    const dropEvent: Alambre.DropEvent = { draggableId: 'drag-1', droppableId: 'zone-1' };
+    const kinetics: Alambre.DraggableKineticsConfig = { activeScale: 1.05, maxVelocityTiltDeg: 10 };
+    const sortableItem: Alambre.SortableItem = { id: 'item-1' };
+    const dropMode: Alambre.DropAnimationMode = 'seamless';
+    const neighborMode: Alambre.NeighborShiftMode = 'glide';
+    const carouselConfig: Alambre.UseCarouselConfig = {
+      cardWidth: 300,
+      cardGap: 16,
+      totalItems: 5,
+    };
+    const deckConfig: Alambre.UseDeckConfig<string> = {
+      initialCards: ['a', 'b'],
+    };
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();
+    expect(stepperProps).toBeDefined();
+    expect(stepperState).toBeDefined();
+    expect(sliderProps).toBeDefined();
+    expect(sliderState).toBeDefined();
+    expect(segmentedProps).toBeDefined();
+    expect(selectState).toBeDefined();
+    expect(inputProps).toBeDefined();
+    expect(inputState).toBeDefined();
     expect(toastComponentProps).toBeDefined();
     expect(confirmComponentProps).toBeDefined();
     expect(page).toBeDefined();
     expect(historyState).toBeDefined();
     expect(stopwatchOptions).toBeDefined();
+    expect(staggerOptions).toBeDefined();
+    expect(staggerContext).toBeDefined();
+    expect(staggerProps).toBeDefined();
+    expect(layoutBounds).toBeDefined();
+    expect(droppableRegistration).toBeDefined();
+    expect(activeDragState).toBeDefined();
+    expect(dropEvent).toBeDefined();
+    expect(kinetics).toBeDefined();
+    expect(sortableItem).toBeDefined();
+    expect(dropMode).toBeDefined();
+    expect(neighborMode).toBeDefined();
+    expect(carouselConfig).toBeDefined();
+    expect(deckConfig).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {

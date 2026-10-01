@@ -1,0 +1,30 @@
+appId: host.exp.exponent
+tags:
+  - items
+---
+- tapOn: ".*(Mis ítems|My items).*"
+- assertVisible: ".*(Mis ítems|My items).*"
+- scrollUntilVisible:
+    element:
+      text: ".*(Agregar|Add).*"
+    direction: DOWN
+- tapOn: ".*(Agregar|Add).*"
+- tapOn:
+    id: "item-name-input"
+- eraseText
+- inputText: "Billetera"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: ".*(Guardar|Save).*"
+    direction: DOWN
+- tapOn: ".*(Guardar|Save).*"
+- assertVisible: "Billetera"
+- swipe:
+    direction: LEFT
+    element:
+      text: ".*Billetera.*"
+- assertVisible: ".*(\\?|¿).*"
+- tapOn: ".*(Cancelar|Cancel).*"
+- back
+- assertVisible: "Colguetti"

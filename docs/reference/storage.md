@@ -98,3 +98,88 @@ import { writeCollection } from 'alambre';
 
 await writeCollection(storage, 'app.items', updatedItems);
 ```
+
+---
+
+## 4. Storage Adapters & Patterns
+
+### In-Memory Storage Adapter (Testing & Fallbacks)
+When running in Node unit tests, CI environments, or web previews without `@react-native-async-storage/async-storage`, instantiate an in-memory adapter that fulfills the `Storage` contract:
+
+```typescript
+// storage/memory-storage.ts
+import type { Storage } from 'alambre';
+
+export function createMemoryStorage(initialData: Record<string, string> = {}): Storage {
+  const store = new Map<string, string>(Object.entries(initialData));
+
+  return {
+    get: async (key: string) => store.get(key) ?? null,
+    set: async (key: string, value: string) => {
+      store.set(key, value);
+    },
+    remove: async (key: string) => {
+      store.delete(key);
+    },
+  };
+}
+```
+
+### High-Performance MMKV Adapter
+For applications requiring near-instant synchronous disk operations, wrap `react-native-mmkv` inside the `Storage` contract:
+
+```typescript
+// storage/mmkv-storage.ts
+import { MMKV } from 'react-native-mmkv';
+import type { Storage } from 'alambre';
+
+const mmkv = new MMKV();
+
+export const mmkvStorage: Storage = {
+  get: async (key: string) => mmkv.getString(key) ?? null,
+  set: async (key: string, value: string) => {
+    mmkv.set(key, value);
+  },
+  remove: async (key: string) => {
+    mmkv.delete(key);
+  },
+};
+```
+
+---
+
+## 5. Concurrency, Performance & Resilience
+
+### Safe Deserialization
+All built-in helpers (`getJson`, `readCollection`) wrap `JSON.parse` in guarded try/catch blocks. If corrupted data or an empty string is encountered in storage, the helpers safely return `null` (or the fallback array) rather than throwing runtime syntax errors.
+
+### High-Frequency Writes
+Because `Storage.set` is an asynchronous I/O operation, rapidly dispatching consecutive updates (such as saving slider values on every pan pixel) can cause write contention and disk thrashing.
+- **Debouncing:** When persisting high-frequency UI events, debounce the storage write while immediately updating local React state:
+```typescript
+// Example: debouncing rapid persistent config changes
+import { useEffect, useRef } from 'react';
+
+export function useDebouncedSave<T>(
+  value: T,
+  saveFn: (val: T) => Promise<void>,
+  delayMs = 300,
+) {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      void saveFn(value);
+    }, delayMs);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [value, delayMs, saveFn]);
+}
+```
+
+### Error Isolation
+The `Storage` contract promises never swallow errors silently in `set` or `remove`. If native persistence throws an error (e.g. disk space full, permission denied), the promise rejects, giving caller capabilities and domain features complete visibility to notify the user via a Toast or alert.
+

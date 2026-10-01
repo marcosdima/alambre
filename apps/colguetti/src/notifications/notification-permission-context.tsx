@@ -7,7 +7,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { AppState, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { ALARM_CHANNEL_ID } from './expiry';
 
 export type NotificationPermission = 'undetermined' | 'granted' | 'denied';
 
@@ -18,6 +20,7 @@ type NotificationPermissionContextValue = {
   permission: NotificationPermission;
   loading: boolean;
   requestPermission: () => Promise<boolean>;
+  openSettings: () => Promise<void>;
   sendTestNotification: () => Promise<boolean>;
 };
 
@@ -49,6 +52,10 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
     }
   }, []);
 
+  const openSettings = useCallback(async (): Promise<void> => {
+    await Linking.openSettings().catch(() => undefined);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     void readPermission().then((result) => {
@@ -56,7 +63,20 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
       setPermission(result);
       setLoading(false);
     });
-    return () => { mounted = false; };
+
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        void readPermission().then((result) => {
+          if (!mounted) return;
+          setPermission(result);
+        });
+      }
+    });
+
+    return () => {
+      mounted = false;
+      sub.remove();
+    };
   }, [readPermission]);
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
@@ -64,6 +84,8 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
       const current = await readPermission();
       if (current === 'undetermined') {
         await Notifications.requestPermissionsAsync();
+      } else if (current === 'denied') {
+        await Linking.openSettings().catch(() => undefined);
       }
       const after = await readPermission();
       setPermission(after);
@@ -83,12 +105,15 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
         content: {
           title: 'Colguetti',
           body: 'Notificación de prueba',
+          sound: true,
+          priority: Notifications.AndroidNotificationPriority.MAX,
           data: { kind: 'test' },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
           seconds: TEST_DELAY_SECONDS,
           repeats: false,
+          channelId: ALARM_CHANNEL_ID,
         },
       });
       return true;
@@ -98,8 +123,8 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
   }, [requestPermission]);
 
   const value = useMemo(
-    () => ({ permission, loading, requestPermission, sendTestNotification }),
-    [permission, loading, requestPermission, sendTestNotification],
+    () => ({ permission, loading, requestPermission, openSettings, sendTestNotification }),
+    [permission, loading, requestPermission, openSettings, sendTestNotification],
   );
 
   return (

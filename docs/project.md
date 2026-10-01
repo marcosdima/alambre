@@ -28,7 +28,9 @@ The main conceptual boundaries are:
 The repository also contains:
 
 * `apps/colguetti` — the reference application: a real product built on `alambre` that exercises the framework, exposes weaknesses, and guides its evolution. Prototyping for potential framework capability happens here first.
+* `apps/cross-logic` — logic puzzle game application validating game sessions, history state, and grid models.
 * `apps/base-template` — the application template: a generic, product-free skeleton on top of `alambre`, intended to provide a solid, opinionated starting point for future applications. It is rebuilt when lessons from the reference application make the wiring worth updating, and its canonical standalone copy is published as the GitHub template repository `marcosdima/base-expo` (regenerated with `scripts/export-template.sh`). Apps bootstrapped with *"Use this template"* depend on the published `alambre` package (npm/pnpm) and are independent from this repository.
+* `apps/playground` — the interactive proving ground: an isolated environment for testing animation parameters, toast behaviors, edge cases, and UI primitives without cluttering the starter template.
 
 An application created from the template should be able to evolve independently from `apps/base-template` and from this repository.
 
@@ -310,3 +312,77 @@ The hard-coded `"{count} ítems"` string in `Alarms.tsx` moved into `lang.alarms
 ### Confirm: dead `resolve` field removed
 
 `Confirm` no longer carries the `resolve` callback: the state owns it in a ref. The public type stays `{ data: RegisterConfirm }`; `data` is the only visible field. This eliminates the unused leakage introduced when the confirm behavior was extracted.
+
+---
+
+## 15. Background Alarms, Permissions & OS Synchronization
+
+Lessons and contracts established during the development of Colguetti 1.0 (`apps/colguetti`):
+
+### Android exact alarms and battery Doze
+
+On Android 12+ (API 31+), Android restricts exact background task execution to conserve battery. When a device enters Doze mode, standard scheduled notifications (`AlarmManager.setAndAllowWhileIdle`) are batched into OS maintenance windows, delaying alarms by 9–15+ minutes.
+
+To guarantee reliable delivery:
+* **Permissions:** Android 12 requires `android.permission.SCHEDULE_EXACT_ALARM`. Android 13/14 (API 33+) requires `android.permission.USE_EXACT_ALARM` for alarm/timer applications (which is granted automatically at install time).
+* **Exact triggers:** Use exact `DATE` triggers (`trigger: { type: 'date', date: futureDate }`) instead of relative time intervals when waking from background.
+* **Dedicated High-Priority Notification Channel:** Notifications must target a dedicated channel (e.g. `colguetti-alarms`) configured with `AndroidImportance.MAX`, `vibrationPattern`, and `sound: true`. On Android 8+, once a notification channel is created on device, its importance cannot be programmatically elevated; any priority elevation requires a freshly named channel.
+
+### Reactive `AppState` synchronization
+
+External state transitions—such as a user opening system settings via `Linking.openSettings()` to enable permissions or the device sleeping while a routine window elapses—do not emit JavaScript callbacks while the app is backgrounded.
+
+To prevent frozen counters or stale permission indicators:
+* Subscribe to `AppState.addEventListener('change', (state) => { if (state === 'active') ... })`.
+* On `'active'`, immediately re-read system permissions via `Notifications.getPermissionsAsync()` without requiring an app process restart.
+* Re-evaluate `new Date()` upon resume so expired routines close cleanly and immediate alerts fire without UI stalls.
+
+---
+
+## 16. E2E Testing with Maestro & Out-of-App Transitions
+
+End-to-end testing with Maestro must account for interactions that navigate outside the application's view hierarchy:
+
+### System settings and external URLs
+
+1. **System settings (`Linking.openSettings()`):**
+   * Tapping system settings opens `com.android.settings`.
+   * To return cleanly without relying on brittle relative `back` presses, use `launchApp: { clearState: false }` in subflows (`apps/colguetti/e2e/subflows/return-to-app.yaml`). This brings the application back to the foreground with full React state preserved and triggers `AppState` listeners.
+
+2. **External URLs (`Linking.openURL()`):**
+   * External links launch the default browser (Chrome).
+   * To prevent Chrome's First Run Experience (terms and sync wizard) from blocking unattended CI or emulator runs, `scripts/e2e.sh` automatically writes `echo 'chrome --disable-fre' > /data/local/tmp/chrome-command-line` on connected adb devices prior to running test flows.
+
+3. **Runtime permissions dialogs:**
+   * Handled conditionally via `runFlow: when: visible: ".*(Allow|Permitir).*"` or pre-granted via `adb shell pm grant` in `scripts/e2e.sh`.
+
+### Agile & Atomic Testing Architecture
+
+To prevent slow, repetitive test executions that rerun unimpacted features:
+
+1. **Atomic Flows by Feature:**
+   * Never bundle unrelated feature assertions into large omnibus flows.
+   * Tests are partitioned into dedicated files tagged with native Maestro metadata (`apps/colguetti/e2e/`):
+     * `smoke.yaml` (`tags: [smoke]`): Rapid sanity check across top-level screens (3–5 seconds).
+     * `settings.yaml` (`tags: [settings]`): Language switching, test notification toast, support dialog, battery hints.
+     * `items.yaml` (`tags: [items]`): Item creation, element-targeted swipe gestures (`swipe: direction: LEFT, element: text: "..."`), and deletion confirmation dialog.
+     * `alarms.yaml` (`tags: [alarms]`): Alarm creation, time picker interaction, weekday toggles, save validation.
+
+2. **Turbo Mode (Instant 0ms Transitions):**
+   * `scripts/e2e.sh` automatically puts the Android device into Turbo Mode before testing:
+     ```bash
+     adb shell settings put global window_animation_scale 0
+     adb shell settings put global transition_animation_scale 0
+     adb shell settings put global animator_duration_scale 0
+     ```
+   * On script exit (including failures/aborts via `trap EXIT`), animation scales are automatically restored to `1`.
+   * This cuts end-to-end execution time in half by removing artificial system delays between view transitions.
+
+3. **Continuous Batch Execution & Selective Shortcuts:**
+   * **Selective target:** Run only the affected area during local iteration:
+     * `./scripts/e2e.sh settings`
+     * `./scripts/e2e.sh items`
+     * `./scripts/e2e.sh alarms`
+     * `./scripts/e2e.sh smoke`
+   * **Tag filter:** `./scripts/e2e.sh -t <tag>`
+   * **Continuous batch mode:** Running `./scripts/e2e.sh` executes all flows in a single uninterrupted Maestro session, eliminating per-file server restart overhead.

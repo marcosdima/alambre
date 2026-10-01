@@ -23,3 +23,33 @@ export type {
   UseStopwatchOptions,
   UseStopwatchReturn,
 } from './use-stopwatch';
+
+export {
+  useStagger,
+  calculateStaggerDelay,
+  StaggerProvider,
+  useStaggerItem,
+} from './use-stagger';
+export type {
+  StaggerOptions,
+  StaggerContextValue,
+  StaggerProviderProps,
+} from './use-stagger';
+
+export {
+  useCollapsible,
+} from './use-collapsible';
+export type {
+  CollapsibleTransitionType,
+  CollapsibleSpringConfig,
+  UseCollapsibleOptions,
+  UseCollapsibleReturn,
+} from './use-collapsible';
+
+
+export { useSwipeableRow } from './use-swipeable-row';
+export type {
+  UseSwipeableRowConfig,
+  UseSwipeableRowReturn,
+  SwipeDirection,
+} from './use-swipeable-row';

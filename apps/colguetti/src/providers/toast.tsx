@@ -1,196 +1,302 @@
-import { Pressable, StyleSheet } from 'react-native';
-import { Text, View } from 'react-native';
-import type { ToastComponentProps } from 'alambre';
-import { useNavigator } from 'alambre';
-import { useLightDark } from './theme';
-import { AlambreIcons } from 'alambre';
+import { useEffect, useState } from 'react';
+import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
+  Extrapolation,
   FadeInDown,
+  FadeInUp,
+  FadeOutDown,
   FadeOutUp,
+  interpolate,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { useEffect, useMemo, useState } from 'react';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { ToastComponentProps, ToastTone, ToastPosition, ToastPayload } from 'alambre';
+import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
+import { useLightDark } from './theme';
 
-type DemoTone = 'info' | 'success' | 'warning' | 'error';
+export type { ToastTone, ToastPosition, ToastPayload };
 
-type DemoToastPayload = {
-  title?: string;
-  content?: string;
-  tone?: DemoTone;
-};
-
-const DEFAULT_DURATION = 4000;
-const ANIMATION_DELAY = 180;
-const SLIDE_FROM = -140;
-
-const isTone = (value: unknown): value is DemoTone => (
-  value === 'info'
-  || value === 'success'
-  || value === 'warning'
-  || value === 'error'
-);
-
-
-const parsePayload = (payload?: unknown): DemoToastPayload => {
-  if (!payload || typeof payload !== 'object') return {};
-  const value = payload as Record<string, unknown>;
-
-  return {
-    title: typeof value.title === 'string' ? value.title : undefined,
-    content: typeof value.content === 'string' ? value.content : undefined,
-    tone: isTone(value.tone) ? value.tone : undefined,
-  };
-};
-
-
-const toneStyles: Record<DemoTone, string> = {
-  info: '#2563eb',
-  success: '#15803d',
-  warning: '#b45309',
-  error: '#b91c1c',
-};
-
-const hexToRgba = (hex: string, alpha: number) => {
-  const value = hex.replace('#', '');
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-const iconAnimation = {
-  drawAnimation: (value: number) => withTiming(value, {
-    duration: 460,
-    easing: Easing.out(Easing.exp),
-  }),
-  resetAnimation: (value: number) => withTiming(value, {
-    duration: 180,
-    easing: Easing.in(Easing.quad),
-  }),
-};
-
-export function ColguettiToast({ toast, dismiss }: ToastComponentProps) {
+export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentProps) {
   const { theme } = useLightDark();
   const { noPreviousPages } = useNavigator();
-  const { data, startedAt } = toast;
-  const payload = parsePayload(data.payload);
-  const tone = payload.tone ?? 'info';
-  const title = payload.title ?? tone.toUpperCase();
-  const content = payload.content ?? '';
-  const progress = useSharedValue(0);
-  const [shouldDrawIcon, setShouldDrawIcon] = useState(false);
-  const toneColor = toneStyles[tone];
+  const insets = useSafeAreaInsets();
+  const { data } = toast;
 
-  const remaining = useMemo(() => {
-    const duration = data.duration ?? DEFAULT_DURATION;
-    const elapsed = Date.now() - new Date(startedAt).getTime();
-    return Math.max(0, duration - elapsed);
-  }, [data.duration, startedAt]);
+  const parsed = parseToastPayload(data.payload);
+  const isTop = parsed.position !== 'bottom';
+
+  // Base clearance: status bar or bottom bar (defensive against missing provider)
+  const safeTop = insets?.top ?? StatusBar.currentHeight ?? 16;
+  const safeBottom = insets?.bottom ?? 16;
+  const baseTop = Math.max(safeTop, 16);
+  const targetTop = baseTop + (noPreviousPages ? 10 : 66);
+  const targetBottom = Math.max(safeBottom, 16) + 16;
+
+  const animatedOffset = useSharedValue(isTop ? targetTop : targetBottom);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const progressWidth = useSharedValue(100);
 
   useEffect(() => {
-    if (data.persistent) {
-      progress.value = 1;
-      return;
-    }
+    animatedOffset.value = withTiming(isTop ? targetTop : targetBottom, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [isTop, targetTop, targetBottom, animatedOffset]);
 
-    progress.value = 0;
-    progress.value = withTiming(1, {
-      duration: remaining,
+  // Progress bar animation for auto-dismissing toasts
+  useEffect(() => {
+    if (data.persistent || data.actions?.length) return;
+    progressWidth.value = 100;
+    progressWidth.value = withTiming(0, {
+      duration: data.duration ?? 4000,
       easing: Easing.linear,
     });
-  }, [data.id, data.persistent, progress, remaining]);
+  }, [data.id, data.duration, data.persistent, data.actions, progressWidth]);
 
+  const [isGestureDismissed, setIsGestureDismissed] = useState(false);
+
+  // Reset gesture transforms on new toast
   useEffect(() => {
-    setShouldDrawIcon(false);
+    setIsGestureDismissed(false);
+    translateX.value = 0;
+    translateY.value = 0;
+  }, [data.id, translateX, translateY]);
 
-    const timer = setTimeout(() => {
-      setShouldDrawIcon(true);
-    }, ANIMATION_DELAY + 40);
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+      if (isTop) {
+        translateY.value = event.translationY < 0 ? event.translationY : event.translationY * 0.2;
+      } else {
+        translateY.value = event.translationY > 0 ? event.translationY : event.translationY * 0.2;
+      }
+    })
+    .onEnd((event) => {
+      const dismissUp = isTop && (event.translationY < -35 || event.velocityY < -350);
+      const dismissDown = !isTop && (event.translationY > 35 || event.velocityY > 350);
+      const dismissHoriz = Math.abs(event.translationX) > 85 || Math.abs(event.velocityX) > 600;
 
-    return () => clearTimeout(timer);
-  }, [data.id]);
+      if (dismissUp) {
+        runOnJS(setIsGestureDismissed)(true);
+        translateY.value = withTiming(-160, { duration: 180 }, () => {
+          runOnJS(dismiss)(data.id);
+        });
+      } else if (dismissDown) {
+        runOnJS(setIsGestureDismissed)(true);
+        translateY.value = withTiming(160, { duration: 180 }, () => {
+          runOnJS(dismiss)(data.id);
+        });
+      } else if (dismissHoriz) {
+        runOnJS(setIsGestureDismissed)(true);
+        const dir = Math.sign(event.translationX || event.velocityX || 1);
+        translateX.value = withTiming(dir * 500, { duration: 200 }, () => {
+          runOnJS(dismiss)(data.id);
+        });
+      } else {
+        translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+        translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
+      }
+    });
 
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progress.value * 100}%`,
+  const animatedPositionStyle = useAnimatedStyle(() => {
+    if (isTop) {
+      return { top: animatedOffset.value };
+    }
+    return { bottom: animatedOffset.value };
+  });
+
+  const animatedGestureStyle = useAnimatedStyle(() => {
+    const dragDist = Math.max(Math.abs(translateX.value), Math.abs(translateY.value));
+    const opacity = interpolate(
+      dragDist,
+      [0, 60, 220],
+      [1, 0.85, 0],
+      Extrapolation.CLAMP,
+    );
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+      ],
+      opacity,
+    };
+  });
+
+  const progressBarStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value}%`,
   }));
 
-  const iconProps = {
-    drawIt: shouldDrawIcon,
-    iconAnimation,
-    color: toneColor,
+  // Semantic tone configuration
+  const tone = parsed.tone ?? 'info';
+  const getToneDetails = () => {
+    switch (tone) {
+      case 'success':
+        return {
+          accent: '#10b981',
+          bgBadge: '#10b98120',
+          Icon: AlambreIcons.CircleCheck,
+        };
+      case 'warning':
+        return {
+          accent: '#f59e0b',
+          bgBadge: '#f59e0b20',
+          Icon: AlambreIcons.TriangleAlert,
+        };
+      case 'danger':
+        return {
+          accent: '#ef4444',
+          bgBadge: '#ef444420',
+          Icon: AlambreIcons.CircleX,
+        };
+      case 'info':
+      default:
+        return {
+          accent: theme.primary,
+          bgBadge: theme.primarySoft,
+          Icon: null,
+        };
+    }
   };
 
+  const toneConfig = getToneDetails();
+  const IconComponent = toneConfig.Icon;
+
+  const enterAnimation = isTop
+    ? FadeInDown.duration(260).easing(Easing.out(Easing.cubic))
+    : FadeInUp.duration(260).easing(Easing.out(Easing.cubic));
+
+  const exitAnimation = isTop
+    ? FadeOutUp.duration(220).easing(Easing.in(Easing.cubic))
+    : FadeOutDown.duration(220).easing(Easing.in(Easing.cubic));
+
+  const showProgressBar = !data.persistent && (!data.actions || data.actions.length === 0);
+
   return (
-    <View
-      style={[styles.root, { top: noPreviousPages ? 12 : 72 }]}
-      pointerEvents='box-none'
+    <Animated.View
+      style={[styles.root, animatedPositionStyle]}
+      pointerEvents="box-none"
     >
       <Animated.View
         key={data.id}
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.surface,
-            borderColor: toneColor,
-          },
-        ]}
-        entering={FadeInDown
-          .springify()
-          .damping(15)
-          .stiffness(140)
-          .mass(0.6)
-          .withInitialValues({ opacity: 0, transform: [{ translateY: SLIDE_FROM }] })}
-        exiting={FadeOutUp.duration(240).easing(Easing.in(Easing.cubic))}
+        entering={enterAnimation}
+        exiting={isGestureDismissed ? undefined : exitAnimation}
+        style={styles.cardWrapper}
+        pointerEvents="box-none"
       >
-        <View style={[styles.accentBar, { backgroundColor: toneColor }]} />
-        <View style={styles.header}>
-          <View style={styles.titleRow}>
-            <View style={styles.iconWrap}>
+        <GestureDetector gesture={panGesture}>
+          <Animated.View
+            style={[
+              styles.card,
+              animatedGestureStyle,
               {
-                tone === 'error'
-                  ? <AlambreIcons.Cross key={`error-${data.id}`} {...iconProps} lineWidth={5} />
-                  : tone === 'warning'
-                    ? <AlambreIcons.Arrow key={`warning-${data.id}`} {...iconProps} lineWidth={7} rotation={-25} />
-                    : tone === 'success'
-                      ? <AlambreIcons.Tick key={`success-${data.id}`} {...iconProps} lineWidth={5} />
-                      : <AlambreIcons.Arrow key={`info-${data.id}`} {...iconProps} lineWidth={7} />
-              }
-            </View>
+                backgroundColor: theme.surface,
+                borderColor: toneConfig.accent,
+              },
+            ]}
+          >
+            {/* Tone Accent Bar on Left */}
+            <View style={[styles.accentStrip, { backgroundColor: toneConfig.accent }]} />
 
-            <Text numberOfLines={1} style={[styles.title, { color: toneColor }]}>{title}</Text>
-          </View>
-
-          <Pressable onPress={() => dismiss(data.id)} style={[styles.closeButton, { borderColor: theme.border }]}>
-            <View style={styles.closeIconWrap}>
-              <AlambreIcons.Cross
-                key={`close-${data.id}`}
-                drawIt={shouldDrawIcon}
-                iconAnimation={iconAnimation}
-                color={theme.color}
-                lineWidth={6}
-              />
-            </View>
-          </Pressable>
-        </View>
-
-        {content ? (
-          <Text style={[styles.content, { color: theme.color }]}>{content}</Text>
-        ) : null}
-
-        {
-          data.persistent
-            ? undefined
-            : (
-              <View style={[styles.progressTrack, { backgroundColor: hexToRgba(toneColor, 0.2) }]}>
-                <Animated.View style={[styles.progressBar, progressStyle, { backgroundColor: toneColor }]} />
+            <View style={styles.contentRow}>
+              {/* Tone Icon */}
+              <View style={[styles.iconWrapper, { backgroundColor: toneConfig.bgBadge }]}>
+                {IconComponent ? (
+                  <IconComponent
+                    color={toneConfig.accent}
+                    lineWidth={2.2}
+                    style={styles.toneIcon}
+                  />
+                ) : (
+                  <Text style={[styles.infoMark, { color: toneConfig.accent }]}>ℹ</Text>
+                )}
               </View>
-            )
-        }
+
+              {/* Message Body */}
+              <View style={styles.textContainer}>
+                {parsed.title ? (
+                  <Text style={[styles.title, { color: theme.color }]} numberOfLines={1}>
+                    {parsed.title}
+                  </Text>
+                ) : null}
+                {parsed.content ? (
+                  <Text style={[styles.content, { color: theme.color }]}>{parsed.content}</Text>
+                ) : null}
+
+                {/* Action Buttons if any */}
+                {data.actions && data.actions.length > 0 ? (
+                  <View style={styles.actionsRow}>
+                    {data.actions.map((action, idx) => {
+                      const isDanger = action.tone === 'danger';
+                      const btnColor = isDanger ? '#ef4444' : toneConfig.accent;
+                      return (
+                        <Pressable
+                          key={idx}
+                          onPress={() => {
+                            action.onPress();
+                            dismiss(data.id);
+                          }}
+                          style={[styles.actionBtn, { borderColor: btnColor }]}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                        >
+                          <Text style={[styles.actionBtnText, { color: btnColor }]}>
+                            {action.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Queue Counter Badge */}
+              {queueLength > 0 ? (
+                <View
+                  style={[
+                    styles.queueBadge,
+                    { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+                  ]}
+                >
+                  <Text style={[styles.queueBadgeText, { color: theme.muted }]}>
+                  +{queueLength}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Dismiss Cross */}
+              <Pressable
+                onPress={() => dismiss(data.id)}
+                hitSlop={12}
+                style={styles.closeBtn}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.closeText, { color: theme.muted }]}>✕</Text>
+              </Pressable>
+            </View>
+
+            {/* Progress Countdown Bar */}
+            {showProgressBar ? (
+              <View style={[styles.progressTrack, { backgroundColor: theme.surfaceAlt }]}>
+                <Animated.View
+                  style={[
+                    styles.progressBar,
+                    progressBarStyle,
+                    { backgroundColor: toneConfig.accent },
+                  ]}
+                />
+              </View>
+            ) : null}
+          </Animated.View>
+        </GestureDetector>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -201,71 +307,103 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 999,
   },
+  cardWrapper: {
+    width: '100%',
+    alignItems: 'center',
+  },
   card: {
-    width: '94%',
+    width: '92%',
     borderWidth: 1,
     borderRadius: 14,
-    padding: 12,
-    gap: 6,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.14,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
-  accentBar: {
+  accentStrip: {
     position: 'absolute',
-    top: 8,
-    bottom: 8,
+    top: 0,
     left: 0,
+    bottom: 0,
     width: 4,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  titleRow: {
+  contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingLeft: 14,
+    gap: 10,
   },
-  iconWrap: {
-    width: 24,
-    height: 24,
-    marginRight: 8,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  closeButton: {
-    width: 28,
-    height: 28,
-    borderWidth: 1,
-    borderRadius: 999,
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeIconWrap: {
-    width: 14,
-    height: 14,
+  toneIcon: {
+    width: 20,
+    height: 20,
+  },
+  infoMark: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  textContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   content: {
     fontSize: 13,
     lineHeight: 18,
-    marginLeft: 32,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  actionBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  actionBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  queueBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  queueBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  closeText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   progressTrack: {
-    width: '100%',
     height: 3,
-    borderRadius: 999,
-    overflow: 'hidden',
+    width: '100%',
   },
   progressBar: {
     height: '100%',
   },
 });
+
+export { TemplateToast as ColguettiToast };
+

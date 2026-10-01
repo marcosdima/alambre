@@ -48,7 +48,7 @@ export const iconCatalog: Record<ItemIconKey, ComponentType<CatalogIconProps>> =
 
 type ItemIconProps = CatalogIconProps & { icon: ItemIconKey; delay?: number };
 
-export const ItemIcon = ({ icon, delay = 0, drawIt = true, ...props }: ItemIconProps) => {
+export const ItemIcon = ({ icon, delay = 0, drawIt = true, style, ...props }: ItemIconProps) => {
   const [ready, setReady] = useState(delay <= 0);
 
   useEffect(() => {
@@ -59,5 +59,5 @@ export const ItemIcon = ({ icon, delay = 0, drawIt = true, ...props }: ItemIconP
 
   const Component = iconCatalog[icon];
   if (!Component) return null;
-  return <Component {...props} drawIt={drawIt && ready} />;
+  return <Component style={[{ width: '100%', height: '100%' }, style]} {...props} drawIt={drawIt && ready} />;
 };

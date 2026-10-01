@@ -1,8 +1,2 @@
-export {
-  default as createCollectionProvider,
-} from './create-collection-provider';
-export type {
-  CollectionRecord,
-  CollectionState,
-  UseCollectionType,
-} from './collection-types';
+export { default as createCollection } from './create-collection';
+export type { CollectionRecord, CollectionState, UseCollectionType } from './collection-types';

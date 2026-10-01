@@ -19,6 +19,8 @@ these definition files are thin wiring.
 - Project knowledge lives in `docs/` — do not duplicate it here (see `docs/project.md` §8).
 - All agents follow the retrieval protocol in `.agents/skills/docs-retrieval/SKILL.md`.
 - Full matrix, model routing, and emulator flow: `docs/agents.md`.
+- Dynamic 4-level routing and anti-drift guardrails: `docs/agents.md` §5.
+- UI verification flow & deterministic capture: `scripts/ui-capture.sh` (see `docs/agents.md` §3).
 - `@lead` is the primary agent; specialists are invoked via delegation.
 
 ## Validation

@@ -1,8 +1,15 @@
-import { useContext } from 'react';
-import context from './toast-context';
+import { useExternalStore } from '../../core/use-external-store';
+import { defaultToastStore } from './toast-store';
+import type { UseToastType } from './toast-types';
 
-export default () => {
-  const ctx = useContext(context);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
-  return ctx;
-};
+export function useToast(): UseToastType {
+  const state = useExternalStore(defaultToastStore.store, (s) => s);
+  return {
+    toast: state.currentToast,
+    queueLength: state.queue.length,
+    ...defaultToastStore.actions,
+  };
+}
+
+export const toast = defaultToastStore.actions;
+export default useToast;

@@ -1,5 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { useNavigator, useToast } from 'alambre';
+import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
+import { useNavigator, useToast, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
@@ -12,26 +13,36 @@ export default () => {
   const { config } = useConfig();
   const { navigate } = useNavigator();
   const { show } = useToast();
+  const { getDelay } = useStagger({ initialDelay: 80, staggerMs: 60 });
+
+  const navItems = [
+    { key: 'details', label: lang.home.openDetails, onPress: () => navigate('home', { subpage: 'details' }) },
+    { key: 'settings', label: lang.home.openSettings, onPress: () => navigate('settings') },
+    { key: 'toast', label: lang.home.showToast, onPress: () => show({ payload: lang.home.title }) },
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-        <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
-        <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-        <Text style={{ color: theme.primary }}>{config.greeting}</Text>
-      </View>
+      <Animated.View
+        entering={FadeInDown.duration(300).delay(getDelay(0)).easing(Easing.out(Easing.cubic))}
+      >
+        <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
+          <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
+          <Text style={{ color: theme.primary }}>{config.greeting}</Text>
+        </View>
+      </Animated.View>
 
-      <AppButton onPress={() => navigate('home', { subpage: 'details' })}>
-        <Text style={{ color: theme.primary }}>{lang.home.openDetails}</Text>
-      </AppButton>
-
-      <AppButton onPress={() => show({ payload: lang.home.title }) }>
-        <Text style={{ color: theme.primary }}>{lang.home.showToast}</Text>
-      </AppButton>
-
-      <AppButton onPress={() => navigate('settings')}>
-        <Text style={{ color: theme.primary }}>{lang.home.openSettings}</Text>
-      </AppButton>
+      {navItems.map((item, index) => (
+        <Animated.View
+          key={item.key}
+          entering={FadeInDown.duration(280).delay(getDelay(index + 1)).easing(Easing.out(Easing.cubic))}
+        >
+          <AppButton onPress={item.onPress}>
+            <Text style={{ color: theme.primary }}>{item.label}</Text>
+          </AppButton>
+        </Animated.View>
+      ))}
     </View>
   );
 };

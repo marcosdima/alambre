@@ -1,19 +1,23 @@
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import ToastProvider from '../../src/behaviors/toast/toast-provider';
+import { ToastProvider, toast } from '../../src/behaviors/toast';
+import { defaultToastStore } from '../../src/behaviors/toast/toast-store';
 import useToast from '../../src/behaviors/toast/use-toast';
 import type { ToastComponentProps, UseToastType } from '../../src/behaviors/toast/toast-types';
 
 describe('ToastProvider', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    defaultToastStore.actions.clear();
+    defaultToastStore.configure({ defaultDuration: 4000, queueMode: 'queue', delay: 0 });
   });
 
   afterEach(() => {
+    defaultToastStore.actions.clear();
     vi.useRealTimers();
   });
 
-  const setup = () => {
+  const setup = (options: Partial<Parameters<typeof ToastProvider>[0]> = {}) => {
     const calls: Array<ToastComponentProps | null> = [];
     let api: UseToastType | undefined;
 
@@ -28,7 +32,7 @@ describe('ToastProvider', () => {
     };
 
     render(
-      <ToastProvider ToastComponent={ToastSpy}>
+      <ToastProvider ToastComponent={ToastSpy} {...options}>
         <Consumer />
       </ToastProvider>,
     );
@@ -314,13 +318,27 @@ describe('ToastProvider', () => {
     expect(calls[calls.length - 1]!.toast?.data.duration).toBe(1500);
   });
 
-  it('throws when used outside the provider', () => {
+  it('can be used outside the provider without throwing', () => {
+    let result: UseToastType | undefined;
     const Consumer = () => {
-      useToast();
+      result = useToast();
       return null;
     };
 
-    expect(() => render(<Consumer />)).toThrow(/useToast must be used within ToastProvider/);
+    expect(() => render(<Consumer />)).not.toThrow();
+    expect(result).toBeDefined();
+    expect(typeof result?.show).toBe('function');
+  });
+
+  it('allows direct imperative access via toast actions outside React render', () => {
+    act(() => {
+      toast.show({ id: 'direct-toast', payload: 'imperative' });
+    });
+    expect(defaultToastStore.store.getState().currentToast?.data.id).toBe('direct-toast');
+    act(() => {
+      toast.dismiss();
+    });
+    expect(defaultToastStore.store.getState().currentToast).toBeNull();
   });
 
   it('queues toasts behind the current one in queue mode', () => {

@@ -86,3 +86,116 @@ The graphic primitives (`base/Circle`, `base/Line` and `base/Path`, plus the ani
 `Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
 
 `DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the core provider wiring, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.
+
+---
+
+## 4. Behavior-first Inputs: `Stepper` and `Input`
+
+Following the direction established by `Button` (§1):
+
+### `Stepper` and `useStepper`
+
+* `Stepper` provides numeric stepping logic, boundary clamping (`min`/`max`), step precision handling, disabled states, and accessibility (`role="spinbutton"`, `accessibilityValue={{ min, max, now }}`).
+* It exposes the interactive state (`{ value, canIncrement, canDecrement, increment, decrement, setValue, disabled }`) through a `children` render prop and `style` callback.
+* No visual styling, +/- symbols, or layout is hard-coded in `alambre`. Applications compose their own presentation (for example `AppStepper` in `base-template`).
+
+### `Input`
+
+* `Input` provides behavior-first text input wrapping React Native's `TextInput`.
+* Manages `focused`, `disabled`, and `error` states, exposing them to the consumer via `style={({ focused, disabled, error }) => ...}`.
+* Enforces accessible semantics (`aria-invalid`, `accessibilityState.disabled`).
+
+### `Slider` and `useSlider`
+
+* `Slider` provides continuous or stepped numeric input calculation, boundary clamping (`min`/`max`), step snapping, and ratio calculation.
+* Handles touch responder gestures (`onResponderGrant`, `onResponderMove`, `onResponderRelease`) tracking container dimensions via `onLayout` without imposing hardcoded thumb or track visuals.
+* Enforces accessibility with `role="adjustable"`, `accessibilityValue={{ min, max, now }}`, and accessibility actions (`increment`, `decrement`).
+* Exposes `SliderState` (`{ value, ratio, percentage, increment, decrement, setValue, setValueFromRatio, disabled }`) via children render prop and style callback.
+* Application presentation: `apps/base-template/src/components/AppSlider.tsx`.
+
+### `SegmentedControl` and `useSelect`
+
+* `SegmentedControl` provides discrete single-option selection over a collection of items.
+* Manages selected value, active index, and disabled states.
+* Enforces accessibility with `role="radiogroup"`, child option `role="radio"`, and `accessibilityState={{ selected }}`.
+* Presentation-agnostic: the consumer receives `SelectState<T>` (`{ value, selectedIndex, select, isSelected, options, disabled }`).
+* Application presentation: `apps/base-template/src/components/AppSegmentedControl.tsx` (segmented tab pills) and `apps/base-template/src/components/AppSelect.tsx` (expandable dropdown).
+
+---
+
+## 5. Headless animation timing: `useStagger`
+
+Following the principle that the framework defines behavior while the application defines visual presentation (`docs/architecture.md` §6):
+
+* `useStagger` and `calculateStaggerDelay` provide headless stagger timing coordination across sequential elements.
+* **Non-responsibilities:** The framework does NOT choose visual entrance animations (`FadeInDown`, `FadeInUp`, `ZoomIn`, springs, keyframes, or easing curves) and does NOT impose animation wrappers. Applications pair the computed delays (`getDelay(index)`) with whatever presentation or Reanimated builder they choose.
+* **Accessibility:** Automatically integrates with `useReducedMotion()`. When reduced motion is preferred by the user, `calculateStaggerDelay` returns `0` immediately to avoid unnatural delayed stalls without breaking layout.
+* **Optional composition:** `StaggerProvider` and `useStaggerItem` allow deep component trees to consume stagger timing without manual prop drilling, falling back gracefully to local calculations when no provider is present.
+
+---
+
+## 6. Gesture Contention & Hierarchy in Compound Rows
+
+When designing compound list rows that support swipe-to-action behaviors (such as `SwipeableItemRow` / swipe-to-delete), touch responder hierarchy rules must be strictly respected:
+
+### Prohibited: Nested horizontal drag responders
+
+Embedding child components that register continuous horizontal pan gestures (such as gesture-driven carousels or horizontal sliders) inside a list row that itself listens to horizontal swipes creates unresolvable responder contention in `react-native-gesture-handler`. The inner pan gesture steals the drag events or locks up the parent row, preventing users from revealing actions or deleting items.
+
+### Adopted solutions for compound rows
+
+1. **Static preview summaries with overflow badges:** Display up to a fixed number $K$ of static preview chips (e.g. icon + label) followed by a `+N` badge indicating remaining elements. This pattern eliminates gesture conflict entirely and keeps row scrolling smooth (validated in `apps/colguetti` `Alarms.tsx`).
+2. **Discrete tap controls:** If interactive cycling or stepped input is required inside a swipeable row, use discrete tap controls (such as steppers or chevrons) with bounded touch hit bounds (`hitSlop`), never continuous pan drag responders.
+3. **Dedicated screen / modal for interactive collections:** When complex gesture-driven reordering or sliding is necessary, the interaction belongs on a dedicated subpage or modal dialog where the full screen gesture namespace is available without competing list responders.
+
+---
+
+## 7. Headless UI Physics: Decoupled Kinetic Containers (`useCarousel`, `useDeck`)
+
+Following the behavior-first architecture (`docs/architecture.md` §6), interactive containers and kinetic components strictly separate mathematical motion physics from visual markup.
+
+### The Problem with Monolithic Containers
+
+Standard mobile UI libraries often ship monolithic container components (e.g. `<Carousel>`, `<TinderCardDeck>`) with baked-in card wrappers, hardcoded padding, rigid gestures, and opinionated indicator styles. This creates friction:
+1. **Agent DX / CSS Battles:** AI agents and developers waste effort overriding internal flex layouts, margins, or card frames to match design specifications.
+2. **Gesture & Thread Blocking:** Coupling React component re-renders to high-frequency motion gestures causes frame drops on low-end devices.
+3. **Inflexible Composition:** Monolithic components make it difficult to plug in custom dot paginators, parallax backgrounds, dynamic peek offsets, or custom badge overlays.
+
+### The Headless UI Physics Philosophy
+
+In `alambre`, containers are implemented as **headless physics hooks**:
+
+| Layer | Responsibility | Owner |
+| --- | --- | --- |
+| **Physics & Kinematics** | Pure math (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`), card offsets, clamped snap targets, velocity decay. | **`alambre`** |
+| **Gesture & Motion State** | Reanimated worklets (`scrollHandler`), UI-thread shared values (`scrollX`, `swipeTranslation`, `activeIndex`), momentum listeners (`onMomentumScrollEnd`), auto-play intervals, stack history. | **`alambre`** |
+| **JSX Presentation** | Markup (`<Animated.ScrollView>`, `<GestureDetector>`, `<Pressable>`), card layout, header/footer chrome, indicators, peek spacing, elevation, borders. | **Application** |
+| **Visual Animation** | Interpolation worklets (`interpolate`, `interpolateColor`, `useAnimatedStyle`) for card scale, 3D tilt, fade, and shadow transforms. | **Application** |
+
+### 1. Carousel Physics (`useCarousel`)
+
+* **Framework contract:**
+  - Pure mathematical helpers: `calculateSnapInterval(cardWidth, cardGap)`, `calculateActiveIndex(scrollX, snapInterval, totalItems)`, `getScrollTargetForIndex(index, snapInterval, totalItems)`.
+  - Hook `useCarousel(config)` provides:
+    - `scrollRef`: Ref attached to the application's `<Animated.ScrollView>`.
+    - `scrollX`: Reanimated `SharedValue<number>` tracking continuous scroll offset on the UI thread.
+    - `scrollHandler`: Native scroll handler worklet passed directly to `onScroll`.
+    - `onMomentumScrollEnd`: Native callback computing discrete settled index without layout race conditions.
+    - `activeIndex`: React state exposing the settled active card index.
+    - `scrollToIndex(index)`: Programmatic scroll driver with clamping and smooth animation.
+    - `snapInterval`: Pre-calculated scroll snapping distance.
+* **Application usage:** The application passes whatever card JSX it needs, styling dimensions and layout directly. The testbed in `apps/playground/src/views/containers/CarouselTestbed.tsx` demonstrates this pattern with multi-card previews, dynamic auto-play, and custom dot indicators.
+
+### 2. Swipeable Card Deck Physics (`useDeck`)
+
+* **Framework contract:**
+  - Hook `useDeck<T>({ initialCards })` provides:
+    - `deck: T[]`: Remaining cards in the stack.
+    - `history: T[]`: Stack of previously dismissed cards for undo capabilities.
+    - `activeIndex`: Reanimated `SharedValue<number>` tracking current top card index.
+    - `swipeTranslation`: Reanimated `SharedValue<number>` tracking interactive horizontal swipe offset.
+    - `popCard(direction)`: Advances index, records the dismissed card to history, and resets translation.
+    - `undoLast()`: Restores the last popped card from history back to the top of the deck.
+    - `triggerProgrammaticSwipe(direction)`: Dispatches a swipe action programmatically (e.g. from button taps).
+    - `reset()`: Resets stack to its initial array and purges history.
+* **Application usage:** The application pairs the shared values (`swipeTranslation`, `activeIndex`) with `<GestureDetector gesture={pan}>` and drives angular rotation worklets (`rotation = interpolate(swipeTranslation.value, ...)`) without the framework dictating how cards appear. Validated in `apps/playground/src/views/containers/DeckTestbed.tsx`.
