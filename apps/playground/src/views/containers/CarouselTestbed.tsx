@@ -114,7 +114,7 @@ export function getScrollTargetForIndex(
   return clamped * snapInterval;
 }
 
-export default function CarouselTest() {
+export default function CarouselTestbed() {
   const { theme } = useLightDark();
   const scrollRef = useRef<Animated.ScrollView>(null);
 
@@ -266,12 +266,12 @@ export default function CarouselTest() {
         )}
       </View>
 
-      {/* Control Panel / Rich Configuration Directives */}
       <AppCard
         variant="outlined"
         title="Parámetros del Contenedor"
         subtitle="Configuración rica en tiempo real para evaluar comportamiento cinético."
         style={styles.controlCard}
+        bodyStyle={styles.controlBody}
       >
         {/* Effect Mode */}
         <View style={styles.controlGroup}>
@@ -588,7 +588,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 20,
+    paddingTop: 16,
+    paddingBottom: 56,
     gap: 20,
   },
   header: {
@@ -677,8 +678,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   controlCard: {
-    marginHorizontal: 20,
-    gap: 16,
+    marginHorizontal: 16,
+  },
+  controlBody: {
+    gap: 14,
   },
   controlGroup: {
     gap: 6,

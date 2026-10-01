@@ -16,9 +16,9 @@ export default () => {
 
   const navItems = [
     {
-      key: 'carousel',
-      label: 'Carruseles y Contenedores (Snap & Microfísica)',
-      onPress: () => navigate('carousel'),
+      key: 'containers',
+      label: 'Contenedores Interactivos (Carruseles, Decks, Tabs, Rows, Split)',
+      onPress: () => navigate('containers'),
     },
     {
       key: 'dnd',

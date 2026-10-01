@@ -1,5 +1,5 @@
 import Home from '../views/home/Home';
-import CarouselTest from '../views/carousel/CarouselTest';
+import ContainersHub from '../views/containers/ContainersHub';
 import ComponentsTest from '../views/components-test/ComponentsTest';
 import TextAnimationsTest from '../views/text-animations/TextAnimationsTest';
 import DndTest from '../views/dnd-test/DndTest';
@@ -16,9 +16,13 @@ export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
   },
+  containers: {
+    title: { es: 'Contenedores Interactivos', en: 'Interactive Containers' },
+    component: <ContainersHub />,
+  },
   carousel: {
-    title: { es: 'Carruseles', en: 'Carousels' },
-    component: <CarouselTest />,
+    title: { es: 'Contenedores Interactivos', en: 'Interactive Containers' },
+    component: <ContainersHub />,
   },
   components: {
     title: { es: 'UI Components', en: 'UI Components' },

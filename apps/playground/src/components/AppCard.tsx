@@ -239,7 +239,7 @@ export default function AppCard({
 
 const styles = StyleSheet.create({
   cardBase: {
-    width: '100%',
+    alignSelf: 'stretch',
   },
   headerRow: {
     flexDirection: 'row',
