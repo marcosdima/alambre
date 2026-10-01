@@ -1,11 +1,4 @@
-/* global fetch */
-
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { useMemo, type ReactNode } from 'react';
 import {
   QueryClient,
   QueryClientProvider,
@@ -19,7 +12,6 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query';
 import type {
-  ApiContextValue,
   ApiEndpoint,
   ApiRequestInput,
   CreateApiProviderOptions,
@@ -27,13 +19,55 @@ import type {
 } from './api-types';
 import { buildUrl, resolveValue } from './api-utils';
 
-
-const createApiProvider = ({
+const createApi = ({
   baseUrl,
   getHeaders,
   createQueryClient,
 }: CreateApiProviderOptions) => {
-  const ApiContext = createContext<ApiContextValue | undefined>(undefined);
+
+  const request = async <TResponse,>({
+    method,
+    path,
+    query,
+    body,
+    headers,
+    transform,
+  }: ApiRequestInput & { transform?: (raw: unknown) => TResponse }): Promise<TResponse> => {
+    const authHeaders = await getHeaders?.();
+    const url = buildUrl(baseUrl, path, query);
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...authHeaders,
+        ...headers,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+
+    const rawText = await response.text();
+    let rawData: unknown = undefined;
+
+    if (rawText.length) {
+      try {
+        rawData = JSON.parse(rawText);
+      } catch {
+        rawData = rawText;
+      }
+    }
+
+    if (!response.ok) {
+      const message = typeof rawData === 'object' && rawData && 'message' in rawData
+        ? String((rawData as { message?: unknown }).message)
+        : `Request failed (${response.status})`;
+      throw new Error(message);
+    }
+
+    if (transform) return transform(rawData);
+    return rawData as TResponse;
+  };
 
   const ApiProvider = ({ children }: { children: ReactNode }) => {
     const queryClient = useMemo(
@@ -41,66 +75,11 @@ const createApiProvider = ({
       [],
     );
 
-    const request = async <TResponse,>({
-      method,
-      path,
-      query,
-      body,
-      headers,
-      transform,
-    }: ApiRequestInput & { transform?: (raw: unknown) => TResponse }): Promise<TResponse> => {
-      const authHeaders = await getHeaders?.();
-      const url = buildUrl(baseUrl, path, query);
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          ...authHeaders,
-          ...headers,
-        },
-        body: body === undefined ? undefined : JSON.stringify(body),
-      });
-
-      const rawText = await response.text();
-      let rawData: unknown = undefined;
-
-      if (rawText.length) {
-        try {
-          rawData = JSON.parse(rawText);
-        } catch {
-          rawData = rawText;
-        }
-      }
-
-      if (!response.ok) {
-        const message = typeof rawData === 'object' && rawData && 'message' in rawData
-          ? String((rawData as { message?: unknown }).message)
-          : `Request failed (${response.status})`;
-        throw new Error(message);
-      }
-
-      if (transform) return transform(rawData);
-      return rawData as TResponse;
-    };
-
     return (
       <QueryClientProvider client={queryClient}>
-        <ApiContext.Provider value={{ request }}>
-          {children}
-        </ApiContext.Provider>
+        {children}
       </QueryClientProvider>
     );
-  };
-
-
-  const useApi = () => {
-    const ctx = useContext(ApiContext);
-    if (!ctx) {
-      throw new Error('useApi must be used within ApiProvider');
-    }
-    return ctx;
   };
 
   const createQueryHook = <TResponse, TVariables = void>(
@@ -110,7 +89,6 @@ const createApiProvider = ({
       variables: TVariables,
       options?: Omit<UseQueryOptions<TResponse, Error, TResponse, QueryKey>, 'queryKey' | 'queryFn'>,
     ): UseQueryResult<TResponse, Error> => {
-      const { request } = useApi();
 
       const queryKey = resolveValue<QueryKey>(
         typeof endpoint.key === 'function'
@@ -156,7 +134,6 @@ const createApiProvider = ({
     return (
       options?: Omit<UseMutationOptions<TResponse, Error, TVariables>, 'mutationFn'>,
     ): UseMutationResult<TResponse, Error, TVariables> => {
-      const { request } = useApi();
       const queryClient = useQueryClient();
 
       return useMutation({
@@ -192,8 +169,8 @@ const createApiProvider = ({
   ) => createMutationHook<TResponse, TVariables>(route, settings);
 
   return {
-    ApiProvider,
-    useApi,
+    ApiProvider, // Still needed for QueryClientProvider, but no Alambre context
+    request,
     createRoute,
     createRoutes,
     createQueryHook,
@@ -203,4 +180,4 @@ const createApiProvider = ({
   };
 };
 
-export default createApiProvider;
+export default createApi;

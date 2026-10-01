@@ -1,7 +1,7 @@
-export { createApiProvider } from './api';
-export { ConfirmProvider, useConfirm } from './confirm';
+export { createApi } from './api';
+export { ConfirmProvider, ConfirmHost, useConfirm, confirm, dismissConfirm } from './confirm';
 export { NavigatorProvider, useNavigator } from './navigator';
-export { ToastProvider, useToast, parseToastPayload } from './toast';
+export { ToastProvider, ToastHost, useToast, toast, parseToastPayload } from './toast';
 export type {
   ToastTone,
   ToastPosition,
@@ -14,4 +14,3 @@ export type {
   UseToastType,
 } from './toast';
 export type { ConfirmComponentProps } from './confirm';
-

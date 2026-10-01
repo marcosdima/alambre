@@ -1,13 +1,9 @@
-export { default as createApiProvider } from './api-provider';
+export { default as createApi } from './create-api';
 export type {
   ApiEndpoint,
-  ApiContextValue,
   ApiRequestInput,
+  ApiContextValue,
   CreateApiProviderOptions,
-  HttpMethod,
-  InferRouteResponse,
-  InferRouteVariables,
   RouteCatalog,
-  QueryParams,
-  RequestHeaders,
 } from './api-types';
+export { buildUrl, resolveValue } from './api-utils';

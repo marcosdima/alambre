@@ -1,4 +1,4 @@
-export { createConfigProvider } from './config';
-export { createLangProvider } from './lang';
-export { createLightDarkProvider } from './light-dark';
-export { createCollectionProvider } from './collection';
+export { createConfig } from './config';
+export { createLang } from './lang';
+export { createLightDark } from './light-dark';
+export { createCollection } from './collection';
