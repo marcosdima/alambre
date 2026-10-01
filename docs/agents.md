@@ -85,7 +85,7 @@ To prevent agent drift (such as a single agent assuming success on unverified na
 
 | Level | Scope | Routing & Delegation | Quality Gate | Token Cost |
 | --- | --- | --- | --- | --- |
-| **Level 1: Local Tactical** | Typos, minor style adjustments, prop tweaks, unit test fixes. | **`@lead` resolves directly** without invoking specialist agents. | Progressive validation: `lint`, `typecheck`, `test`. | Minimal |
+| **Level 1: Local Tactical** | Typos, minor style adjustments, prop tweaks, unit test fixes. | **`@lead` delegates to `@ui` or `@tester`.** The lead strictly orchestrates and does not write code. | Progressive validation: `lint`, `typecheck`, `test`. | Minimal |
 | **Level 2: UI Visual & Kinetic** | Animations (`playground`), gesture handling, screen transitions. | **`@lead` delegates to `@ui`.** | **Mandatory visual verification:** `scripts/ui-capture.sh` + `view_file`, or explicit user confirmation. Prohibited from closing the task solely on TypeScript compilation. | Moderate |
 | **Level 3: Template & Reusable** | Screens in `base-template` (e.g. Settings), shared compound controls. | **`@ui` implements**, followed by **`@integrity` review (Flash tier)**. | Gate: accessibility verification (TalkBack/VoiceOver, single switch node) and ensuring zero leaks or unapproved dependencies in exportable `base-expo`. | Medium |
 | **Level 4: Core Framework & API** | Changes to `packages/alambre`, new capabilities, `Storage` layer, SemVer bumps. | **Full pipeline:** `@lead` coordinates -> `@tester` creates regression suite -> `@integrity` audits contracts -> `@scribe` logs changelog/ADR. | Gate: contract tests in `packages/alambre/tests/public-api.test.ts` + documentation sync. | High (justified) |
