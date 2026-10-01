@@ -16,3 +16,5 @@ export type {
 export type { ConfirmComponentProps } from './confirm';
 export * from './carousel';
 export * from './deck';
+export * from './wheel';
+export * from './overlays';

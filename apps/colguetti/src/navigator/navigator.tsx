@@ -5,11 +5,11 @@ import Alarms from '../views/alarms/Alarms';
 import AlarmForm from '../views/alarms/AlarmForm';
 import Settings from '../views/settings/Settings';
 import { langs } from '../providers/lang';
-import type { NavigatorTypes } from 'alambre';
+import type { Page } from 'alambre';
 
 export type PageTitle = { es: string; en: string };
 
-export type AppPage = NavigatorTypes.Page & {
+export type AppPage = Page & {
   title?: PageTitle;
   titles?: { add: PageTitle; edit: PageTitle };
   subpages?: Record<string, AppPage>;

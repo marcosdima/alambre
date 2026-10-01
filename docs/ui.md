@@ -73,12 +73,6 @@ The graphic primitives (`base/Circle`, `base/Line` and `base/Path`, plus the ani
 
 > Forward note: a future layer of common defaults and styling may live in a "Base Native"/"Base Template" layer once that layer is definitively defined. This decision does not introduce it.
 
-### `TimePicker`: provisional presentation exception
-
-`TimePicker` ships as a framework input with a **themeable `accentColor`** (the application controls the accent exactly like other themable surfaces) but its remaining presentation — arrow glyphs, row typography and sizes, wheel dimensions and spacing, the inactive-label color, and the default accent hex — is **hardcoded in the framework**. This is a provisional exception while the input's design discipline is settled; the default accent currently mirrors the reference app's primary color, which is application presentation leaking in and should be revisited when the input becomes presentation-agnostic (e.g. presentation moved to the consumer via style/theme props or a composed wrapper).
-
-`visibleCount` currently defaults to `3` (previous / current / next value visible) with increment/decrement arrows and wrap-around at range edges. A scroll wheel with momentum and snap is deferred; the fixed-tap viewport avoids nested-scroll and layout-jump issues with a reasonable UX while the scroll contract is understood.
-
 ---
 
 ## 3. Base contracts: passthroughs were not retained
@@ -174,28 +168,12 @@ In `alambre`, containers are implemented as **headless physics hooks**:
 
 ### 1. Carousel Physics (`useCarousel`)
 
-* **Framework contract:**
-  - Pure mathematical helpers: `calculateSnapInterval(cardWidth, cardGap)`, `calculateActiveIndex(scrollX, snapInterval, totalItems)`, `getScrollTargetForIndex(index, snapInterval, totalItems)`.
-  - Hook `useCarousel(config)` provides:
-    - `scrollRef`: Ref attached to the application's `<Animated.ScrollView>`.
-    - `scrollX`: Reanimated `SharedValue<number>` tracking continuous scroll offset on the UI thread.
-    - `scrollHandler`: Native scroll handler worklet passed directly to `onScroll`.
-    - `onMomentumScrollEnd`: Native callback computing discrete settled index without layout race conditions.
-    - `activeIndex`: React state exposing the settled active card index.
-    - `scrollToIndex(index)`: Programmatic scroll driver with clamping and smooth animation.
-    - `snapInterval`: Pre-calculated scroll snapping distance.
-* **Application usage:** The application passes whatever card JSX it needs, styling dimensions and layout directly. The testbed in `apps/playground/src/views/containers/CarouselTestbed.tsx` demonstrates this pattern with multi-card previews, dynamic auto-play, and custom dot indicators.
+* **Framework role:** Provides mathematical snapping calculations and Reanimated scroll worklets on the UI thread without dictating card markup, peek spacing, or paginator design.
+* **Application ownership:** The application mounts `<Animated.ScrollView>`, styles cards and container dimensions, and optionally renders custom indicators (demonstrated in `apps/playground/src/views/containers/CarouselTestbed.tsx`).
+* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](reference/behaviors.md#5-usecarousel--math-kinematics).
 
 ### 2. Swipeable Card Deck Physics (`useDeck`)
 
-* **Framework contract:**
-  - Hook `useDeck<T>({ initialCards })` provides:
-    - `deck: T[]`: Remaining cards in the stack.
-    - `history: T[]`: Stack of previously dismissed cards for undo capabilities.
-    - `activeIndex`: Reanimated `SharedValue<number>` tracking current top card index.
-    - `swipeTranslation`: Reanimated `SharedValue<number>` tracking interactive horizontal swipe offset.
-    - `popCard(direction)`: Advances index, records the dismissed card to history, and resets translation.
-    - `undoLast()`: Restores the last popped card from history back to the top of the deck.
-    - `triggerProgrammaticSwipe(direction)`: Dispatches a swipe action programmatically (e.g. from button taps).
-    - `reset()`: Resets stack to its initial array and purges history.
-* **Application usage:** The application pairs the shared values (`swipeTranslation`, `activeIndex`) with `<GestureDetector gesture={pan}>` and drives angular rotation worklets (`rotation = interpolate(swipeTranslation.value, ...)`) without the framework dictating how cards appear. Validated in `apps/playground/src/views/containers/DeckTestbed.tsx`.
+* **Framework role:** Provides stack state tracking, swipe translation shared values, and history undo capabilities without dictating card styles or overlay badges.
+* **Application ownership:** The application pairs the shared values with its gesture detectors and drives rotation or scale interpolation (demonstrated in `apps/playground/src/views/containers/DeckTestbed.tsx`).
+* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](reference/behaviors.md#6-usedeck--swipeable-stack-kinematics).

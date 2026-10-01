@@ -30,6 +30,7 @@ Application behavioral patterns, overlay hosts, and headless physics drivers:
 * **`createApi`**: TanStack React Query integration wrapper and typed query/mutation hook generators without internal context.
 * **`useCarousel`**: Headless content carousel with Reanimated scroll worklets, snap calculations, and auto-play.
 * **`useDeck`**: Headless swipeable card stack with angular rotation kinematics, history stack, and gesture controls.
+* **`useWheelPicker`**: Headless kinetic wheel picker with momentum flick, spring settling, and multi-cycle virtual scrolling.
 
 ### 3. [Storage Layer](storage.md)
 Persistence abstraction and serialization helpers:
@@ -53,7 +54,6 @@ Base UI primitives and icon contracts:
 * **`SegmentedControl` & `useSelect`**: Option selection primitive with radio group accessibility (`role="radiogroup"`).
 * **`Stepper` & `useStepper`**: Step-based numeric increment/decrement with clamping (`role="spinbutton"`).
 * **`Input`**: Accessible text input with state styling (`focused`, `disabled`, `error`).
-* **`TimePicker`**: 24-hour hour/minute wheel selector.
 * **`AlambreIcons`**: Vector icon family (`Cross`, `Tick`, `Arrow`, `Sun`, `Moon`, catalog shapes) and primitives (`Circle`, `Line`, `Path`).
 
 ### 6. [Drag & Drop Subsystem](dnd.md)

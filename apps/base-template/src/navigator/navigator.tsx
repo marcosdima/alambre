@@ -2,12 +2,12 @@ import Home from '../views/home/Home';
 import Details from '../views/home/Details';
 import Settings from '../views/settings/Settings';
 import Permissions from '../views/settings/Permissions';
-import type { NavigatorTypes } from 'alambre';
+import type { Page } from 'alambre';
 import type { AppLang } from '../providers/lang';
 
 export type PageTitleFn = (lang: AppLang) => string;
 
-export type AppPage = NavigatorTypes.Page & {
+export type AppPage = Page & {
   title?: PageTitleFn;
   subpages?: Record<string, AppPage>;
 };

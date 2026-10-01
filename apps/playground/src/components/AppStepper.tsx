@@ -1,6 +1,6 @@
 import type { StepperProps } from 'alambre';
 import { Stepper } from 'alambre';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useLightDark } from '../providers/theme';
 
 export type AppStepperProps = StepperProps & {
@@ -23,7 +23,7 @@ export default function AppStepper({
   return (
     <View style={styles.container}>
       <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
-      <Stepper
+      <Stepper.Root
         value={value}
         min={min}
         max={max}
@@ -31,54 +31,48 @@ export default function AppStepper({
         onChange={onChange}
         disabled={disabled}
       >
-        {({ value: val, increment, decrement, canIncrement, canDecrement }) => (
-          <View style={styles.controlRow}>
-            <Pressable
-              onPress={decrement}
-              disabled={!canDecrement}
-              style={[
-                styles.btn,
-                {
-                  borderColor: theme.border,
-                  backgroundColor: theme.surfaceAlt,
-                  opacity: canDecrement ? 1 : 0.4,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Decrement ${label}`}
-            >
-              <Text style={[styles.btnText, { color: theme.color }]}>-</Text>
-            </Pressable>
-            <View
-              style={[
-                styles.valueBox,
-                { borderColor: theme.border, backgroundColor: theme.surface },
-              ]}
-            >
-              <Text style={[styles.valueText, { color: theme.primary }]}>
-                {val}
-                {unit}
-              </Text>
-            </View>
-            <Pressable
-              onPress={increment}
-              disabled={!canIncrement}
-              style={[
-                styles.btn,
-                {
-                  borderColor: theme.border,
-                  backgroundColor: theme.surfaceAlt,
-                  opacity: canIncrement ? 1 : 0.4,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Increment ${label}`}
-            >
-              <Text style={[styles.btnText, { color: theme.color }]}>+</Text>
-            </Pressable>
+        <View style={styles.controlRow}>
+          <Stepper.Decrement
+            style={(state) => [
+              styles.btn,
+              {
+                borderColor: theme.border,
+                backgroundColor: theme.surfaceAlt,
+                opacity: state.canDecrement && !state.disabled ? 1 : 0.4,
+              },
+            ]}
+            accessibilityLabel={`Decrement ${label}`}
+          >
+            <Text style={[styles.btnText, { color: theme.color }]}>-</Text>
+          </Stepper.Decrement>
+
+          <View
+            style={[
+              styles.valueBox,
+              { borderColor: theme.border, backgroundColor: theme.surface },
+            ]}
+          >
+            <Stepper.Value
+              format={(val) => `${val}${unit}`}
+              style={[styles.valueText, { color: theme.primary }]}
+            />
           </View>
-        )}
-      </Stepper>
+
+          <Stepper.Increment
+            style={(state) => [
+              styles.btn,
+              {
+                borderColor: theme.border,
+                backgroundColor: theme.surfaceAlt,
+                opacity: state.canIncrement && !state.disabled ? 1 : 0.4,
+              },
+            ]}
+            accessibilityLabel={`Increment ${label}`}
+          >
+            <Text style={[styles.btnText, { color: theme.color }]}>+</Text>
+          </Stepper.Increment>
+        </View>
+      </Stepper.Root>
     </View>
   );
 }

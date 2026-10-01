@@ -1,14 +1,8 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  cancelAnimation,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useWheelPicker } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 type SwipeableTimePickerProps = {
@@ -21,7 +15,6 @@ type SwipeableTimePickerProps = {
 const ROW_HEIGHT = 44;
 const VISIBLE_ROWS = 3;
 const WHEEL_HEIGHT = ROW_HEIGHT * VISIBLE_ROWS; // 132
-const CYCLES = 5;
 
 type WheelColumnProps = {
   itemCount: number;
@@ -39,107 +32,17 @@ function WheelColumn({
   testID,
 }: WheelColumnProps) {
   const { theme } = useLightDark();
-  const centerBase = Math.floor(CYCLES / 2) * itemCount;
-  const currentPosition = useSharedValue(centerBase + selected);
-  const dragStartPos = useSharedValue(centerBase + selected);
 
-  const allItems = useMemo(() => {
-    const list: number[] = [];
-    for (let c = 0; c < CYCLES; c++) {
-      for (let i = 0; i < itemCount; i++) {
-        list.push(i);
-      }
-    }
-    return list;
-  }, [itemCount]);
-
-  useEffect(() => {
-    const currentInt = Math.round(currentPosition.value);
-    const currentWrapped = ((currentInt % itemCount) + itemCount) % itemCount;
-    if (currentWrapped !== selected) {
-      let diff = (selected - currentWrapped) % itemCount;
-      if (diff > itemCount / 2) diff -= itemCount;
-      if (diff < -itemCount / 2) diff += itemCount;
-      currentPosition.value = currentInt + diff;
-    }
-  }, [selected, itemCount, currentPosition]);
+  const { currentPosition, gesture, allItems } = useWheelPicker({
+    itemCount,
+    selected,
+    onSelect,
+    rowHeight: ROW_HEIGHT,
+  });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: ROW_HEIGHT - currentPosition.value * ROW_HEIGHT }],
   }));
-
-  const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetY([-6, 6])
-        .failOffsetX([-25, 25])
-        .onStart(() => {
-          'worklet';
-          cancelAnimation(currentPosition);
-          dragStartPos.value = currentPosition.value;
-        })
-        .onUpdate((e) => {
-          'worklet';
-          currentPosition.value = dragStartPos.value - e.translationY / ROW_HEIGHT;
-        })
-        .onEnd((e) => {
-          'worklet';
-          // Velocity inertia: flicking advances with momentum
-          const velocityRows = -(e.velocityY * 0.08) / ROW_HEIGHT;
-          const target = Math.round(currentPosition.value + velocityRows);
-
-          currentPosition.value = withSpring(
-            target,
-            {
-              damping: 24,
-              stiffness: 220,
-              mass: 0.6,
-            },
-            (finished) => {
-              if (finished) {
-                const newSelected = ((target % itemCount) + itemCount) % itemCount;
-                if (Math.abs(target - centerBase) > itemCount * 1.5) {
-                  currentPosition.value = centerBase + newSelected;
-                }
-                runOnJS(onSelect)(newSelected);
-              }
-            },
-          );
-        }),
-    [centerBase, currentPosition, dragStartPos, itemCount, onSelect],
-  );
-
-  const tapGesture = useMemo(
-    () =>
-      Gesture.Tap()
-        .maxDuration(250)
-        .onEnd((e) => {
-          'worklet';
-          if (e.y < ROW_HEIGHT) {
-            const target = Math.round(currentPosition.value) - 1;
-            currentPosition.value = withTiming(target, { duration: 150 }, (finished) => {
-              if (finished) {
-                const newSelected = ((target % itemCount) + itemCount) % itemCount;
-                runOnJS(onSelect)(newSelected);
-              }
-            });
-          } else if (e.y > ROW_HEIGHT * 2) {
-            const target = Math.round(currentPosition.value) + 1;
-            currentPosition.value = withTiming(target, { duration: 150 }, (finished) => {
-              if (finished) {
-                const newSelected = ((target % itemCount) + itemCount) % itemCount;
-                runOnJS(onSelect)(newSelected);
-              }
-            });
-          }
-        }),
-    [currentPosition, itemCount, onSelect],
-  );
-
-  const gesture = useMemo(
-    () => Gesture.Exclusive(panGesture, tapGesture),
-    [panGesture, tapGesture],
-  );
 
   return (
     <View style={styles.wheelColumn} testID={testID}>
@@ -156,7 +59,7 @@ function WheelColumn({
 
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.wheelContainer, animatedStyle]}>
-          {allItems.map((item, index) => {
+          {allItems.map((item: number, index: number) => {
             const isSelected = item === selected;
             return (
               <View key={index} style={styles.numberRow}>

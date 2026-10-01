@@ -11,20 +11,30 @@ export type Page = {
 
 export type NavigatorObject = Record<string, Page>;
 
-export type NavigatorReturn = {
+export type NavigationSettings<TSubpage extends string = string> = {
+  subpage?: TSubpage;
+};
+
+export type NavigatorRouteKey<TRoute> = TRoute extends string
+  ? TRoute
+  : keyof TRoute & string;
+
+export type NavigatorReturn<
+  TRoute extends string | Record<string, unknown> = string,
+  TSubpage extends string = string,
+> = {
   currentPage: Page;
   pageKey: string;
   noPreviousPages: boolean;
   scrollTop: number;
-  navigate: (target: string, settings?: NavigationSettings) => void;
+  navigate: (
+    target: NavigatorRouteKey<TRoute>,
+    settings?: NavigationSettings<TSubpage>,
+  ) => void;
   previous: () => void;
   setScrollTop: (value: number) => void;
 };
 
 export type NavigatorProviderProps = DefaultReact.ViewProps & {
   pages: NavigatorObject;
-};
-
-export type NavigationSettings = {
-  subpage?: string,
 };

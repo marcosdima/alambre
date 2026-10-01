@@ -16,9 +16,15 @@ Major structural refactor migrating global capabilities and interaction behavior
 - [add] **Headless Physics Hooks**:
   - `useCarousel`: Pure kinetic hook with Reanimated scroll worklets (`scrollRef`, `scrollX`, `onMomentumScrollEnd`, `activeIndex`, `scrollToIndex`) and pure math helpers (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`). Decouples scrolling and snapping physics from visual cards.
   - `useDeck`: Headless swipeable card stack managing angular kinematics, translation shared values, undo/history stack, and programmatic actions (`popCard`, `undoLast`, `triggerProgrammaticSwipe`, `reset`).
+  - `useWheelPicker`: Headless kinetic wheel picker with momentum flick physics, spring settling, virtual multi-cycle infinite scrolling, and step tap interactions.
+- [refactor] **Retire `TimePicker` component**: Removed `TimePicker` and `TimePickerProps` from the public framework API, eliminating the provisional presentation exception from `docs/ui.md` §2. Applications compose visual wheel presentation (e.g. `SwipeableTimePicker.tsx` in `apps/colguetti`) on top of `useWheelPicker`.
 - [fix] Fixed `create-api.tsx` extension for native JSX support in TanStack `QueryClientProvider`.
+- [refactor] **First-Class Type Safety & State Modernization (Proposal 4)**:
+  - Modernized `createConfig` to support broad generics `T extends Record<string, unknown>` (supporting booleans, numbers, and nested objects with safe JSON serialization/deserialization), strictly typed `saveField<K extends keyof T>(field: K, value: T[K])`, and added `loading` state during async hydration.
+  - Parameterized `useNavigator<TRoute, TSubpage>` for strict compile-time route validation on `navigate(target, settings)`.
+  - Dismantled blanket `export * as NavigatorTypes` namespace from `types/index.ts`; promoted `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, `NavigationSettings`, and `AnimationDefault` directly into top-level public API in `src/index.ts`, and updated consumer apps.
 - [test] Added unit and behavioral test suites for `carousel.test.tsx` and `deck.test.tsx`; updated `public-api.test.ts` to validate value and type contracts.
-- [docs] Full documentation corpus audit: updated `docs/architecture.md` (§4, §6, §8), added Headless UI Physics section to `docs/ui.md` (§7), rewritten `docs/reference/capabilities.md` and `docs/reference/behaviors.md`, updated `docs/reference/index.md`, and registered patterns in `docs/discoveries.md`.
+- [docs] Full documentation corpus audit: updated `docs/architecture.md` (§4, §6, §8, §9), cleaned low-level component details and presentation exceptions from `docs/ui.md` (§2, §7), added `useWheelPicker` to `docs/reference/behaviors.md` and `docs/reference/index.md`, and kept high-level documents strictly focused on boundaries and architecture.
 
 ## 1.1.0 — 2026-09-26
 

@@ -12,27 +12,44 @@ export {
 export type {
   ButtonProps,
   ButtonState,
-  StepperProps,
+  StepperRootProps as StepperProps,
+  StepperRootProps,
+  StepperButtonProps,
+  StepperValueProps,
   StepperOptions,
   StepperState,
-  SliderProps,
+  SliderRootProps as SliderProps,
+  SliderRootProps,
+  SliderComponentProps,
   SliderOptions,
   SliderState,
   SegmentedControlProps,
   SelectOption,
   SelectOptions,
   SelectState,
-  InputProps,
+  InputRootProps as InputProps,
+  InputRootProps,
+  InputFieldProps,
   InputState,
 } from './components/base/input';
 
-// Types.
-export type { NavigatorTypes } from './types';
+// Navigator types.
+export type {
+  Page,
+  NavigatorObject,
+  NavigatorReturn,
+  NavigatorProviderProps,
+  NavigationSettings,
+  AnimationDefault,
+} from './types/navigator';
+
+// Capability types.
+export type { ConfigState, UseConfigType } from './capabilities/config';
+export type { UseCollectionType } from './capabilities/collection';
 
 export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
-export type { UseCollectionType } from './capabilities/collection';
 
 export type {
   ToastComponentProps,
@@ -81,8 +98,11 @@ export {
   calculateActiveIndex,
   getScrollTargetForIndex,
   useDeck,
+  useWheelPicker,
+  useBottomSheet,
+  useDialog,
 } from './behaviors';
-export type { UseCarouselConfig, UseDeckConfig } from './behaviors';
+export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions } from './behaviors';
 
 // Hooks & state utilities.
 export {
@@ -125,8 +145,6 @@ import * as AlambreIcons from './components/icons';
 export { AlambreIcons };
 
 // Input components.
-export { TimePicker } from './components/time';
-export type { TimePickerProps } from './components/time';
 
 // Storage.
 export { createStorage } from './storage';

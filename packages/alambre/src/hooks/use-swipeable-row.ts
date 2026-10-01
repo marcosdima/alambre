@@ -1,11 +1,10 @@
 import { Gesture } from 'react-native-gesture-handler';
-import type {
-  SharedValue,
-  WithSpringConfig } from 'react-native-reanimated';
 import {
   useSharedValue,
   withSpring,
   runOnJS,
+  type SharedValue,
+  type WithSpringConfig,
 } from 'react-native-reanimated';
 
 export type SwipeDirection = 'left' | 'right' | 'none';
@@ -15,7 +14,7 @@ export interface UseSwipeableRowConfig {
   leftSnapPoints?: number[];
   /** Negative values, e.g. [-100, -200] */
   rightSnapPoints?: number[];
-  /** Friction applied when dragging past the last snap point */
+  /** Friction applied when dragging past the boundaries */
   friction?: number;
   /** Callback when the row snaps to a specific point */
   onSnap?: (direction: SwipeDirection, point: number) => void;
@@ -37,6 +36,7 @@ const DEFAULT_SPRING_CONFIG: WithSpringConfig = {
   damping: 20,
   stiffness: 200,
   mass: 0.6,
+  overshootClamping: false,
 };
 
 export function useSwipeableRow(
@@ -55,7 +55,6 @@ export function useSwipeableRow(
   const translationX = useSharedValue(0);
   const startX = useSharedValue(0);
 
-  // Pre-compute boundaries
   const maxLeft = leftSnapPoints.length > 0 ? Math.max(...leftSnapPoints) : 0;
   const maxRight = rightSnapPoints.length > 0 ? Math.min(...rightSnapPoints) : 0;
 
@@ -92,18 +91,19 @@ export function useSwipeableRow(
     .onUpdate((event) => {
       let nextX = startX.value + event.translationX;
 
-      // Apply hard limit (clamp) if pulled beyond max boundaries
+      // Smooth overscroll friction instead of hard clamp
       if (nextX > maxLeft) {
-        nextX = maxLeft;
+        const overscroll = nextX - maxLeft;
+        nextX = maxLeft + (overscroll * friction) / (1 + overscroll * 0.003);
       } else if (nextX < maxRight) {
-        nextX = maxRight;
+        const overscroll = maxRight - nextX;
+        nextX = maxRight - (overscroll * friction) / (1 + overscroll * 0.003);
       }
 
-      // Restrict dragging if no snap points defined for a side
+      // Restrict dragging entirely if no snap points defined for a side
       if (maxLeft === 0 && nextX > 0) {
         nextX = (nextX * friction) / (1 + nextX * 0.003);
-      }
-      if (maxRight === 0 && nextX < 0) {
+      } else if (maxRight === 0 && nextX < 0) {
         const overscroll = -nextX;
         nextX = -(overscroll * friction) / (1 + overscroll * 0.003);
       }
@@ -114,18 +114,16 @@ export function useSwipeableRow(
       if (triggerThreshold && onActionTriggered) {
         if (translationX.value > triggerThreshold) {
           runOnJS(onActionTriggered)('left');
-          snapTo(0);
+          snapTo(maxLeft);
           return;
         } else if (translationX.value < -triggerThreshold) {
           runOnJS(onActionTriggered)('right');
-          snapTo(0);
+          snapTo(maxRight);
           return;
         }
       }
 
-      // Find closest snap point (including velocity projection for momentum)
       const projectedX = translationX.value + event.velocityX * 0.2;
-
       let closestPoint = 0;
       let minDistance = Infinity;
 
@@ -137,7 +135,6 @@ export function useSwipeableRow(
         }
       }
 
-      // If swipe is strongly against the current direction, snap to 0
       if (translationX.value > 0 && event.velocityX < -500) {
         closestPoint = 0;
       } else if (translationX.value < 0 && event.velocityX > 500) {

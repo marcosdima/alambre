@@ -37,7 +37,7 @@ export default function AppSlider({
         </View>
       </View>
 
-      <Slider
+      <Slider.Root
         value={value}
         min={min}
         max={max}
@@ -46,44 +46,42 @@ export default function AppSlider({
         disabled={disabled}
         style={styles.touchArea}
       >
-        {({ percentage, disabled: isDisabled }) => (
-          <View
+        <Slider.Track
+          pointerEvents="none"
+          style={(state) => [
+            styles.track,
+            {
+              backgroundColor: theme.surfaceAlt,
+              borderColor: theme.border,
+              opacity: state.disabled ? 0.4 : 1,
+            },
+          ]}
+        >
+          {/* Active filled progress */}
+          <Slider.Range
             pointerEvents="none"
-            style={[
-              styles.track,
+            style={(state) => [
+              styles.fill,
               {
-                backgroundColor: theme.surfaceAlt,
-                borderColor: theme.border,
-                opacity: isDisabled ? 0.4 : 1,
+                width: `${state.percentage}%`,
+                backgroundColor: theme.primary,
               },
             ]}
-          >
-            {/* Active filled progress */}
-            <View
-              pointerEvents="none"
-              style={[
-                styles.fill,
-                {
-                  width: `${percentage}%`,
-                  backgroundColor: theme.primary,
-                },
-              ]}
-            />
-            {/* Draggable thumb */}
-            <View
-              pointerEvents="none"
-              style={[
-                styles.thumb,
-                {
-                  left: `${percentage}%`,
-                  backgroundColor: theme.primary,
-                  borderColor: theme.surface,
-                },
-              ]}
-            />
-          </View>
-        )}
-      </Slider>
+          />
+          {/* Draggable thumb */}
+          <Slider.Thumb
+            pointerEvents="none"
+            style={(state) => [
+              styles.thumb,
+              {
+                left: `${state.percentage}%`,
+                backgroundColor: theme.primary,
+                borderColor: theme.surface,
+              },
+            ]}
+          />
+        </Slider.Track>
+      </Slider.Root>
     </View>
   );
 }

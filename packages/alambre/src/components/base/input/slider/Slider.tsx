@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { createContext, useContext, useRef, useState } from 'react';
 import type {
   GestureResponderEvent,
   LayoutChangeEvent,
@@ -11,13 +11,23 @@ import { View } from 'react-native';
 import { useSlider } from './use-slider';
 import type { SliderOptions, SliderState } from './use-slider';
 
-export type SliderProps = Omit<ViewProps, 'style' | 'children'> &
+const SliderContext = createContext<SliderState | null>(null);
+
+function useSliderContext() {
+  const context = useContext(SliderContext);
+  if (!context) {
+    throw new Error('Slider compound components cannot be rendered outside the Slider.Root component');
+  }
+  return context;
+}
+
+export type SliderRootProps = Omit<ViewProps, 'style' | 'children'> &
   SliderOptions & {
     style?: StyleProp<ViewStyle> | ((state: SliderState) => StyleProp<ViewStyle>);
     children?: ReactNode | ((state: SliderState) => ReactNode);
   };
 
-export default function Slider({
+const Root = ({
   value,
   min = 0,
   max = 100,
@@ -32,7 +42,7 @@ export default function Slider({
   accessibilityActions,
   onAccessibilityAction,
   ...props
-}: SliderProps) {
+}: SliderRootProps) => {
   const sliderState = useSlider({ value, min, max, step, disabled, onChange });
   const [_trackWidth, setTrackWidth] = useState(0);
 
@@ -65,47 +75,71 @@ export default function Slider({
   };
 
   return (
-    <View
-      {...props}
-      collapsable={false}
-      onTouchStart={handleTouchEvent}
-      onTouchMove={handleTouchEvent}
-      onTouchEnd={handleTouchEvent}
-      onStartShouldSetResponder={() => !disabledRef.current}
-      onMoveShouldSetResponder={() => !disabledRef.current}
-      onResponderTerminationRequest={() => false}
-      onResponderGrant={handleTouchEvent}
-      onResponderMove={handleTouchEvent}
-      onResponderRelease={handleTouchEvent}
-      onLayout={handleLayout}
-      accessibilityRole={accessibilityRole}
-      accessibilityValue={{
-        min,
-        max,
-        now: value,
-        ...accessibilityValue,
-      }}
-      accessibilityState={{
-        disabled,
-        ...accessibilityState,
-      }}
-      accessibilityActions={
-        accessibilityActions || [{ name: 'increment' }, { name: 'decrement' }]
-      }
-      onAccessibilityAction={(e) => {
-        if (e.nativeEvent.actionName === 'increment') {
-          sliderState.increment();
-        } else if (e.nativeEvent.actionName === 'decrement') {
-          sliderState.decrement();
+    <SliderContext.Provider value={sliderState}>
+      <View
+        {...props}
+        collapsable={false}
+        onTouchStart={handleTouchEvent}
+        onTouchMove={handleTouchEvent}
+        onTouchEnd={handleTouchEvent}
+        onStartShouldSetResponder={() => !disabledRef.current}
+        onMoveShouldSetResponder={() => !disabledRef.current}
+        onResponderTerminationRequest={() => false}
+        onResponderGrant={handleTouchEvent}
+        onResponderMove={handleTouchEvent}
+        onResponderRelease={handleTouchEvent}
+        onLayout={handleLayout}
+        accessibilityRole={accessibilityRole}
+        accessibilityValue={{
+          min,
+          max,
+          now: value,
+          ...accessibilityValue,
+        }}
+        accessibilityState={{
+          disabled,
+          ...accessibilityState,
+        }}
+        accessibilityActions={
+          accessibilityActions || [{ name: 'increment' }, { name: 'decrement' }]
         }
-        onAccessibilityAction?.(e);
-      }}
-      style={[
-        { backgroundColor: 'transparent' },
-        typeof style === 'function' ? style(sliderState) : style,
-      ]}
-    >
-      {typeof children === 'function' ? children(sliderState) : children}
-    </View>
+        onAccessibilityAction={(e) => {
+          if (e.nativeEvent.actionName === 'increment') {
+            sliderState.increment();
+          } else if (e.nativeEvent.actionName === 'decrement') {
+            sliderState.decrement();
+          }
+          onAccessibilityAction?.(e);
+        }}
+        style={[
+          { backgroundColor: 'transparent' },
+          typeof style === 'function' ? style(sliderState) : style,
+        ]}
+      >
+        {typeof children === 'function' ? children(sliderState) : children}
+      </View>
+    </SliderContext.Provider>
   );
-}
+};
+
+export type SliderComponentProps = Omit<ViewProps, 'style'> & {
+  style?: StyleProp<ViewStyle> | ((state: SliderState) => StyleProp<ViewStyle>);
+};
+
+const Track = ({ style, ...props }: SliderComponentProps) => {
+  const state = useSliderContext();
+  return <View {...props} style={typeof style === 'function' ? style(state) : style} />;
+};
+
+const Range = ({ style, ...props }: SliderComponentProps) => {
+  const state = useSliderContext();
+  return <View {...props} style={typeof style === 'function' ? style(state) : style} />;
+};
+
+const Thumb = ({ style, ...props }: SliderComponentProps) => {
+  const state = useSliderContext();
+  return <View {...props} style={typeof style === 'function' ? style(state) : style} />;
+};
+
+export const Slider = Object.assign(Root, { Root, Track, Range, Thumb });
+export default Slider;

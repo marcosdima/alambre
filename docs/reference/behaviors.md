@@ -1,6 +1,6 @@
 ---
 title: Behaviors Reference
-summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, and useDeck.
+summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, useDeck, and useWheelPicker.
 ---
 
 # Behaviors Reference
@@ -47,12 +47,12 @@ const {
   noPreviousPages,
   scrollTop,
   setScrollTop,
-} = useNavigator();
+} = useNavigator<TRoute, TSubpage>();
 ```
-* `navigate(target: string, settings?: { subpage?: string })`: Navigates to a top-level page or a subpage.
+* `navigate(target: TRoute, settings?: NavigationSettings<TSubpage>)`: Navigates to a top-level page or a subpage with strict compile-time route validation.
 * `previous()`: Returns to the previous page in history.
 * `noPreviousPages: boolean`: True when at the root of navigation history.
-* `currentPage`: Object containing the current React element in `.component`.
+* `currentPage: Page`: Object containing the current React element in `.component`.
 * `pageKey`: Unique identifier string of the current route (useful as an animation key for Reanimated).
 * `scrollTop`: Current scroll Y offset of the page container.
 * `setScrollTop(y: number): void`: Updates stored scroll offset for the current page.
@@ -633,4 +633,114 @@ export function CardStack({ items }: { items: { id: string; name: string }[] }) 
   );
 }
 ```
+
+---
+
+## 7. `useWheelPicker` & Headless Wheel Kinematics
+
+Provides a headless kinetic wheel picker interaction driver with momentum flick physics, spring settling, virtual multi-cycle infinite scrolling, and step tap interactions. 
+
+Following the headless behavior architecture, `alambre` provides the touch gesture worklets, velocity physics, and reactive Reanimated `SharedValue` position tracking. The application completely owns the visual rendering, rows, selection highlight band, typography, and container layout.
+
+### Hook Signature
+```typescript
+import { useWheelPicker, type UseWheelPickerOptions, type UseWheelPickerResult } from 'alambre';
+
+const {
+  currentPosition,
+  gesture,
+  allItems,
+} = useWheelPicker({
+  itemCount: 24,       // number of unique items (e.g. 24 hours, 60 minutes)
+  selected: 8,         // currently selected index
+  onSelect: (index) => handleSelect(index),
+  rowHeight: 44,       // row height in pixels for gesture translation
+  cycles: 5,           // optional: virtual cycles for infinite scroll illusion (default: 5)
+});
+```
+
+### Options (`UseWheelPickerOptions`)
+* `itemCount: number`: Total number of distinct items in the collection.
+* `selected: number`: Currently active/selected integer index (`0` to `itemCount - 1`).
+* `onSelect: (val: number) => void`: Callback fired on the JS thread when a selection settles.
+* `rowHeight: number`: Pixel height of a single row, used to calculate drag distance and snapping targets.
+* `cycles?: number`: Number of repeated cycles generated in `allItems` to create the illusion of seamless continuous scrolling (default: `5`).
+
+### Return Contract (`UseWheelPickerResult`)
+* `currentPosition: SharedValue<number>`: Continuous fractional row offset on the UI thread, tracking drag gestures and momentum spring animations. Use with `useAnimatedStyle` to drive column `translateY`.
+* `gesture: ReturnType<typeof Gesture.Exclusive>`: Combined Pan + Tap gesture to attach directly to `<GestureDetector gesture={gesture}>`.
+  - **Pan Gesture:** Translates vertical drag into row movements with velocity-weighted spring flick settling (`stiffness: 220, damping: 24, mass: 0.6`). Recenters seamlessly when scrolled past boundaries.
+  - **Tap Gesture:** Tapping above or below the selection band automatically steps backward or forward by 1 item with smooth timing.
+* `allItems: number[]`: Pre-computed flattened array of cycle indices `[0..itemCount-1, 0..itemCount-1, ...]`.
+
+### Production Example (`SwipeableTimePicker.tsx`)
+```tsx
+import { StyleSheet, Text, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useWheelPicker } from 'alambre';
+
+const ROW_HEIGHT = 44;
+const VISIBLE_ROWS = 3;
+
+export function WheelColumn({
+  itemCount,
+  selected,
+  onSelect,
+  format = (val) => val.toString().padStart(2, '0'),
+}: {
+  itemCount: number;
+  selected: number;
+  onSelect: (val: number) => void;
+  format?: (val: number) => string;
+}) {
+  const { currentPosition, gesture, allItems } = useWheelPicker({
+    itemCount,
+    selected,
+    onSelect,
+    rowHeight: ROW_HEIGHT,
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: ROW_HEIGHT - currentPosition.value * ROW_HEIGHT }],
+  }));
+
+  return (
+    <View style={styles.wheelColumn}>
+      {/* 100% App-owned Selection Band */}
+      <View pointerEvents="none" style={styles.selectionBand} />
+
+      <GestureDetector gesture={gesture}>
+        <View style={styles.gestureTarget}>
+          <Animated.View style={[styles.columnContent, animatedStyle]}>
+            {allItems.map((item, idx) => (
+              <View key={`${item}-${idx}`} style={styles.row}>
+                <Text style={styles.rowText}>{format(item)}</Text>
+              </View>
+            ))}
+          </Animated.View>
+        </View>
+      </GestureDetector>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wheelColumn: { height: ROW_HEIGHT * VISIBLE_ROWS, overflow: 'hidden', width: 64 },
+  gestureTarget: { flex: 1 },
+  columnContent: { alignItems: 'center' },
+  row: { height: ROW_HEIGHT, justifyContent: 'center', alignItems: 'center' },
+  rowText: { fontSize: 20, fontWeight: '600' },
+  selectionBand: {
+    position: 'absolute',
+    top: ROW_HEIGHT,
+    left: 0,
+    right: 0,
+    height: ROW_HEIGHT,
+    backgroundColor: '#eff6ff',
+    borderRadius: 8,
+  },
+});
+```
+
 

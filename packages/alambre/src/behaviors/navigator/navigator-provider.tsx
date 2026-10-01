@@ -1,10 +1,16 @@
 import { useSyncExternalStore, useEffect } from 'react';
 import { BackHandler } from 'react-native';
-import type { NavigatorTypes } from '../../types';
+import type {
+  Page,
+  NavigatorObject,
+  NavigatorReturn,
+  NavigatorProviderProps,
+  NavigationSettings,
+} from '../../types/navigator';
 import { createStore } from '../../core/store';
 
 type NavigatorState = {
-  pages: NavigatorTypes.NavigatorObject;
+  pages: NavigatorObject;
   currentPage: string;
   stack: string[];
   scrollTop: number;
@@ -12,7 +18,7 @@ type NavigatorState = {
 
 const navigatorStore = createStore<NavigatorState | null>(null);
 
-export const initNavigator = (pages: NavigatorTypes.NavigatorObject) => {
+export const initNavigator = (pages: NavigatorObject) => {
   const firstPage = Object.keys(pages).shift() ?? '';
   navigatorStore.set({
     pages,
@@ -23,7 +29,7 @@ export const initNavigator = (pages: NavigatorTypes.NavigatorObject) => {
 };
 
 export const navigatorActions = {
-  navigate: (target: string, settings: NavigatorTypes.NavigationSettings = {}) => {
+  navigate: (target: string, settings: NavigationSettings = {}) => {
     const state = navigatorStore.get();
     if (!state) return;
     const { subpage } = settings;
@@ -61,7 +67,10 @@ export const navigatorActions = {
   },
 };
 
-export const useNavigator = (): NavigatorTypes.NavigatorReturn => {
+export const useNavigator = <
+  TRoute extends string | Record<string, unknown> = string,
+  TSubpage extends string = string,
+>(): NavigatorReturn<TRoute, TSubpage> => {
   const state = useSyncExternalStore(navigatorStore.subscribe, navigatorStore.get);
 
   useEffect(() => {
@@ -92,7 +101,7 @@ export const useNavigator = (): NavigatorTypes.NavigatorReturn => {
     if (rest.length === 0) return first;
     return rest.reduce(
       (acc, key) => acc?.subpages?.[key],
-      first as NavigatorTypes.Page | undefined,
+      first as Page | undefined,
     ) ?? first;
   };
 
@@ -101,13 +110,13 @@ export const useNavigator = (): NavigatorTypes.NavigatorReturn => {
     pageKey: state.stack.join(', '),
     noPreviousPages: state.stack.length === 0,
     scrollTop: state.scrollTop,
-    navigate: navigatorActions.navigate,
+    navigate: navigatorActions.navigate as NavigatorReturn<TRoute, TSubpage>['navigate'],
     previous: navigatorActions.previous,
     setScrollTop: navigatorActions.setScrollTop,
   };
 };
 
-export const NavigatorProvider = ({ children, pages }: NavigatorTypes.NavigatorProviderProps) => {
+export const NavigatorProvider = ({ children, pages }: NavigatorProviderProps) => {
   if (!navigatorStore.get()) {
     initNavigator(pages);
   }

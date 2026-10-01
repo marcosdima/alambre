@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import {
@@ -11,17 +10,10 @@ import {
   Text,
   View,
 } from 'react-native';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomSheet, type BottomSheetSpringConfig } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppButton from './AppButton';
 
@@ -35,18 +27,6 @@ export type ActionSheetOption = {
   onPress: () => void;
 };
 
-export type ActionSheetSpringConfig = {
-  damping?: number;
-  stiffness?: number;
-  mass?: number;
-};
-
-const DEFAULT_SPRING: Required<ActionSheetSpringConfig> = {
-  damping: 32,
-  stiffness: 220,
-  mass: 0.9,
-};
-
 export type AppActionSheetProps = {
   visible: boolean;
   onClose: () => void;
@@ -55,7 +35,7 @@ export type AppActionSheetProps = {
   options?: ActionSheetOption[];
   cancelLabel?: string;
   dismissOnBackdropPress?: boolean;
-  springConfig?: ActionSheetSpringConfig;
+  springConfig?: BottomSheetSpringConfig;
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
@@ -74,87 +54,28 @@ export default function AppActionSheet({
 }: AppActionSheetProps) {
   const { theme } = useLightDark();
   const insets = useSafeAreaInsets();
-  const [mounted, setMounted] = useState(visible);
-  const isFirstRender = useRef(true);
 
-  const backdropOpacity = useSharedValue(0);
-  const translateY = useSharedValue(420);
-
-  const damping = springConfig?.damping ?? DEFAULT_SPRING.damping;
-  const stiffness = springConfig?.stiffness ?? DEFAULT_SPRING.stiffness;
-  const mass = springConfig?.mass ?? DEFAULT_SPRING.mass;
-
-  const resolvedSpring = useMemo(
-    () => ({ damping, stiffness, mass }),
-    [damping, stiffness, mass],
-  );
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (!visible) return;
-    }
-
-    if (visible) {
-      setMounted(true);
-      backdropOpacity.value = withTiming(1, { duration: 200 });
-      translateY.value = withSpring(0, resolvedSpring);
-    } else {
-      backdropOpacity.value = withTiming(0, { duration: 180 });
-      translateY.value = withTiming(450, { duration: 200 }, (finished) => {
-        if (finished) {
-          runOnJS(setMounted)(false);
-        }
-      });
-    }
-  }, [visible, backdropOpacity, translateY, resolvedSpring]);
-
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      if (event.translationY > 0) {
-        translateY.value = event.translationY;
-      } else {
-        // Soft resistance when dragging upward with a safe clamp (-45px)
-        translateY.value = Math.max(-45, event.translationY * 0.12);
-      }
-    })
-    .onEnd((event) => {
-      if (event.translationY > 70 || event.velocityY > 500) {
-        runOnJS(onClose)();
-      } else {
-        translateY.value = withSpring(0, resolvedSpring);
-      }
-    });
-
-  const animatedBackdropStyle = useAnimatedStyle(() => {
-    const dragFade = interpolate(
-      translateY.value,
-      [0, 300],
-      [1, 0.2],
-      Extrapolation.CLAMP,
-    );
-    return {
-      opacity: backdropOpacity.value * dragFade,
-    };
-  });
-
-  const animatedSheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+  const {
+    isMounted,
+    panGesture,
+    animatedBackdropStyle,
+    animatedSheetStyle,
+    close,
+  } = useBottomSheet({ visible, onClose, springConfig });
 
   const handleBackdropPress = () => {
     if (dismissOnBackdropPress) {
-      onClose();
+      close();
     }
   };
 
-  if (!mounted) return null;
+  if (!isMounted) return null;
 
   return (
     <Modal
       transparent
-      visible={mounted}
-      onRequestClose={onClose}
+      visible={isMounted}
+      onRequestClose={close}
       animationType="none"
       statusBarTranslucent
       navigationBarTranslucent
@@ -188,13 +109,11 @@ export default function AppActionSheet({
               animatedSheetStyle,
             ]}
           >
-            {/* Bottom Overshoot Skirt: overlaps inside container and extends 350px below to cover negative space */}
+            {/* Bottom Overshoot Skirt */}
             <View
               style={[
                 styles.bottomSkirt,
-                {
-                  backgroundColor: theme.surface,
-                },
+                { backgroundColor: theme.surface },
               ]}
               pointerEvents="none"
             />
@@ -246,7 +165,7 @@ export default function AppActionSheet({
                       disabled={option.disabled}
                       onPress={() => {
                         if (option.disabled) return;
-                        onClose();
+                        close();
                         option.onPress();
                       }}
                       style={({ pressed }) => [
@@ -292,7 +211,7 @@ export default function AppActionSheet({
                   tone="neutral"
                   size="md"
                   label={cancelLabel}
-                  onPress={onClose}
+                  onPress={close}
                 />
               </View>
             ) : null}

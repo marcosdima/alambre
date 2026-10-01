@@ -1,51 +1,46 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useNavigator, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
-import { useLang } from '../../providers/lang';
-import { useConfig } from '../../providers/config';
 import AppTitle from '../../components/AppTitle';
 import AppButton from '../../components/AppButton';
 
 export default () => {
   const { theme } = useLightDark();
-  const { lang } = useLang();
-  const { config } = useConfig();
   const { navigate } = useNavigator();
   const { getDelay } = useStagger({ initialDelay: 80, staggerMs: 60 });
 
   const navItems = [
     {
-      key: 'containers',
-      label: 'Contenedores Interactivos (Carruseles, Decks, Tabs, Rows, Split)',
-      onPress: () => navigate('containers'),
+      key: 'forms',
+      label: 'Forms Testbed (Input, Stepper, Slider)',
+      onPress: () => navigate('forms'),
     },
     {
-      key: 'dnd',
-      label: 'Drag & Drop (Sortable Hand, Drop Zones & Physics)',
-      onPress: () => navigate('dnd'),
+      key: 'overlays',
+      label: 'Overlays Testbed (Dialog, ActionSheet)',
+      onPress: () => navigate('overlays'),
     },
     {
-      key: 'components',
-      label: 'Catálogo de Componentes UI (Design System)',
-      onPress: () => navigate('components'),
+      key: 'swipeableRow',
+      label: 'Swipeable Row Testbed',
+      onPress: () => navigate('swipeableRow'),
     },
     {
-      key: 'textAnimations',
-      label: 'Animaciones de Texto (Ticker, Typewriter, Wave)',
-      onPress: () => navigate('textAnimations'),
+      key: 'wheelPicker',
+      label: 'Wheel Picker Testbed',
+      onPress: () => navigate('wheelPicker'),
     },
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView contentContainerStyle={styles.scrollContent} style={[styles.container, { backgroundColor: theme.background }]}>
       <Animated.View
         entering={FadeInDown.duration(300).delay(getDelay(0)).easing(Easing.out(Easing.cubic))}
       >
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
-          <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-          <Text style={{ color: theme.primary }}>{config.greeting}</Text>
+          <AppTitle style={{ color: theme.color }}>Alambre Showcase</AppTitle>
+          <Text style={[styles.subtitle, { color: theme.muted }]}>Entorno de pruebas visuales</Text>
         </View>
       </Animated.View>
 
@@ -59,13 +54,15 @@ export default () => {
           </AppButton>
         </Animated.View>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
     gap: 16,
   },

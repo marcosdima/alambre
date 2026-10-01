@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Pressable, BackHandler, View } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
-import type { NavigatorTypes } from 'alambre';
+import type { NavigatorReturn } from 'alambre';
 import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
@@ -33,7 +33,7 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
     go?: AppNavigatorAnimations;
     return?: AppNavigatorAnimations;
   };
-  useNavigator: () => NavigatorTypes.NavigatorReturn;
+  useNavigator: () => NavigatorReturn;
 };
 
 export default ({

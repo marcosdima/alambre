@@ -5,14 +5,14 @@ import {
   FadeIn,
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
-import type { NavigatorTypes } from 'alambre';
+import type { Page } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { pages, type PageTitleFn } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 
 const resolvePageTitle = (
-  page: NavigatorTypes.Page,
+  page: Page,
 ): PageTitleFn | undefined => {
   for (const entry of Object.values(pages)) {
     if (entry === page) return entry.title;

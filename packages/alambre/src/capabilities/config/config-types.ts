@@ -1,8 +1,10 @@
-export type ConfigState<T extends Record<string, string>> = {
+export type ConfigState<T extends Record<string, unknown>> = {
   config: T;
+  loading: boolean;
 };
 
-export type UseConfigType<T extends Record<string, string>> = {
+export type UseConfigType<T extends Record<string, unknown>> = {
   config: T;
-  saveField: (field: keyof T, value: string) => Promise<void>;
+  loading: boolean;
+  saveField: <K extends keyof T>(field: K, value: T[K]) => Promise<void>;
 };

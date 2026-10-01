@@ -152,11 +152,12 @@ Intentional public type contracts:
 * `StaggerOptions`, `StaggerContextValue`, `StaggerProviderProps` — the `useStagger` headless timing contract.
 * `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
 * `ConfirmComponentProps` — the client `ConfirmComponent` contract of `ConfirmProvider`.
-* `NavigatorTypes` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
+* `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, `NavigationSettings`, `AnimationDefault` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
+* `ConfigState`, `UseConfigType` — the `createConfigProvider` contract (`config`, `loading`, `saveField`).
 * `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, and `createCollectionProvider`. `remove` is optional and additive.
 * `RawStorage` — the raw key-value binding adapted by `createStorage` (`removeItem` optional).
 * `UseCollectionType` — the `createCollectionProvider` hook contract (`records`, `loading`, `add`, `update`, `remove`).
-* `TimePickerProps` — the `TimePicker` input contract.
+* `UseWheelPickerOptions`, `UseWheelPickerResult` — the `useWheelPicker` headless wheel picker contract.
 * `HistoryState`, `UseHistoryStateOptions`, `UseHistoryStateReturn` — the `useHistoryState` contract and its pure history helpers.
 * `UseStopwatchOptions`, `UseStopwatchReturn` — the `useStopwatch` contract.
 * `CollapsibleTransitionType`, `CollapsibleSpringConfig`, `UseCollapsibleOptions`, `UseCollapsibleReturn` — the `useCollapsible` headless disclosure contract.
@@ -203,17 +204,17 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `createApi` (alias `createApiProvider`) no longer exposes `useApi`. Requests are built using `createQueryHook` and `createMutationHook`, and `ApiProvider` serves strictly to inject TanStack's `QueryClientProvider` without maintaining an internal Alambre context.
 
-`useCarousel` and `useDeck` are additive headless physics hooks: `useCarousel` calculates card snap intervals, active indices, and Reanimated scroll worklets; `useDeck` provides card stack mechanics, translation shared values, and programmatic gestures. Both are covered by tests in `packages/alambre/tests/behaviors/` and validated in `tests/public-api.test.ts`.
+`useCarousel` and `useDeck` are additive headless physics hooks for kinetic containers (see `docs/reference/behaviors.md` §5 and §6). Validated in `tests/public-api.test.ts`.
 
 `AnimadoView` and its `AnimadoTypes` type surface were moved out of the framework to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the demo was the only known consumer and no implementation remains in the repository.
 
-`createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter, demonstrated in the reference app (Colguetti items and alarms). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
+`createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter (see `docs/reference/capabilities.md` §4). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
 
-`TimePicker` is an additive input component: a 24h hour/minute wheel built as a fixed tap viewport with increment/decrement arrows (no native dependencies and no scrolling), exposed with `value`/`onChange` as an `HH:MM` string and a themeable accent. The wheel renders the selected row and its neighbours and accepts taps; the arrows clamp to the range. Its pure time math (`components/time/time-utils`) is unit-tested, and the component is covered by `tests/components/time-picker.test.tsx`. It is validated in the reference app's alarm form (Colguetti). The display wraps the row labels around the range edges; the previous ScrollView-snapping implementation was replaced (fixed tap viewport) to avoid nested scroll and layout jump issues.
+`TimePicker` was retired and removed from the public API (eliminating the provisional presentation exception) in favor of the headless `useWheelPicker` physics hook (see `docs/reference/behaviors.md` §7). Presentation, row styling, selection bands, and formatting are 100% application-owned. Validated in `tests/public-api.test.ts`.
 
-`useCollapsible` is an additive headless hook: manages expandable/collapsible disclosure animations with off-screen height measurement probe, cubic-bezier timing or spring physics, and automatic reduced-motion accessibility. Validated by `tests/hooks/use-collapsible.test.tsx`.
+`useCollapsible` is an additive headless hook for expandable/collapsible disclosure animations (see `docs/reference/hooks.md` §5). Validated by `tests/hooks/use-collapsible.test.tsx`.
 
-`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives: provide central spatial hit-testing, 60fps pan gesture worklets with velocity tilt, scale transforms, boundary clamping, customizable neighbor shifting (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native TalkBack / VoiceOver accessibility actions (`moveLeft` / `moveRight`). Covered by unit tests in `tests/components/` and validated by `tests/public-api.test.ts`.
+`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives for spatial hit-testing and sortable lists (see `docs/reference/dnd.md`). Validated by `tests/public-api.test.ts`.
 
 Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/discoveries.md`).
 

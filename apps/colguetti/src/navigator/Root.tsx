@@ -6,7 +6,7 @@ import {
   FadeInRight,
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
-import type { NavigatorTypes } from 'alambre';
+import type { Page } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from './RouteIntent';
@@ -15,7 +15,7 @@ import AppNavigatorBody from './AppNavigatorBody';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 
 const resolvePageTitle = (
-  page: NavigatorTypes.Page,
+  page: Page,
   editing: boolean,
 ): PageTitle | undefined => {
   for (const entry of Object.values(pages)) {

@@ -1,13 +1,13 @@
 import Home from '../views/home/Home';
-import ContainersHub from '../views/containers/ContainersHub';
-import ComponentsTest from '../views/components-test/ComponentsTest';
-import TextAnimationsTest from '../views/text-animations/TextAnimationsTest';
-import DndTest from '../views/dnd-test/DndTest';
-import type { NavigatorTypes } from 'alambre';
+import FormsTestbed from '../views/forms/FormsTestbed';
+import OverlaysTestbed from '../views/overlays/OverlaysTestbed';
+import SwipeableRowsTestbed from '../views/swipeable-row/SwipeableRowsTestbed';
+import WheelPickerTestbed from '../views/wheel-picker/WheelPickerTestbed';
+import type { Page } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
 
-export type AppPage = NavigatorTypes.Page & {
+export type AppPage = Page & {
   title?: PageTitle;
   subpages?: Record<string, AppPage>;
 };
@@ -16,25 +16,21 @@ export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
   },
-  containers: {
-    title: { es: 'Contenedores Interactivos', en: 'Interactive Containers' },
-    component: <ContainersHub />,
+  forms: {
+    title: { es: 'Forms Testbed', en: 'Forms Testbed' },
+    component: <FormsTestbed />,
   },
-  carousel: {
-    title: { es: 'Contenedores Interactivos', en: 'Interactive Containers' },
-    component: <ContainersHub />,
+  overlays: {
+    title: { es: 'Overlays Testbed', en: 'Overlays Testbed' },
+    component: <OverlaysTestbed />,
   },
-  components: {
-    title: { es: 'UI Components', en: 'UI Components' },
-    component: <ComponentsTest />,
+  swipeableRow: {
+    title: { es: 'Swipeable Row Testbed', en: 'Swipeable Row Testbed' },
+    component: <SwipeableRowsTestbed />,
   },
-  textAnimations: {
-    title: { es: 'Animaciones de Texto', en: 'Text Animations' },
-    component: <TextAnimationsTest />,
-  },
-  dnd: {
-    title: { es: 'Drag & Drop', en: 'Drag & Drop' },
-    component: <DndTest />,
+  wheelPicker: {
+    title: { es: 'Wheel Picker Testbed', en: 'Wheel Picker Testbed' },
+    component: <WheelPickerTestbed />,
   },
 };
 

@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import {
@@ -10,14 +9,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import Animated from 'react-native-reanimated';
+import { AlambreIcons, useDialog } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppButton, { type ButtonTone } from './AppButton';
 
@@ -63,47 +56,17 @@ export default function AppDialog({
   style,
 }: AppDialogProps) {
   const { theme } = useLightDark();
-  const [mounted, setMounted] = useState(visible);
-  const isFirstRender = useRef(true);
 
-  const backdropOpacity = useSharedValue(0);
-  const cardScale = useSharedValue(0.92);
-  const cardOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (!visible) return;
-    }
-
-    if (visible) {
-      setMounted(true);
-      backdropOpacity.value = withTiming(1, { duration: 200 });
-      cardScale.value = withSpring(1, { damping: 18, stiffness: 300 });
-      cardOpacity.value = withTiming(1, { duration: 180 });
-    } else {
-      backdropOpacity.value = withTiming(0, { duration: 160 });
-      cardScale.value = withTiming(0.92, { duration: 160 });
-      cardOpacity.value = withTiming(0, { duration: 160 }, (finished) => {
-        if (finished) {
-          runOnJS(setMounted)(false);
-        }
-      });
-    }
-  }, [visible, backdropOpacity, cardScale, cardOpacity]);
-
-  const animatedBackdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-
-  const animatedCardStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: cardScale.value }],
-    opacity: cardOpacity.value,
-  }));
+  const {
+    isMounted,
+    animatedBackdropStyle,
+    animatedCardStyle,
+    close,
+  } = useDialog({ visible, onClose });
 
   const handleBackdropPress = () => {
     if (dismissOnBackdropPress) {
-      onClose();
+      close();
     }
   };
 
@@ -150,13 +113,13 @@ export default function AppDialog({
 
   const toneDetails = getToneDetails();
 
-  if (!mounted) return null;
+  if (!isMounted) return null;
 
   return (
     <Modal
       transparent
-      visible={mounted}
-      onRequestClose={onClose}
+      visible={isMounted}
+      onRequestClose={close}
       animationType="none"
       statusBarTranslucent
       navigationBarTranslucent
@@ -225,7 +188,7 @@ export default function AppDialog({
                     tone="neutral"
                     size="md"
                     label={cancelLabel}
-                    onPress={onCancel || onClose}
+                    onPress={onCancel || close}
                     style={confirmLabel ? styles.actionButtonFlex : styles.actionButtonFull}
                   />
                 ) : null}

@@ -1,4 +1,3 @@
-export { default as Stepper } from './Stepper';
-export type { StepperProps } from './Stepper';
-export { useStepper } from './use-stepper';
-export type { StepperOptions, StepperState } from './use-stepper';
+export { Stepper, default as default } from './Stepper';
+export type { StepperRootProps, StepperButtonProps, StepperValueProps } from './Stepper';
+export * from './use-stepper';

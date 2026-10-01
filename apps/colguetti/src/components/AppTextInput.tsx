@@ -4,15 +4,16 @@ import type {
   StyleProp,
   TextStyle,
   ViewStyle,
+  TextInput,
 } from 'react-native';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, Input } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
@@ -207,13 +208,18 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
   };
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <Input.Root
+      disabled={disabled}
+      error={!!errorMessage}
+      hasValue={hasContent}
+      style={[styles.container, containerStyle]}
+    >
       {/* Label Lockup */}
       {label ? (
         <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }]}>
+          <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }]}>
             {label}
-          </Text>
+          </Input.Label>
           {required ? <Text style={styles.requiredAsterisk}>*</Text> : null}
         </View>
       ) : null}
@@ -222,7 +228,6 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
       <Pressable
         onPress={() => innerRef.current?.focus()}
         accessible={false}
-        style={styles.pressableWrap}
       >
         <Animated.View
           style={[
@@ -243,9 +248,9 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
             shellStyle,
           ]}
         >
-          {leftIcon ? <View style={styles.iconSlot}>{leftIcon}</View> : null}
+          {leftIcon ? <Input.Affix style={styles.iconSlot}>{leftIcon}</Input.Affix> : null}
 
-          <TextInput
+          <Input.Field
             ref={innerRef}
             value={textValue}
             editable={isEditable}
@@ -270,9 +275,9 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
           />
 
           {/* Clear button slot */}
-          {clearable && hasContent && isEditable ? (
-            <Pressable
-              onPress={handleClear}
+          {clearable && isEditable ? (
+            <Input.ClearButton
+              onClear={handleClear}
               hitSlop={8}
               accessibilityLabel="Clear text"
               accessibilityRole="button"
@@ -284,13 +289,14 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
                 lineWidth={2}
                 style={{ width: sizeConfig.iconSize, height: sizeConfig.iconSize }}
               />
-            </Pressable>
+            </Input.ClearButton>
           ) : null}
 
           {/* Password toggle slot */}
           {isPassword && isEditable ? (
-            <Pressable
-              onPress={() => setShowPassword((prev) => !prev)}
+            <Input.PasswordToggle
+              isSecure={isPassword && !showPassword}
+              onToggle={() => setShowPassword((prev) => !prev)}
               hitSlop={8}
               accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
               accessibilityRole="button"
@@ -311,11 +317,11 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
                   style={{ width: sizeConfig.iconSize, height: sizeConfig.iconSize }}
                 />
               )}
-            </Pressable>
+            </Input.PasswordToggle>
           ) : null}
 
           {rightIcon && !isPassword ? (
-            <View style={styles.iconSlot}>{rightIcon}</View>
+            <Input.Affix style={styles.iconSlot}>{rightIcon}</Input.Affix>
           ) : null}
         </Animated.View>
       </Pressable>
@@ -329,12 +335,12 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
             lineWidth={2}
             style={styles.feedbackIcon}
           />
-          <Text style={[styles.feedbackText, { color: '#ef4444' }]}>{errorMessage}</Text>
+          <Input.Feedback style={[styles.feedbackText, { color: '#ef4444' }]}>{errorMessage}</Input.Feedback>
         </View>
       ) : helperText ? (
-        <Text style={[styles.helperText, { color: theme.muted }]}>{helperText}</Text>
+        <Input.Feedback style={[styles.helperText, { color: theme.muted }]}>{helperText}</Input.Feedback>
       ) : null}
-    </View>
+    </Input.Root>
   );
 });
 
@@ -360,9 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  pressableWrap: {
-    width: '100%',
-  },
   shell: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -376,7 +379,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    minWidth: 0,
     padding: 0,
     margin: 0,
   },
