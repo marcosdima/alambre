@@ -1,8 +1,15 @@
-import { useContext } from 'react';
-import context from './confirm-context';
+import { useExternalStore } from '../../core/use-external-store';
+import { defaultConfirmStore } from './confirm-store';
+import type { ConfirmStateType } from './confirm-types';
 
-export default () => {
-  const ctx = useContext(context);
-  if (!ctx) throw new Error('useConfirm must be used within ConfirmProvider');
-  return ctx;
-};
+export function useConfirm(): ConfirmStateType {
+  const state = useExternalStore(defaultConfirmStore.store, (s) => s);
+  return {
+    current: state.current,
+    ...defaultConfirmStore.actions,
+  };
+}
+
+export const confirm = defaultConfirmStore.actions.confirm;
+export const dismissConfirm = defaultConfirmStore.actions.dismiss;
+export default useConfirm;
