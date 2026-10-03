@@ -11,6 +11,7 @@ import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
+import { kinetics } from 'alambre';
 
 export type CardVariant = 'outlined' | 'elevated' | 'soft';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -64,12 +65,12 @@ export default function AppCard({
 
   const handlePressIn = () => {
     if (!isInteractive) return;
-    scale.value = withTiming(0.98, { duration: 90 });
+    scale.value = withTiming(0.98, kinetics.timing.fast);
   };
 
   const handlePressOut = () => {
     if (!isInteractive) return;
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    scale.value = withSpring(1, kinetics.spring.bouncy);
   };
 
   const animatedScaleStyle = useAnimatedStyle(() => ({

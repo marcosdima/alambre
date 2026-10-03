@@ -84,6 +84,8 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useDeck).toBe('function');
     expect(typeof Alambre.useWheelPicker).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
+    expect(typeof Alambre.kinetics).toBe('object');
+    expect(typeof Alambre.rubberBandFriction).toBe('function');
   });
 
   it('exposes the icon family alongside its low-level primitives', () => {
@@ -168,6 +170,7 @@ describe('public API — type surface', () => {
       disabled: false,
       hasValue: true,
       error: false,
+      warning: false,
     };
     const sliderProps: Alambre.SliderProps = { value: 50 };
     const sliderState: Alambre.SliderState = {
@@ -178,6 +181,8 @@ describe('public API — type surface', () => {
       ratio: 0.5,
       percentage: 50,
       disabled: false,
+      isPressed: false,
+      setIsPressed: () => undefined,
       setValueFromRatio: () => undefined,
       setValue: () => undefined,
       increment: () => undefined,

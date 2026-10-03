@@ -7,7 +7,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 export type BadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'danger';
@@ -203,12 +203,12 @@ export function AppChip({
 
   const handlePressIn = () => {
     if (disabled) return;
-    scale.value = withTiming(0.95, { duration: 80 });
+    scale.value = withTiming(0.95, kinetics.timing.fast);
   };
 
   const handlePressOut = () => {
     if (disabled) return;
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    scale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const animatedScale = useAnimatedStyle(() => ({

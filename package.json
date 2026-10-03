@@ -18,5 +18,8 @@
   },
   "devDependencies": {
     "eas-cli": "^24.6.0"
+  },
+  "dependencies": {
+    "expo-clipboard": "^57.0.2"
   }
 }

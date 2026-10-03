@@ -8,13 +8,15 @@ import {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
+import { kinetics } from '../../core/kinetics';
 
 export type UseWheelPickerOptions = {
   itemCount: number;
   selected: number;
   onSelect: (val: number) => void;
-  rowHeight: number;
+  rowHeight: number; // or itemWidth in horizontal mode
   cycles?: number;
+  horizontal?: boolean;
 };
 
 export type UseWheelPickerResult = {
@@ -29,6 +31,7 @@ export function useWheelPicker({
   onSelect,
   rowHeight,
   cycles = 5,
+  horizontal = false,
 }: UseWheelPickerOptions): UseWheelPickerResult {
   const centerBase = Math.floor(cycles / 2) * itemCount;
   const currentPosition = useSharedValue(centerBase + selected);
@@ -56,10 +59,15 @@ export function useWheelPicker({
   }, [selected, itemCount, currentPosition]);
 
   const panGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetY([-6, 6])
-        .failOffsetX([-25, 25])
+    () => {
+      const pan = Gesture.Pan();
+      if (horizontal) {
+        pan.activeOffsetX([-6, 6]).failOffsetY([-25, 25]);
+      } else {
+        pan.activeOffsetY([-6, 6]).failOffsetX([-25, 25]);
+      }
+
+      return pan
         .onStart(() => {
           'worklet';
           cancelAnimation(currentPosition);
@@ -67,20 +75,18 @@ export function useWheelPicker({
         })
         .onUpdate((e) => {
           'worklet';
-          currentPosition.value = dragStartPos.value - e.translationY / rowHeight;
+          const translation = horizontal ? e.translationX : e.translationY;
+          currentPosition.value = dragStartPos.value - translation / rowHeight;
         })
         .onEnd((e) => {
           'worklet';
-          const velocityRows = -(e.velocityY * 0.08) / rowHeight;
+          const velocity = horizontal ? e.velocityX : e.velocityY;
+          const velocityRows = -(velocity * 0.08) / rowHeight;
           const target = Math.round(currentPosition.value + velocityRows);
 
           currentPosition.value = withSpring(
             target,
-            {
-              damping: 24,
-              stiffness: 220,
-              mass: 0.6,
-            },
+            kinetics.spring.snappy,
             (finished) => {
               if (finished) {
                 const newSelected = ((target % itemCount) + itemCount) % itemCount;
@@ -91,8 +97,9 @@ export function useWheelPicker({
               }
             },
           );
-        }),
-    [centerBase, currentPosition, dragStartPos, itemCount, onSelect, rowHeight],
+        });
+    },
+    [centerBase, currentPosition, dragStartPos, itemCount, onSelect, rowHeight, horizontal],
   );
 
   const tapGesture = useMemo(
@@ -101,7 +108,8 @@ export function useWheelPicker({
         .maxDuration(250)
         .onEnd((e) => {
           'worklet';
-          if (e.y < rowHeight) {
+          const pos = horizontal ? e.x : e.y;
+          if (pos < rowHeight) {
             const target = Math.round(currentPosition.value) - 1;
             currentPosition.value = withTiming(target, { duration: 150 }, (finished) => {
               if (finished) {
@@ -109,7 +117,7 @@ export function useWheelPicker({
                 runOnJS(onSelect)(newSelected);
               }
             });
-          } else if (e.y > rowHeight * 2) {
+          } else if (pos > rowHeight * 2) {
             const target = Math.round(currentPosition.value) + 1;
             currentPosition.value = withTiming(target, { duration: 150 }, (finished) => {
               if (finished) {
@@ -119,7 +127,7 @@ export function useWheelPicker({
             });
           }
         }),
-    [currentPosition, itemCount, onSelect, rowHeight],
+    [currentPosition, itemCount, onSelect, rowHeight, horizontal],
   );
 
   const gesture = useMemo(

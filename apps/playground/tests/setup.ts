@@ -8,6 +8,27 @@ Object.defineProperty(Function.prototype, '__workletHash', {
   writable: true,
 });
 
+vi.mock('expo-clipboard', () => ({
+  getStringAsync: vi.fn(async () => ''),
+  setStringAsync: vi.fn(async () => true),
+}));
+
+vi.mock('expo', () => ({
+  registerRootComponent: vi.fn(),
+}));
+
+vi.mock('expo-modules-core', () => ({
+  requireNativeModule: vi.fn(),
+  requireOptionalNativeModule: vi.fn(),
+  requireNativeView: vi.fn(),
+  EventEmitter: vi.fn(),
+  SharedObject: vi.fn(),
+  SharedRef: vi.fn(),
+  NativeModule: vi.fn(),
+  Platform: { OS: 'ios', select: <T>(obj: Record<string, T>) => obj.ios },
+  UnavailabilityError: class extends Error {},
+}));
+
 vi.mock('react-native-worklets', () => ({
   default: {},
   createWorkletRuntime: () => ({}),
@@ -31,10 +52,11 @@ vi.mock('react-native-reanimated', async () => {
     useDerivedValue: (cb: () => unknown) => ({ value: cb() }),
     useAnimatedReaction: () => {},
     runOnJS: (fn: unknown) => fn,
-    cancelAnimation: () => {},
+    cancelAnimation: vi.fn(),
     interpolateColor: (_val: unknown, _inRange: unknown, outRange: string[]) => outRange[0] ?? '#000000',
-    withTiming: (toValue: unknown) => toValue,
-    withSpring: (toValue: unknown) => toValue,
+    withTiming: vi.fn((toValue: unknown) => toValue),
+    withSpring: vi.fn((toValue: unknown) => toValue),
+    withDecay: vi.fn((config: unknown) => config),
     withRepeat: (anim: unknown) => anim,
     withSequence: (...anims: unknown[]) => anims[0],
     withDelay: (_d: unknown, anim: unknown) => anim,

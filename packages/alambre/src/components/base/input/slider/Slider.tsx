@@ -8,6 +8,8 @@ import type {
   ViewStyle,
 } from 'react-native';
 import { View } from 'react-native';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { kinetics } from '../../../../core/kinetics';
 import { useSlider } from './use-slider';
 import type { SliderOptions, SliderState } from './use-slider';
 
@@ -62,8 +64,22 @@ const Root = ({
     sliderStateRef.current.setValueFromRatio(ratio);
   };
 
-  const handleTouchEvent = (evt: GestureResponderEvent) => {
+  const handleResponderGrant = (evt: GestureResponderEvent) => {
+    sliderState.setIsPressed(true);
     handleTouch(evt.nativeEvent.locationX);
+  };
+
+  const handleResponderMove = (evt: GestureResponderEvent) => {
+    handleTouch(evt.nativeEvent.locationX);
+  };
+
+  const handleResponderRelease = (evt: GestureResponderEvent) => {
+    sliderState.setIsPressed(false);
+    handleTouch(evt.nativeEvent.locationX);
+  };
+
+  const handleResponderTerminate = () => {
+    sliderState.setIsPressed(false);
   };
 
   const handleLayout = (e: LayoutChangeEvent) => {
@@ -79,15 +95,13 @@ const Root = ({
       <View
         {...props}
         collapsable={false}
-        onTouchStart={handleTouchEvent}
-        onTouchMove={handleTouchEvent}
-        onTouchEnd={handleTouchEvent}
         onStartShouldSetResponder={() => !disabledRef.current}
         onMoveShouldSetResponder={() => !disabledRef.current}
         onResponderTerminationRequest={() => false}
-        onResponderGrant={handleTouchEvent}
-        onResponderMove={handleTouchEvent}
-        onResponderRelease={handleTouchEvent}
+        onResponderGrant={handleResponderGrant}
+        onResponderMove={handleResponderMove}
+        onResponderRelease={handleResponderRelease}
+        onResponderTerminate={handleResponderTerminate}
         onLayout={handleLayout}
         accessibilityRole={accessibilityRole}
         accessibilityValue={{
@@ -138,7 +152,26 @@ const Range = ({ style, ...props }: SliderComponentProps) => {
 
 const Thumb = ({ style, ...props }: SliderComponentProps) => {
   const state = useSliderContext();
-  return <View {...props} style={typeof style === 'function' ? style(state) : style} />;
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: withSpring(state.isPressed ? 1.2 : 1.0, kinetics.spring.snappy),
+        },
+      ],
+    };
+  }, [state.isPressed]);
+
+  return (
+    <Animated.View
+      {...props}
+      style={[
+        typeof style === 'function' ? style(state) : style,
+        animatedStyle,
+      ]}
+    />
+  );
 };
 
 export const Slider = Object.assign(Root, { Root, Track, Range, Thumb });

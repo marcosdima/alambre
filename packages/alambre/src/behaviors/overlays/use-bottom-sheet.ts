@@ -16,11 +16,8 @@ export type BottomSheetSpringConfig = {
   mass?: number;
 };
 
-const DEFAULT_SPRING: Required<BottomSheetSpringConfig> = {
-  damping: 32,
-  stiffness: 220,
-  mass: 0.9,
-};
+import { kinetics } from '../../core/kinetics';
+
 
 export type UseBottomSheetOptions = {
   visible: boolean;
@@ -41,9 +38,9 @@ export function useBottomSheet({
   const backdropOpacity = useSharedValue(0);
   const translateY = useSharedValue(initialTranslateY);
 
-  const damping = springConfig?.damping ?? DEFAULT_SPRING.damping;
-  const stiffness = springConfig?.stiffness ?? DEFAULT_SPRING.stiffness;
-  const mass = springConfig?.mass ?? DEFAULT_SPRING.mass;
+  const damping = springConfig?.damping ?? kinetics.spring.snappy.damping;
+  const stiffness = springConfig?.stiffness ?? kinetics.spring.snappy.stiffness;
+  const mass = springConfig?.mass ?? kinetics.spring.snappy.mass;
 
   const resolvedSpring = useMemo(
     () => ({ damping, stiffness, mass }),
@@ -62,7 +59,7 @@ export function useBottomSheet({
       translateY.value = withSpring(0, resolvedSpring);
     } else {
       backdropOpacity.value = withTiming(0, { duration: 180 });
-      translateY.value = withTiming(initialTranslateY + 30, { duration: 200 }, (finished) => {
+      translateY.value = withSpring(initialTranslateY + 30, resolvedSpring, (finished) => {
         if (finished) {
           runOnJS(setIsMounted)(false);
         }
@@ -76,7 +73,7 @@ export function useBottomSheet({
         translateY.value = event.translationY;
       } else {
         // Soft resistance when dragging upward with a safe clamp (-45px)
-        translateY.value = Math.max(-45, event.translationY * 0.12);
+        translateY.value = Math.max(-45, kinetics.friction.rubberBand(event.translationY, 0.12));
       }
     })
     .onEnd((event) => {

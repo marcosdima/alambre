@@ -32,12 +32,7 @@ export interface UseSwipeableRowReturn {
   snapTo: (point: number) => void;
 }
 
-const DEFAULT_SPRING_CONFIG: WithSpringConfig = {
-  damping: 20,
-  stiffness: 200,
-  mass: 0.6,
-  overshootClamping: false,
-};
+import { kinetics } from '../core/kinetics';
 
 export function useSwipeableRow(
   config: UseSwipeableRowConfig = {},
@@ -47,7 +42,7 @@ export function useSwipeableRow(
     rightSnapPoints = [],
     friction = 0.5,
     onSnap,
-    springConfig = DEFAULT_SPRING_CONFIG,
+    springConfig = kinetics.spring.snappy,
     triggerThreshold,
     onActionTriggered,
   } = config;
@@ -94,18 +89,18 @@ export function useSwipeableRow(
       // Smooth overscroll friction instead of hard clamp
       if (nextX > maxLeft) {
         const overscroll = nextX - maxLeft;
-        nextX = maxLeft + (overscroll * friction) / (1 + overscroll * 0.003);
+        nextX = maxLeft + kinetics.friction.rubberBand(overscroll, friction);
       } else if (nextX < maxRight) {
         const overscroll = maxRight - nextX;
-        nextX = maxRight - (overscroll * friction) / (1 + overscroll * 0.003);
+        nextX = maxRight - kinetics.friction.rubberBand(overscroll, friction);
       }
 
       // Restrict dragging entirely if no snap points defined for a side
       if (maxLeft === 0 && nextX > 0) {
-        nextX = (nextX * friction) / (1 + nextX * 0.003);
+        nextX = kinetics.friction.rubberBand(nextX, friction);
       } else if (maxRight === 0 && nextX < 0) {
         const overscroll = -nextX;
-        nextX = -(overscroll * friction) / (1 + overscroll * 0.003);
+        nextX = -kinetics.friction.rubberBand(overscroll, friction);
       }
 
       translationX.value = nextX;

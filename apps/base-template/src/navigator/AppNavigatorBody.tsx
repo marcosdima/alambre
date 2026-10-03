@@ -14,6 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
+import { kinetics } from 'alambre';
 
 type AppNavigatorAnimations = {
   pageEntering?: EntryOrExitLayoutType;
@@ -69,14 +70,14 @@ export default ({
   useEffect(() => {
     if (canShowArrow) {
       setDrawArrow(false);
-      iconVisible.value = withTiming(1, { duration: 120 });
+      iconVisible.value = withTiming(1, kinetics.timing.fast);
 
       const drawTimer = setTimeout(() => {
         setDrawArrow(true);
       }, 40);
 
       const detailsTimer = setTimeout(() => {
-        detailsVisible.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.cubic) });
+        detailsVisible.value = withTiming(1, kinetics.timing.base);
       }, 160);
 
       return () => {
@@ -86,8 +87,8 @@ export default ({
     }
 
     setDrawArrow(false);
-    detailsVisible.value = withTiming(0, { duration: 140 });
-    iconVisible.value = withTiming(0, { duration: 120 });
+    detailsVisible.value = withTiming(0, kinetics.timing.fast);
+    iconVisible.value = withTiming(0, kinetics.timing.fast);
   }, [canShowArrow, detailsVisible, iconVisible]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -106,11 +107,11 @@ export default ({
   const isReturningRef = useRef(false);
 
   const onPressIn = () => {
-    scale.value = withTiming(0.85, { duration: 300 });
+    scale.value = withTiming(0.85, kinetics.timing.slow);
   };
 
   const onPressOut = () => {
-    scale.value = withSpring(1, { damping: 6, stiffness: 250, mass: 1 });
+    scale.value = withSpring(1, kinetics.spring.bouncy);
     isReturningRef.current = true;
     setTimeout(previous, 10);
   };
@@ -126,10 +127,7 @@ export default ({
         <AlambreIcons.Arrow
           drawIt={drawArrow}
           iconAnimation={{
-            drawAnimation: (value: number) => withTiming(value, {
-              duration: 320,
-              easing: Easing.out(Easing.exp),
-            }),
+            drawAnimation: (value: number) => withTiming(value, kinetics.timing.slow),
             resetAnimation: (value: number) => withTiming(value, {
               duration: 160,
               easing: Easing.in(Easing.quad),

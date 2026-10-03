@@ -1,4 +1,3 @@
-// Base inputs.
 export {
   Button,
   Stepper,
@@ -8,6 +7,7 @@ export {
   SegmentedControl,
   useSelect,
   Input,
+  HorizontalPicker,
 } from './components/base/input';
 export type {
   ButtonProps,
@@ -31,6 +31,7 @@ export type {
   InputRootProps,
   InputFieldProps,
   InputState,
+  InputContextValue,
 } from './components/base/input';
 
 // Navigator types.
@@ -101,8 +102,14 @@ export {
   useWheelPicker,
   useBottomSheet,
   useDialog,
+  CountUp,
+  Typewriter,
+  Scramble,
+  Marquee,
+  WavyText,
+  SlideInText,
 } from './behaviors';
-export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions } from './behaviors';
+export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps } from './behaviors';
 
 // Hooks & state utilities.
 export {
@@ -121,6 +128,7 @@ export {
   useStaggerItem,
   useCollapsible,
   useSwipeableRow,
+  useContinuousPress,
 } from './hooks';
 export type {
   HistoryState,
@@ -188,3 +196,4 @@ export type {
   NeighborShiftMode,
   SortableRowProps,
 } from './types/dnd';
+export * from './core';

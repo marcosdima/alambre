@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 export type SliderOptions = {
   value: number;
   min?: number;
@@ -15,6 +17,8 @@ export type SliderState = {
   ratio: number;
   percentage: number;
   disabled: boolean;
+  isPressed: boolean;
+  setIsPressed: (pressed: boolean) => void;
   setValueFromRatio: (ratio: number) => void;
   setValue: (value: number) => void;
   increment: () => void;
@@ -40,6 +44,7 @@ export function useSlider({
   disabled = false,
   onChange,
 }: SliderOptions): SliderState {
+  const [isPressed, setIsPressed] = useState(false);
   const precision = getPrecision(step);
   const span = max - min;
   const ratio = span > 0 ? Math.max(0, Math.min(1, (value - min) / span)) : 0;
@@ -86,6 +91,8 @@ export function useSlider({
     ratio,
     percentage,
     disabled,
+    isPressed,
+    setIsPressed,
     setValueFromRatio,
     setValue,
     increment,

@@ -6,6 +6,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { kinetics } from '../../core/kinetics';
 
 export type UseDialogOptions = {
   visible: boolean;
@@ -34,7 +35,7 @@ export function useDialog({
     if (visible) {
       setIsMounted(true);
       backdropOpacity.value = withTiming(1, { duration: 200 });
-      cardScale.value = withSpring(1, { damping: 18, stiffness: 300 });
+      cardScale.value = withSpring(1, kinetics.spring.bouncy);
       cardOpacity.value = withTiming(1, { duration: 180 });
     } else {
       backdropOpacity.value = withTiming(0, { duration: 160 });

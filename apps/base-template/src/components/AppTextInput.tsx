@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AlambreIcons, Input } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import { kinetics } from 'alambre';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
 export type InputTone = 'default' | 'success' | 'warning' | 'danger';
@@ -85,13 +86,13 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
 
   const handleFocus: ComponentProps<typeof TextInput>['onFocus'] = (e) => {
     setIsFocused(true);
-    focusProgress.value = withTiming(1, { duration: 160 });
+    focusProgress.value = withTiming(1, kinetics.timing.fast);
     onFocus?.(e);
   };
 
   const handleBlur: ComponentProps<typeof TextInput>['onBlur'] = (e) => {
     setIsFocused(false);
-    focusProgress.value = withTiming(0, { duration: 160 });
+    focusProgress.value = withTiming(0, kinetics.timing.fast);
     onBlur?.(e);
   };
 

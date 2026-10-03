@@ -10,7 +10,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 type SwipeableItemRowProps = {
@@ -42,8 +42,8 @@ export default function SwipeableItemRow({
     const baseDelay = 420;
     const timer = setTimeout(() => {
       translateX.value = withSequence(
-        withTiming(-20, { duration: 180, easing: Easing.out(Easing.cubic) }),
-        withDelay(120, withTiming(0, { duration: 180, easing: Easing.inOut(Easing.quad) })),
+        withTiming(-20, kinetics.timing.fast),
+        withDelay(120, withTiming(0, kinetics.timing.fast)),
       );
     }, baseDelay);
     return () => clearTimeout(timer);
@@ -65,10 +65,10 @@ export default function SwipeableItemRow({
     .onEnd((e) => {
       'worklet';
       if (translateX.value <= -SWIPE_TRIGGER_THRESHOLD || (e.velocityX < -450 && translateX.value < -20)) {
-        translateX.value = withTiming(0, { duration: 160, easing: Easing.out(Easing.cubic) });
+        translateX.value = withTiming(0, kinetics.timing.fast);
         runOnJS(onDelete)();
       } else {
-        translateX.value = withTiming(0, { duration: 180, easing: Easing.out(Easing.cubic) });
+        translateX.value = withTiming(0, kinetics.timing.fast);
       }
     });
 

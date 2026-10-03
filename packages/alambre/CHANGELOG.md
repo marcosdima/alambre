@@ -4,6 +4,18 @@ All notable changes to `alambre` are documented in this file.
 
 The package is currently in a **pre-baseline phase**: the public contract is still being defined and the current `1.0.x` version series is a frozen placeholder (see `docs/architecture.md` §9). SemVer constraints do not apply until a baseline is declared.
 
+## Unreleased
+
+- [add] **Text Animations Primitives**: Introduced kinetic typography and animated text components:
+  - `<CountUp>`: Tabular-nums digit-column rolling counter with cubic deceleration and off-screen height probe.
+  - `<Typewriter>`: Linear character-by-character progressive text reveal on the UI thread using uneditable `AnimatedTextInput` with `useAnimatedProps`.
+  - `<Scramble>`: Randomized glyph matrix decrypting reveal with quadratic ease-out.
+  - `<Marquee>`: Infinite looping horizontal content ticker with auto-measured clone wrap and zero jitter.
+  - `<WavyText>`: Continuous staggered vertical sinusoidal oscillation across characters.
+  - `<SlideInText>`: Physics-driven staggered card/glyph cascade powered by `kinetics.spring.bouncy`.
+- [add] **Hold-to-Repeat Gestures (`useContinuousPress`)**: Headless continuous press gesture coordination with immediate tap actuation, configurable hold threshold (`delay`), interval repetition, and dynamic interval acceleration (`intervalMultiplier`).
+- [docs] **Functional Reference**: Created `docs/reference/text-animations.md`, added `useContinuousPress` section to `docs/reference/behaviors.md`, and updated `docs/reference/index.md`.
+
 ## 1.2.0 — 2026-10-01
 
 Major structural refactor migrating global capabilities and interaction behaviors from React Context to pure reactive external stores and headless physics hooks (Agent-First DX):

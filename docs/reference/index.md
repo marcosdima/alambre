@@ -31,6 +31,7 @@ Application behavioral patterns, overlay hosts, and headless physics drivers:
 * **`useCarousel`**: Headless content carousel with Reanimated scroll worklets, snap calculations, and auto-play.
 * **`useDeck`**: Headless swipeable card stack with angular rotation kinematics, history stack, and gesture controls.
 * **`useWheelPicker`**: Headless kinetic wheel picker with momentum flick, spring settling, and multi-cycle virtual scrolling.
+* **`useContinuousPress`**: Headless continuous press gesture with hold-to-repeat, delay threshold, and interval acceleration.
 
 ### 3. [Storage Layer](storage.md)
 Persistence abstraction and serialization helpers:
@@ -63,9 +64,18 @@ Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, a
 * **`useDroppable` & `Droppable`**: Spatial drop target registration, window coordinate measurement, and hover collision detection.
 * **`SortableRow`**: 1D horizontal sorting container with customizable neighbor shift curves (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native screen reader actions (`moveLeft` / `moveRight`).
 
+### 7. [Text Animations](text-animations.md)
+Kinetic typography and animated text primitives powered by Reanimated worklets and `kinetics.ts` physics:
+* **`CountUp`**: Tabular-nums digit-column rolling counter with cubic deceleration.
+* **`Typewriter`**: Linear character-by-character progressive text reveal on the UI thread without re-renders.
+* **`Scramble`**: Randomized glyph matrix decrypting reveal with quadratic ease-out.
+* **`Marquee`**: Infinite looping horizontal content ticker with auto-measured clone wrap.
+* **`WavyText`**: Continuous staggered vertical sine oscillation across characters.
+* **`SlideInText`**: Physics-driven staggered card/glyph cascade powered by `kinetics.spring.bouncy`.
+
 ---
 
-## 7. Canonical Root Hierarchy (Zero-Context Architecture)
+## 8. Canonical Root Hierarchy (Zero-Context Architecture)
 
 In Alambre's Headless architecture, global capabilities (**Config, Lang, LightDark, Collection**) run on external stores (`useSyncExternalStore`) and require **zero context providers** in `App.tsx`. Components consume them directly without wrapping providers or unmount risks.
 

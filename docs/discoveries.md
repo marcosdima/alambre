@@ -72,6 +72,9 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 | **NEG-01** | Fabric Transparent Ghost Text Pre-Layout | Architecture | `REJECTED` | React Native Fabric core defect |
 | **NEG-02** | Destructive Confirmations via Transient Toast | Architecture | `REJECTED` | Replaced by `ConfirmProvider` |
 | **NEG-03** | Nested Pan Drag Inside Swipeable List Rows | Architecture | `REJECTED` | Responder contention in GestureHandler |
+| **KIN-01** | Kinetics Engine (Motion Tokens) | `alambre` | `PROPOSAL` | `packages/alambre/src/core/kinetics.ts`, overlays |
+| **AGT-01** | Agent Directives (Bandwidth & File Safety) | `agents` | `PROPOSAL` | Multi-agent coordination (`docs/agents.md`) |
+| **AGT-02** | Reanimated Syntax Guardrails | `agents` | `ADOPTED` | Base-template, playground, all Reanimated consumers |
 
 ---
 
@@ -270,3 +273,28 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 * **Attempted design:** Hosting a touch-draggable carousel inside an item card wrapped by `SwipeableItemRow`.
 * **GestureHandler failure:** Both handlers compete for horizontal pan gestures. The inner gesture either steals the swipe completely (user cannot reveal delete action) or locks up dragging entirely.
 * **Adopted solution:** Static item preview with `+N` badge or non-gesture stepper controls.
+
+---
+
+## 8. Kinetics Engine & Agent Directives
+
+### [KIN-01] Kinetics Engine (Motion Tokens)
+* **Pattern:** Centralization of physical animation parameters (springs, timings, frictions) into standardized framework motion tokens rather than scattered ad-hoc physics across UI components.
+* **Where it appeared:** `packages/alambre/src/core/kinetics.ts` (consumed across `useBottomSheet`, `useDialog`, `useSwipeableRow`, `useWheelPicker`, `Slider`).
+* **Poor-fit assessment:** Component-level hardcoded spring configurations (`damping`, `mass`, `stiffness`) cause fragmented tactile feel across the app ecosystem and force agents to duplicate or guess physics parameters.
+* **Candidate Abstraction:** Centralized tokens in `packages/alambre/src/core/kinetics.ts` (`springSnappy`, `springBouncy`, `springGentle`, `rubberBandFriction`, or token namespace `kinetics.spring.bouncy`). Agents must use these tokens instead of hardcoding `damping` and `stiffness` in components.
+* **Status: PROPOSAL.** Centralized in `packages/alambre/src/core/kinetics.ts`. Pending second consumer validation across all production surfaces and `@integrity` sign-off for full formal adoption.
+
+### [AGT-01] Agent Directives (Bandwidth & File Safety)
+* **Pattern:** Multi-agent operational rules for communication bandwidth conservation and file tool safety across repo workflows.
+* **Where it appeared:** Multi-agent execution sessions and coordination protocol (`docs/agents.md`).
+* **Poor-fit assessment:** Non-English communication causes unnecessary token bloat and exhausts context limits. Using `cat` in bash to create or append files echoes full contents to stdout, polluting the context window and risking escaping corruption.
+* **Candidate Abstraction / Rule:**
+  1. **Token Bandwidth:** Agents must communicate in English to save token bandwidth.
+  2. **File Tool Safety (CRITICAL INSTRUCTION 1):** Agents must strictly adhere to CRITICAL INSTRUCTION 1: never use `cat` in bash to create/append files as it pollutes the context window. Use structured file editing tools (`replace_file_content` or dedicated file write utilities) instead.
+* **Status: PROPOSAL.** Documented as an architectural discovery for agent workflow governance; pending formal adoption into `docs/agents.md` §5 anti-drift guardrails.
+
+### [AGT-02] Reanimated Syntax Guardrails
+* **Pattern:** LLM Agents often hallucinate Reanimated syntax by attempting to interpolate `withSpring()` or `withTiming()` directly (e.g., `interpolate(withSpring(value), ...)`). This returns an animation object, not a number, resulting in `NaN` and completely invisible UI components.
+* **Rule:** Never interpolate `withSpring` or `withTiming` directly. You must either apply them directly to the style property (`{ width: withSpring(...) }`), or use `useDerivedValue` to create an animatable number that can be interpolated (`const progress = useDerivedValue(() => withSpring(value)); interpolate(progress.value, ...)`).
+* **Status: ADOPTED.** Mandatory syntax guardrail across all agent workflows and Reanimated consumers (`base-template`, `apps/playground`, `packages/alambre`).

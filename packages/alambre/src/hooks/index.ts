@@ -53,3 +53,4 @@ export type {
   UseSwipeableRowReturn,
   SwipeDirection,
 } from './use-swipeable-row';
+export * from './use-continuous-press';

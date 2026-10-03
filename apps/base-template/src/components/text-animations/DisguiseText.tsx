@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { kinetics } from 'alambre';
 
 export type DisguiseTextProps = {
   text: string;
@@ -57,11 +58,7 @@ function DisguiseChar({
 
     progress.value = withDelay(
       delay,
-      withSpring(isMasked ? 1 : 0, {
-        damping: 18,
-        stiffness: 220,
-        mass: 0.8,
-      }),
+      withSpring(isMasked ? 1 : 0, kinetics.spring.snappy),
     );
   }, [isMasked, delay, isReducedMotion, progress]);
 

@@ -386,3 +386,13 @@ To prevent slow, repetitive test executions that rerun unimpacted features:
      * `./scripts/e2e.sh smoke`
    * **Tag filter:** `./scripts/e2e.sh -t <tag>`
    * **Continuous batch mode:** Running `./scripts/e2e.sh` executes all flows in a single uninterrupted Maestro session, eliminating per-file server restart overhead.
+
+## 17. Playground Workflow
+
+`apps/playground` is the isolated interactive proving ground for experiments, UI primitives, and kinetic behaviors. The strict workflow for any Playground project is:
+
+1. **Implement and Iterate:** Develop the experiment in `apps/playground`, testing animation parameters, physics, and edge cases.
+2. **Behavioral Focus vs Visual Extraneousness:** Playground configurations must strictly focus on the mechanics being tested (e.g., exposing physics like 'Snapping Intensity' or 'Transition Damping') rather than irrelevant cosmetic variables (like 'Item Size' when testing scroll kinetics). 
+3. **No Duplicate Components:** If a UI component (like an AppButton or AppTextInput) is needed to build a testbed in Playground, and it does not exist in `apps/base-template`, it MUST be defined in `base-template` first. `base-template` is the canonical library for test components; Playground simply imports them.
+4. **Analyze and Extract:** Once validated, analyze the code to determine what moves to `packages/alambre` (headless hooks, generic infrastructure, reusable behaviors) and what moves to `apps/base-template` (UI presentation, concrete components).
+5. **Clean up:** Before starting a new project in Playground, the app must be cleaned of all tests and experiments established as finished. Playground should remain a clean slate for the next isolated experiment.

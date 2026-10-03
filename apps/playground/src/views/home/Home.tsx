@@ -12,24 +12,14 @@ export default () => {
 
   const navItems = [
     {
-      key: 'forms',
-      label: 'Forms Testbed (Input, Stepper, Slider)',
-      onPress: () => navigate('forms'),
+      key: 'kineticList',
+      label: 'Kinetic List Testbed',
+      onPress: () => navigate('kineticList'),
     },
     {
-      key: 'overlays',
-      label: 'Overlays Testbed (Dialog, ActionSheet)',
-      onPress: () => navigate('overlays'),
-    },
-    {
-      key: 'swipeableRow',
-      label: 'Swipeable Row Testbed',
-      onPress: () => navigate('swipeableRow'),
-    },
-    {
-      key: 'wheelPicker',
-      label: 'Wheel Picker Testbed',
-      onPress: () => navigate('wheelPicker'),
+      key: 'spatialTransitions',
+      label: 'Spatial Transitions Testbed',
+      onPress: () => navigate('spatialTransitions'),
     },
   ];
 
@@ -40,7 +30,7 @@ export default () => {
       >
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <AppTitle style={{ color: theme.color }}>Alambre Showcase</AppTitle>
-          <Text style={[styles.subtitle, { color: theme.muted }]}>Entorno de pruebas visuales</Text>
+          <Text style={[styles.subtitle, { color: theme.muted }]}>Visual Testbed</Text>
         </View>
       </Animated.View>
 

@@ -1,6 +1,6 @@
 ---
 title: Behaviors Reference
-summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, useDeck, and useWheelPicker.
+summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, useDeck, useWheelPicker, and useContinuousPress.
 ---
 
 # Behaviors Reference
@@ -742,5 +742,141 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+---
+
+## 8. `useContinuousPress` & Hold-to-Repeat Gestures
+
+Provides headless continuous press gesture coordination ("hold tap") for rapid interaction controls such as steppers, counters, volume adjustment, and fast-forward scrubbing.
+
+### Mechanism & Lifecycle
+
+1. **Immediate Initial Actuation:** When the user touches down (`onPressIn`), `onPress` fires immediately so single taps remain instantaneous with zero latency.
+2. **Hold Threshold (`delay`):** A timeout is initiated for `delay` ms (default: `500ms`). If released before `delay` expires, the gesture is treated as a normal single tap.
+3. **Continuous Repetition (`interval`):** If held past `delay`, an interval timer starts repeatedly invoking `onPress` at the base `interval` rate (default: `100ms`).
+4. **Dynamic Acceleration (`intervalMultiplier`):** After every repeating tick, the interval period is scaled by `intervalMultiplier` (`currentInterval = Math.max(10, currentInterval * intervalMultiplier)`). Setting `intervalMultiplier: 0.9` causes repetitions to accelerate smoothly the longer the user holds the button, clamped at a safe 10ms threshold.
+5. **Clean Release:** When released (`onPressOut`), all active timers and pending intervals are cleared immediately.
+6. **Callback Stability:** Internally tracks `onPress` with a React ref (`savedOnPress`), guaranteeing that state updates in parent components never reset active hold timers or cause timer drift.
+
+### Hook Signature
+
+```typescript
+import { useContinuousPress, type UseContinuousPressOptions } from 'alambre';
+
+const handlers = useContinuousPress({
+  onPress: () => handleIncrement(),
+  delay: 400,
+  interval: 100,
+  intervalMultiplier: 0.9,
+});
+```
+
+### Options Contract (`UseContinuousPressOptions`)
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onPress` | `() => void` | **Required** | Callback invoked on initial touch and on subsequent hold repetitions. |
+| `delay` | `number` | `500` | Duration in milliseconds the user must hold before repetition begins. |
+| `interval` | `number` | `100` | Initial milliseconds between repeated invocations. |
+| `intervalMultiplier` | `number` | `1` | Multiplier applied to interval after each firing. Values `< 1` accelerate firing frequency. |
+
+### Return Contract
+
+Returns `{ onPressIn: () => void, onPressOut: () => void }` designed to spread directly onto React Native `<Pressable>` or custom gesture responders.
+
+### Kinetics Cross-Reference
+
+While `useContinuousPress` drives the temporal pacing logic on the JS thread, visual feedback should pair with `kinetics.ts` spring profiles for physical responsiveness:
+* **Interactive Button Press:** Pair with `kinetics.spring.snappy` (`{ damping: 20, mass: 1, stiffness: 250 }`) for instantaneous button depth / scale depression on touch down.
+* **Rolling Value Counters:** Pair rapidly incrementing numeric values with `kinetics.spring.bouncy` (`{ damping: 14, mass: 1, stiffness: 150 }`) or `kinetics.spring.snappy` to give rolling numbers tactile punch as speed accelerates.
+
+### Production Example: Wrapping a `Pressable`
+
+```tsx
+import React from 'react';
+import { Pressable, Text, StyleSheet, type PressableProps } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useContinuousPress, kinetics } from 'alambre';
+
+interface ContinuousButtonProps extends Omit<PressableProps, 'onPress'> {
+  onPress: () => void;
+  label: string;
+  delay?: number;
+  interval?: number;
+  intervalMultiplier?: number;
+}
+
+export function ContinuousButton({
+  onPress,
+  label,
+  delay = 400,
+  interval = 100,
+  intervalMultiplier = 0.9,
+  disabled,
+  style,
+  ...props
+}: ContinuousButtonProps) {
+  const scale = useSharedValue(1);
+
+  const continuousHandlers = useContinuousPress({
+    onPress,
+    delay,
+    interval,
+    intervalMultiplier,
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (disabled) return;
+    // Animate scale down with snappy kinetics
+    scale.value = withSpring(0.92, kinetics.spring.snappy);
+    continuousHandlers.onPressIn();
+  };
+
+  const handlePressOut = () => {
+    // Restore scale on release
+    scale.value = withSpring(1, kinetics.spring.snappy);
+    continuousHandlers.onPressOut();
+  };
+
+  return (
+    <Pressable
+      {...props}
+      disabled={disabled}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[styles.button, disabled && styles.disabled, style as any]}
+      accessibilityRole="button"
+    >
+      <Animated.View style={animatedStyle}>
+        <Text style={styles.text}>{label}</Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  text: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+});
+```
+
 
 
