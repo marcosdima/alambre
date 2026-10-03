@@ -6,6 +6,7 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 
 ### Framework & Architecture
 - **[Architecture & Principles](./framework/architecture.md)**: Monorepo structure, dependency direction (`alambre` -> apps), and core headless concepts.
+- **[UI Decisions (`ui-decisions.md`)](./framework/ui-decisions.md)**: Concrete UI direction and component decisions.
 
 ### Applications
 - **[Base Template (`apps/base-template`)](./apps/base-template.md)**: The canonical UI skin. Use this to understand standard component contracts.
