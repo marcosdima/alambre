@@ -198,3 +198,4 @@ export type {
 } from './types/dnd';
 export * from './core';
 export * from './components/spatial';
+export { createAnimatedIcon } from './components/icons/base';
