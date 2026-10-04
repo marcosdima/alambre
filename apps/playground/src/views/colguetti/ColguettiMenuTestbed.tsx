@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
 import { useLightDark } from '../../providers/theme';
 import Svg, { Circle, Path, Rect, G, Line } from 'react-native-svg';
-import { HeartIcon, SettingsIcon } from 'alambre';
+import { Heart, SettingsIcon } from 'alambre';
 
 export default function ColguettiMenuTestbed() {
   const { theme } = useLightDark();
@@ -28,7 +28,7 @@ export default function ColguettiMenuTestbed() {
         {/* Top Header */}
         <View style={styles.header}>
           <Pressable style={[styles.iconButton, { backgroundColor: '#212723' }]}>
-            <HeartIcon size={20} color={textPrimary} drawIt={true} />
+            <Heart size={20} color={textPrimary} drawIt={true} />
           </Pressable>
           <Pressable style={[styles.iconButton, { backgroundColor: '#212723' }]}>
             <SettingsIcon size={20} color={textPrimary} drawIt={true} />
