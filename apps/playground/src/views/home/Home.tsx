@@ -12,11 +12,6 @@ export default () => {
 
   const navItems = [
     {
-      key: 'kineticList',
-      label: 'Kinetic List Testbed',
-      onPress: () => navigate('kineticList'),
-    },
-    {
       key: 'animatedIcons',
       label: 'Animated Icons Testbed',
       onPress: () => navigate('animatedIcons'),
