@@ -5,7 +5,7 @@ summary: Kinetic typography and animated text primitives: CountUp, Typewriter, S
 
 # Text Animations Reference
 
-Alambre provides headless, kinetic typography primitives engineered with React Native Reanimated. In accordance with [docs/architecture.md](../architecture.md) §2 and §6, these components handle mathematical interpolation, UI-thread worklets, layout measurements, and spring physics internally, while leaving styling (colors, typography, fonts, borders, container layouts) fully customizable by the application.
+Alambre provides headless, kinetic typography primitives engineered with React Native Reanimated. In accordance with [docs/framework/architecture.md](../framework/architecture.md) §2 and §6, these components handle mathematical interpolation, UI-thread worklets, layout measurements, and spring physics internally, while leaving styling (colors, typography, fonts, borders, container layouts) fully customizable by the application.
 
 ---
 

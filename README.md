@@ -65,7 +65,7 @@ npm version <bump>
 npm publish
 ```
 
-The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`. The package is currently in a frozen pre-baseline versioning phase — see the versioning policy in `docs/architecture.md` §9 before changing versions.
+The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`. The package is currently in a frozen pre-baseline versioning phase — see the versioning policy in `docs/framework/architecture.md` §9 before changing versions.
 
 > The standalone template repo pins the exact published version, so a fresh publish must exist before exporting the template. `scripts/export-template.sh` verifies that the standalone compiles against the `alambre` version on the npm registry and aborts with instructions when the registry copy is stale or missing.
 
@@ -74,7 +74,7 @@ The package is built with `react-native-builder-bob` (ESM `module` target + Type
 The template also lives as a standalone GitHub template repository:
 
 - **Template repo:** https://github.com/marcosdima/base-expo — use the GitHub *"Use this template"* button to create a new app repository outside this monorepo.
-- Apps created that way depend on the **published** `alambre` package (pinned to the exact version at export time; the pre-baseline versioning policy is `docs/architecture.md` §9) and stay connected to the framework through npm/pnpm: `pnpm add alambre@latest` / `npm install alambre@latest`.
+- Apps created that way depend on the **published** `alambre` package (pinned to the exact version at export time; the pre-baseline versioning policy is `docs/framework/architecture.md` §9) and stay connected to the framework through npm/pnpm: `pnpm add alambre@latest` / `npm install alambre@latest`.
 
 Regenerate the standalone template repo from `apps/base-template` after template changes:
 

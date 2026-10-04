@@ -7,7 +7,7 @@ summary: Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-t
 
 `alambre` provides a headless, presentation-neutral drag-and-drop subsystem built on `react-native-gesture-handler` and `react-native-reanimated`.
 
-In accordance with [docs/architecture.md](../architecture.md) §2 and §6, the framework manages gesture worklets, velocity-driven kinetics, spatial hit-testing, and reordering state math. The consuming application provides visual styling, card geometry, colors, and layout wrappers.
+In accordance with [docs/framework/architecture.md](../framework/architecture.md) §2 and §6, the framework manages gesture worklets, velocity-driven kinetics, spatial hit-testing, and reordering state math. The consuming application provides visual styling, card geometry, colors, and layout wrappers.
 
 ---
 

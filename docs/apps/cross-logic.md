@@ -25,7 +25,7 @@ The following architectural and product decisions are closed and not subject to 
 2. **Creator Dimensions**: Up to 4 categories × 4 items.
 3. **Derived Auto-cross**: Inferred `auto-cross` cells are purely derived and non-interactive; they can only be cleared by unticking the tick that justifies them.
 4. **Execution Order**: The 6 units must be executed in the exact defined sequence.
-5. **Git Protocol**: Work must be performed on branch `feature/cross-logic-improvements` (never on `main`), with exactly one commit per unit following `docs/project.md` §9 format.
+5. **Git Protocol**: Work must be performed on branch `feature/cross-logic-improvements` (never on `main`), with exactly one commit per unit following `docs/guidelines/workflow.md` §3 format.
 
 ---
 
@@ -98,7 +98,7 @@ The following architectural and product decisions are closed and not subject to 
 
 ## 4. Validation Protocol
 
-Per `docs/project.md` §7 and `.agents/AGENTS.md`:
+Per `docs/guidelines/workflow.md` §1:
 1. `pnpm --filter @alambre/cross-logic lint`
 2. `pnpm --filter @alambre/cross-logic typecheck`
 3. `pnpm --filter @alambre/cross-logic test`

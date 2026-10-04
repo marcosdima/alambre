@@ -72,7 +72,7 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 ## Proposal 3: Retiring the `TimePicker` Presentation Exception into Headless Wheel Physics (`useWheelPicker`)
 
 ### 1. Current Problem
-- `TimePicker` is explicitly documented in `docs/ui.md` §2 as a **"provisional presentation exception"**: arrow glyphs ('▲', '▼'), typography, dimensions, inactive label colors, and default accent `#0057d8` are hardcoded in `alambre`.
+- `TimePicker` is explicitly documented in `docs/framework/ui-decisions.md` §2 as a **"provisional presentation exception"**: arrow glyphs ('▲', '▼'), typography, dimensions, inactive label colors, and default accent `#0057d8` are hardcoded in `alambre`.
 - In practice, the reference application (`apps/colguetti`) completely rejected `alambre.TimePicker` and built `SwipeableTimePicker.tsx` (329 LOC) with Reanimated gestures, inertia flick momentum, and multi-cycle infinite scrolling.
 - Consequently, `TimePicker` is dead weight in `alambre`: imported by zero apps in the monorepo.
 
@@ -85,7 +85,7 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 2. Retain pure time math helpers: `parseTimeValue`, `formatTimeValue`, `HOUR_RANGE`, `MINUTE_RANGE`.
 3. Provide an optional presentation-neutral compound component:
    - `<WheelPicker.Root>`, `<WheelPicker.Column>`, `<WheelPicker.Item>`.
-4. Migrate `apps/colguetti/src/components/SwipeableTimePicker.tsx` to consume `useWheelPicker`, proving reuse and eliminating the provisional exception from `docs/ui.md` §2.
+4. Migrate `apps/colguetti/src/components/SwipeableTimePicker.tsx` to consume `useWheelPicker`, proving reuse and eliminating the provisional exception from `docs/framework/ui-decisions.md` §2.
 
 ### 3. Pros & Cons
 - **Pros:**
@@ -131,12 +131,12 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 ## Proposal 5: Formalizing the Headless Swipe-to-Action Primitive (`useSwipeableRow`)
 
 ### 1. Current Problem
-- An untracked file `packages/alambre/src/hooks/use-swipeable-row.ts` was started, but it currently has 4 ESLint errors (`@typescript-eslint/consistent-type-imports`, `comma-dangle`, `no-trailing-spaces`), is not exported in `src/index.ts`, has no tests, and is not registered in `docs/discoveries.md`.
+- An untracked file `packages/alambre/src/hooks/use-swipeable-row.ts` was started, but it currently has 4 ESLint errors (`@typescript-eslint/consistent-type-imports`, `comma-dangle`, `no-trailing-spaces`), is not exported in `src/index.ts`, has no tests, and is not registered in `docs/logs/discoveries.md`.
 
 ### 2. Proposed Solution
 - Adopt and formalize `useSwipeableRow` as a headless physics hook:
   - Fix the 4 ESLint errors and export it properly.
-  - Document in `docs/discoveries.md` under [F-10] and add contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts`.
+  - Document in `docs/logs/discoveries.md` under [F-10] and add contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts`.
 
 ### 3. Pros & Cons
 - **Pros:** Cleans up untracked debt and ESLint failures; promotes a battle-tested gesture pattern into a headless hook.

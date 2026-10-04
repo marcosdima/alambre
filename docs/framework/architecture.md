@@ -112,7 +112,7 @@ Mere passthroughs of React Native components are not considered meaningful reusa
 
 In line with this behavior-first principle, interactive containers (`useCarousel`, `useDeck`) are delivered as pure **headless physics hooks**: `alambre` provides kinematic mathematics (snap intervals, clamped target indices), scroll/gesture event worklets, and Reanimated shared values on the UI thread; the application owns 100% of the JSX rendering, card views, dimensions, and visual styling.
 
-Exceptions must be explicit decisions, recorded in `docs/ui.md`. One exception is already adopted: concrete icons may remain in `alambre` when they are presentation-neutral contracts — the application still owns colors, dimensions, and animation (see `docs/ui.md` §2).
+Exceptions must be explicit decisions, recorded in `docs/framework/ui-decisions.md`. One exception is already adopted: concrete icons may remain in `alambre` when they are presentation-neutral contracts — the application still owns colors, dimensions, and animation (see `docs/framework/ui-decisions.md` §2).
 
 ---
 
@@ -180,7 +180,7 @@ The versioning policy for this public contract is defined in §9.
 ### Pre-baseline phase (current)
 
 - Breaking changes must still be intentional. Each one is recorded in §8 "Compatibility implications" and validated by the public API contract test (`packages/alambre/tests/public-api.test.ts`).
-- Changes that alter an adopted architectural principle require discussion before implementation (§7 and `docs/project.md` §4.2).
+- Changes that alter an adopted architectural principle require discussion before implementation (§7 and §9).
 - `packages/alambre/CHANGELOG.md` collects changes manually so nothing is lost for the future baseline.
 
 ### Baseline declaration (future)
@@ -206,7 +206,7 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `useCarousel` and `useDeck` are additive headless physics hooks for kinetic containers (see `docs/reference/behaviors.md` §5 and §6). Validated in `tests/public-api.test.ts`.
 
-`AnimadoView` and its `AnimadoTypes` type surface were moved out of the framework to the application layer after the animado review (see `docs/ui.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the demo was the only known consumer and no implementation remains in the repository.
+`AnimadoView` and its `AnimadoTypes` type surface were moved out of the framework to the application layer after the animado review (see `docs/framework/ui-decisions.md` §2): animating colors is application presentation, the component had a single demo consumer and no second demonstrated need. This is breaking for any consumer using them; the demo was the only known consumer and no implementation remains in the repository.
 
 `createCollectionProvider` is an additive capability (Q3/I6): a typed, persisted, content-driven collection over the `Storage` adapter (see `docs/reference/capabilities.md` §4). The `Storage` contract gained an optional `remove` (additive). Both are covered by `tests/capabilities/collection-provider.test.tsx` and validated by `tests/public-api.test.ts`.
 
@@ -216,7 +216,7 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives for spatial hit-testing and sortable lists (see `docs/reference/dnd.md`). Validated by `tests/public-api.test.ts`.
 
-Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/discoveries.md`).
+Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/logs/discoveries.md`).
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 

@@ -11,7 +11,7 @@ Register of reusable patterns, system integration rules, UI behaviors, and kinet
 
 ## 1. Governance & Double-Signature Lifecycle
 
-Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governed by strict lifecycle gates to prevent premature abstraction and undocumented drift:
+Per `docs/guidelines/agents.md` §5, discoveries are governed by strict lifecycle gates to prevent premature abstraction and undocumented drift:
 
 ```
 [ EXPERIMENT / OBSERVATION ]
@@ -73,7 +73,7 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 | **NEG-02** | Destructive Confirmations via Transient Toast | Architecture | `REJECTED` | Replaced by `ConfirmProvider` |
 | **NEG-03** | Nested Pan Drag Inside Swipeable List Rows | Architecture | `REJECTED` | Responder contention in GestureHandler |
 | **KIN-01** | Kinetics Engine (Motion Tokens) | `alambre` | `PROPOSAL` | `packages/alambre/src/core/kinetics.ts`, overlays |
-| **AGT-01** | Agent Directives (Bandwidth & File Safety) | `agents` | `PROPOSAL` | Multi-agent coordination (`docs/agents.md`) |
+| **AGT-01** | Agent Directives (Bandwidth & File Safety) | `agents` | `PROPOSAL` | Multi-agent coordination (`docs/guidelines/agents.md`) |
 | **AGT-02** | Reanimated Syntax Guardrails | `agents` | `ADOPTED` | Base-template, playground, all Reanimated consumers |
 
 ---
@@ -149,7 +149,7 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
   2. Without these permissions, `AlarmManager.setAndAllowWhileIdle()` is throttled into OS maintenance windows during Doze.
   3. Notification channels must specify `AndroidImportance.MAX` with `sound: true` and `vibrate: true` to trigger heads-up banners. Channel importance cannot be elevated post-creation on Android, requiring a dedicated channel (`colguetti-alarms`).
   4. Triggers must use exact `DATE` triggers rather than relative time intervals when waking from background.
-* **Status: ADOPTED in Colguetti 1.0.** Documented in `docs/project.md` §12.
+* **Status: ADOPTED in Colguetti 1.0.** Documented in `docs/apps/colguetti.md`.
 
 ### [OS-02] Reactive `AppState` Synchronization for System Settings & Resumes
 * **Pattern:** When users navigate to Android/iOS Settings via `Linking.openSettings()` to enable permissions or when the app is suspended while timers elapse, the JS runtime does not receive callback events while paused. Returning to the app left stale permission states and frozen countdowns.
@@ -287,12 +287,12 @@ Per `docs/agents.md` §5 and `docs/architecture.md` §7, discoveries are governe
 
 ### [AGT-01] Agent Directives (Bandwidth & File Safety)
 * **Pattern:** Multi-agent operational rules for communication bandwidth conservation and file tool safety across repo workflows.
-* **Where it appeared:** Multi-agent execution sessions and coordination protocol (`docs/agents.md`).
+* **Where it appeared:** Multi-agent execution sessions and coordination protocol (`docs/guidelines/agents.md`).
 * **Poor-fit assessment:** Non-English communication causes unnecessary token bloat and exhausts context limits. Using `cat` in bash to create or append files echoes full contents to stdout, polluting the context window and risking escaping corruption.
 * **Candidate Abstraction / Rule:**
   1. **Token Bandwidth:** Agents must communicate in English to save token bandwidth.
   2. **File Tool Safety (CRITICAL INSTRUCTION 1):** Agents must strictly adhere to CRITICAL INSTRUCTION 1: never use `cat` in bash to create/append files as it pollutes the context window. Use structured file editing tools (`replace_file_content` or dedicated file write utilities) instead.
-* **Status: PROPOSAL.** Documented as an architectural discovery for agent workflow governance; pending formal adoption into `docs/agents.md` §5 anti-drift guardrails.
+* **Status: PROPOSAL.** Documented as an architectural discovery for agent workflow governance; pending formal adoption into `docs/guidelines/agents.md` §5 anti-drift guardrails.
 
 ### [AGT-02] Reanimated Syntax Guardrails
 * **Pattern:** LLM Agents often hallucinate Reanimated syntax by attempting to interpolate `withSpring()` or `withTiming()` directly (e.g., `interpolate(withSpring(value), ...)`). This returns an animation object, not a number, resulting in `NaN` and completely invisible UI components.

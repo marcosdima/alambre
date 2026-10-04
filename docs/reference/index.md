@@ -7,7 +7,7 @@ summary: Catalog of the complete functional reference and API guides for alambre
 
 This directory provides the complete functional reference and API guides for all capabilities, behaviors, hooks, storage utilities, and components provided by `alambre`.
 
-For global principles and boundaries, see [docs/architecture.md](../architecture.md), [docs/project.md](../project.md), and [docs/agents.md](../agents.md).
+For global principles and boundaries, see [docs/framework/architecture.md](../framework/architecture.md). For the agent system, see [docs/guidelines/agents.md](../guidelines/agents.md).
 
 For the retrieval protocol all agents must follow when consulting this documentation, see `.agents/skills/docs-retrieval/SKILL.md`.
 

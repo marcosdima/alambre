@@ -1,7 +1,7 @@
 # Agents
 
 This repository is worked on by a small team of specialized Antigravity
-agents. The single source of truth for the agent system is `docs/agents.md`;
+agents. The single source of truth for the agent system is `docs/guidelines/agents.md`;
 these definition files are thin wiring.
 
 ## Roles
@@ -16,14 +16,14 @@ these definition files are thin wiring.
 
 ## Conventions
 
-- Project knowledge lives in `docs/` — do not duplicate it here (see `docs/project.md` §8).
+- Project knowledge lives in `docs/` — do not duplicate it here (see `docs/index.md`).
 - All agents follow the retrieval protocol in `.agents/skills/docs-retrieval/SKILL.md`.
-- Full matrix, model routing, and emulator flow: `docs/agents.md`.
-- Dynamic 4-level routing and anti-drift guardrails: `docs/agents.md` §5.
-- UI verification flow & deterministic capture: `scripts/ui-capture.sh` (see `docs/agents.md` §3).
+- Full matrix, model routing, and emulator flow: `docs/guidelines/agents.md`.
+- Dynamic 4-level routing and anti-drift guardrails: `docs/guidelines/agents.md` §5.
+- UI verification flow & deterministic capture: `scripts/ui-capture.sh` (see `docs/guidelines/agents.md` §3).
 - `@lead` is the primary agent; specialists are invoked via delegation.
 
 ## Validation
 
 Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` from the
-repository root (see `docs/project.md` §7 for the progressive order).
+repository root (see `docs/guidelines/workflow.md` §1 for the progressive order).

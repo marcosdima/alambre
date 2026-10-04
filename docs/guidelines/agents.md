@@ -2,7 +2,7 @@
 
 This document is the single source of truth for the multi-agent coordination system used to work on this repository with [Google Antigravity](https://antigravity.google).
 
-The system coordinates a small team of specialized roles. Each role is materialized as a custom subagent under `.agents/agents/<role>/agent.md`. Agent definition files remain thin wiring; the knowledge and contracts live here in `docs/` (see `docs/project.md` §8).
+The system coordinates a small team of specialized roles. Each role is materialized as a custom subagent under `.agents/agents/<role>/agent.md`. Agent definition files remain thin wiring; the knowledge and contracts live here in `docs/` (see `docs/index.md`).
 
 All roles share the retrieval protocol defined in `.agents/skills/docs-retrieval/SKILL.md`.
 
@@ -65,7 +65,7 @@ Flow:
 3. Run `scripts/ui-capture.sh` to extract `screen.png` and `hierarchy.xml`.
 4. Inspect `screen.png` via `view_file` or check numeric bounds in `hierarchy.xml`.
 5. Interact deterministically: `adb shell input tap/swipe`.
-6. Iterate until the surface matches the contracts in `docs/ui.md`.
+6. Iterate until the surface matches the contracts in `docs/framework/ui-decisions.md`.
 
 ---
 
@@ -94,5 +94,5 @@ To prevent agent drift (such as a single agent assuming success on unverified na
 ### Anti-Drift Guardrails
 
 1. **Zero Unverified Native Hacks:** If a proposed fix relies on non-standard React Native rendering assumptions (e.g. transparent ghost text spans, unusual flex overrides), the agent is strictly prohibited from considering it solved without empirical verification on device/emulator.
-2. **Double-Signature Gate for Discoveries:** No agent may mark a pattern as `ADOPTED` in `docs/discoveries.md` unilaterally. New patterns must be logged as `PROPOSAL` by `@scribe` or the author, and can only transition to `ADOPTED` after validation by a second consumer and sign-off by `@integrity`.
+2. **Double-Signature Gate for Discoveries:** No agent may mark a pattern as `ADOPTED` in `docs/logs/discoveries.md` unilaterally. New patterns must be logged as `PROPOSAL` by `@scribe` or the author, and can only transition to `ADOPTED` after validation by a second consumer and sign-off by `@integrity`.
 3. **Resource-Conscious Review Tiers:** Auditors and loggers (`@integrity`, `@scribe`, `@tester`) run in the `flash` tier to keep token consumption and response latency minimal during day-to-day work.

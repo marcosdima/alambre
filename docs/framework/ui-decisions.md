@@ -7,7 +7,7 @@ summary: Concrete UI direction and component decisions for alambre, materializin
 
 This document records decisions that are specific to the UI direction of `alambre` without changing the global architecture boundaries.
 
-Global principles live in `docs/architecture.md` (section 6 covers the general UI direction). This file captures how those principles are materialized in concrete components.
+Global principles live in `docs/framework/architecture.md` (section 6 covers the general UI direction). This file captures how those principles are materialized in concrete components.
 
 ---
 
@@ -44,7 +44,7 @@ An application composes its own presentation component on top of `alambre.Button
 
 ## 2. Application owns presentation
 
-Following `docs/architecture.md` section 6, the framework no longer ships opinionated or hard-coded presentation. The application is the owner of colors, typography, dimensions, concrete icons and application-specific animations.
+Following `docs/framework/architecture.md` section 6, the framework no longer ships opinionated or hard-coded presentation. The application is the owner of colors, typography, dimensions, concrete icons and application-specific animations.
 
 ### Resolved fates
 
@@ -77,7 +77,7 @@ The graphic primitives (`base/Circle`, `base/Line` and `base/Path`, plus the ani
 
 ## 3. Base contracts: passthroughs were not retained
 
-`Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
+`Text` and `View` were removed from the public API. They were pure passthroughs of React Native components with no reusable contract or behavior, which contradicts `docs/framework/architecture.md` section 6 ("UI primitives should provide meaningful reusable behavior rather than merely wrapping React Native components"). Applications import `Text` and `View` from `react-native` directly.
 
 `DefaultReact.TextProps` and `ViewProps` are kept as internal type contracts used by the core provider wiring, the icons, and the navigator. `TextProps` was removed once its only consumer (`animado`) left the framework.
 
@@ -119,7 +119,7 @@ Following the direction established by `Button` (§1):
 
 ## 5. Headless animation timing: `useStagger`
 
-Following the principle that the framework defines behavior while the application defines visual presentation (`docs/architecture.md` §6):
+Following the principle that the framework defines behavior while the application defines visual presentation (`docs/framework/architecture.md` §6):
 
 * `useStagger` and `calculateStaggerDelay` provide headless stagger timing coordination across sequential elements.
 * **Non-responsibilities:** The framework does NOT choose visual entrance animations (`FadeInDown`, `FadeInUp`, `ZoomIn`, springs, keyframes, or easing curves) and does NOT impose animation wrappers. Applications pair the computed delays (`getDelay(index)`) with whatever presentation or Reanimated builder they choose.
@@ -146,7 +146,7 @@ Embedding child components that register continuous horizontal pan gestures (suc
 
 ## 7. Headless UI Physics: Decoupled Kinetic Containers (`useCarousel`, `useDeck`)
 
-Following the behavior-first architecture (`docs/architecture.md` §6), interactive containers and kinetic components strictly separate mathematical motion physics from visual markup.
+Following the behavior-first architecture (`docs/framework/architecture.md` §6), interactive containers and kinetic components strictly separate mathematical motion physics from visual markup.
 
 ### The Problem with Monolithic Containers
 
@@ -170,10 +170,10 @@ In `alambre`, containers are implemented as **headless physics hooks**:
 
 * **Framework role:** Provides mathematical snapping calculations and Reanimated scroll worklets on the UI thread without dictating card markup, peek spacing, or paginator design.
 * **Application ownership:** The application mounts `<Animated.ScrollView>`, styles cards and container dimensions, and optionally renders custom indicators (demonstrated in `apps/playground/src/views/containers/CarouselTestbed.tsx`).
-* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](reference/behaviors.md#5-usecarousel--math-kinematics).
+* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](../reference/behaviors.md#5-usecarousel--math-kinematics).
 
 ### 2. Swipeable Card Deck Physics (`useDeck`)
 
 * **Framework role:** Provides stack state tracking, swipe translation shared values, and history undo capabilities without dictating card styles or overlay badges.
 * **Application ownership:** The application pairs the shared values with its gesture detectors and drives rotation or scale interpolation (demonstrated in `apps/playground/src/views/containers/DeckTestbed.tsx`).
-* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](reference/behaviors.md#6-usedeck--swipeable-stack-kinematics).
+* **API contract & examples:** Documented in [`docs/reference/behaviors.md`](../reference/behaviors.md#6-usedeck--swipeable-stack-kinematics).
