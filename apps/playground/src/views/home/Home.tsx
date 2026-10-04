@@ -17,9 +17,9 @@ export default () => {
       onPress: () => navigate('kineticList'),
     },
     {
-      key: 'spatialTransitions',
-      label: 'Spatial Transitions Testbed',
-      onPress: () => navigate('spatialTransitions'),
+      key: 'animatedIcons',
+      label: 'Animated Icons Testbed',
+      onPress: () => navigate('animatedIcons'),
     },
   ];
 
