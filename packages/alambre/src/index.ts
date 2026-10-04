@@ -199,3 +199,5 @@ export type {
 export * from './core';
 export * from './components/spatial';
 export { createAnimatedIcon } from './components/icons/base';
+export { MorphIcon } from './components/icons/base/MorphIcon';
+export * from './components/icons/generated';

@@ -6,7 +6,7 @@ import { TestCard } from '../../components/test-utils/TestCard';
 import { ConfigSwitch } from '../../components/test-utils/ConfigSwitch';
 import { ConfigSlider } from '../../components/test-utils/ConfigSlider';
 import { GummyTabs } from '../../components/test-utils/GummyTabs';
-import { createAnimatedIcon } from 'alambre';
+import { createAnimatedIcon, MorphIcon, HomeIcon, SettingsIcon } from 'alambre';
 import AppTitle, { AppText } from '../../components/AppTitle';
 import AppCard from '../../components/AppCard';
 
@@ -40,8 +40,9 @@ export default function AnimatedIconsTestbed() {
 
   const tabs = [
     { id: 'favorite', label: 'Favorite Button', content: <FavoriteScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
-    { id: 'task', label: 'Task Completion', content: <TaskScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
-    { id: 'weather', label: 'Weather Widget', content: <WeatherScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> }
+    { id: 'task', label: 'Task', content: <TaskScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
+    { id: 'weather', label: 'Weather', content: <WeatherScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
+    { id: 'morph', label: 'MorphIcon (Auto-gen)', content: <MorphScenario theme={theme} duration={duration} /> }
   ];
 
   return (
@@ -150,3 +151,38 @@ const styles = StyleSheet.create({
   button: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100 },
   checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' }
 });
+
+function MorphScenario({ theme, duration }: any) {
+  const [isSettings, setIsSettings] = useState(false);
+  
+  return (
+    <View style={styles.tabContent}>
+      <AppCard variant="outlined" style={styles.cardCenter}>
+        <AppTitle level={3} style={{ color: theme.color, marginBottom: 24 }}>Navigation Transition</AppTitle>
+        <AppText style={{ color: theme.muted, marginBottom: 24, textAlign: 'center' }}>
+          Toggles fluidly between two auto-generated SVG icons (Home and Settings) using MorphIcon.
+        </AppText>
+        
+        <Pressable 
+          accessibilityRole="button"
+          accessibilityState={{ checked: isSettings }}
+          accessibilityLabel="Toggle Settings"
+          style={[styles.button, { backgroundColor: theme.surfaceAlt }]}
+          onPress={() => setIsSettings(!isSettings)}
+        >
+          <MorphIcon 
+            IconA={HomeIcon}
+            IconB={SettingsIcon}
+            isActive={isSettings}
+            size={32}
+            color={theme.primary}
+            duration={duration}
+          />
+          <AppText style={{ color: theme.primary, marginLeft: 16, fontWeight: 'bold' }}>
+            {isSettings ? 'Go to Settings' : 'Go to Home'}
+          </AppText>
+        </Pressable>
+      </AppCard>
+    </View>
+  );
+}
