@@ -27,6 +27,13 @@ const CloudRainIcon = createAnimatedIcon({
   ]
 });
 
+const SketchButtonBg = createAnimatedIcon({
+  viewBox: "0 0 160 50",
+  paths: [
+    "M 5 5 Q 80 2 155 5 Q 158 25 155 45 Q 80 48 5 45 Q 2 25 5 5 Z"
+  ]
+});
+
 export default function AnimatedIconsTestbed() {
   const { theme } = useLightDark();
 
@@ -42,7 +49,8 @@ export default function AnimatedIconsTestbed() {
     { id: 'favorite', label: 'Favorite Button', content: <FavoriteScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
     { id: 'task', label: 'Task', content: <TaskScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
     { id: 'weather', label: 'Weather', content: <WeatherScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
-    { id: 'morph', label: 'MorphIcon (Auto-gen)', content: <MorphScenario theme={theme} duration={duration} /> }
+    { id: 'morph', label: 'MorphIcon', content: <MorphScenario theme={theme} duration={duration} /> },
+    { id: 'svg-btn', label: 'SVG Button', content: <SvgButtonScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> }
   ];
 
   return (
@@ -180,6 +188,41 @@ function MorphScenario({ theme, duration }: any) {
           />
           <AppText style={{ color: theme.primary, marginLeft: 16, fontWeight: 'bold' }}>
             {isSettings ? 'Go to Settings' : 'Go to Home'}
+          </AppText>
+        </Pressable>
+      </AppCard>
+    </View>
+  );
+}
+
+function SvgButtonScenario({ theme, iconAnimation, offset }: any) {
+  const [isPressed, setIsPressed] = useState(false);
+  
+  return (
+    <View style={styles.tabContent}>
+      <AppCard variant="outlined" style={styles.cardCenter}>
+        <AppTitle level={3} style={{ color: theme.color, marginBottom: 24 }}>Non-Icon Component</AppTitle>
+        <AppText style={{ color: theme.muted, marginBottom: 24, textAlign: 'center' }}>
+          This button's background is a raw 160x50 SVG path. Using the same SVG factory, the border draws itself around the text when activated.
+        </AppText>
+        
+        <Pressable 
+          style={{ width: 160, height: 50, alignItems: 'center', justifyContent: 'center' }}
+          onPress={() => setIsPressed(!isPressed)}
+          accessibilityRole="button"
+        >
+          <View style={[StyleSheet.absoluteFill, { opacity: isPressed ? 1 : 0.4 }]}>
+            <SketchButtonBg 
+              size="100%" 
+              color={theme.primary} 
+              strokeWidth={3}
+              drawIt={isPressed} 
+              strokeOffset={offset} 
+              iconAnimation={iconAnimation}
+            />
+          </View>
+          <AppText style={{ color: isPressed ? theme.primary : theme.color, fontWeight: 'bold' }}>
+            {isPressed ? 'Activated!' : 'Draw Border'}
           </AppText>
         </Pressable>
       </AppCard>
