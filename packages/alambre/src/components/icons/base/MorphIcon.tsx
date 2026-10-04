@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import Animated, { 
-  useAnimatedStyle, useSharedValue, 
-  withSpring, 
-  interpolate, 
+import Animated, {
+  useAnimatedStyle, useSharedValue,
+  withSpring,
+  interpolate,
   Extrapolation,
-  withTiming
+  withTiming,
 } from 'react-native-reanimated';
 import type { IconProps } from '../../../types/icons';
 
@@ -39,13 +39,13 @@ export function MorphIcon({
     const rotation = interpolate(progress.value, [0, 1], [0, 90]);
     const opacity = interpolate(progress.value, [0, 0.8], [1, 0], Extrapolation.CLAMP);
     const scale = interpolate(progress.value, [0, 1], [1, 0.5]);
-    
+
     return {
       position: 'absolute',
       opacity,
       transform: [
         { rotate: `${rotation}deg` },
-        { scale }
+        { scale },
       ],
     };
   });
@@ -60,7 +60,7 @@ export function MorphIcon({
       opacity,
       transform: [
         { rotate: `${rotation}deg` },
-        { scale }
+        { scale },
       ],
     };
   });
@@ -68,10 +68,10 @@ export function MorphIcon({
   const Wrapper = onPress ? Pressable : View;
 
   return (
-    <Wrapper 
-      onPress={onPress} 
+    <Wrapper
+      onPress={onPress}
       style={[styles.container, { width: size, height: size }, style]}
-      accessibilityRole={onPress ? "button" : "image"}
+      accessibilityRole={onPress ? 'button' : 'image'}
       accessibilityState={{ checked: isActive }}
     >
       <Animated.View style={styleA}>
@@ -88,5 +88,5 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
 });

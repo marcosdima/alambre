@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, type ColorValue } from 'react-native';
-import Svg, { PathProps } from 'react-native-svg';
+import type { PathProps } from 'react-native-svg';
+import Svg from 'react-native-svg';
 import Path from './Path';
 import type { IconProps } from '../../../types/icons';
 

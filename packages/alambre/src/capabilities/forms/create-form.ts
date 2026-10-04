@@ -43,12 +43,12 @@ export function createForm<T extends Record<string, any>>(options: CreateFormOpt
     submitForm: async () => {
       const state = store.getState();
       const currentValues = state.values;
-      
+
       const allTouched = Object.keys(currentValues).reduce((acc, key) => {
         acc[key as keyof T] = true;
         return acc;
       }, {} as Record<keyof T, boolean>);
-      
+
       store.setState((prev) => ({ ...prev, touched: allTouched }));
 
       if (validateForm(currentValues)) {

@@ -1,14 +1,16 @@
-import React, { ReactNode, useMemo } from 'react';
-import { StyleSheet, Pressable, ViewStyle, StyleProp, View } from 'react-native';
-import Animated, { 
-  FadeIn, 
-  LinearTransition, 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  interpolate, 
-  Extrapolation, 
-  runOnJS 
+import type { ReactNode } from 'react';
+import React, { useMemo } from 'react';
+import type { ViewStyle, StyleProp } from 'react-native';
+import { StyleSheet, Pressable, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  LinearTransition,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
+  Extrapolation,
+  runOnJS,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 
@@ -39,7 +41,7 @@ export function InteractiveCard({
   mass = 1,
   style,
   expandedStyle,
-  collapsedStyle
+  collapsedStyle,
 }: InteractiveCardProps) {
   const translateY = useSharedValue(0);
   const isDragging = useSharedValue(false);
@@ -69,16 +71,16 @@ export function InteractiveCard({
       translateY.value,
       [0, 300],
       [1, 0.85],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     return {
       transform: [
         { translateY: translateY.value },
-        { scale }
+        { scale },
       ],
-      borderRadius: isExpanded 
+      borderRadius: isExpanded
         ? interpolate(translateY.value, [0, 150], [16, 32], Extrapolation.CLAMP)
-        : 16
+        : 16,
     };
   });
 
@@ -90,13 +92,13 @@ export function InteractiveCard({
           styles.cardShape,
           isExpanded ? expandedStyle : collapsedStyle,
           style,
-          animatedStyle
+          animatedStyle,
         ]}
       >
-        <Pressable 
+        <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: isExpanded }}
-          style={StyleSheet.absoluteFill} 
+          style={StyleSheet.absoluteFill}
           onPress={() => {
             if (!isExpanded) onExpand();
           }}

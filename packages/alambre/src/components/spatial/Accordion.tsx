@@ -1,5 +1,7 @@
-import React, { ReactNode } from 'react';
-import { StyleSheet, Pressable, ViewStyle, StyleProp } from 'react-native';
+import type { ReactNode } from 'react';
+import React from 'react';
+import type { ViewStyle, StyleProp } from 'react-native';
+import { StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 export interface AccordionItemProps {
@@ -21,7 +23,7 @@ export function AccordionItem({
   children,
   transition = LinearTransition.springify().damping(16).stiffness(200).mass(1),
   style,
-  contentStyle
+  contentStyle,
 }: AccordionItemProps) {
   return (
     <Animated.View layout={transition}>
@@ -48,5 +50,5 @@ const styles = StyleSheet.create({
   },
   content: {
     marginTop: 16,
-  }
+  },
 });
