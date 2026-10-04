@@ -75,10 +75,10 @@ export function MorphIcon({
       accessibilityState={{ checked: isActive }}
     >
       <Animated.View style={styleA}>
-        <IconA size={size} color={color} />
+        <IconA size={size} color={color} drawIt={true} />
       </Animated.View>
       <Animated.View style={styleB}>
-        <IconB size={size} color={color} />
+        <IconB size={size} color={color} drawIt={true} />
       </Animated.View>
     </Wrapper>
   );
