@@ -2,7 +2,9 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
 import { useLightDark } from '../../providers/theme';
 import Svg, { Circle, Path, Rect, G, Line } from 'react-native-svg';
-import { Heart, SettingsIcon } from 'alambre';
+import { AlambreIcons, SettingsIcon } from 'alambre';
+
+const Heart = AlambreIcons.Heart;
 
 export default function ColguettiMenuTestbed() {
   const { theme } = useLightDark();
