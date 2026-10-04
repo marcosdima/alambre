@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, { 
-  useAnimatedStyle, 
+  useAnimatedStyle, useSharedValue, 
   withSpring, 
   interpolate, 
   Extrapolation,
@@ -29,14 +29,17 @@ export function MorphIcon({
   duration = 400,
   style,
 }: MorphIconProps) {
-  // We use a simple 0 to 1 progress
-  const progress = isActive ? 1 : 0;
+  const progress = useSharedValue(isActive ? 1 : 0);
 
-  // Icon A rotates out and fades out
+  React.useEffect(() => {
+    progress.value = withTiming(isActive ? 1 : 0, { duration });
+  }, [isActive, duration]);
+
   const styleA = useAnimatedStyle(() => {
-    const rotation = withTiming(isActive ? 90 : 0, { duration });
-    const opacity = withTiming(isActive ? 0 : 1, { duration: duration * 0.8 });
-    const scale = withTiming(isActive ? 0.5 : 1, { duration });
+    const rotation = interpolate(progress.value, [0, 1], [0, 90]);
+    const opacity = interpolate(progress.value, [0, 0.8], [1, 0], Extrapolation.CLAMP);
+    const scale = interpolate(progress.value, [0, 1], [1, 0.5]);
+    
     return {
       position: 'absolute',
       opacity,
@@ -47,11 +50,11 @@ export function MorphIcon({
     };
   });
 
-  // Icon B rotates in and fades in
   const styleB = useAnimatedStyle(() => {
-    const rotation = withTiming(isActive ? 0 : -90, { duration });
-    const opacity = withTiming(isActive ? 1 : 0, { duration: duration * 0.8 });
-    const scale = withTiming(isActive ? 1 : 0.5, { duration });
+    const rotation = interpolate(progress.value, [0, 1], [-90, 0]);
+    const opacity = interpolate(progress.value, [0.2, 1], [0, 1], Extrapolation.CLAMP);
+    const scale = interpolate(progress.value, [0, 1], [0.5, 1]);
+
     return {
       position: 'absolute',
       opacity,
