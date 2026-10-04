@@ -1,5 +1,6 @@
 import Home from '../views/home/Home';
 import AnimatedIconsTestbed from '../views/animated-icons/AnimatedIconsTestbed';
+import ColguettiMenuTestbed from '../views/colguetti/ColguettiMenuTestbed';
 import type { Page } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -16,6 +17,10 @@ export const pages: Record<string, AppPage> = {
   animatedIcons: {
     title: { es: 'Animated Icons', en: 'Animated Icons' },
     component: <AnimatedIconsTestbed />,
+  },
+  colguetti: {
+    title: { es: 'Colguetti Menu', en: 'Colguetti Menu' },
+    component: <ColguettiMenuTestbed />,
   }
 };
 

@@ -16,6 +16,11 @@ export default () => {
       label: 'Animated Icons Testbed',
       onPress: () => navigate('animatedIcons'),
     },
+    {
+      key: 'colguetti',
+      label: 'Colguetti Menu',
+      onPress: () => navigate('colguetti'),
+    },
   ];
 
   return (
