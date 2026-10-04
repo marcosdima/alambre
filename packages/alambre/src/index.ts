@@ -197,3 +197,4 @@ export type {
   SortableRowProps,
 } from './types/dnd';
 export * from './core';
+export * from './components/spatial';
