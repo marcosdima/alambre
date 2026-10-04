@@ -1,6 +1,5 @@
 import Home from '../views/home/Home';
 import KineticListTestbed from '../views/kinetic-list/KineticListTestbed';
-import SpatialTransitionsTestbed from '../views/spatial-transitions/SpatialTransitionsTestbed';
 import type { Page } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -17,10 +16,6 @@ export const pages: Record<string, AppPage> = {
   kineticList: {
     title: { es: 'Kinetic List Testbed', en: 'Kinetic List Testbed' },
     component: <KineticListTestbed />,
-  },
-  spatialTransitions: {
-    title: { es: 'Spatial Transitions', en: 'Spatial Transitions' },
-    component: <SpatialTransitionsTestbed />,
   },
 };
 
