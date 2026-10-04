@@ -129,6 +129,10 @@ export {
   useCollapsible,
   useSwipeableRow,
   useContinuousPress,
+  useHarmonicMotion,
+  harmonicValue,
+  useRipplePulse,
+  rippleSample,
 } from './hooks';
 export type {
   HistoryState,
@@ -146,6 +150,11 @@ export type {
   UseSwipeableRowConfig,
   UseSwipeableRowReturn,
   SwipeDirection,
+  HarmonicProfile,
+  HarmonicMotionOptions,
+  RipplePulseOptions,
+  RippleWave,
+  UseRipplePulseReturn,
 } from './hooks';
 
 // Icons.

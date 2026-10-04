@@ -70,6 +70,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.StaggerProvider).toBe('function');
     expect(typeof Alambre.useStaggerItem).toBe('function');
     expect(typeof Alambre.useCollapsible).toBe('function');
+    expect(typeof Alambre.useHarmonicMotion).toBe('function');
+    expect(typeof Alambre.harmonicValue).toBe('function');
+    expect(typeof Alambre.useRipplePulse).toBe('function');
+    expect(typeof Alambre.rippleSample).toBe('function');
     expect(typeof Alambre.DndProvider).toBe('function');
     expect(typeof Alambre.useDnd).toBe('function');
     expect(typeof Alambre.useDraggable).toBe('function');
