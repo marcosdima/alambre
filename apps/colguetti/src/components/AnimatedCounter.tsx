@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     justifyContent: 'center',
     gap: 5,
+    top: -2,
   },
   numberBox: {
     alignItems: 'center',
@@ -72,9 +73,11 @@ const styles = StyleSheet.create({
   valueText: {
     fontWeight: '900',
     letterSpacing: -0.5,
+    includeFontPadding: false,
   },
   suffixText: {
     fontWeight: '700',
     opacity: 0.85,
+    includeFontPadding: false,
   },
 });
