@@ -134,7 +134,6 @@ export default () => {
                 background: lightTokens.surfaceAlt,
                 border: lightTokens.border,
                 circle: lightTokens.primary,
-                circleOpacity: 0.3,
                 sun: '#f59e0b',
                 moon: lightTokens.muted,
               },

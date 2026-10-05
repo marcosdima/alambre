@@ -8,12 +8,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import type { ButtonProps, ButtonState } from 'alambre';
-import { Button } from 'alambre';
+import { Button, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
-import { kinetics } from 'alambre';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
-export type ButtonTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
+export type ButtonTone = 'primary' | 'secondary' | 'neutral' | 'success' | 'danger' | 'warning';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export type AppButtonProps = Omit<ButtonProps, 'children'> & {
@@ -58,7 +57,7 @@ export default function AppButton({
   };
 
   const handlePressOut = (event: GestureResponderEvent) => {
-    scale.value = withSpring(1, kinetics.spring.bouncy);
+    scale.value = withSpring(1, kinetics.spring.stiff);
     onPressOut?.(event);
   };
 
@@ -66,47 +65,47 @@ export default function AppButton({
     transform: [{ scale: scale.value }],
   }));
 
-  // Resolve palette for tone
   const getToneColors = () => {
     switch (tone) {
+      case 'secondary':
+        return { accent: theme.secondary, soft: theme.secondarySoft, contrast: '#ffffff' };
       case 'success':
-        return { accent: '#10b981', soft: '#10b9811a', contrast: '#ffffff' };
+        return { accent: theme.success, soft: theme.primarySoft, contrast: '#ffffff' };
       case 'danger':
-        return { accent: '#ef4444', soft: '#ef44441a', contrast: '#ffffff' };
+        return { accent: theme.danger, soft: '#ef44441a', contrast: '#ffffff' };
       case 'warning':
-        return { accent: '#f59e0b', soft: '#f59e0b1a', contrast: '#1e1e1e' };
+        return { accent: theme.warning, soft: theme.sandSoft, contrast: '#1e1e1e' };
       case 'neutral':
         return { accent: theme.border, soft: theme.surfaceAlt, contrast: theme.color };
       case 'primary':
       default:
-        return { accent: theme.primary, soft: theme.primarySoft, contrast: '#ffffff' };
+        return { accent: theme.primary, soft: theme.primarySoft, contrast: theme.onPrimary };
     }
   };
 
   const toneConfig = getToneColors();
 
-  // Resolve visual variant styles
   const getVariantStyles = (pressed: boolean) => {
     switch (variant) {
       case 'solid':
         return {
           backgroundColor: pressed ? toneConfig.accent : toneConfig.accent,
           borderColor: toneConfig.accent,
-          borderWidth: 1,
+          borderWidth: 1.5,
           textColor: toneConfig.contrast,
         };
       case 'soft':
         return {
           backgroundColor: pressed ? theme.surfaceAlt : toneConfig.soft,
           borderColor: 'transparent',
-          borderWidth: 1,
+          borderWidth: 1.5,
           textColor: toneConfig.accent === theme.border ? theme.color : toneConfig.accent,
         };
       case 'ghost':
         return {
           backgroundColor: pressed ? theme.surfaceAlt : 'transparent',
           borderColor: 'transparent',
-          borderWidth: 1,
+          borderWidth: 1.5,
           textColor: toneConfig.accent === theme.border ? theme.color : toneConfig.accent,
         };
       case 'outline':
@@ -120,7 +119,6 @@ export default function AppButton({
     }
   };
 
-  // Resolve sizing tokens
   const getSizeStyles = () => {
     switch (size) {
       case 'sm':
@@ -268,3 +266,4 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
+

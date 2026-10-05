@@ -14,9 +14,11 @@ export default function ConfirmDialog({
       description={confirm.message}
       tone={confirm.tone === 'danger' ? 'danger' : 'primary'}
       confirmLabel={confirm.confirmLabel}
-      cancelLabel={confirm.cancelLabel ?? 'Cancel'}
+      cancelLabel={confirm.cancelLabel ?? 'Cancelar'}
+      confirmTone={confirm.tone === 'danger' ? 'danger' : 'primary'}
       onConfirm={onConfirm}
       onCancel={onCancel}
     />
   );
 }
+

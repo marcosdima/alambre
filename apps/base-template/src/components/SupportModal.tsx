@@ -5,45 +5,38 @@ import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import AppButton from './AppButton';
 
-export type SupportModalProps = {
+type SupportModalProps = {
   visible: boolean;
   onClose: () => void;
-  appName?: string;
-  cafecitoUrl?: string;
-  githubUrl?: string;
-  title?: string;
 };
 
-const DEFAULT_GITHUB_URL = 'https://github.com/marcosdima';
-const DEFAULT_CAFECITO_URL = 'https://cafecito.app/marcosdima';
+const GITHUB_URL = 'https://github.com/marcosdima';
+const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 
 const SUPPORT_QUOTES = [
   {
-    es: 'Yo soy Rudolph Giuliani... debes apoyar a [app]... cero tolerancia...',
-    en: 'I am Rudolph Giuliani... you must support [app]... zero tolerance...',
+    es: 'Yo soy Rudolph Giuliani... debes apoyar a Colguetti... cero tolerancia...',
+    en: 'I am Rudolph Giuliani... you must support Colguetti... zero tolerance...',
   },
   {
-    es: '[app] es un proyecto libre y artesanal, como el dulce de leche ¿)',
-    en: '[app] is open-source and handcrafted, just like dulce de leche (I dare you to try to pronounce it gringitou)',
+    es: 'Colguetti es un proyecto libre y artesanal, como el dulce de leche ¿)',
+    en: 'Colguetti is open-source and handcrafted, just like dulce de leche (I dare you to try to pronounce it gringitou)',
   },
   {
-    es: '[app] fue hecho con amor... amor al dinero ¿)',
-    en: '[app] was made with love... love for money ¿)',
+    es: 'Colguetti fue hecho con amor... amor al dinero ¿)',
+    en: 'Colguetti was made with love... love for money ¿)',
   },
   {
-    es: 'Apoyar a [app] es como comer una naranja.',
-    en: 'Supporting [app] is like eating an orange.',
+    es: 'Apoyar a Colguetti es como comer una naranja.',
+    en: 'Supporting Colguetti is like eating an orange.',
+  },
+  {
+    es: '¿No podés donar porque te olvidaste tu billetera? Si tan solo hubiera una forma de que no te olvidaras...',
+    en: 'Can\'t donate because you forgot your wallet? If only there were a way so you wouldn\'t forget...',
   },
 ];
 
-export default function SupportModal({
-  visible,
-  onClose,
-  appName = '[app]',
-  cafecitoUrl = DEFAULT_CAFECITO_URL,
-  githubUrl = DEFAULT_GITHUB_URL,
-  title,
-}: SupportModalProps) {
+export default function SupportModal({ visible, onClose }: SupportModalProps) {
   const { theme } = useLightDark();
   const { currentLang } = useLang();
   const [quoteIndex, setQuoteIndex] = useState(0);
@@ -59,13 +52,8 @@ export default function SupportModal({
     void Linking.openURL(url);
   };
 
-  const activeQuote = SUPPORT_QUOTES[quoteIndex] ?? SUPPORT_QUOTES[0];
-  const rawQuote = (currentLang === 'en' ? activeQuote.en : activeQuote.es) || activeQuote.es;
-  const quoteText = rawQuote.replaceAll('[app]', appName);
-
-  const resolvedTitle =
-    title ??
-    (currentLang === 'en' ? `Support ${appName}!` : `¡Apoyá a ${appName}!`);
+  const activeQuote = SUPPORT_QUOTES[quoteIndex];
+  const quoteText = (activeQuote && activeQuote[currentLang as 'es' | 'en']) || activeQuote.es;
 
   return (
     <Modal
@@ -75,27 +63,16 @@ export default function SupportModal({
       onRequestClose={onClose}
     >
       <View style={styles.backdrop}>
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={onClose}
-          accessibilityRole="button"
-          accessibilityLabel={currentLang === 'en' ? 'Close' : 'Cerrar'}
-        />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View
           style={[styles.modalCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-          accessibilityViewIsModal
         >
           <View style={styles.header}>
-            <View
-              style={[
-                styles.iconCircle,
-                { backgroundColor: theme.primarySoft, borderColor: theme.primary },
-              ]}
-            >
+            <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
               <AlambreIcons.Heart color={theme.primary} lineWidth={2.5} style={styles.heartIcon} />
             </View>
             <Text style={[styles.title, { color: theme.color }]}>
-              {resolvedTitle}
+              {currentLang === 'en' ? 'Support Colguetti!' : '¡Apoyá a Colguetti!'}
             </Text>
             <Text style={[styles.subtitle, { color: theme.muted }]}>
               {quoteText}
@@ -110,7 +87,7 @@ export default function SupportModal({
               fullWidth
               label={currentLang === 'en' ? 'Buy me a coffee' : 'Invitame un cafecito'}
               rightIcon={<AlambreIcons.Coffee color={theme.onPrimary} lineWidth={2.2} style={styles.btnIcon} />}
-              onPress={() => handleOpenLink(cafecitoUrl)}
+              onPress={() => handleOpenLink(CAFECITO_URL)}
             />
             <AppButton
               variant="outline"
@@ -119,7 +96,7 @@ export default function SupportModal({
               fullWidth
               label={currentLang === 'en' ? 'View on GitHub' : 'Ver en GitHub'}
               rightIcon={<AlambreIcons.Arrow drawIt color={theme.color} lineWidth={16} style={styles.arrowIcon} />}
-              onPress={() => handleOpenLink(githubUrl)}
+              onPress={() => handleOpenLink(GITHUB_URL)}
             />
           </View>
 

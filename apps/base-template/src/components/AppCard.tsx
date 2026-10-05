@@ -7,11 +7,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
-import { kinetics } from 'alambre';
 
 export type CardVariant = 'outlined' | 'elevated' | 'soft';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -30,6 +29,7 @@ export type AppCardProps = {
   chevron?: boolean;
   selected?: boolean;
   onPress?: () => void;
+  interactive?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
@@ -51,6 +51,7 @@ export default function AppCard({
   chevron = false,
   selected = false,
   onPress,
+  interactive = false,
   disabled = false,
   style,
   headerStyle,
@@ -61,7 +62,7 @@ export default function AppCard({
   const { theme } = useLightDark();
   const scale = useSharedValue(1);
 
-  const isInteractive = Boolean(onPress) && !disabled;
+  const isInteractive = (Boolean(onPress) || Boolean(interactive)) && !disabled;
 
   const handlePressIn = () => {
     if (!isInteractive) return;
@@ -70,7 +71,7 @@ export default function AppCard({
 
   const handlePressOut = () => {
     if (!isInteractive) return;
-    scale.value = withSpring(1, kinetics.spring.bouncy);
+    scale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const animatedScaleStyle = useAnimatedStyle(() => ({
@@ -156,7 +157,12 @@ export default function AppCard({
 
                 {badge ? (
                   typeof badge === 'string' ? (
-                    <AppBadge label={badge} tone={badgeTone} size="sm" />
+                    <AppBadge
+                      label={badge}
+                      tone={badgeTone}
+                      size="sm"
+                      style={styles.headerBadge}
+                    />
                   ) : (
                     badge
                   )
@@ -185,7 +191,12 @@ export default function AppCard({
           <View style={styles.headerRightSlot}>
             {badge && badgePosition === 'right' ? (
               typeof badge === 'string' ? (
-                <AppBadge label={badge} tone={badgeTone} size="sm" />
+                <AppBadge
+                  label={badge}
+                  tone={badgeTone}
+                  size="sm"
+                  style={styles.headerBadge}
+                />
               ) : (
                 badge
               )
@@ -235,6 +246,20 @@ export default function AppCard({
     );
   }
 
+  if (interactive) {
+    return (
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        accessibilityState={{ selected, disabled }}
+        style={style}
+      >
+        {cardContent}
+      </Pressable>
+    );
+  }
+
   return cardContent;
 }
 
@@ -263,6 +288,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
     flexShrink: 1,
+    includeFontPadding: false,
+  },
+  headerBadge: {
+    alignSelf: 'center',
   },
   subtitleText: {
     fontSize: 13,
