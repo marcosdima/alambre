@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingTop: 6,
     paddingBottom: 6,
+    paddingHorizontal: 4,
   },
   colorDot: {
     width: 34,
