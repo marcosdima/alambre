@@ -118,5 +118,7 @@ const styles = StyleSheet.create({
   valueText: {
     fontSize: 14,
     fontWeight: '700',
+    includeFontPadding: false,
+    top: -1,
   },
 });

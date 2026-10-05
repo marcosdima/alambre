@@ -78,7 +78,11 @@ export default () => {
         title={lang.items.colorLabel}
         style={styles.sectionCard}
       >
-        <View style={styles.colorRow}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.colorRow}
+        >
           {itemColors.map((c) => {
             const active = color === c;
             return (
@@ -98,7 +102,7 @@ export default () => {
               />
             );
           })}
-        </View>
+        </ScrollView>
       </AppCard>
 
       <AppCard
@@ -106,13 +110,6 @@ export default () => {
         title={lang.items.iconLabel}
         style={styles.sectionCard}
       >
-        <AppTextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Buscar ícono..."
-          clearable
-          style={{ marginBottom: 12 }}
-        />
         <View style={styles.iconGrid}>
           {filteredIcons.length === 0 ? (
             <Text style={{ color: theme.muted, paddingVertical: 12 }}>No se encontraron íconos</Text>
@@ -145,6 +142,16 @@ export default () => {
               );
             })
           )}
+        </View>
+
+        <View style={styles.searchWrapper}>
+          <AppTextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar ícono..."
+            clearable
+            maxLength={20}
+          />
         </View>
       </AppCard>
 
@@ -181,9 +188,9 @@ const styles = StyleSheet.create({
   },
   colorRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
     paddingTop: 6,
+    paddingBottom: 6,
   },
   colorDot: {
     width: 34,
@@ -214,6 +221,12 @@ const styles = StyleSheet.create({
   cellIcon: {
     width: 28,
     height: 22,
+  },
+  searchWrapper: {
+    marginTop: 16,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 240,
   },
   actions: {
     flexDirection: 'row',
