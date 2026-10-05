@@ -13,6 +13,7 @@ import { useRouteIntent } from './RouteIntent';
 import { pages, type PageTitle } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
+import ActivationOverlay from '../checklist/ActivationOverlay';
 
 const resolvePageTitle = (
   page: Page,
@@ -63,6 +64,7 @@ export default () => {
         useNavigator={useNavigator}
       />
       <NotificationsWatcher />
+      <ActivationOverlay />
     </SafeAreaView>
   );
 };
