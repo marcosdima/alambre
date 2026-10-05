@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Text } from 'react-native';
+import { StyleSheet, View, ScrollView, Text, Pressable } from 'react-native';
 import { useNavigator, AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
@@ -19,20 +19,24 @@ export default function Home() {
       <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />
 
       <View style={styles.header}>
-        <AppCard 
-          variant="soft" 
-          style={[styles.roundButton, { backgroundColor: theme.surfaceAlt }]} 
+        <Pressable 
           onPress={() => setSupportVisible(true)}
+          style={({ pressed }) => [
+            styles.roundButton, 
+            { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 }
+          ]}
         >
           <Heart style={{ width: 22, height: 22 }} color={theme.color} />
-        </AppCard>
-        <AppCard 
-          variant="soft" 
-          style={styles.roundButton} 
+        </Pressable>
+        <Pressable 
           onPress={() => navigate('settings')}
+          style={({ pressed }) => [
+            styles.roundButton, 
+            { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 }
+          ]}
         >
           <Gear style={{ width: 22, height: 22 }} color={theme.color} />
-        </AppCard>
+        </Pressable>
       </View>
 
       <View style={styles.center}>
