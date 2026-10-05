@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState, Text, View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useNavigator, useToast, AlambreIcons } from 'alambre';
+import { useNavigator, useToast, AlambreIcons, kinetics } from 'alambre';
 import Animated, {
   FadeIn,
   runOnJS,
@@ -38,14 +38,8 @@ const WEEKDAY_LABELS: Record<'es' | 'en', Record<number, string>> = {
 const MISSING_ITEMS_BODY = /\{items\}/g;
 
 const iconAnimation = {
-  drawAnimation: (value: number) => withTiming(value, {
-    duration: 460,
-    easing: Easing.out(Easing.exp),
-  }),
-  resetAnimation: (value: number) => withTiming(value, {
-    duration: 180,
-    easing: Easing.in(Easing.quad),
-  }),
+  drawAnimation: (value: number) => withTiming(value, kinetics.timing.slow),
+  resetAnimation: (value: number) => withTiming(value, kinetics.timing.fast),
 };
 
 

@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ToastComponentProps } from 'alambre';
 import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
 import { useLightDark } from './theme';
+import { kinetics } from 'alambre';
 
 export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentProps) {
   const { theme } = useLightDark();
@@ -41,10 +42,7 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
   const [isGestureDismissed, setIsGestureDismissed] = useState(false);
 
   useEffect(() => {
-    animatedOffset.value = withTiming(isTop ? targetTop : targetBottom, {
-      duration: 250,
-      easing: Easing.out(Easing.cubic),
-    });
+    animatedOffset.value = withTiming(isTop ? targetTop : targetBottom, kinetics.timing.base);
   }, [isTop, targetTop, targetBottom, animatedOffset]);
 
   // Progress bar animation for auto-dismissing toasts
@@ -80,23 +78,23 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
 
       if (dismissUp) {
         runOnJS(setIsGestureDismissed)(true);
-        translateY.value = withTiming(-160, { duration: 180 }, () => {
+        translateY.value = withTiming(-160, kinetics.timing.base, () => {
           runOnJS(dismiss)(data.id);
         });
       } else if (dismissDown) {
         runOnJS(setIsGestureDismissed)(true);
-        translateY.value = withTiming(160, { duration: 180 }, () => {
+        translateY.value = withTiming(160, kinetics.timing.base, () => {
           runOnJS(dismiss)(data.id);
         });
       } else if (dismissHoriz) {
         runOnJS(setIsGestureDismissed)(true);
         const dir = Math.sign(event.translationX || event.velocityX || 1);
-        translateX.value = withTiming(dir * 500, { duration: 200 }, () => {
+        translateX.value = withTiming(dir * 500, kinetics.timing.base, () => {
           runOnJS(dismiss)(data.id);
         });
       } else {
-        translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
-        translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
+        translateX.value = withSpring(0, kinetics.spring.snappy);
+        translateY.value = withSpring(0, kinetics.spring.snappy);
       }
     });
 

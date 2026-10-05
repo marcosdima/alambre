@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import type { ButtonProps, ButtonState } from 'alambre';
-import { Button } from 'alambre';
+import { Button, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
@@ -52,12 +52,12 @@ export default function AppButton({
   const scale = useSharedValue(1);
 
   const handlePressIn = (event: GestureResponderEvent) => {
-    scale.value = withTiming(0.96, { duration: 90 });
+    scale.value = withTiming(0.96, kinetics.timing.fast);
     onPressIn?.(event);
   };
 
   const handlePressOut = (event: GestureResponderEvent) => {
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    scale.value = withSpring(1, kinetics.spring.stiff);
     onPressOut?.(event);
   };
 

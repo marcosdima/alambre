@@ -26,7 +26,7 @@ It is the second application built on `alambre` and a validation surface for fra
 
 ## Framework validation
 
-This app is where the undo/redo and elapsed-time patterns were first prototyped before being adopted by `alambre` as `useHistoryState` and `useStopwatch` (see `docs/discoveries.md`). The local models still live in `src/domain/history-model.ts`, which is what `packages/alambre` was validated against.
+This app is where the undo/redo and elapsed-time patterns were first prototyped before being adopted by `alambre` as `useHistoryState` and `useStopwatch` (see `docs/logs/discoveries.md`). The local models still live in `src/domain/history-model.ts`, which is what `packages/alambre` was validated against.
 
 ## Commands
 

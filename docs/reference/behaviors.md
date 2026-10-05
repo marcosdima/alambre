@@ -1,6 +1,6 @@
 ---
 title: Behaviors Reference
-summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, and useDeck.
+summary: Application interaction patterns decoupled from presentation: NavigatorProvider, ConfirmHost & confirm, ToastHost & toast, createApi, useCarousel, useDeck, useWheelPicker, and useContinuousPress.
 ---
 
 # Behaviors Reference
@@ -47,12 +47,12 @@ const {
   noPreviousPages,
   scrollTop,
   setScrollTop,
-} = useNavigator();
+} = useNavigator<TRoute, TSubpage>();
 ```
-* `navigate(target: string, settings?: { subpage?: string })`: Navigates to a top-level page or a subpage.
+* `navigate(target: TRoute, settings?: NavigationSettings<TSubpage>)`: Navigates to a top-level page or a subpage with strict compile-time route validation.
 * `previous()`: Returns to the previous page in history.
 * `noPreviousPages: boolean`: True when at the root of navigation history.
-* `currentPage`: Object containing the current React element in `.component`.
+* `currentPage: Page`: Object containing the current React element in `.component`.
 * `pageKey`: Unique identifier string of the current route (useful as an animation key for Reanimated).
 * `scrollTop`: Current scroll Y offset of the page container.
 * `setScrollTop(y: number): void`: Updates stored scroll offset for the current page.
@@ -633,4 +633,250 @@ export function CardStack({ items }: { items: { id: string; name: string }[] }) 
   );
 }
 ```
+
+---
+
+## 7. `useWheelPicker` & Headless Wheel Kinematics
+
+Provides a headless kinetic wheel picker interaction driver with momentum flick physics, spring settling, virtual multi-cycle infinite scrolling, and step tap interactions. 
+
+Following the headless behavior architecture, `alambre` provides the touch gesture worklets, velocity physics, and reactive Reanimated `SharedValue` position tracking. The application completely owns the visual rendering, rows, selection highlight band, typography, and container layout.
+
+### Hook Signature
+```typescript
+import { useWheelPicker, type UseWheelPickerOptions, type UseWheelPickerResult } from 'alambre';
+
+const {
+  currentPosition,
+  gesture,
+  allItems,
+} = useWheelPicker({
+  itemCount: 24,       // number of unique items (e.g. 24 hours, 60 minutes)
+  selected: 8,         // currently selected index
+  onSelect: (index) => handleSelect(index),
+  rowHeight: 44,       // row height in pixels for gesture translation
+  cycles: 5,           // optional: virtual cycles for infinite scroll illusion (default: 5)
+});
+```
+
+### Options (`UseWheelPickerOptions`)
+* `itemCount: number`: Total number of distinct items in the collection.
+* `selected: number`: Currently active/selected integer index (`0` to `itemCount - 1`).
+* `onSelect: (val: number) => void`: Callback fired on the JS thread when a selection settles.
+* `rowHeight: number`: Pixel height of a single row, used to calculate drag distance and snapping targets.
+* `cycles?: number`: Number of repeated cycles generated in `allItems` to create the illusion of seamless continuous scrolling (default: `5`).
+
+### Return Contract (`UseWheelPickerResult`)
+* `currentPosition: SharedValue<number>`: Continuous fractional row offset on the UI thread, tracking drag gestures and momentum spring animations. Use with `useAnimatedStyle` to drive column `translateY`.
+* `gesture: ReturnType<typeof Gesture.Exclusive>`: Combined Pan + Tap gesture to attach directly to `<GestureDetector gesture={gesture}>`.
+  - **Pan Gesture:** Translates vertical drag into row movements with velocity-weighted spring flick settling (`stiffness: 220, damping: 24, mass: 0.6`). Recenters seamlessly when scrolled past boundaries.
+  - **Tap Gesture:** Tapping above or below the selection band automatically steps backward or forward by 1 item with smooth timing.
+* `allItems: number[]`: Pre-computed flattened array of cycle indices `[0..itemCount-1, 0..itemCount-1, ...]`.
+
+### Production Example (`SwipeableTimePicker.tsx`)
+```tsx
+import { StyleSheet, Text, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useWheelPicker } from 'alambre';
+
+const ROW_HEIGHT = 44;
+const VISIBLE_ROWS = 3;
+
+export function WheelColumn({
+  itemCount,
+  selected,
+  onSelect,
+  format = (val) => val.toString().padStart(2, '0'),
+}: {
+  itemCount: number;
+  selected: number;
+  onSelect: (val: number) => void;
+  format?: (val: number) => string;
+}) {
+  const { currentPosition, gesture, allItems } = useWheelPicker({
+    itemCount,
+    selected,
+    onSelect,
+    rowHeight: ROW_HEIGHT,
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: ROW_HEIGHT - currentPosition.value * ROW_HEIGHT }],
+  }));
+
+  return (
+    <View style={styles.wheelColumn}>
+      {/* 100% App-owned Selection Band */}
+      <View pointerEvents="none" style={styles.selectionBand} />
+
+      <GestureDetector gesture={gesture}>
+        <View style={styles.gestureTarget}>
+          <Animated.View style={[styles.columnContent, animatedStyle]}>
+            {allItems.map((item, idx) => (
+              <View key={`${item}-${idx}`} style={styles.row}>
+                <Text style={styles.rowText}>{format(item)}</Text>
+              </View>
+            ))}
+          </Animated.View>
+        </View>
+      </GestureDetector>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wheelColumn: { height: ROW_HEIGHT * VISIBLE_ROWS, overflow: 'hidden', width: 64 },
+  gestureTarget: { flex: 1 },
+  columnContent: { alignItems: 'center' },
+  row: { height: ROW_HEIGHT, justifyContent: 'center', alignItems: 'center' },
+  rowText: { fontSize: 20, fontWeight: '600' },
+  selectionBand: {
+    position: 'absolute',
+    top: ROW_HEIGHT,
+    left: 0,
+    right: 0,
+    height: ROW_HEIGHT,
+    backgroundColor: '#eff6ff',
+    borderRadius: 8,
+  },
+});
+```
+
+---
+
+## 8. `useContinuousPress` & Hold-to-Repeat Gestures
+
+Provides headless continuous press gesture coordination ("hold tap") for rapid interaction controls such as steppers, counters, volume adjustment, and fast-forward scrubbing.
+
+### Mechanism & Lifecycle
+
+1. **Immediate Initial Actuation:** When the user touches down (`onPressIn`), `onPress` fires immediately so single taps remain instantaneous with zero latency.
+2. **Hold Threshold (`delay`):** A timeout is initiated for `delay` ms (default: `500ms`). If released before `delay` expires, the gesture is treated as a normal single tap.
+3. **Continuous Repetition (`interval`):** If held past `delay`, an interval timer starts repeatedly invoking `onPress` at the base `interval` rate (default: `100ms`).
+4. **Dynamic Acceleration (`intervalMultiplier`):** After every repeating tick, the interval period is scaled by `intervalMultiplier` (`currentInterval = Math.max(10, currentInterval * intervalMultiplier)`). Setting `intervalMultiplier: 0.9` causes repetitions to accelerate smoothly the longer the user holds the button, clamped at a safe 10ms threshold.
+5. **Clean Release:** When released (`onPressOut`), all active timers and pending intervals are cleared immediately.
+6. **Callback Stability:** Internally tracks `onPress` with a React ref (`savedOnPress`), guaranteeing that state updates in parent components never reset active hold timers or cause timer drift.
+
+### Hook Signature
+
+```typescript
+import { useContinuousPress, type UseContinuousPressOptions } from 'alambre';
+
+const handlers = useContinuousPress({
+  onPress: () => handleIncrement(),
+  delay: 400,
+  interval: 100,
+  intervalMultiplier: 0.9,
+});
+```
+
+### Options Contract (`UseContinuousPressOptions`)
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onPress` | `() => void` | **Required** | Callback invoked on initial touch and on subsequent hold repetitions. |
+| `delay` | `number` | `500` | Duration in milliseconds the user must hold before repetition begins. |
+| `interval` | `number` | `100` | Initial milliseconds between repeated invocations. |
+| `intervalMultiplier` | `number` | `1` | Multiplier applied to interval after each firing. Values `< 1` accelerate firing frequency. |
+
+### Return Contract
+
+Returns `{ onPressIn: () => void, onPressOut: () => void }` designed to spread directly onto React Native `<Pressable>` or custom gesture responders.
+
+### Kinetics Cross-Reference
+
+While `useContinuousPress` drives the temporal pacing logic on the JS thread, visual feedback should pair with `kinetics.ts` spring profiles for physical responsiveness:
+* **Interactive Button Press:** Pair with `kinetics.spring.snappy` (`{ damping: 20, mass: 1, stiffness: 250 }`) for instantaneous button depth / scale depression on touch down.
+* **Rolling Value Counters:** Pair rapidly incrementing numeric values with `kinetics.spring.bouncy` (`{ damping: 14, mass: 1, stiffness: 150 }`) or `kinetics.spring.snappy` to give rolling numbers tactile punch as speed accelerates.
+
+### Production Example: Wrapping a `Pressable`
+
+```tsx
+import React from 'react';
+import { Pressable, Text, StyleSheet, type PressableProps } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useContinuousPress, kinetics } from 'alambre';
+
+interface ContinuousButtonProps extends Omit<PressableProps, 'onPress'> {
+  onPress: () => void;
+  label: string;
+  delay?: number;
+  interval?: number;
+  intervalMultiplier?: number;
+}
+
+export function ContinuousButton({
+  onPress,
+  label,
+  delay = 400,
+  interval = 100,
+  intervalMultiplier = 0.9,
+  disabled,
+  style,
+  ...props
+}: ContinuousButtonProps) {
+  const scale = useSharedValue(1);
+
+  const continuousHandlers = useContinuousPress({
+    onPress,
+    delay,
+    interval,
+    intervalMultiplier,
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    if (disabled) return;
+    // Animate scale down with snappy kinetics
+    scale.value = withSpring(0.92, kinetics.spring.snappy);
+    continuousHandlers.onPressIn();
+  };
+
+  const handlePressOut = () => {
+    // Restore scale on release
+    scale.value = withSpring(1, kinetics.spring.snappy);
+    continuousHandlers.onPressOut();
+  };
+
+  return (
+    <Pressable
+      {...props}
+      disabled={disabled}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      style={[styles.button, disabled && styles.disabled, style as any]}
+      accessibilityRole="button"
+    >
+      <Animated.View style={animatedStyle}>
+        <Text style={styles.text}>{label}</Text>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  text: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+});
+```
+
+
 

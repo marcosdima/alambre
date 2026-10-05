@@ -7,7 +7,7 @@ summary: Catalog of the complete functional reference and API guides for alambre
 
 This directory provides the complete functional reference and API guides for all capabilities, behaviors, hooks, storage utilities, and components provided by `alambre`.
 
-For global principles and boundaries, see [docs/architecture.md](../architecture.md), [docs/project.md](../project.md), and [docs/agents.md](../agents.md).
+For global principles and boundaries, see [docs/framework/architecture.md](../framework/architecture.md). For the agent system, see [docs/guidelines/agents.md](../guidelines/agents.md).
 
 For the retrieval protocol all agents must follow when consulting this documentation, see `.agents/skills/docs-retrieval/SKILL.md`.
 
@@ -30,6 +30,8 @@ Application behavioral patterns, overlay hosts, and headless physics drivers:
 * **`createApi`**: TanStack React Query integration wrapper and typed query/mutation hook generators without internal context.
 * **`useCarousel`**: Headless content carousel with Reanimated scroll worklets, snap calculations, and auto-play.
 * **`useDeck`**: Headless swipeable card stack with angular rotation kinematics, history stack, and gesture controls.
+* **`useWheelPicker`**: Headless kinetic wheel picker with momentum flick, spring settling, and multi-cycle virtual scrolling.
+* **`useContinuousPress`**: Headless continuous press gesture with hold-to-repeat, delay threshold, and interval acceleration.
 
 ### 3. [Storage Layer](storage.md)
 Persistence abstraction and serialization helpers:
@@ -53,7 +55,6 @@ Base UI primitives and icon contracts:
 * **`SegmentedControl` & `useSelect`**: Option selection primitive with radio group accessibility (`role="radiogroup"`).
 * **`Stepper` & `useStepper`**: Step-based numeric increment/decrement with clamping (`role="spinbutton"`).
 * **`Input`**: Accessible text input with state styling (`focused`, `disabled`, `error`).
-* **`TimePicker`**: 24-hour hour/minute wheel selector.
 * **`AlambreIcons`**: Vector icon family (`Cross`, `Tick`, `Arrow`, `Sun`, `Moon`, catalog shapes) and primitives (`Circle`, `Line`, `Path`).
 
 ### 6. [Drag & Drop Subsystem](dnd.md)
@@ -63,9 +64,18 @@ Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, a
 * **`useDroppable` & `Droppable`**: Spatial drop target registration, window coordinate measurement, and hover collision detection.
 * **`SortableRow`**: 1D horizontal sorting container with customizable neighbor shift curves (`glide`, `linear`, `damped`, `bounce`), drop settle modes (`seamless`, `bounce`, `impact`), and native screen reader actions (`moveLeft` / `moveRight`).
 
+### 7. [Text Animations](text-animations.md)
+Kinetic typography and animated text primitives powered by Reanimated worklets and `kinetics.ts` physics:
+* **`CountUp`**: Tabular-nums digit-column rolling counter with cubic deceleration.
+* **`Typewriter`**: Linear character-by-character progressive text reveal on the UI thread without re-renders.
+* **`Scramble`**: Randomized glyph matrix decrypting reveal with quadratic ease-out.
+* **`Marquee`**: Infinite looping horizontal content ticker with auto-measured clone wrap.
+* **`WavyText`**: Continuous staggered vertical sine oscillation across characters.
+* **`SlideInText`**: Physics-driven staggered card/glyph cascade powered by `kinetics.spring.bouncy`.
+
 ---
 
-## 7. Canonical Root Hierarchy (Zero-Context Architecture)
+## 8. Canonical Root Hierarchy (Zero-Context Architecture)
 
 In Alambre's Headless architecture, global capabilities (**Config, Lang, LightDark, Collection**) run on external stores (`useSyncExternalStore`) and require **zero context providers** in `App.tsx`. Components consume them directly without wrapping providers or unmount risks.
 

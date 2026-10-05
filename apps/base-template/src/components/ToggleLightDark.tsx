@@ -12,6 +12,7 @@ import Animated, {
 import { AlambreIcons } from 'alambre';
 import type { ComponentProps } from 'react';
 import type { View as AlambreView } from 'react-native';
+import { kinetics } from 'alambre';
 
 const BORDER = 2;
 
@@ -113,7 +114,7 @@ export default (
   const onBegin = () => {
     const max = Math.min(size.width, size.height) / 2 - BORDER;
     if (max <= 0) return;
-    radius.value = withTiming(Math.min(radius.value * 1.10, max), { duration: 200 });
+    radius.value = withTiming(Math.min(radius.value * 1.10, max), kinetics.timing.base);
   };
 
   const onFinalize = () => {
@@ -121,7 +122,7 @@ export default (
     setSide(change);
     toggle();
     const max = Math.min(size.width, size.height) / 2 - BORDER;
-    if (max > 0) radius.value = withTiming(max * 0.935, { duration: 200 });
+    if (max > 0) radius.value = withTiming(max * 0.935, kinetics.timing.base);
   };
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -158,7 +159,7 @@ export default (
     };
   });
 
-  const drawAnimation = (v: number) => withTiming(v, { duration: 500 });
+  const drawAnimation = (v: number) => withTiming(v, kinetics.timing.slow);
 
   return (
     <Pressable

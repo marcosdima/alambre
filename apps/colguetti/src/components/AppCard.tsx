@@ -7,7 +7,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
@@ -66,12 +66,12 @@ export default function AppCard({
 
   const handlePressIn = () => {
     if (!isInteractive) return;
-    scale.value = withTiming(0.98, { duration: 90 });
+    scale.value = withTiming(0.98, kinetics.timing.fast);
   };
 
   const handlePressOut = () => {
     if (!isInteractive) return;
-    scale.value = withSpring(1, { damping: 18, stiffness: 280 });
+    scale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const animatedScaleStyle = useAnimatedStyle(() => ({

@@ -6,14 +6,14 @@ import {
   useNavigator,
   NavigatorProvider,
 } from '../../src/behaviors/navigator';
-import type { NavigatorTypes } from '../../src/types';
+import type { NavigatorObject, NavigatorReturn } from '../../src';
 
 const homeComponent = null;
 const formComponent = null;
 const alarmsComponent = null;
 const itemsComponent = null;
 
-const pages: NavigatorTypes.NavigatorObject = {
+const pages: NavigatorObject = {
   home: {
     component: homeComponent,
     subpages: {
@@ -174,7 +174,7 @@ describe('Headless Navigator behavior & store mechanics', () => {
   });
 
   it('supports legacy NavigatorProvider for backwards compatibility', () => {
-    let api: NavigatorTypes.NavigatorReturn | undefined;
+    let api: NavigatorReturn | undefined;
 
     const Consumer = () => {
       api = useNavigator();
@@ -189,5 +189,26 @@ describe('Headless Navigator behavior & store mechanics', () => {
 
     expect(api?.noPreviousPages).toBe(true);
     expect(api?.currentPage).toEqual(pages.home);
+  });
+
+  it('enforces compile-time route type safety when parameterized with route union', () => {
+    type TestRoutes = 'home' | 'alarms' | 'items';
+    const { result } = renderHook(() => useNavigator<TestRoutes>());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+
+    expect(result.current.currentPage).toEqual(pages.alarms);
+  });
+
+  it('supports record object generic type for route keys and subpages', () => {
+    const { result } = renderHook(() => useNavigator<typeof pages, 'form'>());
+
+    act(() => {
+      result.current.navigate('home', { subpage: 'form' });
+    });
+
+    expect(result.current.currentPage).toEqual(pages.home.subpages?.form);
   });
 });

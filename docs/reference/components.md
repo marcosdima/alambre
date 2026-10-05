@@ -1,6 +1,6 @@
 ---
 title: Components & Icons Reference
-summary: Base UI primitives and icon contracts: Button, TimePicker, and the AlambreIcons family.
+summary: Base UI primitives and icon contracts: Button, Slider, SegmentedControl, Stepper, Input, and the AlambreIcons family.
 ---
 
 # Components & Icons Reference
@@ -252,34 +252,7 @@ import { Input, type InputProps, type InputState } from 'alambre';
 
 ---
 
-## 6. `TimePicker`
-
-A 24-hour hour and minute time selector built as a fixed tap viewport with increment/decrement buttons. It requires no native dependencies, prevents nested scrolling conflicts on Android and iOS, and wraps around 24-hour clock boundaries.
-
-### Signature & Props
-```typescript
-import { TimePicker, type TimePickerProps } from 'alambre';
-
-<TimePicker
-  value="14:30"
-  onChange={(newTime: string) => setTime(newTime)}
-  accentColor="#0057d8"
-  visibleCount={3}   // 3 rows visible: current, above, below (default: 3)
-  rowHeight={34}      // height per visible row in pixels (default: 34)
-/>
-```
-
-### Properties (`TimePickerProps`)
-* `value: string`: Time string in 24-hour `"HH:MM"` format (e.g. `"09:15"`, `"23:45"`).
-* `onChange: (time: string) => void`: Callback fired when hours or minutes change.
-* `accentColor?: string`: Color for active selection markers and increment/decrement buttons (default: `#0057d8`).
-* `visibleCount?: 3 | 5`: Number of visible rows in the viewport (default: `3`).
-* `rowHeight?: number`: Row height in pixels (default: `34`).
-* `style?: StyleProp<ViewStyle>`: Optional container style override.
-
----
-
-## 7. `AlambreIcons`
+## 6. `AlambreIcons`
 
 Vector icons and geometric drawing primitives built on `react-native-svg` and `react-native-reanimated`.
 

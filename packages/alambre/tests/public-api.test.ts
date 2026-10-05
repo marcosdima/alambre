@@ -70,6 +70,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.StaggerProvider).toBe('function');
     expect(typeof Alambre.useStaggerItem).toBe('function');
     expect(typeof Alambre.useCollapsible).toBe('function');
+    expect(typeof Alambre.useHarmonicMotion).toBe('function');
+    expect(typeof Alambre.harmonicValue).toBe('function');
+    expect(typeof Alambre.useRipplePulse).toBe('function');
+    expect(typeof Alambre.rippleSample).toBe('function');
     expect(typeof Alambre.DndProvider).toBe('function');
     expect(typeof Alambre.useDnd).toBe('function');
     expect(typeof Alambre.useDraggable).toBe('function');
@@ -82,7 +86,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.calculateActiveIndex).toBe('function');
     expect(typeof Alambre.getScrollTargetForIndex).toBe('function');
     expect(typeof Alambre.useDeck).toBe('function');
+    expect(typeof Alambre.useWheelPicker).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
+    expect(typeof Alambre.kinetics).toBe('object');
+    expect(typeof Alambre.rubberBandFriction).toBe('function');
   });
 
   it('exposes the icon family alongside its low-level primitives', () => {
@@ -161,12 +168,13 @@ describe('public API — type surface', () => {
       setValue: () => undefined,
       disabled: false,
     };
-    const inputProps: Alambre.InputProps = { value: 'test' };
+    const inputProps: Alambre.InputProps = { hasValue: true, children: null };
     const inputState: Alambre.InputState = {
       focused: false,
       disabled: false,
       hasValue: true,
       error: false,
+      warning: false,
     };
     const sliderProps: Alambre.SliderProps = { value: 50 };
     const sliderState: Alambre.SliderState = {
@@ -177,6 +185,8 @@ describe('public API — type surface', () => {
       ratio: 0.5,
       percentage: 50,
       disabled: false,
+      isPressed: false,
+      setIsPressed: () => undefined,
       setValueFromRatio: () => undefined,
       setValue: () => undefined,
       increment: () => undefined,
@@ -207,7 +217,24 @@ describe('public API — type surface', () => {
       onConfirm: () => undefined,
       onCancel: () => undefined,
     };
-    const page: Alambre.NavigatorTypes.Page = { component: null };
+    const page: Alambre.Page = { component: null };
+    const navObj: Alambre.NavigatorObject = { home: page };
+    const navReturn: Alambre.NavigatorReturn = {
+      currentPage: page,
+      pageKey: 'home',
+      noPreviousPages: true,
+      scrollTop: 0,
+      navigate: () => undefined,
+      previous: () => undefined,
+      setScrollTop: () => undefined,
+    };
+    const navSettings: Alambre.NavigationSettings = { subpage: 'detail' };
+    const configState: Alambre.ConfigState<{ key: string }> = { config: { key: 'val' }, loading: false };
+    const useConfigType: Alambre.UseConfigType<{ key: string }> = {
+      config: { key: 'val' },
+      loading: false,
+      saveField: async () => undefined,
+    };
     const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
     const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
     const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };
@@ -221,6 +248,11 @@ describe('public API — type surface', () => {
     const sortableItem: Alambre.SortableItem = { id: 'item-1' };
     const dropMode: Alambre.DropAnimationMode = 'seamless';
     const neighborMode: Alambre.NeighborShiftMode = 'glide';
+    const harmonicProfile: Alambre.HarmonicProfile = 'sine';
+    const harmonicOptions: Alambre.HarmonicMotionOptions = { profile: 'sine', amplitude: 1 };
+    const rippleOptions: Alambre.RipplePulseOptions = { duration: 2000 };
+    const rippleWave: Alambre.RippleWave = { scale: 1, opacity: 1 };
+    const rippleReturn: Alambre.UseRipplePulseReturn = { count: 1, wave: () => rippleWave, clock: { value: 0 } as any };
     const carouselConfig: Alambre.UseCarouselConfig = {
       cardWidth: 300,
       cardGap: 16,
@@ -228,6 +260,12 @@ describe('public API — type surface', () => {
     };
     const deckConfig: Alambre.UseDeckConfig<string> = {
       initialCards: ['a', 'b'],
+    };
+    const wheelOptions: Alambre.UseWheelPickerOptions = {
+      itemCount: 24,
+      selected: 0,
+      onSelect: () => undefined,
+      rowHeight: 44,
     };
 
     expect(buttonProps).toBeDefined();
@@ -258,6 +296,12 @@ describe('public API — type surface', () => {
     expect(neighborMode).toBeDefined();
     expect(carouselConfig).toBeDefined();
     expect(deckConfig).toBeDefined();
+    expect(wheelOptions).toBeDefined();
+    expect(navObj).toBeDefined();
+    expect(navReturn).toBeDefined();
+    expect(navSettings).toBeDefined();
+    expect(configState).toBeDefined();
+    expect(useConfigType).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {
@@ -277,5 +321,7 @@ describe('public API — type surface', () => {
     void Alambre.BaseModule;
     // @ts-expect-error createModuleProvider must not be public API (internal core).
     void Alambre.createModuleProvider;
+    // @ts-expect-error NavigatorTypes must not be public API (dismantled into top-level types).
+    void Alambre.NavigatorTypes;
   });
 });

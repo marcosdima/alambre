@@ -6,6 +6,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
+import { kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 type LetterProps = {
@@ -25,7 +26,7 @@ const HangingLetter = memo(({ char, index, textColor, isLifted }: LetterProps) =
     const delay = index * 25;
     liftY.value = withDelay(
       delay,
-      withSpring(isLifted ? -12 : 0, { damping: 18, stiffness: 220 }),
+      withSpring(isLifted ? -12 : 0, kinetics.spring.snappy),
     );
   }, [isLifted, index, liftY]);
 

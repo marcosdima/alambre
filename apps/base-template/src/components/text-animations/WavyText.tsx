@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
+import { kinetics } from 'alambre';
 
 export type WavyTextProps = {
   text: string;
@@ -51,16 +52,13 @@ const WavyUnit = memo(function WavyUnit({
 
   // Smoothly update amplitude without disrupting running wave phase
   useEffect(() => {
-    animAmplitude.value = withTiming(amplitude, {
-      duration: 250,
-      easing: Easing.out(Easing.cubic),
-    });
+    animAmplitude.value = withTiming(amplitude, kinetics.timing.base);
   }, [amplitude, animAmplitude]);
 
   // Wave oscillation driver - strictly independent from amplitude
   useEffect(() => {
     if (!active || isReducedMotion) {
-      progress.value = withTiming(0, { duration: 180 });
+      progress.value = withTiming(0, kinetics.timing.base);
       return;
     }
 

@@ -42,11 +42,13 @@
   "scripts": {
     "lint": "eslint .",
     "build": "bob build",
+    "build:icons": "node scripts/generate-icons.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.tests.json --noEmit",
     "test": "vitest run"
   },
   "peerDependencies": {
     "@tanstack/react-query": ">=5.0.0",
+    "expo-clipboard": "^57.0.2",
     "react": ">=18.0.0",
     "react-native": ">=0.72.0",
     "react-native-gesture-handler": ">=2.0.0",
@@ -68,6 +70,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-native": "^5.0.0",
+    "expo-clipboard": "^57.0.2",
     "jsdom": "^26.1.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

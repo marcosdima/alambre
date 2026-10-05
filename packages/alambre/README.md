@@ -45,8 +45,8 @@ const { ConfigProvider, useConfig } = createConfigProvider(
 The complete functional reference lives in the repository:
 
 - [Functional reference](https://github.com/marcosdima/alambre/blob/main/docs/reference/index.md) — capabilities, behaviors, storage, hooks and components.
-- [Architecture](https://github.com/marcosdima/alambre/blob/main/docs/architecture.md) — principles, boundaries and the public type contract.
-- [Project guidelines](https://github.com/marcosdima/alambre/blob/main/docs/project.md) — contribution and workflow.
+- [Architecture](https://github.com/marcosdima/alambre/blob/main/docs/framework/architecture.md) — principles, boundaries and the public type contract.
+- [Project guidelines](https://github.com/marcosdima/alambre/blob/main/docs/guidelines/workflow.md) — contribution and workflow.
 
 ## Monorepo
 

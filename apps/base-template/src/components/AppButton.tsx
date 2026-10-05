@@ -10,6 +10,7 @@ import Animated, {
 import type { ButtonProps, ButtonState } from 'alambre';
 import { Button } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import { kinetics } from 'alambre';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 export type ButtonTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
@@ -52,12 +53,12 @@ export default function AppButton({
   const scale = useSharedValue(1);
 
   const handlePressIn = (event: GestureResponderEvent) => {
-    scale.value = withTiming(0.96, { duration: 90 });
+    scale.value = withTiming(0.96, kinetics.timing.fast);
     onPressIn?.(event);
   };
 
   const handlePressOut = (event: GestureResponderEvent) => {
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    scale.value = withSpring(1, kinetics.spring.bouncy);
     onPressOut?.(event);
   };
 

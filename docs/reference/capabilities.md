@@ -17,7 +17,7 @@ Creates an external store and hook for flat, key-value string configuration (use
 ```typescript
 import { createConfig } from 'alambre';
 
-const { store, actions, useConfig } = createConfig<T extends Record<string, string>>(
+const { store, actions, useConfig } = createConfig<T extends Record<string, unknown>>(
   baseConfig: T,
   storage: Storage
 );
@@ -26,8 +26,8 @@ const { store, actions, useConfig } = createConfig<T extends Record<string, stri
 ### Factory Return
 * **`store`**: Decoupled `Store<ConfigState<T>>` instance.
 * **`actions`**: Object exposing imperative mutating methods:
-  * `saveField(field: keyof T, value: string): Promise<void>`: Updates field in memory and persists to storage.
-* **`useConfig()`**: Reactive hook returning `{ config: T, saveField }`.
+  * `saveField<K extends keyof T>(field: K, value: T[K]): Promise<void>`: Updates field in memory and persists to storage (with safe JSON serialization for non-string values).
+* **`useConfig()`**: Reactive hook returning `{ config: T, loading: boolean, saveField }`.
 
 ### Production Example
 ```typescript

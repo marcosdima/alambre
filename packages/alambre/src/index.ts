@@ -1,4 +1,3 @@
-// Base inputs.
 export {
   Button,
   Stepper,
@@ -8,31 +7,50 @@ export {
   SegmentedControl,
   useSelect,
   Input,
+  HorizontalPicker,
 } from './components/base/input';
 export type {
   ButtonProps,
   ButtonState,
-  StepperProps,
+  StepperRootProps as StepperProps,
+  StepperRootProps,
+  StepperButtonProps,
+  StepperValueProps,
   StepperOptions,
   StepperState,
-  SliderProps,
+  SliderRootProps as SliderProps,
+  SliderRootProps,
+  SliderComponentProps,
   SliderOptions,
   SliderState,
   SegmentedControlProps,
   SelectOption,
   SelectOptions,
   SelectState,
-  InputProps,
+  InputRootProps as InputProps,
+  InputRootProps,
+  InputFieldProps,
   InputState,
+  InputContextValue,
 } from './components/base/input';
 
-// Types.
-export type { NavigatorTypes } from './types';
+// Navigator types.
+export type {
+  Page,
+  NavigatorObject,
+  NavigatorReturn,
+  NavigatorProviderProps,
+  NavigationSettings,
+  AnimationDefault,
+} from './types/navigator';
+
+// Capability types.
+export type { ConfigState, UseConfigType } from './capabilities/config';
+export type { UseCollectionType } from './capabilities/collection';
 
 export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
-export type { UseCollectionType } from './capabilities/collection';
 
 export type {
   ToastComponentProps,
@@ -81,8 +99,17 @@ export {
   calculateActiveIndex,
   getScrollTargetForIndex,
   useDeck,
+  useWheelPicker,
+  useBottomSheet,
+  useDialog,
+  CountUp,
+  Typewriter,
+  Scramble,
+  Marquee,
+  WavyText,
+  SlideInText,
 } from './behaviors';
-export type { UseCarouselConfig, UseDeckConfig } from './behaviors';
+export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps } from './behaviors';
 
 // Hooks & state utilities.
 export {
@@ -101,6 +128,11 @@ export {
   useStaggerItem,
   useCollapsible,
   useSwipeableRow,
+  useContinuousPress,
+  useHarmonicMotion,
+  harmonicValue,
+  useRipplePulse,
+  rippleSample,
 } from './hooks';
 export type {
   HistoryState,
@@ -118,6 +150,11 @@ export type {
   UseSwipeableRowConfig,
   UseSwipeableRowReturn,
   SwipeDirection,
+  HarmonicProfile,
+  HarmonicMotionOptions,
+  RipplePulseOptions,
+  RippleWave,
+  UseRipplePulseReturn,
 } from './hooks';
 
 // Icons.
@@ -125,8 +162,6 @@ import * as AlambreIcons from './components/icons';
 export { AlambreIcons };
 
 // Input components.
-export { TimePicker } from './components/time';
-export type { TimePickerProps } from './components/time';
 
 // Storage.
 export { createStorage } from './storage';
@@ -170,3 +205,8 @@ export type {
   NeighborShiftMode,
   SortableRowProps,
 } from './types/dnd';
+export * from './core';
+export * from './components/spatial';
+export { createAnimatedIcon } from './components/icons/base';
+export { MorphIcon } from './components/icons/base/MorphIcon';
+export * from './components/icons/generated';

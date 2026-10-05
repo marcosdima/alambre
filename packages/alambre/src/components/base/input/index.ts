@@ -3,3 +3,4 @@ export * from './stepper';
 export * from './slider';
 export * from './select';
 export * from './text';
+export * from './picker';

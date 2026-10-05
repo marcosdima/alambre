@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
+import { kinetics } from 'alambre';
 
 export type SwitchSize = 'sm' | 'md' | 'lg';
 export type SwitchTone = 'primary' | 'success' | 'warning' | 'danger';
@@ -42,10 +43,7 @@ export default function AppSwitch({
   const pressScale = useSharedValue(1);
 
   useEffect(() => {
-    progress.value = withSpring(checked ? 1 : 0, {
-      damping: 16,
-      stiffness: 300,
-    });
+    progress.value = withSpring(checked ? 1 : 0, kinetics.spring.stiff);
   }, [checked, progress]);
 
   const getToneColor = () => {
@@ -101,12 +99,12 @@ export default function AppSwitch({
 
   const handlePressIn = () => {
     if (disabled) return;
-    pressScale.value = withTiming(1.15, { duration: 80 });
+    pressScale.value = withTiming(1.15, kinetics.timing.fast);
   };
 
   const handlePressOut = () => {
     if (disabled) return;
-    pressScale.value = withSpring(1, { damping: 14, stiffness: 320 });
+    pressScale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const handleToggle = () => {

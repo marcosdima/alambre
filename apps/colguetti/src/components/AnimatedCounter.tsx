@@ -7,6 +7,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { kinetics } from 'alambre';
 
 type AnimatedCounterProps = {
   value: number;
@@ -27,12 +28,12 @@ export default function AnimatedCounter({
   useEffect(() => {
     // Punchy tactile spring bounce on value change
     scale.value = withSequence(
-      withTiming(1.22, { duration: 80 }),
-      withSpring(1, { damping: 12, stiffness: 280 }),
+      withTiming(1.22, kinetics.timing.fast),
+      withSpring(1, kinetics.spring.stiff),
     );
     translateY.value = withSequence(
-      withTiming(-3, { duration: 80 }),
-      withSpring(0, { damping: 14, stiffness: 300 }),
+      withTiming(-3, kinetics.timing.fast),
+      withSpring(0, kinetics.spring.stiff),
     );
   }, [value, scale, translateY]);
 
