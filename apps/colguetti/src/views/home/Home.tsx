@@ -1,28 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, ScrollView, Text } from 'react-native';
-import { useNavigator, AlambreIcons, SettingsIcon } from 'alambre';
+import { useNavigator, AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
 import TypewriterText from '../../components/TypewriterText';
+import SupportModal from '../../components/SupportModal';
 
 export default function Home() {
   const { theme } = useLightDark();
   const { navigate } = useNavigator();
+  const [supportVisible, setSupportVisible] = useState(false);
 
   const Heart = AlambreIcons.Heart;
+  const Gear = AlambreIcons.Gear;
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
+      <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />
+
       <View style={styles.header}>
-        <View style={[styles.roundButton, { backgroundColor: theme.surfaceAlt }]}>
-          <Heart style={{ width: 24, height: 24 }} color={theme.color} />
-        </View>
+        <AppCard 
+          variant="soft" 
+          style={[styles.roundButton, { backgroundColor: theme.surfaceAlt }]} 
+          onPress={() => setSupportVisible(true)}
+        >
+          <Heart style={{ width: 22, height: 22 }} color={theme.color} />
+        </AppCard>
         <AppCard 
           variant="soft" 
           style={styles.roundButton} 
           onPress={() => navigate('settings')}
         >
-          <SettingsIcon size={22} color={theme.color} />
+          <Gear style={{ width: 22, height: 22 }} color={theme.color} />
         </AppCard>
       </View>
 

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useState, useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, View, Text } from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -7,6 +7,7 @@ import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { itemColors } from '../../items/items-model';
 import { itemIconKeys, type ItemIconKey } from '../../items/item-types';
+import { searchIcons } from '../../items/icon-tags';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
@@ -26,6 +27,9 @@ export default () => {
   const [nameError, setNameError] = useState(false);
   const [color, setColor] = useState(editing?.color ?? itemColors[0]);
   const [icon, setIcon] = useState<ItemIconKey>(editing?.icon ?? 'keys');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredIcons = useMemo(() => searchIcons(searchQuery, itemIconKeys), [searchQuery]);
 
   const close = () => {
     setIntent({});
@@ -102,34 +106,45 @@ export default () => {
         title={lang.items.iconLabel}
         style={styles.sectionCard}
       >
+        <AppTextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Buscar ícono..."
+          clearable
+          style={{ marginBottom: 12 }}
+        />
         <View style={styles.iconGrid}>
-          {itemIconKeys.map((key, index) => {
-            const active = icon === key;
-            return (
-              <Pressable
-                key={key}
-                onPress={() => setIcon(key)}
-                style={({ pressed }) => [
-                  styles.iconCell,
-                  {
-                    borderColor: active ? theme.primary : theme.border,
-                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
-                    borderWidth: active ? 2 : 1.5,
-                  },
-                  pressed && styles.selectionPressed,
-                ]}
-              >
-                <ItemIcon
-                  icon={key}
-                  color={color}
-                  lineWidth={2}
-                  style={styles.cellIcon}
-                  delay={100 + index * 40}
-                  iconAnimation={catalogDrawAnimation}
-                />
-              </Pressable>
-            );
-          })}
+          {filteredIcons.length === 0 ? (
+            <Text style={{ color: theme.muted, paddingVertical: 12 }}>No se encontraron íconos</Text>
+          ) : (
+            filteredIcons.map((key, index) => {
+              const active = icon === key;
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() => setIcon(key)}
+                  style={({ pressed }) => [
+                    styles.iconCell,
+                    {
+                      borderColor: active ? theme.primary : theme.border,
+                      backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                      borderWidth: active ? 2 : 1.5,
+                    },
+                    pressed && styles.selectionPressed,
+                  ]}
+                >
+                  <ItemIcon
+                    icon={key}
+                    color={color}
+                    lineWidth={2}
+                    style={styles.cellIcon}
+                    delay={100 + index * 40}
+                    iconAnimation={catalogDrawAnimation}
+                  />
+                </Pressable>
+              );
+            })
+          )}
         </View>
       </AppCard>
 
