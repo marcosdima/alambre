@@ -248,6 +248,11 @@ describe('public API — type surface', () => {
     const sortableItem: Alambre.SortableItem = { id: 'item-1' };
     const dropMode: Alambre.DropAnimationMode = 'seamless';
     const neighborMode: Alambre.NeighborShiftMode = 'glide';
+    const harmonicProfile: Alambre.HarmonicProfile = 'sine';
+    const harmonicOptions: Alambre.HarmonicMotionOptions = { profile: 'sine', amplitude: 1 };
+    const rippleOptions: Alambre.RipplePulseOptions = { duration: 2000 };
+    const rippleWave: Alambre.RippleWave = { scale: 1, opacity: 1 };
+    const rippleReturn: Alambre.UseRipplePulseReturn = { count: 1, wave: () => rippleWave, clock: { value: 0 } as any };
     const carouselConfig: Alambre.UseCarouselConfig = {
       cardWidth: 300,
       cardGap: 16,

@@ -21,6 +21,11 @@ export default () => {
       label: 'Colguetti Menu',
       onPress: () => navigate('colguetti'),
     },
+    {
+      key: 'kineticMotion',
+      label: 'Kinetic Motion Testbed',
+      onPress: () => navigate('kineticMotion'),
+    },
   ];
 
   return (

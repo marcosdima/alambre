@@ -15,6 +15,7 @@ vi.mock('react-native-reanimated', async () => {
       if (!ref.current) ref.current = { value: initial };
       return ref.current;
     },
+    useFrameCallback: vi.fn((cb, running) => ({ setActive: vi.fn(), isActive: running })),
     cancelAnimation: vi.fn(),
     withDelay: vi.fn(() => 0),
     withSequence: vi.fn(() => 0),

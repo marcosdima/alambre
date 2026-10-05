@@ -166,6 +166,8 @@ Intentional public type contracts:
 * `LayoutBounds`, `DroppableRegistration`, `ActiveDragState`, `DropEvent`, `DndContextValue`, `DndProviderProps`, `DraggableKineticsConfig`, `UseDraggableOptions`, `UseDraggableReturn`, `UseDroppableOptions`, `UseDroppableReturn`, `DraggableRenderProps`, `DraggableProps`, `DroppableRenderProps`, `DroppableProps`, `SortableItem`, `DropAnimationMode`, `NeighborShiftMode`, `SortableRowProps` — the headless Drag & Drop and sortable container contracts (`DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, `SortableRow`).
 * `IconAnimationConfig` — the `iconAnimation` prop contract of the icon family and its primitives.
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
+* `HarmonicProfile`, `HarmonicMotionOptions` — the `useHarmonicMotion` headless motion contract.
+* `RipplePulseOptions`, `RippleWave`, `UseRipplePulseReturn` — the `useRipplePulse` headless pulse contract.
 
 `src/index.ts` must export its types explicitly and intentionally. Blanket namespace re-exports (`export * as ...`) that turn internal type modules into public API are not allowed.
 
@@ -217,6 +219,8 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 `DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives for spatial hit-testing and sortable lists (see `docs/reference/dnd.md`). Validated by `tests/public-api.test.ts`.
 
 Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/logs/discoveries.md`).
+
+`useHarmonicMotion` and `useRipplePulse` are additive headless motion hooks for UI-thread continuous kinetics (see `docs/reference/hooks.md`). Evaluated pure helper worklets (`harmonicValue`, `rippleSample`) are also exported to compose with custom timing loops.
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 

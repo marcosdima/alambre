@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
 import { phaseOffset, useLoopClock, wrapPhase } from './use-loop-clock';
 
@@ -36,6 +37,11 @@ export interface UseRipplePulseReturn {
    * Under reduced motion every wave is fully transparent.
    */
   wave: (index: number) => RippleWave;
+  /**
+   * The driving UI-thread clock. Reading `clock.value` inside a worklet
+   * registers Reanimated's dependency tracking for the wave callback.
+   */
+  clock: import('react-native-reanimated').SharedValue<number>;
 }
 
 /**
@@ -75,11 +81,14 @@ export function useRipplePulse({
   const offset = phaseOffset(delay, duration);
   const count = Math.max(1, Math.floor(waves));
 
-  const wave = (index: number): RippleWave => {
-    'worklet';
-    if (reduced) return { scale: minScale, opacity: 0 };
-    return rippleSample(clock.value + offset + index / count, { minScale, maxScale, minOpacity, maxOpacity });
-  };
+  const wave = useCallback(
+    (index: number): RippleWave => {
+      'worklet';
+      if (reduced) return { scale: minScale, opacity: 0 };
+      return rippleSample(clock.value + offset + index / count, { minScale, maxScale, minOpacity, maxOpacity });
+    },
+    [reduced, clock, offset, count, minScale, maxScale, minOpacity, maxOpacity],
+  );
 
-  return { count, wave };
+  return useMemo(() => ({ count, wave, clock }), [count, wave, clock]);
 }

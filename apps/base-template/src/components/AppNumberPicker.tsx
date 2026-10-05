@@ -56,7 +56,7 @@ export default function AppNumberPicker({
               style={[
                 styles.itemText,
                 { color: isSelected ? theme.primary : theme.muted },
-                isSelected && styles.itemTextSelected
+                isSelected && styles.itemTextSelected,
               ]}
             >
               {item}

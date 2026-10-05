@@ -1,14 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 import {
-  Easing,
-  cancelAnimation,
+  useFrameCallback,
   useReducedMotion,
   useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 
@@ -56,15 +51,13 @@ export function phaseOffset(delay: number, duration: number): number {
 }
 
 function useIsAppActive(enabled: boolean): boolean {
-  const [active, setActive] = useState(() => AppState.currentState !== 'background' && AppState.currentState !== 'inactive');
-
-  useEffect(() => {
-    if (!enabled) return undefined;
-    const subscription = AppState.addEventListener('change', (state) => {
-      setActive(state === 'active');
-    });
-    return () => subscription.remove();
-  }, [enabled]);
+  const active = useSyncExternalStore(
+    (onStoreChange) => {
+      const sub = AppState.addEventListener('change', onStoreChange);
+      return () => sub.remove();
+    },
+    () => AppState.currentState === 'active',
+  );
 
   return enabled ? active : true;
 }
@@ -84,37 +77,23 @@ export function useLoopClock({
   const isStatic = useReducedMotion();
   const appActive = useIsAppActive(pauseWhenInactive);
   const clock = useSharedValue(0);
+  const elapsedDelay = useSharedValue(0);
 
   const running = !isStatic && !paused && appActive && duration > 0;
   const wait = Math.max(0, delay);
 
-  useEffect(() => {
-    if (!running) {
-      cancelAnimation(clock);
-      return undefined;
+  const frameCallback = useFrameCallback((frameInfo) => {
+    if (elapsedDelay.value < wait) {
+      elapsedDelay.value += frameInfo.timeSincePreviousFrame || 0;
+      return;
     }
+    const delta = (frameInfo.timeSincePreviousFrame || 0) / duration;
+    clock.value = wrapPhase(clock.value + delta);
+  }, false);
 
-    // Finish the current cycle from wherever the clock is, then loop forever.
-    // Each repetition explicitly restarts from 0 so the loop is independent of
-    // the value the sequence started from.
-    const remaining = Math.max(0, 1 - clock.value);
-    clock.value = withDelay(
-      wait,
-      withSequence(
-        withTiming(1, { duration: remaining * duration, easing: Easing.linear }),
-        withRepeat(
-          withSequence(
-            withTiming(0, { duration: 0 }),
-            withTiming(1, { duration, easing: Easing.linear }),
-          ),
-          -1,
-          false,
-        ),
-      ),
-    );
-
-    return () => cancelAnimation(clock);
-  }, [running, duration, wait, clock]);
+  React.useEffect(() => {
+    frameCallback.setActive(running);
+  }, [running, frameCallback]);
 
   return { clock, isStatic };
 }

@@ -14,7 +14,8 @@ The package is currently in a **pre-baseline phase**: the public contract is sti
   - `<WavyText>`: Continuous staggered vertical sinusoidal oscillation across characters.
   - `<SlideInText>`: Physics-driven staggered card/glyph cascade powered by `kinetics.spring.bouncy`.
 - [add] **Hold-to-Repeat Gestures (`useContinuousPress`)**: Headless continuous press gesture coordination with immediate tap actuation, configurable hold threshold (`delay`), interval repetition, and dynamic interval acceleration (`intervalMultiplier`).
-- [docs] **Functional Reference**: Created `docs/reference/text-animations.md`, added `useContinuousPress` section to `docs/reference/behaviors.md`, and updated `docs/reference/index.md`.
+- [add] **Continuous UI-Thread Physics (`useHarmonicMotion`, `useRipplePulse`)**: Headless motion hooks for autonomous kinetic UI elements (mobiles, breathing hearts, ringing alarms). Includes `useLoopClock`, a pure UI-thread timestamp driver synced to AppState and reduced motion.
+- [docs] **Functional Reference**: Created `docs/reference/text-animations.md`, added `useContinuousPress`, `useHarmonicMotion`, and `useRipplePulse` sections, and updated `docs/reference/index.md`.
 
 ## 1.2.0 — 2026-10-01
 

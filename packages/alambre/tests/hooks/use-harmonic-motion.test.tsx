@@ -43,6 +43,7 @@ vi.mock('react-native-reanimated', async () => {
         return fn();
       },
     }),
+    useFrameCallback: vi.fn((cb, running) => ({ setActive: vi.fn(), isActive: running })),
     cancelAnimation: vi.fn(),
     withDelay: vi.fn((delay: number, animation: unknown) => ({ type: 'delay', delay, animation })),
     withSequence: vi.fn((...animations: unknown[]) => ({ type: 'sequence', animations })),
@@ -52,7 +53,7 @@ vi.mock('react-native-reanimated', async () => {
   };
 });
 
-import { cancelAnimation, withTiming } from 'react-native-reanimated';
+import { useFrameCallback } from 'react-native-reanimated';
 
 const appState = mocks.appState;
 
@@ -87,19 +88,30 @@ describe('harmonicValue profiles', () => {
     expect(harmonicValue('sine', 0.75, 6)).toBeCloseTo(-6);
   });
 
+  it('swell rises from zero to the amplitude and back, never going negative', () => {
+    expect(harmonicValue('swell', 0, -6)).toBeCloseTo(0);
+    expect(harmonicValue('swell', 0.25, -6)).toBeCloseTo(-3);
+    expect(harmonicValue('swell', 0.5, -6)).toBeCloseTo(-6);
+    expect(harmonicValue('swell', 0.75, -6)).toBeCloseTo(-3);
+    expect(harmonicValue('swell', 1, -6)).toBeCloseTo(0);
+    for (let p = 0; p <= 1; p += 0.1) {
+      expect(harmonicValue('swell', p, 6)).toBeGreaterThanOrEqual(-1e-9);
+    }
+  });
+
   it('spin ramps linearly and restarts every cycle', () => {
     expect(harmonicValue('spin', 0, 360)).toBe(0);
     expect(harmonicValue('spin', 0.5, 360)).toBeCloseTo(180);
     expect(harmonicValue('spin', 1.5, 360)).toBeCloseTo(180);
   });
 
-  it('wobble rests for 88% of the cycle, then bursts -1, +1, -0.5, rest', () => {
+  it('wobble rests for 60% of the cycle, then bursts -1, +1, -0.5, rest', () => {
     expect(harmonicValue('wobble', 0, 10)).toBe(0);
     expect(harmonicValue('wobble', 0.5, 10)).toBe(0);
-    expect(harmonicValue('wobble', 0.88, 10)).toBeCloseTo(0);
-    expect(harmonicValue('wobble', 0.91, 10)).toBeCloseTo(-10);
-    expect(harmonicValue('wobble', 0.94, 10)).toBeCloseTo(10);
-    expect(harmonicValue('wobble', 0.97, 10)).toBeCloseTo(-5);
+    expect(harmonicValue('wobble', 0.6, 10)).toBeCloseTo(0);
+    expect(harmonicValue('wobble', 0.7, 10)).toBeCloseTo(-10);
+    expect(harmonicValue('wobble', 0.8, 10)).toBeCloseTo(10);
+    expect(harmonicValue('wobble', 0.9, 10)).toBeCloseTo(-5);
     expect(harmonicValue('wobble', 1, 10)).toBeCloseTo(0);
   });
 
@@ -119,18 +131,46 @@ describe('harmonicValue profiles', () => {
 });
 
 describe('useLoopClock', () => {
-  it('starts a UI-thread loop that finishes the current cycle then repeats', () => {
+  it('starts a UI-thread loop that advances the clock', () => {
     const { result } = renderHook(() => useLoopClock({ duration: 1000 }));
 
     expect(result.current.isStatic).toBe(false);
-    expect(withTiming).toHaveBeenCalledWith(1, { duration: 1000, easing: 'linear' });
-    expect(cancelAnimation).not.toHaveBeenCalled();
-    expect(result.current.clock.value).toMatchObject({ type: 'delay', delay: 0 });
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(true);
+    expect(result.current.clock.value).toBe(0);
+
+    const callback = vi.mocked(useFrameCallback).mock.calls[0][0];
+    act(() => {
+      callback({ timeSincePreviousFrame: 250 } as any);
+    });
+    expect(result.current.clock.value).toBeCloseTo(0.25);
   });
 
   it('delays the start for positive delays only', () => {
     const { result } = renderHook(() => useLoopClock({ duration: 1000, delay: 400 }));
-    expect(result.current.clock.value).toMatchObject({ type: 'delay', delay: 400 });
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(true);
+    const callback = vi.mocked(useFrameCallback).mock.calls[0][0];
+
+    // Frame 1: 200ms elapsed (total delay elapsed: 200 < 400)
+    act(() => {
+      callback({ timeSincePreviousFrame: 200 } as any);
+    });
+    expect(result.current.clock.value).toBe(0);
+
+    // Frame 2: 250ms elapsed (total delay elapsed: 450 >= 400, but started under threshold)
+    act(() => {
+      callback({ timeSincePreviousFrame: 250 } as any);
+    });
+    expect(result.current.clock.value).toBe(0);
+
+    // Frame 3: delay has elapsed, clock advances
+    act(() => {
+      callback({ timeSincePreviousFrame: 300 } as any);
+    });
+    expect(result.current.clock.value).toBeCloseTo(0.3);
   });
 
   it('never animates under reduced motion', () => {
@@ -138,7 +178,9 @@ describe('useLoopClock', () => {
     const { result } = renderHook(() => useLoopClock({ duration: 1000 }));
 
     expect(result.current.isStatic).toBe(true);
-    expect(withTiming).not.toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(false);
     expect(result.current.clock.value).toBe(0);
   });
 
@@ -147,11 +189,14 @@ describe('useLoopClock', () => {
       ({ paused }) => useLoopClock({ duration: 1000, paused }),
       { initialProps: { paused: true } },
     );
-    expect(withTiming).not.toHaveBeenCalled();
-    expect(cancelAnimation).toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenLastCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenLastCalledWith(false);
 
     rerender({ paused: false });
-    expect(withTiming).toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenLastCalledWith(expect.any(Function), false);
+    const resumeSetActive = vi.mocked(useFrameCallback).mock.results[1].value.setActive;
+    expect(resumeSetActive).toHaveBeenLastCalledWith(true);
   });
 
   it('freezes when the app leaves the foreground and resumes on return', () => {
@@ -159,11 +204,14 @@ describe('useLoopClock', () => {
     vi.clearAllMocks();
 
     act(() => appState.setState('background'));
-    expect(cancelAnimation).toHaveBeenCalled();
-    expect(withTiming).not.toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenLastCalledWith(expect.any(Function), false);
+    const bgSetActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(bgSetActive).toHaveBeenLastCalledWith(false);
 
     act(() => appState.setState('active'));
-    expect(withTiming).toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenLastCalledWith(expect.any(Function), false);
+    const activeSetActive = vi.mocked(useFrameCallback).mock.results[1].value.setActive;
+    expect(activeSetActive).toHaveBeenLastCalledWith(true);
   });
 
   it('ignores AppState when pauseWhenInactive is false', () => {
@@ -171,7 +219,9 @@ describe('useLoopClock', () => {
     vi.clearAllMocks();
 
     act(() => appState.setState('background'));
-    expect(cancelAnimation).not.toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenLastCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenLastCalledWith(true);
   });
 
   it('removes its AppState subscription on unmount', () => {
@@ -184,19 +234,16 @@ describe('useLoopClock', () => {
   it('starts frozen when mounted while the app is backgrounded', () => {
     appState.currentState = 'background';
     renderHook(() => useLoopClock({ duration: 1000 }));
-    expect(withTiming).not.toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(false);
   });
 
   it('does not start with a non-positive duration', () => {
     renderHook(() => useLoopClock({ duration: 0 }));
-    expect(withTiming).not.toHaveBeenCalled();
-  });
-
-  it('cancels the loop on unmount', () => {
-    const { unmount } = renderHook(() => useLoopClock({ duration: 1000 }));
-    vi.clearAllMocks();
-    unmount();
-    expect(cancelAnimation).toHaveBeenCalled();
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(false);
   });
 });
 
@@ -210,7 +257,23 @@ describe('useHarmonicMotion', () => {
   });
 
   it('uses documented defaults without options', () => {
-    expect(() => renderHook(() => useHarmonicMotion())).not.toThrow();
-    expect(withTiming).toHaveBeenCalledWith(1, { duration: 4000, easing: 'linear' });
+    const { result } = renderHook(() => useHarmonicMotion());
+    expect(useFrameCallback).toHaveBeenCalledWith(expect.any(Function), false);
+    const setActive = vi.mocked(useFrameCallback).mock.results[0].value.setActive;
+    expect(setActive).toHaveBeenCalledWith(true);
+    expect(result.current.value).toBeCloseTo(0);
+
+    const callback = vi.mocked(useFrameCallback).mock.calls[0][0];
+    act(() => {
+      callback({ timeSincePreviousFrame: 1000 } as any);
+    });
+    expect(result.current.value).toBeCloseTo(1);
+  });
+
+  it('applies negative delay as a starting phase offset', () => {
+    const { result } = renderHook(() =>
+      useHarmonicMotion({ duration: 4000, delay: -1000, amplitude: 1 }),
+    );
+    expect(result.current.value).toBeCloseTo(1);
   });
 });

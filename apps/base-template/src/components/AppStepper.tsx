@@ -146,10 +146,10 @@ function RollingNumber({ value, format, style }: { value: number; format: (v: nu
       previous.value = current.value;
       current.value = value;
       const direction = value > previous.value ? -1 : 1;
-      
+
       translateY.value = direction * 20;
       textOpacity.value = 0;
-      
+
       translateY.value = withSpring(0, kinetics.spring.bouncy);
       textOpacity.value = withTiming(1, kinetics.timing.fast);
     }

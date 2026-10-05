@@ -11,11 +11,11 @@ import AppTitle, { AppText } from '../../components/AppTitle';
 import AppCard from '../../components/AppCard';
 
 const CheckIcon = createAnimatedIcon({
-  paths: ['M20 6 9 17l-5-5']
+  paths: ['M20 6 9 17l-5-5'],
 });
 
 const StarIcon = createAnimatedIcon({
-  paths: ['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']
+  paths: ['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'],
 });
 
 const CloudRainIcon = createAnimatedIcon({
@@ -23,15 +23,15 @@ const CloudRainIcon = createAnimatedIcon({
     'M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242',
     'M16 14v6',
     'M8 14v6',
-    'M12 16v6'
-  ]
+    'M12 16v6',
+  ],
 });
 
 const SketchButtonBg = createAnimatedIcon({
-  viewBox: "0 0 160 50",
+  viewBox: '0 0 160 50',
   paths: [
-    "M 5 5 Q 80 2 155 5 Q 158 25 155 45 Q 80 48 5 45 Q 2 25 5 5 Z"
-  ]
+    'M 5 5 Q 80 2 155 5 Q 158 25 155 45 Q 80 48 5 45 Q 2 25 5 5 Z',
+  ],
 });
 
 export default function AnimatedIconsTestbed() {
@@ -50,19 +50,19 @@ export default function AnimatedIconsTestbed() {
     { id: 'task', label: 'Task', content: <TaskScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
     { id: 'weather', label: 'Weather', content: <WeatherScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
     { id: 'morph', label: 'MorphIcon', content: <MorphScenario theme={theme} duration={duration} /> },
-    { id: 'svg-btn', label: 'SVG Button', content: <SvgButtonScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> }
+    { id: 'svg-btn', label: 'SVG Button', content: <SvgButtonScenario theme={theme} iconAnimation={iconAnimationConfig} offset={strokeOffset} /> },
   ];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <TestCard 
-        title="AI-Optimized Animated Icons" 
+      <TestCard
+        title="AI-Optimized Animated Icons"
         description="Testing the new createAnimatedIcon factory. Standard 24x24 viewBox makes AI generation flawless."
       >
         <ConfigSlider label="Animation Duration (ms)" value={duration} min={100} max={2000} step={100} onChange={setDuration} />
         <ConfigSlider label="Manual Stroke Offset" value={strokeOffset} min={0} max={100} step={5} onChange={setStrokeOffset} />
       </TestCard>
-      
+
       <GummyTabs tabs={tabs} />
     </View>
   );
@@ -70,23 +70,23 @@ export default function AnimatedIconsTestbed() {
 
 function FavoriteScenario({ theme, iconAnimation, offset }: any) {
   const [isFavorite, setIsFavorite] = useState(false);
-  
+
   return (
     <View style={styles.tabContent}>
       <AppCard variant="outlined" style={styles.cardCenter}>
         <AppTitle level={3} style={{ color: theme.color, marginBottom: 16 }}>Product Detail</AppTitle>
-        <Pressable 
+        <Pressable
           accessibilityRole="button"
           accessibilityState={{ checked: isFavorite }}
           accessibilityLabel="Toggle Favorite"
           style={[styles.button, { backgroundColor: isFavorite ? theme.primary : theme.surfaceAlt }]}
           onPress={() => setIsFavorite(!isFavorite)}
         >
-          <StarIcon 
-            size={32} 
-            color={isFavorite ? '#ffffff' : theme.muted} 
-            drawIt={isFavorite} 
-            strokeOffset={offset} 
+          <StarIcon
+            size={32}
+            color={isFavorite ? '#ffffff' : theme.muted}
+            drawIt={isFavorite}
+            strokeOffset={offset}
             iconAnimation={iconAnimation}
           />
           <AppText style={{ color: isFavorite ? '#ffffff' : theme.color, marginLeft: 8, fontWeight: 'bold' }}>
@@ -100,22 +100,22 @@ function FavoriteScenario({ theme, iconAnimation, offset }: any) {
 
 function TaskScenario({ theme, iconAnimation, offset }: any) {
   const [isDone, setIsDone] = useState(false);
-  
+
   return (
     <View style={styles.tabContent}>
       <AppCard variant="soft" style={styles.row}>
-        <Pressable 
+        <Pressable
           accessibilityRole="checkbox"
           accessibilityState={{ checked: isDone }}
           accessibilityLabel="Mark task as done"
           style={[styles.checkbox, { borderColor: isDone ? theme.primary : theme.muted, backgroundColor: isDone ? theme.primary : 'transparent' }]}
           onPress={() => setIsDone(!isDone)}
         >
-          <CheckIcon 
-            size={16} 
-            color="#ffffff" 
-            drawIt={isDone} 
-            strokeOffset={offset} 
+          <CheckIcon
+            size={16}
+            color="#ffffff"
+            drawIt={isDone}
+            strokeOffset={offset}
             iconAnimation={iconAnimation}
           />
         </Pressable>
@@ -131,16 +131,16 @@ function TaskScenario({ theme, iconAnimation, offset }: any) {
 
 function WeatherScenario({ theme, iconAnimation, offset }: any) {
   const [isRaining, setIsRaining] = useState(true);
-  
+
   return (
     <View style={styles.tabContent}>
       <ConfigSwitch label="Simulate Rain" value={isRaining} onChange={setIsRaining} />
       <AppCard variant="outlined" style={[styles.cardCenter, { marginTop: 16 }]}>
-        <CloudRainIcon 
-          size={64} 
-          color={theme.color} 
-          drawIt={isRaining} 
-          strokeOffset={offset} 
+        <CloudRainIcon
+          size={64}
+          color={theme.color}
+          drawIt={isRaining}
+          strokeOffset={offset}
           iconAnimation={iconAnimation}
         />
         <AppTitle level={3} style={{ color: theme.color, marginTop: 16 }}>
@@ -157,12 +157,12 @@ const styles = StyleSheet.create({
   cardCenter: { alignItems: 'center', justifyContent: 'center', padding: 24, borderRadius: 16 },
   row: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 16 },
   button: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 100 },
-  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' }
+  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
 });
 
 function MorphScenario({ theme, duration }: any) {
   const [isSettings, setIsSettings] = useState(false);
-  
+
   return (
     <View style={styles.tabContent}>
       <AppCard variant="outlined" style={styles.cardCenter}>
@@ -170,15 +170,15 @@ function MorphScenario({ theme, duration }: any) {
         <AppText style={{ color: theme.muted, marginBottom: 24, textAlign: 'center' }}>
           Toggles fluidly between two auto-generated SVG icons (Home and Settings) using MorphIcon.
         </AppText>
-        
-        <Pressable 
+
+        <Pressable
           accessibilityRole="button"
           accessibilityState={{ checked: isSettings }}
           accessibilityLabel="Toggle Settings"
           style={[styles.button, { backgroundColor: theme.surfaceAlt }]}
           onPress={() => setIsSettings(!isSettings)}
         >
-          <MorphIcon 
+          <MorphIcon
             IconA={HomeIcon}
             IconB={SettingsIcon}
             isActive={isSettings}
@@ -197,7 +197,7 @@ function MorphScenario({ theme, duration }: any) {
 
 function SvgButtonScenario({ theme, iconAnimation, offset }: any) {
   const [isPressed, setIsPressed] = useState(false);
-  
+
   return (
     <View style={styles.tabContent}>
       <AppCard variant="outlined" style={styles.cardCenter}>
@@ -205,19 +205,19 @@ function SvgButtonScenario({ theme, iconAnimation, offset }: any) {
         <AppText style={{ color: theme.muted, marginBottom: 24, textAlign: 'center' }}>
           This button's background is a raw 160x50 SVG path. Using the same SVG factory, the border draws itself around the text when activated.
         </AppText>
-        
-        <Pressable 
+
+        <Pressable
           style={{ width: 160, height: 50, alignItems: 'center', justifyContent: 'center' }}
           onPress={() => setIsPressed(!isPressed)}
           accessibilityRole="button"
         >
           <View style={[StyleSheet.absoluteFill, { opacity: isPressed ? 1 : 0.4 }]}>
-            <SketchButtonBg 
-              size="100%" 
-              color={theme.primary} 
+            <SketchButtonBg
+              size="100%"
+              color={theme.primary}
               strokeWidth={3}
-              drawIt={isPressed} 
-              strokeOffset={offset} 
+              drawIt={isPressed}
+              strokeOffset={offset}
               iconAnimation={iconAnimation}
             />
           </View>

@@ -25,7 +25,7 @@ Per `docs/guidelines/agents.md` §5, discoveries are governed by strict lifecycl
        ┌───────────┐
        │VALIDATING │ ──> Exercised across 2 consumers; candidate abstraction drafted.
        └─────┬─────┘
-             │ @integrity audit + contract tests in packages/alambre
+             │ @reviewer audit + contract tests in packages/alambre
              ▼
        ┌───────────┐
        │  ADOPTED  │ ──> Shipped in packages/alambre or apps/base-template; documented in architecture.md / ui.md.
@@ -121,21 +121,21 @@ Per `docs/guidelines/agents.md` §5, discoveries are governed by strict lifecycl
 * **Where it appeared:** `apps/colguetti/src/views/home/Home.tsx` (alarms/items carousels) and `apps/playground/src/views/containers/CarouselTestbed.tsx`.
 * **Poor-fit assessment:** Tightly coupled monolithic carousel components dictate card layout, sizing, and styling within the framework. This forces consumers (and AI agents) to fight inline styles and causes unnecessary component re-renders during high-frequency gesture updates.
 * **Candidate Abstraction:** Headless hook `useCarousel({ cardWidth, cardGap, totalItems, autoPlay, autoPlayInterval })` exposing `{ scrollRef, scrollX, scrollHandler, onMomentumScrollEnd, activeIndex, scrollToIndex, snapInterval }` alongside pure math helpers (`calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`). The visual JSX and layout remain 100% owned by the application.
-* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/carousel/` and tested in `packages/alambre/tests/behaviors/carousel.test.tsx`. Consumed by `CarouselTestbed.tsx`. Awaiting second consumer production adoption, on-device/emulator validation, and sign-off by `@integrity`.
+* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/carousel/` and tested in `packages/alambre/tests/behaviors/carousel.test.tsx`. Consumed by `CarouselTestbed.tsx`. Awaiting second consumer production adoption, on-device/emulator validation, and sign-off by `@reviewer`.
 
 ### [F-08] Headless Swipeable Deck (`useDeck`)
 * **Pattern:** Stack of swipeable cards with angular kinematics, interactive pan gestures, velocity dismissal, card history stack, and programmatic triggers (swipe left/right, undo, reset) without coupling cards to fixed visual wrappers.
 * **Where it appeared:** `apps/playground/src/views/containers/DeckTestbed.tsx`.
 * **Poor-fit assessment:** Off-the-shelf deck components bundle card styling, rigid swipe thresholds, and opinionated overlay indicators. This leads to component bloat, prevents custom card rendering, and forces agents to modify library internals for unique visual designs.
 * **Candidate Abstraction:** Headless hook `useDeck<T>({ initialCards })` managing stack state, undo history, and gesture shared values: `{ deck, history, activeIndex, swipeTranslation, popCard, undoLast, triggerProgrammaticSwipe, reset }`. Allows the consumer to drive Reanimated card transforms and gestures freely.
-* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/deck/` and covered by unit tests in `packages/alambre/tests/behaviors/deck.test.tsx`. Exercised in `DeckTestbed.tsx`. Awaiting multi-consumer adoption and `@integrity` review.
+* **Status: PROPOSAL.** Implemented in `packages/alambre/src/behaviors/deck/` and covered by unit tests in `packages/alambre/tests/behaviors/deck.test.tsx`. Exercised in `DeckTestbed.tsx`. Awaiting multi-consumer adoption and `@reviewer` review.
 
 ### [F-09] Headless Physics Hooks vs UI Presentation (Kinetic Containers)
 * **Pattern:** Complete architectural decoupling of kinetic physics, layout mathematics, and gesture/scroll coordination from UI presentation markup. Instead of monolithic container components with rigid visual styling, behaviors expose pure mathematical utilities and headless hooks returning reactive SharedValues and native event handlers. The consuming agent or application provides 100% of the JSX and visual styling.
 * **Where it appeared:** Container sandboxes in `apps/playground/src/views/containers/` (`CarouselTestbed.tsx`, `DeckTestbed.tsx`) and extraction to `packages/alambre/src/behaviors/` (`carousel/`, `deck/`).
-* **Poor-fit assessment:** Monolithic container components in React Native create tight coupling between physics engines (Reanimated, Gesture Handler) and DOM/styling trees. When AI agents (`@ax`, `@ui`) or developers need custom layouts or different design systems, they are forced to fight rigid inline styles or fork entire components. Furthermore, bundling view markup with physics leads to unnecessary re-renders and fragile layout calculations.
+* **Poor-fit assessment:** Monolithic container components in React Native create tight coupling between physics engines (Reanimated, Gesture Handler) and DOM/styling trees. When AI agents (`@reviewer`, `@ui-reviewer`) or developers need custom layouts or different design systems, they are forced to fight rigid inline styles or fork entire components. Furthermore, bundling view markup with physics leads to unnecessary re-renders and fragile layout calculations.
 * **Candidate Abstraction:** Architecture where `packages/alambre/src/behaviors/` exports pure mathematical calculations (e.g. `calculateSnapInterval`, `calculateActiveIndex`, `getScrollTargetForIndex`) and headless hooks (`useCarousel`, `useDeck`) returning driver refs, SharedValues, and callbacks. Consumers wire these directly into their own `<Animated.ScrollView>` or `<GestureDetector>` hierarchies.
-* **Status: PROPOSAL.** Exercised across carousel and deck testbeds in `apps/playground/` and covered by unit tests in `packages/alambre/tests/behaviors/`. Subject to Double-Signature Gate: requires second consumer adoption in production and `@integrity` emulator audit before advancing beyond PROPOSAL.
+* **Status: PROPOSAL.** Exercised across carousel and deck testbeds in `apps/playground/` and covered by unit tests in `packages/alambre/tests/behaviors/`. Subject to Double-Signature Gate: requires second consumer adoption in production, `@reviewer` sign-off, and a `@ui-verifier` emulator audit before advancing beyond PROPOSAL.
 
 ---
 
@@ -283,7 +283,7 @@ Per `docs/guidelines/agents.md` §5, discoveries are governed by strict lifecycl
 * **Where it appeared:** `packages/alambre/src/core/kinetics.ts` (consumed across `useBottomSheet`, `useDialog`, `useSwipeableRow`, `useWheelPicker`, `Slider`).
 * **Poor-fit assessment:** Component-level hardcoded spring configurations (`damping`, `mass`, `stiffness`) cause fragmented tactile feel across the app ecosystem and force agents to duplicate or guess physics parameters.
 * **Candidate Abstraction:** Centralized tokens in `packages/alambre/src/core/kinetics.ts` (`springSnappy`, `springBouncy`, `springGentle`, `rubberBandFriction`, or token namespace `kinetics.spring.bouncy`). Agents must use these tokens instead of hardcoding `damping` and `stiffness` in components.
-* **Status: PROPOSAL.** Centralized in `packages/alambre/src/core/kinetics.ts`. Pending second consumer validation across all production surfaces and `@integrity` sign-off for full formal adoption.
+* **Status: PROPOSAL.** Centralized in `packages/alambre/src/core/kinetics.ts`. Pending second consumer validation across all production surfaces and `@reviewer` sign-off for full formal adoption.
 
 ### [AGT-01] Agent Directives (Bandwidth & File Safety)
 * **Pattern:** Multi-agent operational rules for communication bandwidth conservation and file tool safety across repo workflows.
