@@ -5,6 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
 import TypewriterText from '../../components/TypewriterText';
 import SupportModal from '../../components/SupportModal';
+import { HangingMobile, AlarmGlyph, ItemsGlyph } from '../../components/illustrations/KineticArt';
 
 export default function Home() {
   const { theme } = useLightDark();
@@ -40,10 +41,8 @@ export default function Home() {
       </View>
 
       <View style={styles.center}>
-        <View style={styles.heroPlaceholder}>
-           <Text style={{ color: theme.color, opacity: 0.6 }}>Hero Graphic Placeholder</Text>
-        </View>
-        <Text style={[styles.title, { color: theme.color }]}>Colguetti</Text>
+        <HangingMobile motion={{ speed: 1, amplitude: 1, paused: false }} line={theme.color} size={160} />
+        <Text style={[styles.title, { color: theme.color, marginTop: 24 }]}>Colguetti</Text>
         <TypewriterText text="Little alarms, hung just right." textStyle={[styles.copy, { color: theme.color, opacity: 0.6 }]} initialDelay={200} />
       </View>
 
@@ -59,6 +58,9 @@ export default function Home() {
               <Text style={[styles.tileTitle, { color: theme.color }]}>Alarms</Text>
               <Text style={{ color: theme.color, opacity: 0.6 }}>Schedule and manage routines</Text>
             </View>
+            <View style={styles.tileIcon}>
+              <AlarmGlyph motion={{ speed: 1, amplitude: 1, paused: false }} line={theme.color} size={80} ringing={false} rippleWaves={0} rippleDuration={0} />
+            </View>
           </View>
         </AppCard>
 
@@ -72,6 +74,9 @@ export default function Home() {
             <View style={styles.tileCopy}>
               <Text style={[styles.tileTitle, { color: theme.color }]}>My Items</Text>
               <Text style={{ color: theme.color, opacity: 0.6 }}>Saved sounds and shapes</Text>
+            </View>
+            <View style={styles.tileIcon}>
+              <ItemsGlyph motion={{ speed: 1, amplitude: 1, paused: false }} line={theme.color} size={80} />
             </View>
           </View>
         </AppCard>
@@ -106,17 +111,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginVertical: 16,
   },
-  heroPlaceholder: {
-    width: 260,
-    height: 180,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
   title: {
     fontSize: 32,
     fontWeight: '900',
@@ -141,6 +135,12 @@ const styles = StyleSheet.create({
   tileCopy: {
     flex: 1,
     gap: 4,
+  },
+  tileIcon: {
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tileTitle: {
     fontSize: 22,
