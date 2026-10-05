@@ -1,16 +1,13 @@
 import { useEffect, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  Easing,
-  runOnJS,
   useAnimatedStyle,
-  useSharedValue,
   withDelay,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons, kinetics } from 'alambre';
+import { AlambreIcons, kinetics, useSwipeableRow } from 'alambre';
 import { useLightDark } from '../providers/theme';
 
 type SwipeableItemRowProps = {
@@ -21,9 +18,6 @@ type SwipeableItemRowProps = {
   peekIndex?: number;
 };
 
-const REST_OFFSET = 0;
-const SWIPE_TRIGGER_THRESHOLD = 35;
-const RESISTANCE = 0.25;
 const MAX_SWIPE = -55;
 
 export default function SwipeableItemRow({
@@ -34,64 +28,60 @@ export default function SwipeableItemRow({
   peekIndex,
 }: SwipeableItemRowProps) {
   const { theme } = useLightDark();
-  const translateX = useSharedValue(REST_OFFSET);
+
+  const { translationX, panGesture, snapTo } = useSwipeableRow({
+    leftSnapPoints: [],
+    rightSnapPoints: [MAX_SWIPE],
+    friction: 0.25,
+    triggerThreshold: 40,
+    onActionTriggered: (direction) => {
+      if (direction === 'right') {
+        onDelete();
+      }
+    },
+    onSnap: (dir, point) => {
+      if (point === MAX_SWIPE) {
+        onDelete();
+        snapTo(0);
+      }
+    }
+  });
 
   useEffect(() => {
     // Only peek the first item once page transition finishes (educational affordance)
     if (peekIndex !== 0 || disabled) return;
     const baseDelay = 420;
     const timer = setTimeout(() => {
-      translateX.value = withSequence(
+      translationX.value = withSequence(
         withTiming(-20, kinetics.timing.fast),
         withDelay(120, withTiming(0, kinetics.timing.fast)),
       );
     }, baseDelay);
     return () => clearTimeout(timer);
-  }, [peekIndex, disabled, translateX]);
+  }, [peekIndex, disabled, translationX]);
 
-  const panGesture = Gesture.Pan()
-    .enabled(!disabled)
-    .activeOffsetX([-15, 15])
-    .failOffsetY([-12, 12])
-    .onUpdate((e) => {
-      'worklet';
-      const delta = e.translationX;
-      if (delta < 0) {
-        translateX.value = Math.max(MAX_SWIPE, delta * RESISTANCE);
-      } else {
-        translateX.value = Math.min(0, delta * 0.05);
-      }
-    })
-    .onEnd((e) => {
-      'worklet';
-      if (translateX.value <= -SWIPE_TRIGGER_THRESHOLD || (e.velocityX < -450 && translateX.value < -20)) {
-        translateX.value = withTiming(0, kinetics.timing.fast);
-        runOnJS(onDelete)();
-      } else {
-        translateX.value = withTiming(0, kinetics.timing.fast);
-      }
-    });
+  const panGestureEnabled = panGesture.enabled(!disabled);
 
   const animatedCardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: translationX.value }],
   }));
 
   const animatedBgStyle = useAnimatedStyle(() => ({
-    opacity: translateX.value < -2 ? 1 : 0,
+    opacity: translationX.value < -2 ? 1 : 0,
   }));
 
   const animatedActionStyle = useAnimatedStyle(() => ({
-    opacity: Math.min(1, Math.max(0, (Math.abs(translateX.value) - 6) / 20)),
+    opacity: Math.min(1, Math.max(0, (Math.abs(translationX.value) - 6) / 20)),
     transform: [
       {
-        scale: Math.min(1.05, Math.max(0.75, Math.abs(translateX.value) / SWIPE_TRIGGER_THRESHOLD)),
+        scale: Math.min(1.05, Math.max(0.75, Math.abs(translationX.value) / 35)),
       },
     ],
   }));
 
   return (
     <View style={styles.container}>
-      {/* 1. Background reveal: Red zone strictly on the right, only visible when swiping or peeking */}
+      {/* 1. Background reveal */}
       <Animated.View
         style={[
           styles.actionBackground,
@@ -106,7 +96,7 @@ export default function SwipeableItemRow({
       </Animated.View>
 
       {/* 2. Foreground Card */}
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={panGestureEnabled}>
         <Animated.View style={[styles.frontCard, animatedCardStyle]}>
           <Pressable onPress={onPress}>
             {children}

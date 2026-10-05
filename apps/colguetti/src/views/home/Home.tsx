@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, Text } from 'react-native';
 import { useNavigator, AlambreIcons, SettingsIcon } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
+import TypewriterText from '../../components/TypewriterText';
 
 export default function Home() {
   const { theme } = useLightDark();
@@ -30,7 +31,7 @@ export default function Home() {
            <Text style={{ color: theme.color, opacity: 0.6 }}>Hero Graphic Placeholder</Text>
         </View>
         <Text style={[styles.title, { color: theme.color }]}>Colguetti</Text>
-        <Text style={[styles.copy, { color: theme.color, opacity: 0.6 }]}>Little alarms, hung just right.</Text>
+        <TypewriterText text="Little alarms, hung just right." textStyle={[styles.copy, { color: theme.color, opacity: 0.6 }]} initialDelay={200} />
       </View>
 
       <View style={styles.menuGrid}>
