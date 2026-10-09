@@ -115,7 +115,7 @@ export default function ActivationOverlay() {
                 <Pressable onPress={() => confirmAndClose()} style={({ pressed }) => [{ alignItems: 'center', opacity: pressed ? 0.8 : 1 }]}>
                   <AppText style={[styles.successText, { color: theme.color }]}>¡Todo listo!</AppText>
                   <AppText style={[styles.successSubtext, { color: theme.muted }]}>Que tengas un buen día</AppText>
-                  <AppText style={{ color: theme.primary, marginTop: 16, fontSize: 16, fontWeight: '600' }}>Toca para cerrar</AppText>
+                  <AppText style={{ color: theme.primary, marginTop: 16, fontSize: 16 }}>Toca para cerrar</AppText>
                 </Pressable>
               </Animated.View>
             ) : (
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   },
   countdownRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8, // Agranda el espacio entre el título y la hora
   },
@@ -243,7 +243,6 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 20,
-    fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -0.5,
     marginTop: 16, // Agranda el espacio entre la hora y el título
@@ -283,7 +282,6 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 14,
-    fontWeight: '600',
     textAlign: 'center',
   },
   actions: {
