@@ -71,7 +71,7 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <DropInTitle text={editing ? lang.items.editTitle : lang.items.addTitle} textStyle={{ color: theme.color, fontSize: 32, fontFamily: 'Kranky', marginBottom: 12 }} />
+      <DropInTitle text={editing ? lang.items.editTitle : lang.items.addTitle} textStyle={{ color: theme.color, fontSize: 32, marginBottom: 12 }} />
       <AppTextInput
         testID="item-name-input"
         label={lang.items.nameLabel}

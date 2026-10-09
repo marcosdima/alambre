@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     marginBottom: -8,
   },
   title: {
-    fontFamily: 'Kranky',
+
     fontSize: 54,
     lineHeight: 80,
     paddingVertical: 20,

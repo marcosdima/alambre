@@ -114,7 +114,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <DropInTitle text={editing ? lang.alarms.editTitle : lang.alarms.addTitle} textStyle={{ color: theme.color, fontSize: 32, fontFamily: 'Kranky', marginBottom: 12 }} />
+        <DropInTitle text={editing ? lang.alarms.editTitle : lang.alarms.addTitle} textStyle={{ color: theme.color, fontSize: 32, marginBottom: 12 }} />
         <AppTextInput
           testID="alarm-label-input"
           label={lang.alarms.labelLabel}

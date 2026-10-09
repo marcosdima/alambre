@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // Agranda el espacio entre el título y la hora
   },
   timeText: {
-    fontFamily: 'Kranky',
+
     fontSize: 84, // Agranda el tamaño de la fuente del contador
     lineHeight: 96,
     letterSpacing: 2,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   successText: {
-    fontFamily: 'Kranky',
+
     fontSize: 48,
     marginBottom: 8,
   },

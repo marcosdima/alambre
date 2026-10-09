@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   screenTitle: {
-    fontFamily: 'Kranky',
+
     fontSize: 42,
     letterSpacing: 2,
   },
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 48,
-    fontFamily: 'Kranky',
+
     letterSpacing: 1,
     lineHeight: 52,
     includeFontPadding: false,

@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   title: {
-    fontFamily: 'Kranky',
+
     fontSize: 54,
     lineHeight: 80,
     paddingVertical: 20,

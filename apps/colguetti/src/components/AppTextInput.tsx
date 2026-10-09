@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AlambreIcons, Input, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import { useConfig } from '../providers/config';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
 export type InputTone = 'default' | 'success' | 'warning' | 'danger';
@@ -67,6 +68,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
   ...props
 }: AppTextInputProps, ref) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const innerRef = useRef<TextInput>(null);
 
   useImperativeHandle(ref, () => innerRef.current as TextInput);
@@ -268,6 +270,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
               {
                 fontSize: sizeConfig.fontSize,
                 color: theme.color,
+                fontFamily: config.fontFamily,
               },
               multiline && styles.multilineInput,
               style,

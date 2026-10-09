@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   screenTitle: {
-    fontFamily: 'Kranky',
+
     fontSize: 42,
     letterSpacing: 2,
   },

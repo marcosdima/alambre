@@ -31,17 +31,17 @@ export default function AnimatedDashedLine({ color, delay = 0, width = 1000 }: P
   }));
 
   return (
-    <View style={{ width: '100%', height: 2, overflow: 'hidden' }}>
-      <Animated.View style={[{ height: 2, overflow: 'hidden' }, style]}>
-        <Svg width={width} height="2">
+    <View style={{ width: '100%', height: 4, overflow: 'hidden' }}>
+      <Animated.View style={[{ height: 4, overflow: 'hidden' }, style]}>
+        <Svg width={width} height="4">
           <Line
             x1="0"
-            y1="1"
+            y1="2"
             x2={width.toString()}
-            y2="1"
+            y2="2"
             stroke={color}
-            strokeWidth="2"
-            strokeDasharray="4 4"
+            strokeWidth="4"
+            strokeDasharray="10 10"
           />
         </Svg>
       </Animated.View>

@@ -206,6 +206,42 @@ export default () => {
         </View>
       </AppCard>
 
+      <AppCard
+        variant="soft"
+        title="Tipografía"
+        subtitle="Elegí la fuente de la aplicación"
+        style={styles.card}
+      >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
+          {['Kranky', 'sans-serif', 'serif', 'monospace'].map((font) => {
+            const active = config.fontFamily === font;
+            return (
+              <Pressable
+                key={font}
+                onPress={() => void saveField('fontFamily', font)}
+                style={[
+                  styles.durationChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <AppText
+                  style={{
+                    color: active ? theme.primary : theme.color,
+                    fontFamily: font,
+                    fontSize: 16,
+                  }}
+                >
+                  {font}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </AppCard>
+
       {/* Notificaciones */}
       <AppCard
         variant="soft"
@@ -339,7 +375,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   screenTitle: {
-    fontFamily: 'Kranky',
+
     fontSize: 42,
     letterSpacing: 2,
   },
