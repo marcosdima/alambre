@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import type { StyleProp, TextStyle } from 'react-native';
 import { View, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
+import { useConfig } from '../providers/config';
 
 export default function DropInTitle({ text, textStyle }: { text: string; textStyle?: StyleProp<TextStyle> }) {
   const letters = text.split('');
@@ -25,13 +26,14 @@ function AnimatedLetter({ char, index, textStyle }: { char: string, index: numbe
     opacity.value = withDelay(index * 60, withSpring(1));
   }, [index, opacity, translateY]);
 
+  const { config } = useConfig();
   const style = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
     opacity: opacity.value,
   }));
 
   return (
-    <Animated.Text style={[textStyle, style]}>
+    <Animated.Text style={[textStyle, style, { fontFamily: config.fontFamily }]}>
       {char === ' ' ? '\u00A0' : char}
     </Animated.Text>
   );

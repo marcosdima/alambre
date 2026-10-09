@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     lineHeight: 52,
     includeFontPadding: false,
-    fontVariant: ['tabular-nums'],
+
   },
   switchContainer: {
     justifyContent: 'center',

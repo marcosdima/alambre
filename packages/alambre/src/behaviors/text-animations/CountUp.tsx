@@ -102,7 +102,7 @@ export function CountUp({
       key={key}
       digit={char}
       height={height}
-      style={[styles.text, style, { fontVariant: ['tabular-nums'] }]}
+      style={[styles.text, style]}
       duration={duration}
       delay={delay}
       speed={speed}

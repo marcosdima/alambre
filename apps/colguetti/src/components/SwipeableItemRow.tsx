@@ -86,13 +86,13 @@ export default function SwipeableItemRow({
       <Animated.View
         style={[
           styles.actionBackground,
-          { backgroundColor: theme.danger },
+          { backgroundColor: '#dc2626' },
           animatedBgStyle,
         ]}
       >
         <Animated.View style={[styles.actionContent, animatedActionStyle]}>
           <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
-          <AppText style={styles.deleteLabel}>Borrar</AppText>
+          <AppText style={[styles.deleteLabel, { color: '#ffffff' }]}>Borrar</AppText>
         </Animated.View>
       </Animated.View>
 

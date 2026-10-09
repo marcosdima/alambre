@@ -4,6 +4,7 @@ import { StyleSheet, View, ScrollView, Pressable, PanResponder } from 'react-nat
 import Animated, { useAnimatedStyle, useDerivedValue, withSpring, FadeIn } from 'react-native-reanimated';
 import { useNavigator, AlambreIcons, Typewriter, CountUp } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import AppCard from '../../components/AppCard';
 import SupportModal from '../../components/SupportModal';
@@ -17,6 +18,7 @@ import type { Weekday, Alarm } from '../../alarms/alarm-types';
 
 export default function Home() {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { navigate } = useNavigator();
   const { alarms } = useAlarms();
@@ -127,11 +129,11 @@ export default function Home() {
                           pointerEvents="none"
                         />
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
-                          {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
-                          <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
-                          <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>:</AppText>
-                          {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
-                          <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
+                          {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontFamily: config.fontFamily }} />
+                          <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>:</AppText>
+                          {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontFamily: config.fontFamily }} />
                         </View>
                       </View>
 

@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActiveRoutine } from './use-active-routine';
 import { useLang } from '../providers/lang';
 import { useLightDark } from '../providers/theme';
+import { useConfig } from '../providers/config';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -39,6 +40,7 @@ export default function ActivationOverlay() {
   } = useActiveRoutine();
   const { lang } = useLang();
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -94,12 +96,12 @@ export default function ActivationOverlay() {
             {!success && (
               <View style={styles.countdownRow}>
                 {minutesLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
-                <CountUp value={minutesLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
+                <CountUp value={minutesLeft} duration={400} style={[styles.timeText, { color: theme.color, fontFamily: config.fontFamily }]} />
 
                 <AppText style={[styles.timeText, { color: theme.color, marginHorizontal: 12 }]}>:</AppText>
 
                 {secondsLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
-                <CountUp value={secondsLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
+                <CountUp value={secondsLeft} duration={400} style={[styles.timeText, { color: theme.color, fontFamily: config.fontFamily }]} />
               </View>
             )}
 
