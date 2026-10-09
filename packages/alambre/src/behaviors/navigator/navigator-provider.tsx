@@ -98,6 +98,7 @@ export const useNavigator = <
     const [firstKey, ...rest] = path;
     if (!firstKey) return pages[firstPage];
     const first = pages[firstKey];
+    if (!first) return pages[firstPage] ?? { component: null };
     if (rest.length === 0) return first;
     return rest.reduce(
       (acc, key) => acc?.subpages?.[key],
@@ -120,5 +121,8 @@ export const NavigatorProvider = ({ children, pages }: NavigatorProviderProps) =
   if (!navigatorStore.get()) {
     initNavigator(pages);
   }
+  useEffect(() => {
+    navigatorStore.set((prev) => prev ? { ...prev, pages } : prev);
+  }, [pages]);
   return <>{children}</>;
 };

@@ -8,9 +8,11 @@ import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { ItemIconKey } from '../../items/item-types';
 import { useLightDark } from '../../providers/theme';
-import { useNavigator, AlambreIcons, Typewriter } from 'alambre';
+import { useNavigator, AlambreIcons } from 'alambre';
+import { useLang } from '../../providers/lang';
 import DropInTitle from '../../components/DropInTitle';
 import SkiaFrame from '../../components/SkiaFrame';
+import TypewriterText from '../../components/TypewriterText';
 
 type ThemeType = Record<string, string>;
 
@@ -47,22 +49,23 @@ const TutorialAlarm = ({ theme }: { theme: ThemeType }) => (
 
 export default function Tutorial() {
   const { theme } = useLightDark();
-  const { navigate } = useNavigator();
+  const { previous } = useNavigator();
+  const { lang } = useLang();
   const [step, setStep] = useState(0);
   const [itemDeleted, setItemDeleted] = useState(false);
 
   const STEPS = [
     {
-      title: 'Welcome to Colguetti',
-      description: 'This app helps you remember everything you need before leaving home. Let\'s see how it works.',
+      title: lang.tutorial.step1Title,
+      description: lang.tutorial.step1Desc,
       component: null,
     },
     {
-      title: '1. Your Items',
-      description: 'First, you add the items you don\'t want to forget (like keys, wallet, etc.). Try swiping the item below to delete it!',
+      title: lang.tutorial.step2Title,
+      description: lang.tutorial.step2Desc,
       component: itemDeleted ? (
         <Animated.View entering={FadeIn}>
-          <AppText style={{ color: theme.success, fontSize: 16, textAlign: 'center' }}>Great! You deleted it.</AppText>
+          <AppText style={{ color: theme.success, fontSize: 16, textAlign: 'center' }}>{lang.tutorial.step2Success}</AppText>
         </Animated.View>
       ) : (
         <TutorialItem
@@ -75,19 +78,19 @@ export default function Tutorial() {
       ),
     },
     {
-      title: '2. Your Routines',
-      description: 'Then, you create a Routine (an alarm) and link it to your items. We will remind you to check them when it\'s time to leave.',
+      title: lang.tutorial.step3Title,
+      description: lang.tutorial.step3Desc,
       component: <TutorialAlarm theme={theme} />,
     },
     {
-      title: '3. Check it off',
-      description: 'When the time comes, a checklist will appear. Tap your items to confirm you have them. Never forget anything again!',
+      title: lang.tutorial.step4Title,
+      description: lang.tutorial.step4Desc,
       component: (
         <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'center' }}>
           <View style={{ width: 120, height: 110, borderRadius: 20, backgroundColor: theme.primarySoft, alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <AlambreIcons.Tick color={theme.onPrimary} lineWidth={3} style={{ width: 24, height: 24 }} />
-            <AppText style={{ color: theme.onPrimary }}>Keys</AppText>
-            <SkiaFrame color={theme.onPrimary} inset={6} cornerGap={10} strokeWidth={2} cornerShape="dot" />
+            <AlambreIcons.Tick color={theme.primary} lineWidth={3} style={{ width: 24, height: 24 }} />
+            <AppText style={{ color: theme.primary }}>Keys</AppText>
+            <SkiaFrame color={theme.primary} inset={6} cornerGap={10} strokeWidth={2} cornerShape="dot" />
           </View>
         </View>
       ),
@@ -98,14 +101,14 @@ export default function Tutorial() {
     if (step < STEPS.length - 1) {
       setStep(step + 1);
     } else {
-      navigate('home');
+      previous();
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <DropInTitle text="Tutorial" textStyle={[styles.title, { color: theme.color }]} />
+        <DropInTitle text={lang.settings.tutorialTitle} textStyle={[styles.title, { color: theme.color }]} />
 
         <Animated.View
           key={step}
@@ -113,10 +116,10 @@ export default function Tutorial() {
           style={styles.stepContainer}
         >
           <AppText style={[styles.stepTitle, { color: theme.primary }]}>{STEPS[step].title}</AppText>
-          <Typewriter
+          <TypewriterText
             text={STEPS[step].description}
-            style={[styles.stepDesc, { color: theme.color }]}
-            speed={2}
+            textStyle={[styles.stepDesc, { color: theme.color }]}
+            speed={30}
           />
 
           <View style={styles.componentBox}>
@@ -129,7 +132,7 @@ export default function Tutorial() {
         <AppButton
           variant="solid"
           tone="primary"
-          label={step === STEPS.length - 1 ? 'Let\'s go!' : 'Next'}
+          label={step === STEPS.length - 1 ? lang.tutorial.finish : lang.tutorial.next}
           onPress={handleNext}
           fullWidth
         />
