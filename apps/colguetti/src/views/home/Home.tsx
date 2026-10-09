@@ -129,11 +129,11 @@ export default function Home() {
                           pointerEvents="none"
                         />
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
-                          {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>0</AppText>}
-                          <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontFamily: config.fontFamily }} />
-                          <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>:</AppText>
-                          {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color }}>0</AppText>}
-                          <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontFamily: config.fontFamily }} />
+                          {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, lineHeight: 22, color: theme.color }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, lineHeight: 22, color: theme.color, fontFamily: config.fontFamily }} />
+                          <AppText style={{ fontSize: 18, lineHeight: 22, color: theme.color }}>:</AppText>
+                          {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, lineHeight: 22, color: theme.color }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, lineHeight: 22, color: theme.color, fontFamily: config.fontFamily }} />
                         </View>
                       </View>
 
@@ -359,7 +359,6 @@ const styles = StyleSheet.create({
   },
   activeCardTitle: {
     fontSize: 22,
-    fontWeight: '600',
     flexShrink: 1,
   },
   daysRow: {
@@ -378,7 +377,6 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 12,
-    fontWeight: '600',
   },
   paginationDots: {
     flexDirection: 'row',
