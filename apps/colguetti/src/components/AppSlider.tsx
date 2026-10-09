@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import type { SliderProps } from 'alambre';
 import { Slider } from 'alambre';
-import { View, Text, StyleSheet } from 'react-native';
+import { View,  StyleSheet } from 'react-native';
 import { useLightDark } from '../providers/theme';
 
 export type AppSliderProps = SliderProps & {
@@ -23,17 +24,17 @@ export default function AppSlider({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+        <AppText style={[styles.label, { color: theme.color }]}>{label}</AppText>
         <View
           style={[
             styles.valueBadge,
             { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
           ]}
         >
-          <Text style={[styles.valueText, { color: theme.primary }]}>
+          <AppText style={[styles.valueText, { color: theme.primary }]}>
             {value}
             {unit}
-          </Text>
+          </AppText>
         </View>
       </View>
 
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
+    
   },
   valueBadge: {
     paddingHorizontal: 8,
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 12,
-    fontWeight: '700',
+    
   },
   touchArea: {
     paddingVertical: 12,

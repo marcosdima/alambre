@@ -42,6 +42,8 @@ export const langs = {
       itemsReady: '{checked} de {total} listos',
       inRoutines: 'En: {routines}',
       noRoutinesAssigned: 'Sin rutinas vinculadas',
+      dismiss: 'Descartar',
+      missedOk: 'Entendido',
     },
     items: {
       title: 'Mis ítems',
@@ -154,6 +156,8 @@ export const langs = {
       itemsReady: '{checked} of {total} ready',
       inRoutines: 'In: {routines}',
       noRoutinesAssigned: 'No linked routines',
+      dismiss: 'Dismiss',
+      missedOk: 'Got it',
     },
     items: {
       title: 'My items',

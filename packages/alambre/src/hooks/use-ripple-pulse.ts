@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 import { phaseOffset, useLoopClock, wrapPhase } from './use-loop-clock';
 
 export interface RipplePulseOptions {
@@ -41,7 +42,7 @@ export interface UseRipplePulseReturn {
    * The driving UI-thread clock. Reading `clock.value` inside a worklet
    * registers Reanimated's dependency tracking for the wave callback.
    */
-  clock: import('react-native-reanimated').SharedValue<number>;
+  clock: SharedValue<number>;
 }
 
 /**

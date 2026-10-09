@@ -1,9 +1,8 @@
 import type { ComponentProps } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import { StyleSheet, Pressable, View } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import type { NavigatorReturn } from 'alambre';
-import { View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import Animated, {
   Easing,
@@ -167,10 +166,12 @@ export default ({
   const direction = isReturningRef.current ? 'return' : 'go';
   const animationsSelected = direction === 'return' ? animations?.return : animations?.go;
 
+  const isFirstMount = useRef(true);
   const enterAnimation = animationsSelected?.pageEntering
-    ?? FadeInDown.duration(500).delay(350).easing(Easing.ease);
+    ?? FadeInDown.duration(400).delay(isFirstMount.current ? 1400 : 50).easing(Easing.out(Easing.cubic));
 
   useEffect(() => {
+    isFirstMount.current = false;
     isReturningRef.current = false;
   }, [pageKey]);
 
@@ -203,12 +204,12 @@ export default ({
         </Animated.View>
       )}
 
-      <ScrollView
+      <View
         style={styles.pageScroll}
-        contentContainerStyle={styles.pageScrollContent}
-        onScroll={(event) => setScrollTop(Math.max(0, event.nativeEvent.contentOffset.y))}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
+        onLayout={(e) => {
+          // Keep scrollTop at 0 so arrow remains visible
+          setScrollTop(0);
+        }}
       >
         <Animated.View
           key={pageKey}
@@ -217,7 +218,7 @@ export default ({
         >
           {currentPage.component}
         </Animated.View>
-      </ScrollView>
+      </View>
 
       {!headerMode && (
         <Animated.View
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    fontWeight: '700',
+    
   },
   pageScroll: {
     flex: 1,

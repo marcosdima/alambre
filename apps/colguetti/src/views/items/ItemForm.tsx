@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View, Text } from 'react-native';
+import { useState, useMemo, useEffect } from 'react';
+import { Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -12,6 +12,8 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
 import { useRouteIntent } from '../../navigator/RouteIntent';
+import AppText from '../../components/AppText';
+import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
   const { theme } = useLightDark();
@@ -29,7 +31,17 @@ export default () => {
   const [icon, setIcon] = useState<ItemIconKey>(editing?.icon ?? 'keys');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredIcons = useMemo(() => searchIcons(searchQuery, itemIconKeys), [searchQuery]);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  
+  useEffect(() => {
+    const t = setTimeout(() => setIsTransitioning(false), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  const filteredIcons = useMemo(() => {
+    if (isTransitioning) return [];
+    return searchIcons(searchQuery, itemIconKeys);
+  }, [searchQuery, isTransitioning]);
 
   const close = () => {
     setIntent({});
@@ -59,6 +71,7 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <DropInTitle text={editing ? lang.items.editTitle : lang.items.addTitle} textStyle={{ color: theme.color, fontSize: 32, fontFamily: 'Kranky', marginBottom: 12 }} />
       <AppTextInput
         testID="item-name-input"
         label={lang.items.nameLabel}
@@ -71,15 +84,17 @@ export default () => {
         placeholder={lang.items.namePlaceholder}
         clearable
         errorMessage={nameError ? lang.items.nameRequired : undefined}
+        shellStyle={{ backgroundColor: theme.primarySoft, borderColor: theme.primary }}
       />
 
       <AppCard
-        variant="outlined"
+        variant="soft"
+        selected
         title={lang.items.colorLabel}
         style={styles.sectionCard}
       >
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.colorRow}
         >
@@ -106,13 +121,18 @@ export default () => {
       </AppCard>
 
       <AppCard
-        variant="outlined"
+        variant="soft"
+        selected
         title={lang.items.iconLabel}
         style={styles.sectionCard}
       >
         <View style={styles.iconGrid}>
           {filteredIcons.length === 0 ? (
-            <Text style={{ color: theme.muted, paddingVertical: 12 }}>No se encontraron íconos</Text>
+            <AppText style={{ color: theme.muted, paddingVertical: 12 }}>No se encontraron íconos</AppText>
+          ) : isTransitioning ? (
+            <View style={{ height: 100, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <AppText style={{ color: theme.muted, fontSize: 13 }}>Cargando íconos...</AppText>
+            </View>
           ) : (
             filteredIcons.map((key, index) => {
               const active = icon === key;
@@ -123,8 +143,8 @@ export default () => {
                   style={({ pressed }) => [
                     styles.iconCell,
                     {
-                      borderColor: active ? theme.primary : theme.border,
-                      backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                      borderColor: active ? theme.primary : theme.borderSoft,
+                      backgroundColor: active ? theme.primary : theme.surface,
                       borderWidth: active ? 2 : 1.5,
                     },
                     pressed && styles.selectionPressed,
@@ -132,7 +152,7 @@ export default () => {
                 >
                   <ItemIcon
                     icon={key}
-                    color={color}
+                    color={active ? theme.onPrimary : color}
                     lineWidth={2}
                     style={styles.cellIcon}
                     delay={100 + index * 40}
@@ -151,6 +171,7 @@ export default () => {
             placeholder="Buscar ícono..."
             clearable
             maxLength={20}
+            shellStyle={{ backgroundColor: theme.primarySoft, borderColor: theme.primary }}
           />
         </View>
       </AppCard>
@@ -185,6 +206,7 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   colorRow: {
     flexDirection: 'row',

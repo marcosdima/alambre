@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import { useEffect, useRef, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet,  View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
 
@@ -150,14 +151,14 @@ export default function TypewriterText({
       accessibilityLabel={text}
       style={[styles.container, containerStyle]}
     >
-      <Text
+      <AppText
         textBreakStrategy="simple"
         numberOfLines={numberOfLines}
         style={[styles.text, { color: theme.color }, textStyle]}
       >
         {visibleText}
         {isCursorVisible ? (
-          <Text
+          <AppText
             style={[
               styles.cursor,
               { color: cursorColor ?? theme.primary },
@@ -165,9 +166,9 @@ export default function TypewriterText({
             ]}
           >
             {cursorChar}
-          </Text>
+          </AppText>
         ) : null}
-      </Text>
+      </AppText>
     </View>
   );
 }
@@ -182,6 +183,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   cursor: {
-    fontWeight: '700',
+    
   },
 });

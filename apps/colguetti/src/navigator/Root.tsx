@@ -52,7 +52,7 @@ export default () => {
         arrowBorderColor={theme.border}
         headerStyle={{ backgroundColor: theme.overlayBar }}
         titleColor={theme.color}
-        headerTitle={headerTitle}
+        headerTitle={undefined}
         animations={{
           go: {
             pageEntering: FadeInRight.duration(280).delay(40).easing(Easing.out(Easing.cubic)),

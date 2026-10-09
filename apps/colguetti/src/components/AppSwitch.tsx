@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import { useEffect } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -198,10 +199,10 @@ export default function AppSwitch({
     >
       <View style={styles.textContainer}>
         {label ? (
-          <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+          <AppText style={[styles.label, { color: theme.color }]}>{label}</AppText>
         ) : null}
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</Text>
+          <AppText style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</AppText>
         ) : null}
       </View>
       <View pointerEvents="none" style={switchStyle}>
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '700',
+    
   },
   subtitle: {
     fontSize: 12,

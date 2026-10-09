@@ -1,5 +1,6 @@
+import AppText from './AppText';
 import { memo, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -39,7 +40,7 @@ const HangingLetter = memo(({ char, index, textColor, isLifted }: LetterProps) =
 
   return (
     <Animated.View style={[styles.letterContainer, animatedStyle]}>
-      <Text style={[styles.letter, { color: textColor }]}>{char}</Text>
+      <AppText style={[styles.letter, { color: textColor }]}>{char}</AppText>
     </Animated.View>
   );
 });
@@ -67,7 +68,7 @@ export default function HangingTitle({
 
   return (
     <Pressable onPress={handlePress} style={styles.container}>
-      <Text style={styles.hiddenText}>{title}</Text>
+      <AppText style={styles.hiddenText}>{title}</AppText>
       <View
         style={styles.wordRow}
         accessible={true}
@@ -86,7 +87,7 @@ export default function HangingTitle({
         ))}
       </View>
       {subtitle ? (
-        <Text style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</Text>
+        <AppText style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</AppText>
       ) : null}
     </Pressable>
   );
@@ -112,12 +113,12 @@ const styles = StyleSheet.create({
   },
   letter: {
     fontSize: 36,
-    fontWeight: '900',
+    
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: '500',
+    
     marginTop: 4,
     opacity: 0.9,
   },

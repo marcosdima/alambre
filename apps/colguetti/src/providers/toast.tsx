@@ -1,5 +1,6 @@
+import AppText from '../components/AppText';
 import { useEffect, useState } from 'react';
-import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StatusBar, StyleSheet,  View } from 'react-native';
 import Animated, {
   Easing,
   Extrapolation,
@@ -214,19 +215,19 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                     style={styles.toneIcon}
                   />
                 ) : (
-                  <Text style={[styles.infoMark, { color: toneConfig.accent }]}>ℹ</Text>
+                  <AppText style={[styles.infoMark, { color: toneConfig.accent }]}>ℹ</AppText>
                 )}
               </View>
 
               {/* Message Body */}
               <View style={styles.textContainer}>
                 {parsed.title ? (
-                  <Text style={[styles.title, { color: theme.color }]} numberOfLines={1}>
+                  <AppText style={[styles.title, { color: theme.color }]} numberOfLines={1}>
                     {parsed.title}
-                  </Text>
+                  </AppText>
                 ) : null}
                 {parsed.content ? (
-                  <Text style={[styles.content, { color: theme.color }]}>{parsed.content}</Text>
+                  <AppText style={[styles.content, { color: theme.color }]}>{parsed.content}</AppText>
                 ) : null}
 
                 {/* Action Buttons if any */}
@@ -246,9 +247,9 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                           hitSlop={8}
                           accessibilityRole="button"
                         >
-                          <Text style={[styles.actionBtnText, { color: btnColor }]}>
+                          <AppText style={[styles.actionBtnText, { color: btnColor }]}>
                             {action.label}
-                          </Text>
+                          </AppText>
                         </Pressable>
                       );
                     })}
@@ -264,9 +265,9 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                     { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
                   ]}
                 >
-                  <Text style={[styles.queueBadgeText, { color: theme.muted }]}>
+                  <AppText style={[styles.queueBadgeText, { color: theme.muted }]}>
                   +{queueLength}
-                  </Text>
+                  </AppText>
                 </View>
               ) : null}
 
@@ -277,7 +278,7 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                 style={styles.closeBtn}
                 accessibilityRole="button"
               >
-                <Text style={[styles.closeText, { color: theme.muted }]}>✕</Text>
+                <AppText style={[styles.closeText, { color: theme.muted }]}>✕</AppText>
               </Pressable>
             </View>
 
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
   },
   infoMark: {
     fontSize: 16,
-    fontWeight: '800',
+    
   },
   textContainer: {
     flex: 1,
@@ -358,7 +359,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '700',
+    
   },
   content: {
     fontSize: 13,
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 12,
-    fontWeight: '700',
+    
   },
   queueBadge: {
     paddingHorizontal: 6,
@@ -387,14 +388,14 @@ const styles = StyleSheet.create({
   },
   queueBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
+    
   },
   closeBtn: {
     padding: 4,
   },
   closeText: {
     fontSize: 14,
-    fontWeight: '700',
+    
   },
   progressTrack: {
     height: 3,

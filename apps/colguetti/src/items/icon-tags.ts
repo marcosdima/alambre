@@ -23,18 +23,18 @@ export const iconTags: Record<ItemIconKey, string[]> = {
 
 export function searchIcons(query: string, allKeys: readonly ItemIconKey[]): ItemIconKey[] {
   if (!query || query.trim() === '') return [...allKeys];
-  
+
   const normalizedQuery = query.toLowerCase().trim();
   const searchTerms = normalizedQuery.split(' ').filter(Boolean);
 
   return allKeys.filter((key) => {
     const tags = iconTags[key] || [];
     // The key itself is a tag
-    const allTags = [key, ...tags].map(t => t.toLowerCase());
-    
+    const allTags = [key, ...tags].map((t) => t.toLowerCase());
+
     // Check if ALL search terms match at least one tag partially
-    return searchTerms.every(term => 
-      allTags.some(tag => tag.includes(term))
+    return searchTerms.every((term) =>
+      allTags.some((tag) => tag.includes(term)),
     );
   });
 }

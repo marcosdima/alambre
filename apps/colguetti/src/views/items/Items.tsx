@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppText from '../../components/AppText';
+import { Pressable, ScrollView, StyleSheet,  View } from 'react-native';
 import { useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -10,6 +11,9 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
+import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
+import TypewriterText from '../../components/TypewriterText';
+import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
   const { theme } = useLightDark();
@@ -72,10 +76,19 @@ export default () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.screenHeader}>
+          <DropInTitle text={lang.items.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
+        </View>
+
         {items.length === 0 ? (
-          <AppCard variant="outlined" style={styles.emptyCard}>
-            <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
-          </AppCard>
+          <View style={styles.emptyContainer}>
+            <ItemsGlyph line={theme.color} size={140} />
+            <TypewriterText 
+              text={lang.items.empty} 
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]} 
+              initialDelay={300} 
+            />
+          </View>
         ) : (
           <View style={styles.list}>
             {items.map((item, index) => (
@@ -86,7 +99,7 @@ export default () => {
                 peekIndex={index === 0 ? 0 : undefined}
               >
                 <AppCard
-                  variant="outlined"
+                  variant="soft"
                   padding="sm"
                   style={styles.card}
                 >
@@ -100,9 +113,9 @@ export default () => {
                         iconAnimation={catalogDrawAnimation}
                       />
                     </View>
-                    <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>
+                    <AppText style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>
                       {item.name}
-                    </Text>
+                    </AppText>
                     <View style={styles.cardActions}>
                       {items.length > 1 && (
                         <View style={styles.reorderGroup}>
@@ -124,7 +137,7 @@ export default () => {
                               pressed && styles.pressed,
                             ]}
                           >
-                            <Text style={[styles.stepperArrow, { color: theme.color }]}>▲</Text>
+                            <AppText style={[styles.stepperArrow, { color: theme.color }]}>▲</AppText>
                           </Pressable>
                           <Pressable
                             disabled={index === items.length - 1}
@@ -144,7 +157,7 @@ export default () => {
                               pressed && styles.pressed,
                             ]}
                           >
-                            <Text style={[styles.stepperArrow, { color: theme.color }]}>▼</Text>
+                            <AppText style={[styles.stepperArrow, { color: theme.color }]}>▼</AppText>
                           </Pressable>
                         </View>
                       )}
@@ -179,9 +192,21 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 20,
   },
-  emptyCard: {
+  screenHeader: {
+    paddingVertical: 12,
+    marginBottom: 16,
     alignItems: 'center',
-    paddingVertical: 32,
+  },
+  screenTitle: {
+    fontFamily: 'Kranky',
+    fontSize: 42,
+    letterSpacing: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 24,
   },
   empty: {
     fontSize: 15,
@@ -194,6 +219,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   cardRow: {
     flexDirection: 'row',
@@ -207,7 +233,7 @@ const styles = StyleSheet.create({
   cardName: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+    
     letterSpacing: -0.1,
   },
   crossIcon: {
@@ -233,7 +259,7 @@ const styles = StyleSheet.create({
   },
   stepperArrow: {
     fontSize: 11,
-    fontWeight: '800',
+    
   },
   pressed: {
     opacity: 0.7,

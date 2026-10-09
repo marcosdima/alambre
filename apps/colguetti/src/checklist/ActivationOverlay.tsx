@@ -1,251 +1,277 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useActivation } from './activation-context';
-import { useAlarms } from '../alarms/alarms-context';
-import { useItems } from '../items/items-context';
-import { useConfirmations } from './confirmations-context';
+import AppText from '../components/AppText';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, Pressable, ScrollView, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useActiveRoutine } from './use-active-routine';
 import { useLang } from '../providers/lang';
 import { useLightDark } from '../providers/theme';
 import Animated, {
   FadeIn,
   FadeOut,
   SlideInDown,
-  SlideOutDown,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  useSharedValue,
-  withTiming,
-  Easing,
+  ZoomIn,
+  ZoomOut,
 } from 'react-native-reanimated';
 import AppButton from '../components/AppButton';
-import AppCard from '../components/AppCard';
 import { ItemIcon } from '../items/icon-catalog';
-import { AlambreIcons, useToast } from 'alambre';
-import { cancelAlarmAlerts } from '../notifications/expiry';
+import { AlambreIcons, CountUp } from 'alambre';
+import { AlarmGlyph } from '../components/illustrations/SkiaArt';
+import SkiaFrame from '../components/SkiaFrame';
+import * as NavigationBar from 'expo-navigation-bar';
+import { Platform } from 'react-native';
+
+const { width } = Dimensions.get('window');
+const TILE_SIZE = (width - 64) / 2;
 
 export default function ActivationOverlay() {
-  const { active, deactivate, snooze } = useActivation();
-  const { alarms } = useAlarms();
-  const { items } = useItems();
-  const { confirm } = useConfirmations();
+  const {
+    routine,
+    routineItems,
+    ticked,
+    remaining,
+    success,
+    allChecked,
+    toggle,
+    complete,
+    postpone,
+    dismiss,
+    confirmAndClose,
+  } = useActiveRoutine();
   const { lang } = useLang();
   const { theme } = useLightDark();
-  const { show } = useToast();
-
-  const [ticked, setTicked] = useState<Record<string, boolean>>({});
-  const [success, setSuccess] = useState(false);
-
-  const routine = useMemo(
-    () => (active ? alarms.find((a) => a.id === active.alarmId) ?? null : null),
-    [active, alarms]
-  );
-  const routineItems = useMemo(
-    () => (routine ? items.filter((i) => routine.itemIds.includes(i.id)) : []),
-    [routine, items]
-  );
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    if (active && !success) {
-      if (routineItems.length > 0 && routineItems.every((i) => ticked[i.id])) {
-        setSuccess(true);
-      }
+    if (Platform.OS === 'android') {
+      void NavigationBar.setVisibilityAsync('hidden');
     }
-  }, [ticked, routineItems, active, success]);
+    return () => {
+      if (Platform.OS === 'android') {
+        void NavigationBar.setVisibilityAsync('visible');
+      }
+    };
+  }, []);
 
-  // Success flow
+  // Auto-complete when all checked (since useActiveRoutine doesn't auto-complete on tick)
   useEffect(() => {
-    if (!success || !routine) return;
-    const timer = setTimeout(() => {
-      void (async () => {
-        await confirm(routine.id, new Date());
-        await cancelAlarmAlerts(routine.id);
-        await deactivate();
-      })();
-      show({ payload: { title: 'Routine Completed!', tone: 'success' }, duration: 3000 });
-      setTicked({});
-      setSuccess(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [success, routine, confirm, deactivate, show]);
+    if (routine && allChecked && !success) {
+      complete();
+    }
+  }, [routine, allChecked, success, complete]);
 
-  const onSnooze = () => {
-    void snooze(10);
-    show({ payload: { title: 'Snoozed for 10m' }, duration: 2000 });
-  };
+  if (!routine) return null;
 
-  const onCancel = () => {
-    if (routine) void cancelAlarmAlerts(routine.id);
-    setTicked({});
-    setSuccess(false);
-    void deactivate();
-  };
-
-  if (!active || !routine) return null;
+  const minutesLeft = Math.floor(remaining / 60000);
+  const secondsLeft = Math.floor((remaining % 60000) / 1000);
 
   return (
     <Animated.View
-      style={[StyleSheet.absoluteFill, styles.overlay]}
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
+      style={[StyleSheet.absoluteFill, styles.overlay, { backgroundColor: theme.background }]}
+      entering={FadeIn.duration(400)}
+      exiting={FadeOut.duration(400)}
     >
-      <Animated.View
-        style={styles.container}
-        entering={SlideInDown.springify().damping(18).stiffness(200)}
-        exiting={SlideOutDown.duration(300)}
-      >
-        <AppCard
-          variant="soft"
-          style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}
+      <View style={[styles.safeArea, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 }]}>
+        <Animated.View 
+          entering={SlideInDown.springify().damping(28).stiffness(110)}
+          style={styles.contentWrapper}
         >
+          {/* Header Section */}
           <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.color }]}>{routine.label}</Text>
-            <Text style={[styles.time, { color: theme.primary }]}>{routine.time}</Text>
+            {!success ? (
+              <Animated.View entering={ZoomIn} exiting={ZoomOut} style={styles.glyphWrapper}>
+                <AlarmGlyph line={theme.color} size={80} ringing={true} rippleWaves={3} />
+              </Animated.View>
+            ) : (
+              <Animated.View entering={ZoomIn} style={styles.successBadge}>
+                <Pressable onPress={() => confirmAndClose()} style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.95 : 1 }] }]}>
+                  <View style={[styles.successCircle, { backgroundColor: theme.primary }]}>
+                    <AlambreIcons.Tick color={theme.onPrimary} lineWidth={3} style={{ width: 48, height: 48 }} />
+                  </View>
+                </Pressable>
+              </Animated.View>
+            )}
+            
+            {!success && (
+              <View style={styles.countdownRow}>
+                {minutesLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
+                <CountUp value={minutesLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
+                
+                <AppText style={[styles.timeText, { color: theme.color, marginHorizontal: 12 }]}>:</AppText>
+                
+                {secondsLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
+                <CountUp value={secondsLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
+              </View>
+            )}
+            
+            <AppText style={[styles.titleText, { color: theme.primary }]}>{routine.label}</AppText>
           </View>
 
-          {success ? (
-            <Animated.View
-              entering={FadeIn.duration(400)}
-              style={styles.successContainer}
-            >
-              <View style={[styles.successBadge, { backgroundColor: theme.success }]}>
-                <AlambreIcons.Tick color="#fff" lineWidth={3} style={styles.successIcon} />
-              </View>
-              <Text style={[styles.successText, { color: theme.color }]}>¡Listo!</Text>
-            </Animated.View>
-          ) : (
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {routineItems.map((item) => {
-                const isTicked = !!ticked[item.id];
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setTicked((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
-                  >
-                    <Animated.View
-                      style={[
-                        styles.itemRow,
-                        {
-                          backgroundColor: isTicked ? theme.primarySoft : theme.surfaceAlt,
-                          borderColor: isTicked ? theme.primary : 'transparent',
-                        },
-                      ]}
+          {/* Body Section */}
+          <View style={styles.body}>
+            {success ? (
+              <Animated.View entering={FadeIn.delay(300)} style={styles.successMessage}>
+                <Pressable onPress={() => confirmAndClose()} style={({ pressed }) => [{ alignItems: 'center', opacity: pressed ? 0.8 : 1 }]}>
+                  <AppText style={[styles.successText, { color: theme.color }]}>¡Todo listo!</AppText>
+                  <AppText style={[styles.successSubtext, { color: theme.muted }]}>Que tengas un buen día</AppText>
+                  <AppText style={{ color: theme.primary, marginTop: 16, fontSize: 16, fontWeight: '600' }}>Toca para cerrar</AppText>
+                </Pressable>
+              </Animated.View>
+            ) : (
+              <ScrollView 
+                contentContainerStyle={styles.gridContainer}
+                showsVerticalScrollIndicator={false}
+              >
+                {routineItems.map((item, index) => {
+                  const isTicked = !!ticked[item.id];
+                  return (
+                    <Animated.View 
+                      key={item.id} 
+                      entering={FadeIn.delay(100 + index * 100).springify()}
                     >
-                      <View style={[styles.iconBox, { backgroundColor: item.color }]}>
-                        <ItemIcon
-                          icon={item.icon}
-                          color="#fff"
-                          style={styles.itemIcon}
-                          lineWidth={2}
+                      <Pressable
+                        onPress={() => toggle(item.id)}
+                        style={({ pressed }) => [
+                          styles.tile,
+                          {
+                            width: TILE_SIZE,
+                            height: 110,
+                            backgroundColor: isTicked ? theme.primarySoft : theme.surfaceAlt,
+                            transform: [{ scale: pressed ? 0.95 : 1 }],
+                          }
+                        ]}
+                      >
+                        {isTicked && (
+                          <Animated.View entering={ZoomIn} style={[StyleSheet.absoluteFill, styles.tileCheckedBg, { backgroundColor: theme.primary }]} />
+                        )}
+                        <View style={[styles.iconBox, { backgroundColor: isTicked ? 'transparent' : item.color }]}>
+                          {isTicked ? (
+                            <AlambreIcons.Tick color={theme.onPrimary} lineWidth={3} style={styles.itemIcon} />
+                          ) : (
+                            <ItemIcon
+                              icon={item.icon}
+                              color="#fff"
+                              style={styles.itemIcon}
+                              lineWidth={2}
+                            />
+                          )}
+                        </View>
+                        <AppText
+                          style={[
+                            styles.itemName,
+                            { color: isTicked ? theme.onPrimary : theme.color }
+                          ]}
+                          numberOfLines={2}
+                        >
+                          {item.name}
+                        </AppText>
+                        <SkiaFrame 
+                          color={isTicked ? theme.onPrimary : theme.border} 
+                          inset={6} 
+                          cornerGap={10} 
+                          strokeWidth={isTicked ? 2 : 1.5} 
+                          cornerShape="dot" 
                         />
-                      </View>
-                      <Text
-                        style={[
-                          styles.itemName,
-                          {
-                            color: isTicked ? theme.primary : theme.color,
-                            textDecorationLine: isTicked ? 'line-through' : 'none',
-                          },
-                        ]}
-                      >
-                        {item.name}
-                      </Text>
-                      <View
-                        style={[
-                          styles.checkbox,
-                          {
-                            borderColor: isTicked ? theme.primary : theme.muted,
-                            backgroundColor: isTicked ? theme.primary : 'transparent',
-                          },
-                        ]}
-                      >
-                        {isTicked && <AlambreIcons.Tick color="#fff" lineWidth={2.5} style={styles.checkIcon} />}
-                      </View>
+                      </Pressable>
                     </Animated.View>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          )}
+                  );
+                })}
+              </ScrollView>
+            )}
+          </View>
 
+          {/* Footer Actions */}
           {!success && (
-            <View style={styles.actions}>
+            <Animated.View entering={SlideInDown.delay(300)} style={styles.actions}>
               <AppButton
-                variant="outline"
-                tone="neutral"
-                label="Dismiss"
+                variant="soft"
+                tone="danger"
+                label={lang.common.cancel || "Dismiss"}
                 style={styles.actionBtn}
-                onPress={onCancel}
+                onPress={dismiss}
               />
               <AppButton
                 variant="solid"
                 tone="warning"
                 label="Snooze"
                 style={styles.actionBtn}
-                onPress={onSnooze}
+                onPress={postpone}
               />
-            </View>
+            </Animated.View>
           )}
-        </AppCard>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     zIndex: 9999,
-    justifyContent: 'flex-end',
   },
-  container: {
-    width: '100%',
-    padding: 16,
-    paddingBottom: 40,
+  safeArea: {
+    flex: 1,
+    paddingTop: 40,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
   },
-  card: {
-    padding: 24,
-    borderRadius: 32,
-    borderWidth: 1.5,
-    maxHeight: 500,
+  contentWrapper: {
+    flex: 1,
+    alignItems: 'center',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    width: '100%',
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+  glyphWrapper: {
+    marginBottom: 8,
   },
-  time: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  scroll: {
-    maxHeight: 300,
-  },
-  scrollContent: {
-    gap: 12,
-    paddingBottom: 16,
-  },
-  itemRow: {
+  countdownRow: {
     flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    marginBottom: 8, // Agranda el espacio entre el título y la hora
+  },
+  timeText: {
+    fontFamily: 'Kranky',
+    fontSize: 84, // Agranda el tamaño de la fuente del contador
+    lineHeight: 96,
+    letterSpacing: 2,
+    textAlign: 'center',
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    marginTop: 16, // Agranda el espacio entre la hora y el título
+  },
+  body: {
+    flex: 1,
+    width: '100%',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+    paddingBottom: 24,
+  },
+  tile: {
+    borderRadius: 20,
+    padding: 10,
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    justifyContent: 'center',
+    gap: 6,
+    overflow: 'hidden',
+  },
+  tileCheckedBg: {
+    borderRadius: 20,
   },
   iconBox: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -254,50 +280,43 @@ const styles = StyleSheet.create({
     height: 24,
   },
   itemName: {
-    flex: 1,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 12,
-  },
-  checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkIcon: {
-    width: 18,
-    height: 18,
+    textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: 16,
+    width: '100%',
+    paddingTop: 20,
   },
   actionBtn: {
     flex: 1,
-  },
-  successContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
+    height: 56,
+    borderRadius: 28,
   },
   successBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  successCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
   },
-  successIcon: {
-    width: 40,
-    height: 40,
+  successMessage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   successText: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Kranky',
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  successSubtext: {
+    fontSize: 18,
   },
 });

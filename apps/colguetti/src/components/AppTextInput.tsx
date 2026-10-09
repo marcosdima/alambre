@@ -1,3 +1,4 @@
+import AppText from './AppText';
 import type { ComponentProps, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import type {
@@ -6,7 +7,7 @@ import type {
   ViewStyle,
   TextInput,
 } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -220,7 +221,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
           <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }]}>
             {label}
           </Input.Label>
-          {required ? <Text style={styles.requiredAsterisk}>*</Text> : null}
+          {required ? <AppText style={styles.requiredAsterisk}>*</AppText> : null}
         </View>
       ) : null}
 
@@ -358,13 +359,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '700',
+    
     letterSpacing: 0.2,
   },
   requiredAsterisk: {
     color: '#ef4444',
     fontSize: 14,
-    fontWeight: '700',
+    
   },
   shell: {
     flexDirection: 'row',
@@ -413,6 +414,6 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '500',
+    
   },
 });

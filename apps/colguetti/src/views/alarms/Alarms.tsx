@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppText from '../../components/AppText';
+import { ScrollView, StyleSheet,  View } from 'react-native';
 import { useConfirm, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -15,6 +16,9 @@ import AppBadge from '../../components/AppBadge';
 import AppSwitch from '../../components/AppSwitch';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
+import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
+import TypewriterText from '../../components/TypewriterText';
+import DropInTitle from '../../components/DropInTitle';
 
 const MAX_VISIBLE_ITEMS = 3;
 
@@ -63,12 +67,12 @@ const AlarmItemsSummary = ({
               lineWidth={1.8}
             />
           </View>
-          <Text
+          <AppText
             numberOfLines={1}
             style={[styles.itemChipName, { color: theme.color }]}
           >
             {item.name}
-          </Text>
+          </AppText>
         </View>
       ))}
 
@@ -123,10 +127,19 @@ export default () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.screenHeader}>
+          <DropInTitle text={lang.alarms.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
+        </View>
+        
         {alarms.length === 0 ? (
-          <AppCard variant="outlined" style={styles.emptyCard}>
-            <Text style={[styles.empty, { color: theme.muted }]}>{lang.alarms.empty}</Text>
-          </AppCard>
+          <View style={styles.emptyContainer}>
+            <AlarmGlyph line={theme.color} size={140} />
+            <TypewriterText 
+              text={lang.alarms.empty} 
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]} 
+              initialDelay={300} 
+            />
+          </View>
         ) : (
           <View style={styles.list}>
             {alarms.map((alarm, index) => {
@@ -145,15 +158,15 @@ export default () => {
                   peekIndex={index === 0 ? 0 : undefined}
                 >
                   <AppCard
-                    variant="outlined"
+                    variant="soft"
                     padding="md"
                     style={styles.card}
                   >
                     <View style={styles.cardHeader}>
                       <View style={styles.headerLeft}>
-                        <Text style={[styles.label, { color: theme.color }]} numberOfLines={1}>
+                        <AppText style={[styles.label, { color: theme.color }]} numberOfLines={1}>
                           {alarm.label}
-                        </Text>
+                        </AppText>
                         <AppBadge
                           label={alarm.time}
                           tone={alarm.enabled ? 'primary' : 'neutral'}
@@ -169,9 +182,9 @@ export default () => {
                     </View>
 
                     <View style={styles.metaRow}>
-                      <Text style={[styles.metaText, { color: theme.muted }]}>
+                      <AppText style={[styles.metaText, { color: theme.muted }]}>
                         {weekdaysString}{next ? ` · Próx: ${next.toLocaleDateString()}` : ''}
-                      </Text>
+                      </AppText>
                     </View>
 
                     <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
@@ -211,9 +224,21 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 20,
   },
-  emptyCard: {
+  screenHeader: {
+    paddingVertical: 12,
+    marginBottom: 16,
     alignItems: 'center',
-    paddingVertical: 32,
+  },
+  screenTitle: {
+    fontFamily: 'Kranky',
+    fontSize: 42,
+    letterSpacing: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 24,
   },
   empty: {
     fontSize: 15,
@@ -226,6 +251,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -242,7 +268,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '700',
+    
     letterSpacing: -0.2,
     flexShrink: 1,
   },
@@ -287,7 +313,7 @@ const styles = StyleSheet.create({
   },
   itemChipName: {
     fontSize: 12,
-    fontWeight: '600',
+    
     flexShrink: 1,
   },
   footer: {

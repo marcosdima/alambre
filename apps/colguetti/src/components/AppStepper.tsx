@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import type { StepperProps } from 'alambre';
 import { Stepper } from 'alambre';
-import { View, Text, StyleSheet } from 'react-native';
+import { View,  StyleSheet } from 'react-native';
 import { useLightDark } from '../providers/theme';
 
 export type AppStepperProps = StepperProps & {
@@ -22,7 +23,7 @@ export default function AppStepper({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+      <AppText style={[styles.label, { color: theme.color }]}>{label}</AppText>
       <Stepper.Root
         value={value}
         min={min}
@@ -43,7 +44,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Decrement ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color }]}>-</Text>
+            <AppText style={[styles.btnText, { color: theme.color }]}>-</AppText>
           </Stepper.Decrement>
 
           <View
@@ -69,7 +70,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Increment ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color }]}>+</Text>
+            <AppText style={[styles.btnText, { color: theme.color }]}>+</AppText>
           </Stepper.Increment>
         </View>
       </Stepper.Root>
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    
   },
   controlRow: {
     flexDirection: 'row',
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: 18,
-    fontWeight: '700',
+    
     lineHeight: 20,
   },
   valueBox: {
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 14,
-    fontWeight: '700',
+    
     includeFontPadding: false,
     top: -1,
   },

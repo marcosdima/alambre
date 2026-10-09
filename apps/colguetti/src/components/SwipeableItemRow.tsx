@@ -1,5 +1,6 @@
+import AppText from './AppText';
 import { useEffect, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -44,7 +45,7 @@ export default function SwipeableItemRow({
         onDelete();
         snapTo(0);
       }
-    }
+    },
   });
 
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function SwipeableItemRow({
       >
         <Animated.View style={[styles.actionContent, animatedActionStyle]}>
           <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
-          <Text style={styles.deleteLabel}>Borrar</Text>
+          <AppText style={styles.deleteLabel}>Borrar</AppText>
         </Animated.View>
       </Animated.View>
 
@@ -140,6 +141,6 @@ const styles = StyleSheet.create({
   deleteLabel: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '800',
+    
   },
 });

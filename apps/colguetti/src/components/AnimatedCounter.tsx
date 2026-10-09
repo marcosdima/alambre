@@ -1,5 +1,6 @@
+import AppText from './AppText';
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet,  View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -14,6 +15,7 @@ type AnimatedCounterProps = {
   suffix?: string;
   color: string;
   fontSize?: number;
+  padLeadingZeroes?: boolean;
 };
 
 export default function AnimatedCounter({
@@ -21,6 +23,7 @@ export default function AnimatedCounter({
   suffix,
   color,
   fontSize = 20,
+  padLeadingZeroes = false,
 }: AnimatedCounterProps) {
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
@@ -44,15 +47,17 @@ export default function AnimatedCounter({
     ],
   }));
 
+  const displayValue = padLeadingZeroes ? String(value).padStart(2, '0') : value;
+
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.numberBox, animatedStyle]}>
-        <Text style={[styles.valueText, { color, fontSize }]}>{value}</Text>
+        <AppText style={[styles.valueText, { color, fontSize }]}>{displayValue}</AppText>
       </Animated.View>
       {suffix ? (
-        <Text style={[styles.suffixText, { color, fontSize: fontSize * 0.75 }]}>
+        <AppText style={[styles.suffixText, { color, fontSize: fontSize * 0.75 }]}>
           {suffix}
-        </Text>
+        </AppText>
       ) : null}
     </View>
   );
@@ -71,12 +76,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontWeight: '900',
+    
     letterSpacing: -0.5,
     includeFontPadding: false,
   },
   suffixText: {
-    fontWeight: '700',
+    
     opacity: 0.85,
     includeFontPadding: false,
   },

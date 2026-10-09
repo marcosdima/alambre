@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState, useEffect } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Stepper, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -16,6 +16,8 @@ import SwipeableTimePicker from '../../components/SwipeableTimePicker';
 import AnimatedCounter from '../../components/AnimatedCounter';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
 import type { Weekday } from '../../alarms/alarm-types';
+import AppText from '../../components/AppText';
+import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
   const { theme } = useLightDark();
@@ -40,13 +42,20 @@ export default () => {
     withActiveWindowDefault(editing?.activeWindowMinutes, defaultGraceMinutes),
   );
 
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setIsTransitioning(false), 150);
+    return () => clearTimeout(t);
+  }, []);
+
   const orderedItems = useMemo(() => {
+    if (isTransitioning) return [];
     const included = itemIds
       .map((id) => items.find((it) => it.id === id))
       .filter((it): it is (typeof items)[number] => it !== undefined);
     const unselected = items.filter((it) => !itemIds.includes(it.id));
     return [...included, ...unselected];
-  }, [items, itemIds]);
+  }, [items, itemIds, isTransitioning]);
 
   const close = () => {
     setIntent({});
@@ -105,6 +114,7 @@ export default () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+        <DropInTitle text={editing ? lang.alarms.editTitle : lang.alarms.addTitle} textStyle={{ color: theme.color, fontSize: 32, fontFamily: 'Kranky', marginBottom: 12 }} />
         <AppTextInput
           testID="alarm-label-input"
           label={lang.alarms.labelLabel}
@@ -117,10 +127,12 @@ export default () => {
           placeholder={lang.alarms.labelPlaceholder}
           clearable
           errorMessage={labelError ? lang.alarms.labelRequired : undefined}
+          shellStyle={{ backgroundColor: theme.primarySoft, borderColor: theme.primary }}
         />
 
         <AppCard
-          variant="outlined"
+          variant="soft"
+          selected
           title={lang.alarms.timeLabel}
           style={styles.card}
         >
@@ -135,7 +147,8 @@ export default () => {
         </AppCard>
 
         <AppCard
-          variant="outlined"
+          variant="soft"
+          selected
           title={lang.alarms.weekdaysLabel}
           style={styles.card}
         >
@@ -152,20 +165,20 @@ export default () => {
                   style={({ pressed }) => [
                     styles.daySquare,
                     {
-                      backgroundColor: active ? theme.primary : theme.surfaceAlt,
+                      backgroundColor: active ? theme.primary : theme.surface,
                       borderColor: active ? theme.primary : theme.borderSoft,
                     },
                     pressed && styles.pressed,
                   ]}
                 >
-                  <Text
+                  <AppText
                     style={[
                       styles.dayText,
                       { color: active ? theme.onPrimary : theme.muted },
                     ]}
                   >
                     {letter}
-                  </Text>
+                  </AppText>
                 </Pressable>
               );
             })}
@@ -173,7 +186,8 @@ export default () => {
         </AppCard>
 
         <AppCard
-          variant="outlined"
+          variant="soft"
+          selected
           title={lang.alarms.itemsLabel}
           subtitle={
             itemIds.length > 0
@@ -183,7 +197,11 @@ export default () => {
           style={styles.card}
         >
           {items.length === 0 ? (
-            <Text style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</Text>
+            <AppText style={{ color: theme.muted, fontSize: 13 }}>{lang.items.empty}</AppText>
+          ) : isTransitioning ? (
+            <View style={{ height: 100, alignItems: 'center', justifyContent: 'center' }}>
+              <AppText style={{ color: theme.muted, fontSize: 13 }}>Cargando ítems...</AppText>
+            </View>
           ) : (
             <View style={styles.itemsList}>
               {orderedItems.map((item, index) => {
@@ -197,7 +215,7 @@ export default () => {
                       styles.itemCell,
                       {
                         borderColor: active ? theme.primary : theme.borderSoft,
-                        backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                        backgroundColor: active ? theme.primary : theme.surface,
                         borderWidth: active ? 2 : 1,
                       },
                       pressed && styles.pressed,
@@ -212,15 +230,15 @@ export default () => {
                         iconAnimation={catalogDrawAnimation}
                       />
                     </View>
-                    <Text
+                    <AppText
                       style={[
                         styles.itemName,
-                        { color: active ? theme.primary : theme.color, fontWeight: active ? '700' : '600' },
+                        { color: active ? theme.onPrimary : theme.color, fontWeight: active ? '700' : '600' },
                       ]}
                       numberOfLines={1}
                     >
                       {item.name}
-                    </Text>
+                    </AppText>
 
                     {active && itemIds.length > 1 && (
                       <View style={styles.itemOrderControls}>
@@ -233,11 +251,11 @@ export default () => {
                           accessibilityLabel="Subir prioridad"
                           style={({ pressed }) => [
                             styles.orderBtn,
-                            { backgroundColor: theme.surfaceAlt, opacity: orderIndex === 0 ? 0.3 : 1 },
+                            { backgroundColor: theme.surface, opacity: orderIndex === 0 ? 0.3 : 1 },
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={[styles.orderArrow, { color: theme.color }]}>▲</Text>
+                          <AppText style={[styles.orderArrow, { color: theme.color }]}>▲</AppText>
                         </Pressable>
                         <Pressable
                           disabled={orderIndex === itemIds.length - 1}
@@ -248,11 +266,11 @@ export default () => {
                           accessibilityLabel="Bajar prioridad"
                           style={({ pressed }) => [
                             styles.orderBtn,
-                            { backgroundColor: theme.surfaceAlt, opacity: orderIndex === itemIds.length - 1 ? 0.3 : 1 },
+                            { backgroundColor: theme.surface, opacity: orderIndex === itemIds.length - 1 ? 0.3 : 1 },
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={[styles.orderArrow, { color: theme.color }]}>▼</Text>
+                          <AppText style={[styles.orderArrow, { color: theme.color }]}>▼</AppText>
                         </Pressable>
                       </View>
                     )}
@@ -261,13 +279,13 @@ export default () => {
                       style={[
                         styles.itemCheck,
                         {
-                          borderColor: active ? theme.primary : theme.border,
-                          backgroundColor: active ? theme.primary : 'transparent',
+                          borderColor: active ? theme.onPrimary : theme.border,
+                          backgroundColor: active ? theme.onPrimary : 'transparent',
                         },
                       ]}
                     >
                       {active && (
-                        <Text style={[styles.itemCheckMark, { color: theme.onPrimary }]}>✓</Text>
+                        <AppText style={[styles.itemCheckMark, { color: theme.primary }]}>✓</AppText>
                       )}
                     </View>
                   </Pressable>
@@ -278,7 +296,8 @@ export default () => {
         </AppCard>
 
         <AppCard
-          variant="outlined"
+          variant="soft"
+          selected
           title={lang.alarms.windowLabel}
           style={styles.card}
         >
@@ -326,7 +345,8 @@ export default () => {
 
 
         <AppCard
-          variant="outlined"
+          variant="soft"
+          selected
           style={styles.card}
         >
           <AppSwitch
@@ -369,6 +389,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   timePickerContainer: {
     alignItems: 'center',
@@ -390,7 +411,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 14,
-    fontWeight: '800',
+    
   },
   itemsList: {
     flexDirection: 'column',
@@ -429,7 +450,7 @@ const styles = StyleSheet.create({
   },
   orderArrow: {
     fontSize: 10,
-    fontWeight: '800',
+    
   },
   itemCheck: {
     width: 22,
@@ -441,7 +462,7 @@ const styles = StyleSheet.create({
   },
   itemCheckMark: {
     fontSize: 13,
-    fontWeight: '800',
+    
     lineHeight: 16,
   },
   stepperContainer: {

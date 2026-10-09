@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -32,6 +33,7 @@ export type AppCardProps = {
   interactive?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
   bodyStyle?: StyleProp<ViewStyle>;
   footerStyle?: StyleProp<ViewStyle>;
@@ -54,6 +56,7 @@ export default function AppCard({
   interactive = false,
   disabled = false,
   style,
+  contentStyle,
   headerStyle,
   bodyStyle,
   footerStyle,
@@ -138,7 +141,8 @@ export default function AppCard({
         },
         animatedScaleStyle,
         disabled && styles.disabled,
-        !onPress && style,
+        !onPress && !interactive && style,
+        contentStyle,
       ]}
     >
       {/* Optional Structured Header */}
@@ -148,9 +152,9 @@ export default function AppCard({
             {badgePosition === 'inline' ? (
               <View style={styles.titleBadgeRow}>
                 {typeof title === 'string' ? (
-                  <Text style={[styles.titleText, { color: theme.color }]}>
+                  <AppText style={[styles.titleText, { color: theme.color }]}>
                     {title}
-                  </Text>
+                  </AppText>
                 ) : (
                   title
                 )}
@@ -169,18 +173,18 @@ export default function AppCard({
                 ) : null}
               </View>
             ) : typeof title === 'string' ? (
-              <Text style={[styles.titleText, { color: theme.color }]}>
+              <AppText style={[styles.titleText, { color: theme.color }]}>
                 {title}
-              </Text>
+              </AppText>
             ) : (
               title
             )}
 
             {subtitle ? (
               typeof subtitle === 'string' ? (
-                <Text style={[styles.subtitleText, { color: theme.muted }]}>
+                <AppText style={[styles.subtitleText, { color: theme.muted }]}>
                   {subtitle}
-                </Text>
+                </AppText>
               ) : (
                 subtitle
               )
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 16,
-    fontWeight: '700',
+    
     letterSpacing: -0.2,
     flexShrink: 1,
     includeFontPadding: false,
