@@ -4,6 +4,7 @@ import ItemForm from '../views/items/ItemForm';
 import Alarms from '../views/alarms/Alarms';
 import AlarmForm from '../views/alarms/AlarmForm';
 import Settings from '../views/settings/Settings';
+import Tutorial from '../views/tutorial/Tutorial';
 import { langs } from '../providers/lang';
 import type { Page } from 'alambre';
 
@@ -50,6 +51,10 @@ export const pages: Record<string, AppPage> = {
   settings: {
     component: <Settings />,
     title: title(langs.es.settings.title, langs.en.settings.title),
+  },
+  tutorial: {
+    component: <Tutorial />,
+    title: title('Tutorial', 'Tutorial'),
   },
 };
 

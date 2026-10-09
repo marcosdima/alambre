@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { Linking, Pressable, ScrollView, StyleSheet,  View } from 'react-native';
-import { AlambreIcons, useToast } from 'alambre';
+import { AlambreIcons, useToast, useNavigator } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
@@ -22,6 +22,8 @@ export default () => {
   const { show } = useToast();
   const { permission, loading, requestPermission, openSettings, sendTestNotification } =
     useNotificationPermission();
+
+  const { navigate } = useNavigator();
 
   const permissionHint = loading
     ? lang.settings.notificationsChecking
@@ -81,6 +83,22 @@ export default () => {
       <View style={styles.screenHeader}>
         <DropInTitle text={lang.settings.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
       </View>
+
+      {/* Tutorial */}
+      <AppCard
+        variant="soft"
+        title={lang.settings.tutorialTitle}
+        subtitle={lang.settings.tutorialSubtitle}
+        style={styles.card}
+      >
+        <AppButton
+          variant="outline"
+          tone="primary"
+          label={lang.settings.tutorialAction}
+          onPress={() => navigate('tutorial')}
+          fullWidth
+        />
+      </AppCard>
 
       {/* Idioma / Language */}
       <AppCard

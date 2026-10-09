@@ -87,6 +87,9 @@ export const langs = {
     },
     settings: {
       title: 'Ajustes',
+      tutorialTitle: 'Tutorial',
+      tutorialSubtitle: 'Aprendé a usar Colguetti',
+      tutorialAction: 'Abrir tutorial',
       language: 'Idioma',
       theme: 'Tema',
       themeSubtitleLight: 'Modo claro activado',
@@ -201,6 +204,9 @@ export const langs = {
     },
     settings: {
       title: 'Settings',
+      tutorialTitle: 'Tutorial',
+      tutorialSubtitle: 'Learn how to use Colguetti',
+      tutorialAction: 'Open tutorial',
       language: 'Language',
       theme: 'Theme',
       themeSubtitleLight: 'Light mode active',
