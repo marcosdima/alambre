@@ -23,20 +23,20 @@ import DropInTitle from '../../components/DropInTitle';
 const AlarmVisualSummary = ({
   items,
   theme,
-  enabled,
+
   weekdays,
   emptyLabel,
   lang,
+  accentColor,
 }: {
   items: Item[];
   theme: ReturnType<typeof useLightDark>['theme'];
-  enabled: boolean;
+
   weekdays: number[];
   emptyLabel: string;
   lang: ReturnType<typeof useLang>['lang'];
+  accentColor: string;
 }) => {
-  const activeColor = enabled ? theme.color : theme.muted;
-
   return (
     <View style={styles.footerRow}>
       <View style={styles.daysRow}>
@@ -48,14 +48,14 @@ const AlarmVisualSummary = ({
               style={[
                 styles.dayBadge,
                 {
-                  backgroundColor: isActive ? theme.surfaceAlt : 'transparent',
+                  backgroundColor: isActive ? accentColor : 'transparent',
                 },
               ]}
             >
               <AppText
                 style={{
                   fontSize: 12,
-                  color: isActive ? activeColor : theme.borderSoft,
+                  color: isActive ? theme.background : theme.borderSoft,
                   fontWeight: isActive ? '600' : '400',
                 }}
               >
@@ -72,7 +72,7 @@ const AlarmVisualSummary = ({
           { backgroundColor: items.length > 0 ? theme.surfaceAlt : 'transparent' },
         ]}
       >
-        <AppText style={{ fontSize: 13, color: activeColor, fontWeight: '500' }}>
+        <AppText style={{ fontSize: 13, color: items.length > 0 ? accentColor : theme.muted, fontWeight: '500' }}>
           {items.length === 0
             ? emptyLabel
             : lang.alarms.count.replace('{count}', items.length.toString())}
@@ -91,6 +91,7 @@ export default () => {
   const { show } = useToast();
   const { confirm } = useConfirm();
   const { setIntent } = useRouteIntent();
+  const cardColors = [theme.primary, theme.secondary, theme.warning, theme.danger, theme.success, theme.sand];
   const now = new Date();
 
   const openForm = (alarm?: Alarm) => {
@@ -112,7 +113,6 @@ export default () => {
     show({ payload: { title: lang.alarms.deleted, content: alarm.label, tone: 'success' }, duration: 3000 });
   };
 
-  const weekdayLabels = lang.alarms.weekdays;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -138,11 +138,8 @@ export default () => {
           <View style={styles.list}>
             {alarms.map((alarm, index) => {
               const next = nextOccurrence(alarm, now);
-              const weekdaysString = alarm.weekdays
-                .map((d) => weekdayLabels[d])
-                .join(' · ');
-
               const alarmItems = items.filter((it) => alarm.itemIds.includes(it.id));
+              const accentColor = alarm.enabled ? cardColors[index % cardColors.length] : theme.muted;
 
               return (
                 <SwipeableItemRow
@@ -161,7 +158,7 @@ export default () => {
                   >
                     <View style={styles.cardHeader}>
                       <View style={styles.headerLeft}>
-                        <AppText style={[styles.timeText, { color: alarm.enabled ? theme.color : theme.muted }]}>
+                        <AppText style={[styles.timeText, { color: accentColor }]}>
                           {alarm.time}
                         </AppText>
                         <AppText style={[styles.label, { color: alarm.enabled ? theme.color : theme.muted }]} numberOfLines={1}>
@@ -189,10 +186,11 @@ export default () => {
                       <AlarmVisualSummary
                         items={alarmItems}
                         theme={theme}
-                        enabled={alarm.enabled}
+
                         weekdays={alarm.weekdays}
                         emptyLabel={lang.alarms.itemsLabel}
                         lang={lang}
+                        accentColor={accentColor}
                       />
                     </View>
                   </AppCard>
