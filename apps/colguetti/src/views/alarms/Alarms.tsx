@@ -48,14 +48,14 @@ const AlarmVisualSummary = ({
               style={[
                 styles.dayBadge,
                 {
-                  backgroundColor: isActive ? accentColor : 'transparent',
+                  backgroundColor: isActive ? accentColor : '#ffffff',
                 },
               ]}
             >
               <AppText
                 style={{
                   fontSize: 12,
-                  color: isActive ? theme.background : theme.borderSoft,
+                  color: isActive ? theme.background : '#8f938f', // or theme.border, using dark gray
                   fontWeight: isActive ? '600' : '400',
                 }}
               >
@@ -153,6 +153,7 @@ export default () => {
                     padding="lg"
                     style={[
                       styles.card,
+                      { borderColor: '#ffffff' },
                       !alarm.enabled && { backgroundColor: theme.surfaceAlt, opacity: 0.75 },
                     ]}
                   >
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   cardFooter: {
     marginTop: 16,
     paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 2,
   },
   pressed: {
     opacity: 0.7,
