@@ -157,17 +157,15 @@ export default function TypewriterText({
         style={[styles.text, { color: theme.color }, textStyle]}
       >
         {visibleText}
-        {isCursorVisible ? (
-          <AppText
-            style={[
-              styles.cursor,
-              { color: cursorColor ?? theme.primary },
-              cursorStyle,
-            ]}
-          >
-            {cursorChar}
-          </AppText>
-        ) : null}
+        <AppText
+          style={[
+            styles.cursor,
+            { color: cursorColor ?? theme.primary, opacity: isCursorVisible ? 1 : 0 },
+            cursorStyle,
+          ]}
+        >
+          {cursorChar}
+        </AppText>
       </AppText>
     </View>
   );
