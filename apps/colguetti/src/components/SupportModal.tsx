@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    
+
     letterSpacing: -0.3,
     textAlign: 'center',
   },

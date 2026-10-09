@@ -25,7 +25,7 @@ export default function AppSplash({ onFinished }: { onFinished?: () => void }) {
 
   return (
     <Animated.View style={[styles.container, { backgroundColor: theme.background }, { opacity }]}>
-      <TypewriterText 
+      <TypewriterText
         text="Colguetti"
         speed={120}
         initialDelay={200}

@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 16,
-    
+
     letterSpacing: -0.2,
     flexShrink: 1,
     includeFontPadding: false,

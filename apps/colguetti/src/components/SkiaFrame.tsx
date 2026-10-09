@@ -4,18 +4,18 @@ import { Canvas, Circle, Path, Group, vec, DashPathEffect } from '@shopify/react
 
 import Animated, { useSharedValue, withTiming } from 'react-native-reanimated';
 
-export default function SkiaFrame({ 
-  color = '#000', 
-  inset = 8, 
+export default function SkiaFrame({
+  color = '#000',
+  inset = 8,
   strokeWidth = 1.5,
   cornerSize = 3,
   cornerGap = 12,
   cornerShape = 'dot',
   rotateCorners = false,
   dashed = false,
-}: { 
-  color?: string; 
-  inset?: number; 
+}: {
+  color?: string;
+  inset?: number;
   strokeWidth?: number;
   cornerSize?: number;
   cornerGap?: number;
@@ -35,18 +35,18 @@ export default function SkiaFrame({
     if (cornerShape === 'square') {
       const s = cornerSize * 1.5;
       shape = (
-        <Path 
-          path={`M ${cx - s} ${cy - s} L ${cx + s} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`} 
-          color={color} 
+        <Path
+          path={`M ${cx - s} ${cy - s} L ${cx + s} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`}
+          color={color}
           style="fill"
         />
       );
     } else if (cornerShape === 'triangle') {
       const s = cornerSize * 1.5;
       shape = (
-        <Path 
-          path={`M ${cx} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`} 
-          color={color} 
+        <Path
+          path={`M ${cx} ${cy - s} L ${cx + s} ${cy + s} L ${cx - s} ${cy + s} Z`}
+          color={color}
           style="fill"
         />
       );
@@ -61,7 +61,7 @@ export default function SkiaFrame({
         </Group>
       );
     }
-    
+
     return <Group key={`corner-${cx}-${cy}`}>{shape}</Group>;
   };
 
@@ -72,9 +72,9 @@ export default function SkiaFrame({
   );
 
   return (
-    <View 
-      style={StyleSheet.absoluteFill} 
-      pointerEvents="none" 
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
       onLayout={(e) => setSize({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
     >
       {size.width > 0 && size.height > 0 && (
@@ -87,7 +87,7 @@ export default function SkiaFrame({
           {renderPath(`M ${inset} ${size.height - inset - cornerGap} L ${inset} ${inset + cornerGap}`)}
           {/* Right Line */}
           {renderPath(`M ${size.width - inset} ${inset + cornerGap} L ${size.width - inset} ${size.height - inset - cornerGap}`)}
-          
+
           {/* Corners */}
           {renderCorner(inset, inset, -Math.PI / 4)}
           {renderCorner(size.width - inset, inset, Math.PI / 4)}

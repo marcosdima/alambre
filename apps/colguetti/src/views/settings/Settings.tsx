@@ -71,7 +71,7 @@ export default () => {
   };
 
   return (
-      <ScrollView
+    <ScrollView
       style={{ flex: 1, backgroundColor: theme.background }}
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
@@ -79,7 +79,7 @@ export default () => {
       <View style={styles.screenHeader}>
         <DropInTitle text={lang.settings.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
       </View>
-      
+
       {/* Idioma / Language */}
       <AppCard
         variant="soft"
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   aboutValue: {
     fontSize: 14,
-    
+
   },
   aboutDivider: {
     height: StyleSheet.hairlineWidth,

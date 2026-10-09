@@ -7,7 +7,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  
+
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 19,
-    
+
     textAlign: 'center',
     letterSpacing: -0.2,
   },

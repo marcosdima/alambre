@@ -83,10 +83,10 @@ export default () => {
         {items.length === 0 ? (
           <View style={styles.emptyContainer}>
             <ItemsGlyph line={theme.color} size={140} />
-            <TypewriterText 
-              text={lang.items.empty} 
-              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]} 
-              initialDelay={300} 
+            <TypewriterText
+              text={lang.items.empty}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
+              initialDelay={300}
             />
           </View>
         ) : (
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   cardName: {
     flex: 1,
     fontSize: 15,
-    
+
     letterSpacing: -0.1,
   },
   crossIcon: {
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   stepperArrow: {
     fontSize: 11,
-    
+
   },
   pressed: {
     opacity: 0.7,

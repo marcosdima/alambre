@@ -71,7 +71,7 @@ export default function ActivationOverlay() {
       exiting={FadeOut.duration(400)}
     >
       <View style={[styles.safeArea, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 }]}>
-        <Animated.View 
+        <Animated.View
           entering={SlideInDown.springify().damping(28).stiffness(110)}
           style={styles.contentWrapper}
         >
@@ -90,19 +90,19 @@ export default function ActivationOverlay() {
                 </Pressable>
               </Animated.View>
             )}
-            
+
             {!success && (
               <View style={styles.countdownRow}>
                 {minutesLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
                 <CountUp value={minutesLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
-                
+
                 <AppText style={[styles.timeText, { color: theme.color, marginHorizontal: 12 }]}>:</AppText>
-                
+
                 {secondsLeft < 10 && <AppText style={[styles.timeText, { color: theme.color }]}>0</AppText>}
                 <CountUp value={secondsLeft} duration={400} style={[styles.timeText, { color: theme.color }]} />
               </View>
             )}
-            
+
             <AppText style={[styles.titleText, { color: theme.primary }]}>{routine.label}</AppText>
           </View>
 
@@ -117,15 +117,15 @@ export default function ActivationOverlay() {
                 </Pressable>
               </Animated.View>
             ) : (
-              <ScrollView 
+              <ScrollView
                 contentContainerStyle={styles.gridContainer}
                 showsVerticalScrollIndicator={false}
               >
                 {routineItems.map((item, index) => {
                   const isTicked = !!ticked[item.id];
                   return (
-                    <Animated.View 
-                      key={item.id} 
+                    <Animated.View
+                      key={item.id}
                       entering={FadeIn.delay(100 + index * 100).springify()}
                     >
                       <Pressable
@@ -137,7 +137,7 @@ export default function ActivationOverlay() {
                             height: 110,
                             backgroundColor: isTicked ? theme.primarySoft : theme.surfaceAlt,
                             transform: [{ scale: pressed ? 0.95 : 1 }],
-                          }
+                          },
                         ]}
                       >
                         {isTicked && (
@@ -158,18 +158,18 @@ export default function ActivationOverlay() {
                         <AppText
                           style={[
                             styles.itemName,
-                            { color: isTicked ? theme.onPrimary : theme.color }
+                            { color: isTicked ? theme.onPrimary : theme.color },
                           ]}
                           numberOfLines={2}
                         >
                           {item.name}
                         </AppText>
-                        <SkiaFrame 
-                          color={isTicked ? theme.onPrimary : theme.border} 
-                          inset={6} 
-                          cornerGap={10} 
-                          strokeWidth={isTicked ? 2 : 1.5} 
-                          cornerShape="dot" 
+                        <SkiaFrame
+                          color={isTicked ? theme.onPrimary : theme.border}
+                          inset={6}
+                          cornerGap={10}
+                          strokeWidth={isTicked ? 2 : 1.5}
+                          cornerShape="dot"
                         />
                       </Pressable>
                     </Animated.View>
@@ -185,7 +185,7 @@ export default function ActivationOverlay() {
               <AppButton
                 variant="soft"
                 tone="danger"
-                label={lang.common.cancel || "Dismiss"}
+                label={lang.common.cancel || 'Dismiss'}
                 style={styles.actionBtn}
                 onPress={dismiss}
               />

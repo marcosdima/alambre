@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   columnLabel: {
     fontSize: 11,
-    
+
     letterSpacing: 1,
     textAlign: 'center',
     width: 60,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   colonText: {
     fontSize: 26,
-    
+
     lineHeight: 30,
   },
 });

@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   infoMark: {
     fontSize: 16,
-    
+
   },
   textContainer: {
     flex: 1,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    
+
   },
   content: {
     fontSize: 13,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 12,
-    
+
   },
   queueBadge: {
     paddingHorizontal: 6,
@@ -388,14 +388,14 @@ const styles = StyleSheet.create({
   },
   queueBadgeText: {
     fontSize: 10,
-    
+
   },
   closeBtn: {
     padding: 4,
   },
   closeText: {
     fontSize: 14,
-    
+
   },
   progressTrack: {
     height: 3,

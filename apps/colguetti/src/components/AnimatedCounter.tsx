@@ -76,12 +76,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    
+
     letterSpacing: -0.5,
     includeFontPadding: false,
   },
   suffixText: {
-    
+
     opacity: 0.85,
     includeFontPadding: false,
   },

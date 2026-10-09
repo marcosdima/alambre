@@ -113,12 +113,12 @@ const styles = StyleSheet.create({
   },
   letter: {
     fontSize: 36,
-    
+
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    
+
     marginTop: 4,
     opacity: 0.9,
   },

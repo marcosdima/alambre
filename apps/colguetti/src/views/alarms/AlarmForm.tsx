@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   dayText: {
     fontSize: 14,
-    
+
   },
   itemsList: {
     flexDirection: 'column',
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   },
   orderArrow: {
     fontSize: 10,
-    
+
   },
   itemCheck: {
     width: 22,
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   },
   itemCheckMark: {
     fontSize: 13,
-    
+
     lineHeight: 16,
   },
   stepperContainer: {

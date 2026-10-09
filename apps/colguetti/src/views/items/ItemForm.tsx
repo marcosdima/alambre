@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
@@ -32,7 +32,7 @@ export default () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [isTransitioning, setIsTransitioning] = useState(true);
-  
+
   useEffect(() => {
     const t = setTimeout(() => setIsTransitioning(false), 150);
     return () => clearTimeout(t);

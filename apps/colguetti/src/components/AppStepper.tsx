@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    
+
   },
   controlRow: {
     flexDirection: 'row',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: 18,
-    
+
     lineHeight: 20,
   },
   valueBox: {
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 14,
-    
+
     includeFontPadding: false,
     top: -1,
   },

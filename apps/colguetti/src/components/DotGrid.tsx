@@ -4,7 +4,7 @@ import { Canvas, Points, vec } from '@shopify/react-native-skia';
 
 export default function DotGrid({ color, spacing = 24, radius = 1.5, opacity = 1 }: { color: string; spacing?: number; radius?: number; opacity?: number }) {
   const { width, height } = useWindowDimensions();
-  
+
   const points = useMemo(() => {
     const cols = Math.ceil(width / spacing) + 1;
     const rows = Math.ceil(height / spacing) + 1;

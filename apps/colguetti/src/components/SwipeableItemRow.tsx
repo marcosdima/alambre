@@ -141,6 +141,6 @@ const styles = StyleSheet.create({
   deleteLabel: {
     color: '#ffffff',
     fontSize: 12,
-    
+
   },
 });

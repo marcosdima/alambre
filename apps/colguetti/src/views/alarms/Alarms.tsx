@@ -12,7 +12,7 @@ import { cancelAlarmAlerts } from '../../notifications/expiry';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
-import AppBadge from '../../components/AppBadge';
+
 import AppSwitch from '../../components/AppSwitch';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
@@ -20,70 +20,92 @@ import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
 import TypewriterText from '../../components/TypewriterText';
 import DropInTitle from '../../components/DropInTitle';
 
-const MAX_VISIBLE_ITEMS = 3;
-
-const AlarmItemsSummary = ({
+const AlarmVisualSummary = ({
   items,
   theme,
+  enabled,
+  weekdays,
   emptyLabel,
 }: {
   items: Item[];
-  theme: {
-    color: string;
-    borderSoft: string;
-    surfaceAlt: string;
-    primary: string;
-  };
+  theme: ReturnType<typeof useLightDark>['theme'];
+  enabled: boolean;
+  weekdays: number[];
   emptyLabel: string;
 }) => {
-  if (items.length === 0) {
-    return (
-      <View style={styles.itemSummaryRow}>
-        <AppBadge label={emptyLabel} tone="neutral" variant="soft" size="sm" />
-      </View>
-    );
-  }
+  const visible = items.slice(0, 4);
+  const remaining = items.length - 4;
 
-  const visible = items.slice(0, MAX_VISIBLE_ITEMS);
-  const remaining = items.length - MAX_VISIBLE_ITEMS;
+  const activeColor = enabled ? theme.color : theme.muted;
+  const primaryActive = enabled ? theme.primary : theme.borderSoft;
 
   return (
-    <View style={styles.itemSummaryRow}>
-      {visible.map((item) => (
-        <View
-          key={item.id}
-          style={[
-            styles.itemChip,
-            {
-              borderColor: item.color || theme.borderSoft,
-              backgroundColor: theme.surfaceAlt,
-            },
-          ]}
-        >
-          <View style={styles.itemIconBubble}>
-            <ItemIcon
-              icon={item.icon}
-              color={item.color}
-              lineWidth={1.8}
+    <View style={styles.footerRow}>
+      <View style={styles.daysRow}>
+        {[1, 2, 3, 4, 5, 6, 0].map((day) => {
+          const isActive = weekdays.includes(day);
+          return (
+            <View
+              key={day}
+              style={[
+                styles.dayDot,
+                {
+                  backgroundColor: isActive ? primaryActive : 'transparent',
+                  borderColor: isActive ? primaryActive : theme.borderSoft,
+                },
+              ]}
             />
-          </View>
-          <AppText
-            numberOfLines={1}
-            style={[styles.itemChipName, { color: theme.color }]}
-          >
-            {item.name}
-          </AppText>
-        </View>
-      ))}
+          );
+        })}
+      </View>
 
-      {remaining > 0 && (
-        <AppBadge
-          label={`+${remaining}`}
-          tone="neutral"
-          variant="outline"
-          size="sm"
-        />
-      )}
+      <View style={styles.itemStack}>
+        {items.length === 0 ? (
+          <AppText style={{ fontSize: 13, color: theme.muted }}>{emptyLabel}</AppText>
+        ) : (
+          <>
+            {visible.map((item, idx) => (
+              <View
+                key={item.id}
+                style={[
+                  styles.stackIcon,
+                  {
+                    zIndex: 4 - idx,
+                    transform: [{ translateX: -idx * 8 }],
+                    backgroundColor: theme.surface,
+                    borderColor: theme.borderSoft,
+                  },
+                ]}
+              >
+                <View style={{ transform: [{ scale: 0.7 }] }}>
+                  <ItemIcon
+                    icon={item.icon}
+                    color={enabled ? item.color : theme.muted}
+                    lineWidth={2}
+                  />
+                </View>
+              </View>
+            ))}
+            {remaining > 0 && (
+              <View
+                style={[
+                  styles.stackIcon,
+                  {
+                    zIndex: 0,
+                    transform: [{ translateX: -4 * 8 }],
+                    backgroundColor: theme.surfaceAlt,
+                    borderColor: theme.borderSoft,
+                  },
+                ]}
+              >
+                <AppText style={{ fontSize: 11, color: activeColor }}>
+                  +{remaining}
+                </AppText>
+              </View>
+            )}
+          </>
+        )}
+      </View>
     </View>
   );
 };
@@ -130,14 +152,14 @@ export default () => {
         <View style={styles.screenHeader}>
           <DropInTitle text={lang.alarms.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
         </View>
-        
+
         {alarms.length === 0 ? (
           <View style={styles.emptyContainer}>
             <AlarmGlyph line={theme.color} size={140} />
-            <TypewriterText 
-              text={lang.alarms.empty} 
-              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]} 
-              initialDelay={300} 
+            <TypewriterText
+              text={lang.alarms.empty}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
+              initialDelay={300}
             />
           </View>
         ) : (
@@ -159,38 +181,44 @@ export default () => {
                 >
                   <AppCard
                     variant="soft"
-                    padding="md"
-                    style={styles.card}
+                    padding="lg"
+                    style={[
+                      styles.card,
+                      !alarm.enabled && { backgroundColor: theme.surfaceAlt, opacity: 0.75 },
+                    ]}
                   >
                     <View style={styles.cardHeader}>
                       <View style={styles.headerLeft}>
-                        <AppText style={[styles.label, { color: theme.color }]} numberOfLines={1}>
+                        <AppText style={[styles.timeText, { color: alarm.enabled ? theme.color : theme.muted }]}>
+                          {alarm.time}
+                        </AppText>
+                        <AppText style={[styles.label, { color: alarm.enabled ? theme.color : theme.muted }]} numberOfLines={1}>
                           {alarm.label}
                         </AppText>
-                        <AppBadge
-                          label={alarm.time}
-                          tone={alarm.enabled ? 'primary' : 'neutral'}
-                          variant={alarm.enabled ? 'soft' : 'outline'}
+                      </View>
+                      <View style={styles.switchContainer}>
+                        <AppSwitch
+                          checked={alarm.enabled}
+                          onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                           size="md"
                         />
                       </View>
-                      <AppSwitch
-                        checked={alarm.enabled}
-                        onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
-                        size="sm"
-                      />
                     </View>
 
-                    <View style={styles.metaRow}>
-                      <AppText style={[styles.metaText, { color: theme.muted }]}>
-                        {weekdaysString}{next ? ` · Próx: ${next.toLocaleDateString()}` : ''}
-                      </AppText>
-                    </View>
+                    {next && (
+                      <View style={styles.metaRow}>
+                        <AppText style={[styles.metaText, { color: theme.muted }]}>
+                          Próx: {next.toLocaleDateString()}
+                        </AppText>
+                      </View>
+                    )}
 
                     <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
-                      <AlarmItemsSummary
+                      <AlarmVisualSummary
                         items={alarmItems}
                         theme={theme}
+                        enabled={alarm.enabled}
+                        weekdays={alarm.weekdays}
                         emptyLabel={lang.alarms.itemsLabel}
                       />
                     </View>
@@ -262,59 +290,73 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
     minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 0,
+  },
+  timeText: {
+    fontSize: 48,
+    fontFamily: 'Kranky',
+    letterSpacing: 1,
+    lineHeight: 52,
+    includeFontPadding: false,
+    fontVariant: ['tabular-nums'],
+  },
+  switchContainer: {
+    justifyContent: 'center',
+    paddingLeft: 16,
   },
   label: {
     fontSize: 16,
-    
     letterSpacing: -0.2,
     flexShrink: 1,
   },
   metaRow: {
-    marginTop: 6,
+    marginTop: 0,
   },
   metaText: {
     fontSize: 13,
-    lineHeight: 18,
   },
   cardFooter: {
-    marginTop: 12,
-    paddingTop: 10,
+    marginTop: 16,
+    paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   pressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  itemSummaryRow: {
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  daysRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    minHeight: 28,
   },
-  itemChip: {
+  dayDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1.5,
+  },
+  itemStack: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingVertical: 3,
-    paddingHorizontal: 7,
-    borderRadius: 8,
-    borderWidth: 1.2,
-    maxWidth: 110,
-    flexShrink: 1,
+    justifyContent: 'flex-end',
+    width: 80,
+    minHeight: 32,
   },
-  itemIconBubble: {
-    width: 16,
-    height: 16,
+  stackIcon: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  itemChipName: {
-    fontSize: 12,
-    
-    flexShrink: 1,
   },
   footer: {
     padding: 20,

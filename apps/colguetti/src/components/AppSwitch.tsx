@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    
+
   },
   subtitle: {
     fontSize: 12,

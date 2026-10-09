@@ -8,7 +8,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  
+
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    
+
     textAlign: 'center',
   },
   description: {
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 16,
-    
+
   },
   optionSubtitle: {
     fontSize: 13,

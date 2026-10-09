@@ -1,11 +1,12 @@
 import AppText from './AppText';
 import React, { useEffect } from 'react';
-import { View, StyleSheet, StyleProp, TextStyle } from 'react-native';
+import type { StyleProp, TextStyle } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
 
 export default function DropInTitle({ text, textStyle }: { text: string; textStyle?: StyleProp<TextStyle> }) {
   const letters = text.split('');
-  
+
   return (
     <View style={styles.row}>
       {letters.map((char, index) => (
@@ -42,5 +43,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'visible',
-  }
+  },
 });

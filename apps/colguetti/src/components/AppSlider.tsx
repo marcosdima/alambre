@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    
+
   },
   valueBadge: {
     paddingHorizontal: 8,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 12,
-    
+
   },
   touchArea: {
     paddingVertical: 12,

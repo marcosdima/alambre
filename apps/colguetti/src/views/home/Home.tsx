@@ -22,13 +22,13 @@ export default function Home() {
   const { alarms } = useAlarms();
   const { activate } = useActivation();
   const [supportVisible, setSupportVisible] = useState(false);
-  
+
   const Gear = AlambreIcons.Gear;
   const Play = AlambreIcons.Play;
 
-  const activeAlarms = alarms.filter(a => a.enabled);
+  const activeAlarms = alarms.filter((a) => a.enabled);
   const carouselAlarms = activeAlarms.length > 0 ? activeAlarms : alarms;
-  
+
   const [activeIndex, setActiveIndex] = useState(0);
 
   const lengthRef = useRef(carouselAlarms.length);
@@ -36,8 +36,8 @@ export default function Home() {
     lengthRef.current = carouselAlarms.length;
   }, [carouselAlarms.length]);
 
-  const next = () => setActiveIndex(prev => lengthRef.current ? (prev + 1) % lengthRef.current : 0);
-  const prevAction = () => setActiveIndex(prev => lengthRef.current ? (prev - 1 + lengthRef.current) % lengthRef.current : 0);
+  const next = () => setActiveIndex((prev) => lengthRef.current ? (prev + 1) % lengthRef.current : 0);
+  const prevAction = () => setActiveIndex((prev) => lengthRef.current ? (prev - 1 + lengthRef.current) % lengthRef.current : 0);
 
   useEffect(() => {
     if (carouselAlarms.length <= 1) return;
@@ -61,7 +61,7 @@ export default function Home() {
           next();
         }
       },
-    })
+    }),
   ).current;
 
   const handlePlay = (alarm: Alarm) => {
@@ -77,173 +77,173 @@ export default function Home() {
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <SupportModal visible={supportVisible} onClose={() => setSupportVisible(false)} />
 
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => setSupportVisible(true)}
-          style={({ pressed }) => [
-            styles.roundButton,
-            { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 },
-          ]}
-        >
-          <GeoHeart color={theme.danger} size={24} bpm={56} />
-        </Pressable>
-        <Pressable
-          onPress={() => navigate('settings')}
-          style={({ pressed }) => [
-            styles.roundButton,
-            { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Gear style={{ width: 22, height: 22 }} color={theme.color} />
-        </Pressable>
-      </View>
+        <View style={styles.header}>
+          <Pressable
+            onPress={() => setSupportVisible(true)}
+            style={({ pressed }) => [
+              styles.roundButton,
+              { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <GeoHeart color={theme.danger} size={24} bpm={56} />
+          </Pressable>
+          <Pressable
+            onPress={() => navigate('settings')}
+            style={({ pressed }) => [
+              styles.roundButton,
+              { backgroundColor: theme.surfaceAlt, opacity: pressed ? 0.7 : 1 },
+            ]}
+          >
+            <Gear style={{ width: 22, height: 22 }} color={theme.color} />
+          </Pressable>
+        </View>
 
-      <View style={styles.center}>
-        <HangingMobile line={theme.color} size={300} />
-        <DropInTitle text="Colguetti" textStyle={[styles.title, { color: theme.color, marginTop: -10 }]} />
-      </View>
+        <View style={styles.center}>
+          <HangingMobile line={theme.color} size={300} />
+          <DropInTitle text="Colguetti" textStyle={[styles.title, { color: theme.color, marginTop: -10 }]} />
+        </View>
 
-      <View style={styles.menuGrid}>
-        
-        {/* Active Alarms Component - Top Row */}
-        {carouselAlarms.length > 0 && currentAlarm ? (
-          <View style={{ gap: 16 }}>
+        <View style={styles.menuGrid}>
+
+          {/* Active Alarms Component - Top Row */}
+          {carouselAlarms.length > 0 && currentAlarm ? (
+            <View style={{ gap: 16 }}>
+              <View style={styles.activeAlarmsTile}>
+                <AppCard
+                  variant="soft"
+                  padding="lg"
+                  style={{ width: '100%' }}
+                  contentStyle={{ backgroundColor: theme.surfaceAlt }}
+                >
+                  <View style={{ width: '100%' }} onStartShouldSetResponder={() => true} {...panResponder.panHandlers}>
+
+                    <View style={styles.activeCardContent}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 50 }}>
+                        <Typewriter
+                          text={currentAlarm.label}
+                          style={[styles.activeCardTitle, { color: theme.color, flex: 1, padding: 0, margin: 0 }]}
+                          speed={2.5}
+                          multiline={false}
+                          pointerEvents="none"
+                        />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
+                          {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
+                          <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>:</AppText>
+                          {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
+                          <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
+                        </View>
+                      </View>
+
+                      <View style={[styles.daysRow, { justifyContent: 'center' }]}>
+                        {[0, 1, 2, 3, 4, 5, 6].map((dayIndex) => (
+                          <AnimatedDaySquare
+                            key={dayIndex}
+                            isMarked={currentAlarm.weekdays.includes(dayIndex as Weekday)}
+                            isToday={today === dayIndex}
+                            theme={theme}
+                            dayLabel={lang.alarms.weekdays[dayIndex].charAt(0)}
+                          />
+                        ))}
+                      </View>
+                    </View>
+
+                    {/* Pagination Dots */}
+                    {carouselAlarms.length > 1 && (
+                      <View style={styles.paginationDots}>
+                        {carouselAlarms.map((_, idx) => (
+                          <Pressable key={idx} onPress={() => setActiveIndex(idx)} hitSlop={10}>
+                            <View style={[
+                              styles.dot,
+                              { backgroundColor: theme.color, opacity: idx === activeIndex ? 1 : 0.3 },
+                            ]} />
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+
+                  {activeAlarms.length > 0 && (
+                    <View style={{ marginTop: 16, alignItems: 'center' }}>
+                      <Pressable
+                        onPress={() => handlePlay(currentAlarm)}
+                        style={({ pressed }) => [
+                          {
+                            backgroundColor: 'transparent',
+                            opacity: pressed ? 0.7 : 1,
+                            width: '100%',
+                            height: 56,
+                            borderRadius: 24,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          },
+                        ]}
+                      >
+                        <SkiaFrame color={theme.primary} inset={6} cornerGap={8} strokeWidth={2} cornerShape="dot" dashed />
+                        <Play color={theme.primary} style={{ width: 28, height: 28, marginLeft: 4 }} />
+                      </Pressable>
+                    </View>
+                  )}
+                </AppCard>
+                <SkiaFrame color={theme.border} inset={16} cornerGap={12} strokeWidth={2} cornerShape="dot" />
+              </View>
+            </View>
+          ) : (
             <View style={styles.activeAlarmsTile}>
               <AppCard
                 variant="soft"
                 padding="lg"
                 style={{ width: '100%' }}
-                contentStyle={{ backgroundColor: theme.surfaceAlt }}
+                contentStyle={{ backgroundColor: theme.surfaceAlt, alignItems: 'center', justifyContent: 'center', height: 100 }}
               >
-                <View style={{ width: '100%' }} onStartShouldSetResponder={() => true} {...panResponder.panHandlers}>
-                  
-                  <View style={styles.activeCardContent}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 50 }}>
-                      <Typewriter 
-                        text={currentAlarm.label} 
-                        style={[styles.activeCardTitle, { color: theme.color, flex: 1, padding: 0, margin: 0 }]} 
-                        speed={2.5}
-                        multiline={false}
-                        pointerEvents="none"
-                      />
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
-                        {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
-                        <CountUp value={Number(currentAlarm.time.split(':')[0])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
-                        <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>:</AppText>
-                        {Number(currentAlarm.time.split(':')[1]) < 10 && <AppText style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }}>0</AppText>}
-                        <CountUp value={Number(currentAlarm.time.split(':')[1])} duration={800} style={{ fontSize: 18, fontWeight: '600', color: theme.color, fontVariant: ['tabular-nums'] }} />
-                      </View>
-                    </View>
-
-                    <View style={[styles.daysRow, { justifyContent: 'center' }]}>
-                      {[0, 1, 2, 3, 4, 5, 6].map(dayIndex => (
-                        <AnimatedDaySquare 
-                          key={dayIndex}
-                          isMarked={currentAlarm.weekdays.includes(dayIndex as Weekday)} 
-                          isToday={today === dayIndex} 
-                          theme={theme} 
-                          dayLabel={lang.alarms.weekdays[dayIndex].charAt(0)} 
-                        />
-                      ))}
-                    </View>
-                  </View>
-                  
-                  {/* Pagination Dots */}
-                  {carouselAlarms.length > 1 && (
-                    <View style={styles.paginationDots}>
-                      {carouselAlarms.map((_, idx) => (
-                        <Pressable key={idx} onPress={() => setActiveIndex(idx)} hitSlop={10}>
-                          <View style={[
-                            styles.dot, 
-                            { backgroundColor: theme.color, opacity: idx === activeIndex ? 1 : 0.3 }
-                          ]} />
-                        </Pressable>
-                      ))}
-                    </View>
-                  )}
-                </View>
-
-                {activeAlarms.length > 0 && (
-                  <View style={{ marginTop: 16, alignItems: 'center' }}>
-                    <Pressable 
-                      onPress={() => handlePlay(currentAlarm)}
-                      style={({ pressed }) => [
-                        { 
-                          backgroundColor: 'transparent',
-                          opacity: pressed ? 0.7 : 1,
-                          width: '100%',
-                          height: 56,
-                          borderRadius: 24,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }
-                      ]}
-                    >
-                      <SkiaFrame color={theme.primary} inset={6} cornerGap={8} strokeWidth={2} cornerShape="dot" dashed />
-                      <Play color={theme.primary} style={{ width: 28, height: 28, marginLeft: 4 }} />
-                    </Pressable>
-                  </View>
-                )}
+                <AppText style={{ color: theme.muted, fontSize: 16 }}>{lang.alarms.empty}</AppText>
               </AppCard>
               <SkiaFrame color={theme.border} inset={16} cornerGap={12} strokeWidth={2} cornerShape="dot" />
             </View>
-          </View>
-        ) : (
-          <View style={styles.activeAlarmsTile}>
-            <AppCard
-              variant="soft"
-              padding="lg"
-              style={{ width: '100%' }}
-              contentStyle={{ backgroundColor: theme.surfaceAlt, alignItems: 'center', justifyContent: 'center', height: 100 }}
-            >
-              <AppText style={{ color: theme.muted, fontSize: 16 }}>{lang.alarms.empty}</AppText>
-            </AppCard>
-            <SkiaFrame color={theme.border} inset={16} cornerGap={12} strokeWidth={2} cornerShape="dot" />
-          </View>
-        )}
+          )}
 
-        {/* Bottom Row - 2 Columns */}
-        <View style={styles.bottomRow}>
-          <View style={styles.halfTile}>
-            <AppCard
-              variant="soft"
-              padding="lg"
-              onPress={() => navigate('alarms')}
-              style={{ width: '100%' }}
-              contentStyle={{ backgroundColor: theme.primarySoft }}
-            >
-              <View style={styles.halfTileContent}>
-                <View style={styles.halfTileCopy}>
-                  <AppText style={[styles.tileTitle, { color: theme.color, textAlign: 'center' }]}>Alarms</AppText>
-                  <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>Manage</AppText>
+          {/* Bottom Row - 2 Columns */}
+          <View style={styles.bottomRow}>
+            <View style={styles.halfTile}>
+              <AppCard
+                variant="soft"
+                padding="lg"
+                onPress={() => navigate('alarms')}
+                style={{ width: '100%' }}
+                contentStyle={{ backgroundColor: theme.primarySoft }}
+              >
+                <View style={styles.halfTileContent}>
+                  <View style={styles.halfTileCopy}>
+                    <AppText style={[styles.tileTitle, { color: theme.color, textAlign: 'center' }]}>Alarms</AppText>
+                    <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>Manage</AppText>
+                  </View>
+                  <AlarmGlyph line={theme.color} size={70} ringing={true} rippleWaves={3} />
                 </View>
-                <AlarmGlyph line={theme.color} size={70} ringing={true} rippleWaves={3} />
-              </View>
-            </AppCard>
-            <SkiaFrame color={theme.primary} inset={16} cornerGap={12} strokeWidth={2} cornerShape="square" />
+              </AppCard>
+              <SkiaFrame color={theme.primary} inset={16} cornerGap={12} strokeWidth={2} cornerShape="square" />
+            </View>
+
+            <View style={styles.halfTile}>
+              <AppCard
+                variant="soft"
+                padding="lg"
+                onPress={() => navigate('items')}
+                style={{ width: '100%' }}
+                contentStyle={{ backgroundColor: theme.dangerSoft }}
+              >
+                <View style={styles.halfTileContent}>
+                  <View style={styles.halfTileCopy}>
+                    <AppText style={[styles.tileTitle, { color: theme.color, textAlign: 'center' }]}>My Items</AppText>
+                    <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>Library</AppText>
+                  </View>
+                  <ItemsGlyph line={theme.color} size={70} />
+                </View>
+              </AppCard>
+              <SkiaFrame color={theme.danger} inset={16} cornerGap={12} strokeWidth={2} cornerShape="triangle" rotateCorners />
+            </View>
           </View>
 
-          <View style={styles.halfTile}>
-            <AppCard
-              variant="soft"
-              padding="lg"
-              onPress={() => navigate('items')}
-              style={{ width: '100%' }}
-              contentStyle={{ backgroundColor: theme.dangerSoft }}
-            >
-              <View style={styles.halfTileContent}>
-                <View style={styles.halfTileCopy}>
-                  <AppText style={[styles.tileTitle, { color: theme.color, textAlign: 'center' }]}>My Items</AppText>
-                  <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>Library</AppText>
-                </View>
-                <ItemsGlyph line={theme.color} size={70} />
-              </View>
-            </AppCard>
-            <SkiaFrame color={theme.danger} inset={16} cornerGap={12} strokeWidth={2} cornerShape="triangle" rotateCorners />
-          </View>
         </View>
-
-      </View>
       </ScrollView>
     </View>
   );

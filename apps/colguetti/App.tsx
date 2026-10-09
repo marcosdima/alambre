@@ -18,19 +18,27 @@ import { NotificationPermissionProvider } from './src/notifications/notification
 import { useFonts } from 'expo-font';
 import { Text, TextInput } from 'react-native';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (!(Text as any).defaultProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (Text as any).defaultProps = {};
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (Text as any).defaultProps.style = { fontFamily: 'Kranky' };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (Text as any).defaultProps.allowFontScaling = false; // Optional, often good to standardize
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (!(TextInput as any).defaultProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (TextInput as any).defaultProps = {};
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (TextInput as any).defaultProps.style = { fontFamily: 'Kranky' };
 
 export default function App() {
   const [fontsLoaded] = useFonts({
+    // eslint-disable-next-line no-undef
     'Kranky': require('./assets/Kranky-Regular.ttf'),
   });
 

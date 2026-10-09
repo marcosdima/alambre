@@ -1,7 +1,7 @@
 import AppText from './AppText';
 import type { ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { ActivityIndicator, StyleSheet,  } from 'react-native';
+import { ActivityIndicator, StyleSheet  } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   labelText: {
-    
+
     flexShrink: 1,
   },
   spinner: {

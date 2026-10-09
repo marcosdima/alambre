@@ -359,13 +359,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    
+
     letterSpacing: 0.2,
   },
   requiredAsterisk: {
     color: '#ef4444',
     fontSize: 14,
-    
+
   },
   shell: {
     flexDirection: 'row',
@@ -414,6 +414,6 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 12,
     lineHeight: 16,
-    
+
   },
 });

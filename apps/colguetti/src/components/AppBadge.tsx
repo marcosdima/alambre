@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeText: {
-    
+
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     includeFontPadding: false,

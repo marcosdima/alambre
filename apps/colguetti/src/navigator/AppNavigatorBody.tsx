@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    
+
   },
   pageScroll: {
     flex: 1,
