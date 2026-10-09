@@ -19,6 +19,7 @@ import { useRouteIntent } from '../../navigator/RouteIntent';
 import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
 import TypewriterText from '../../components/TypewriterText';
 import DropInTitle from '../../components/DropInTitle';
+import AnimatedDashedLine from '../../components/AnimatedDashedLine';
 
 const AlarmVisualSummary = ({
   items,
@@ -183,16 +184,18 @@ export default () => {
                       </View>
                     )}
 
-                    <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
-                      <AlarmVisualSummary
-                        items={alarmItems}
-                        theme={theme}
-
-                        weekdays={alarm.weekdays}
-                        emptyLabel={lang.alarms.itemsLabel}
-                        lang={lang}
-                        accentColor={accentColor}
-                      />
+                    <View style={styles.cardFooter}>
+                      <AnimatedDashedLine color={theme.borderSoft} delay={200 + index * 100} />
+                      <View style={{ paddingTop: 12 }}>
+                        <AlarmVisualSummary
+                          items={alarmItems}
+                          theme={theme}
+                          weekdays={alarm.weekdays}
+                          emptyLabel={lang.alarms.itemsLabel}
+                          lang={lang}
+                          accentColor={accentColor}
+                        />
+                      </View>
                     </View>
                   </AppCard>
                 </SwipeableItemRow>
@@ -291,8 +294,6 @@ const styles = StyleSheet.create({
   },
   cardFooter: {
     marginTop: 16,
-    paddingTop: 12,
-    borderTopWidth: 2,
   },
   pressed: {
     opacity: 0.7,
