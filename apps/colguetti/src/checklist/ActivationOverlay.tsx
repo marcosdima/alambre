@@ -115,7 +115,7 @@ export default function ActivationOverlay() {
                 <Pressable onPress={() => confirmAndClose()} style={({ pressed }) => [{ alignItems: 'center', opacity: pressed ? 0.8 : 1 }]}>
                   <AppText style={[styles.successText, { color: theme.color }]}>¡Todo listo!</AppText>
                   <AppText style={[styles.successSubtext, { color: theme.muted }]}>Que tengas un buen día</AppText>
-                  <AppText style={{ color: theme.primary, marginTop: 16, fontSize: 16 }}>Toca para cerrar</AppText>
+                  <AppText style={{ color: theme.primary, marginTop: 16, fontSize: 16, textAlign: 'center' }}>Toca para cerrar</AppText>
                 </Pressable>
               </Animated.View>
             ) : (
@@ -312,11 +312,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   successText: {
-
     fontSize: 48,
     marginBottom: 8,
+    textAlign: 'center',
   },
   successSubtext: {
     fontSize: 18,
+    textAlign: 'center',
   },
 });

@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { Linking, Pressable, ScrollView, StyleSheet,  View } from 'react-native';
-import { AlambreIcons, useToast, HorizontalPicker } from 'alambre';
+import { AlambreIcons, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
@@ -214,38 +214,34 @@ export default () => {
         subtitle="Elegí la fuente de la aplicación"
         style={styles.card}
       >
-        <View style={{ alignItems: 'center', marginTop: 8 }}>
-          <HorizontalPicker.Root
-            itemCount={FONTS.length}
-            selected={Math.max(0, FONTS.indexOf(config.fontFamily))}
-            onSelect={(index) => void saveField('fontFamily', FONTS[index])}
-            itemWidth={120}
-            visibleItems={2.5}
-            style={[styles.fontPickerContainer, { backgroundColor: theme.surfaceAlt, borderColor: theme.borderSoft }]}
-          >
-            <View pointerEvents="none" style={[styles.fontPickerSelectionBand, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]} />
-            <HorizontalPicker.Track>
-              {(item, index, selected) => {
-                const font = FONTS[item];
-                return (
-                  <AppText
-                    numberOfLines={1}
-                    style={{
-                      fontFamily: font,
-                      color: selected ? theme.primary : theme.color,
-                      fontSize: selected ? 20 : 16,
-                      opacity: selected ? 1 : 0.6,
-                      fontWeight: selected ? '700' : '500',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {font}
-                  </AppText>
-                );
-              }}
-            </HorizontalPicker.Track>
-          </HorizontalPicker.Root>
-        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
+          {FONTS.map((font) => {
+            const active = config.fontFamily === font;
+            return (
+              <Pressable
+                key={font}
+                onPress={() => void saveField('fontFamily', font)}
+                style={[
+                  styles.fontChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.borderSoft,
+                  },
+                ]}
+              >
+                <AppText
+                  style={{
+                    color: active ? theme.primary : theme.color,
+                    fontFamily: font,
+                    fontSize: 16,
+                  }}
+                >
+                  {font}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </AppCard>
 
       {/* Notificaciones */}
@@ -484,23 +480,13 @@ const styles = StyleSheet.create({
     width: 22,
     height: 16,
   },
-  fontPickerContainer: {
-    borderRadius: 14,
-    borderWidth: 1.5,
-    height: 48,
-    position: 'relative',
+  fontChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fontPickerSelectionBand: {
-    position: 'absolute',
-    top: -1.5,
-    bottom: -1.5,
-    left: '30%',
-    right: '30%',
     borderRadius: 12,
     borderWidth: 1.5,
-    zIndex: -1,
   },
 });
 
