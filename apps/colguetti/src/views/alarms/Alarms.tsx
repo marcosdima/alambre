@@ -5,7 +5,7 @@ import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
-import { ItemIcon } from '../../items/icon-catalog';
+
 import type { Item } from '../../items/item-types';
 import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelAlarmAlerts } from '../../notifications/expiry';
@@ -26,18 +26,16 @@ const AlarmVisualSummary = ({
   enabled,
   weekdays,
   emptyLabel,
+  lang,
 }: {
   items: Item[];
   theme: ReturnType<typeof useLightDark>['theme'];
   enabled: boolean;
   weekdays: number[];
   emptyLabel: string;
+  lang: ReturnType<typeof useLang>['lang'];
 }) => {
-  const visible = items.slice(0, 4);
-  const remaining = items.length - 4;
-
   const activeColor = enabled ? theme.color : theme.muted;
-  const primaryActive = enabled ? theme.primary : theme.borderSoft;
 
   return (
     <View style={styles.footerRow}>
@@ -48,63 +46,37 @@ const AlarmVisualSummary = ({
             <View
               key={day}
               style={[
-                styles.dayDot,
+                styles.dayBadge,
                 {
-                  backgroundColor: isActive ? primaryActive : 'transparent',
-                  borderColor: isActive ? primaryActive : theme.borderSoft,
+                  backgroundColor: isActive ? theme.surfaceAlt : 'transparent',
                 },
               ]}
-            />
+            >
+              <AppText
+                style={{
+                  fontSize: 12,
+                  color: isActive ? activeColor : theme.borderSoft,
+                  fontWeight: isActive ? '600' : '400',
+                }}
+              >
+                {lang.alarms.weekdays[day]}
+              </AppText>
+            </View>
           );
         })}
       </View>
 
-      <View style={styles.itemStack}>
-        {items.length === 0 ? (
-          <AppText style={{ fontSize: 13, color: theme.muted }}>{emptyLabel}</AppText>
-        ) : (
-          <>
-            {visible.map((item, idx) => (
-              <View
-                key={item.id}
-                style={[
-                  styles.stackIcon,
-                  {
-                    zIndex: 4 - idx,
-                    transform: [{ translateX: -idx * 8 }],
-                    backgroundColor: theme.surface,
-                    borderColor: theme.borderSoft,
-                  },
-                ]}
-              >
-                <View style={{ transform: [{ scale: 0.7 }] }}>
-                  <ItemIcon
-                    icon={item.icon}
-                    color={enabled ? item.color : theme.muted}
-                    lineWidth={2}
-                  />
-                </View>
-              </View>
-            ))}
-            {remaining > 0 && (
-              <View
-                style={[
-                  styles.stackIcon,
-                  {
-                    zIndex: 0,
-                    transform: [{ translateX: -4 * 8 }],
-                    backgroundColor: theme.surfaceAlt,
-                    borderColor: theme.borderSoft,
-                  },
-                ]}
-              >
-                <AppText style={{ fontSize: 11, color: activeColor }}>
-                  +{remaining}
-                </AppText>
-              </View>
-            )}
-          </>
-        )}
+      <View
+        style={[
+          styles.itemPill,
+          { backgroundColor: items.length > 0 ? theme.surfaceAlt : 'transparent' },
+        ]}
+      >
+        <AppText style={{ fontSize: 13, color: activeColor, fontWeight: '500' }}>
+          {items.length === 0
+            ? emptyLabel
+            : lang.alarms.count.replace('{count}', items.length.toString())}
+        </AppText>
       </View>
     </View>
   );
@@ -220,6 +192,7 @@ export default () => {
                         enabled={alarm.enabled}
                         weekdays={alarm.weekdays}
                         emptyLabel={lang.alarms.itemsLabel}
+                        lang={lang}
                       />
                     </View>
                   </AppCard>
@@ -334,29 +307,19 @@ const styles = StyleSheet.create({
   daysRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
-  dayDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1.5,
-  },
-  itemStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: 80,
-    minHeight: 32,
-  },
-  stackIcon: {
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
+  dayBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  itemPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   footer: {
     padding: 20,
