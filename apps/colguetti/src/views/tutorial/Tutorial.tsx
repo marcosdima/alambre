@@ -14,6 +14,8 @@ import DropInTitle from '../../components/DropInTitle';
 import SkiaFrame from '../../components/SkiaFrame';
 import TypewriterText from '../../components/TypewriterText';
 import { AlarmGlyph, ItemsGlyph } from '../../components/illustrations/SkiaArt';
+import { useItems } from '../../items/items-context';
+import { useAlarms } from '../../alarms/alarms-context';
 
 type ThemeType = Record<string, string>;
 
@@ -67,7 +69,7 @@ const TutorialChecklist = ({ theme }: { theme: ThemeType }) => (
   <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'center' }}>
     <View style={{ width: 120, height: 110, borderRadius: 20, backgroundColor: theme.primarySoft, alignItems: 'center', justifyContent: 'center', gap: 6 }}>
       <AlambreIcons.Tick color={theme.primary} lineWidth={3} style={{ width: 24, height: 24 }} drawIt />
-      <AppText style={{ color: theme.primary }}>Keys</AppText>
+      <AppText style={{ color: theme.primary }}>Llaves</AppText>
       <SkiaFrame color={theme.primary} inset={6} cornerGap={10} strokeWidth={2} cornerShape="dot" />
     </View>
   </View>
@@ -83,8 +85,31 @@ export default function Tutorial() {
   const { theme } = useLightDark();
   const { previous } = useNavigator();
   const { lang } = useLang();
+  const { addItem } = useItems();
+  const { alarms, addAlarm, removeAlarm } = useAlarms();
   const [step, setStep] = useState(0);
-  const [itemDeleted, setItemDeleted] = useState(false);
+
+  const [itemCreated, setItemCreated] = useState(false);
+  const [alarmCreated, setAlarmCreated] = useState(false);
+  const [alarmDeleted, setAlarmDeleted] = useState(false);
+
+  const handleCreateItem = async () => {
+    await addItem({ name: 'Llaves', icon: 'keys', color: theme.primary });
+    setItemCreated(true);
+  };
+
+  const handleCreateAlarm = async () => {
+    await addAlarm({ label: 'Trabajo', time: '08:30', weekdays: [1,2,3,4,5], itemIds: [], enabled: true, activeWindowMinutes: 10 });
+    setAlarmCreated(true);
+  };
+
+  const handleDeleteAlarm = async () => {
+    const target = alarms.find((a) => a.label === 'Trabajo');
+    if (target) {
+      await removeAlarm(target.id);
+    }
+    setAlarmDeleted(true);
+  };
 
   const STEPS = [
     {
@@ -95,7 +120,16 @@ export default function Tutorial() {
     {
       title: lang.tutorial.step2Title,
       description: lang.tutorial.step2Desc,
-      component: <TutorialItem theme={theme} name="Keys" icon="keys" color={theme.primary} />,
+      component: itemCreated ? (
+        <Animated.View entering={FadeIn}>
+          <AppText style={{ color: theme.success, fontSize: 16, textAlign: 'center', marginTop: 16 }}>{lang.items.created}</AppText>
+        </Animated.View>
+      ) : (
+        <View style={{ gap: 24 }}>
+          <TutorialItem theme={theme} name="Llaves" icon="keys" color={theme.primary} />
+          <AppButton variant="outline" tone="primary" label="Crear este ítem" onPress={() => void handleCreateItem()} />
+        </View>
+      ),
     },
     {
       title: lang.tutorial.step3Title,
@@ -105,7 +139,16 @@ export default function Tutorial() {
     {
       title: lang.tutorial.step4Title,
       description: lang.tutorial.step4Desc,
-      component: <TutorialAlarm theme={theme} />,
+      component: alarmCreated ? (
+        <Animated.View entering={FadeIn}>
+          <AppText style={{ color: theme.success, fontSize: 16, textAlign: 'center', marginTop: 16 }}>{lang.alarms.created}</AppText>
+        </Animated.View>
+      ) : (
+        <View style={{ gap: 24 }}>
+          <TutorialAlarm theme={theme} />
+          <AppButton variant="outline" tone="primary" label="Crear esta alarma" onPress={() => void handleCreateAlarm()} />
+        </View>
+      ),
     },
     {
       title: lang.tutorial.step5Title,
@@ -115,12 +158,12 @@ export default function Tutorial() {
     {
       title: lang.tutorial.step6Title,
       description: lang.tutorial.step6Desc,
-      component: itemDeleted ? (
+      component: alarmDeleted ? (
         <Animated.View entering={FadeIn}>
           <AppText style={{ color: theme.success, fontSize: 16, textAlign: 'center' }}>{lang.tutorial.step6Success}</AppText>
         </Animated.View>
       ) : (
-        <TutorialDeleteAlarm theme={theme} onDelete={() => setItemDeleted(true)} />
+        <TutorialDeleteAlarm theme={theme} onDelete={() => void handleDeleteAlarm()} />
       ),
     },
   ];
@@ -147,7 +190,7 @@ export default function Tutorial() {
           <TypewriterText
             text={STEPS[step].description}
             textStyle={[styles.stepDesc, { color: theme.color }]}
-            speed={30}
+            speed={10}
           />
 
           <View style={styles.componentBox}>
