@@ -1,14 +1,13 @@
-import AppText from './AppText';
 import { memo, useEffect, useState } from 'react';
-import { Pressable, StyleSheet,  View } from 'react-native';
+import { Pressable, StyleSheet, View, Text } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { kinetics } from 'alambre';
-import { useLightDark } from '../providers/theme';
+import { kinetics } from '../../core/kinetics';
 
 type LetterProps = {
   char: string;
@@ -16,9 +15,10 @@ type LetterProps = {
   total: number;
   textColor: string;
   isLifted: boolean;
+  textStyle?: StyleProp<TextStyle>;
 };
 
-const HangingLetter = memo(({ char, index, textColor, isLifted }: LetterProps) => {
+const HangingLetter = memo(({ char, index, textColor, isLifted, textStyle }: LetterProps) => {
   const liftY = useSharedValue(0);
   const staticRot = (index % 2 === 0 ? 1 : -1) * (1.5 + (index % 3) * 0.8);
 
@@ -40,23 +40,32 @@ const HangingLetter = memo(({ char, index, textColor, isLifted }: LetterProps) =
 
   return (
     <Animated.View style={[styles.letterContainer, animatedStyle]}>
-      <AppText style={[styles.letter, { color: textColor }]}>{char}</AppText>
+      <Animated.Text style={[styles.letter, { color: textColor }, textStyle]}>{char}</Animated.Text>
     </Animated.View>
   );
 });
 
-type HangingTitleProps = {
+export type HangingTitleProps = {
   title?: string;
   subtitle?: string;
   onPress?: () => void;
+  textColor?: string;
+  subtitleColor?: string;
+  textStyle?: StyleProp<TextStyle>;
+  subtitleStyle?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
 };
 
-export default function HangingTitle({
-  title = 'Colguetti',
+export function HangingTitle({
+  title = 'Title',
   subtitle,
   onPress,
+  textColor = '#000000',
+  subtitleColor = '#666666',
+  textStyle,
+  subtitleStyle,
+  style,
 }: HangingTitleProps) {
-  const { theme } = useLightDark();
   const [isLifted, setIsLifted] = useState(false);
 
   const chars = title.split('');
@@ -67,8 +76,8 @@ export default function HangingTitle({
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.container}>
-      <AppText style={styles.hiddenText}>{title}</AppText>
+    <Pressable onPress={handlePress} style={[styles.container, style]}>
+      <Text style={styles.hiddenText} accessibilityElementsHidden={true} importantForAccessibility="no-hide-descendants">{title}</Text>
       <View
         style={styles.wordRow}
         accessible={true}
@@ -81,13 +90,14 @@ export default function HangingTitle({
             char={char}
             index={idx}
             total={chars.length}
-            textColor={theme.color}
+            textColor={textColor}
             isLifted={isLifted}
+            textStyle={textStyle}
           />
         ))}
       </View>
       {subtitle ? (
-        <AppText style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</AppText>
+        <Text style={[styles.subtitle, { color: subtitleColor }, subtitleStyle]}>{subtitle}</Text>
       ) : null}
     </Pressable>
   );
@@ -101,7 +111,6 @@ const styles = StyleSheet.create({
     width: 0,
   },
   container: {
-    paddingVertical: 12,
     alignItems: 'flex-start',
   },
   wordRow: {
@@ -113,12 +122,10 @@ const styles = StyleSheet.create({
   },
   letter: {
     fontSize: 36,
-
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-
     marginTop: 4,
     opacity: 0.9,
   },

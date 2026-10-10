@@ -58,6 +58,15 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.readCollection).toBe('function');
     expect(typeof Alambre.writeCollection).toBe('function');
     expect(typeof Alambre.useHistoryState).toBe('function');
+    expect(typeof Alambre.CountUp).toBe('function');
+    expect(typeof Alambre.Typewriter).toBe('function');
+    expect(typeof Alambre.Scramble).toBe('function');
+    expect(typeof Alambre.Marquee).toBe('function');
+    expect(typeof Alambre.WavyText).toBe('function');
+    expect(typeof Alambre.SlideInText).toBe('function');
+    expect(typeof Alambre.DropInTitle).toBe('function');
+    expect(typeof Alambre.HangingTitle).toBe('function');
+    expect(typeof Alambre.AnimatedCounter).toBe('function');
     expect(typeof Alambre.createHistory).toBe('function');
     expect(typeof Alambre.pushHistory).toBe('function');
     expect(typeof Alambre.undoHistory).toBe('function');

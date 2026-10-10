@@ -10,6 +10,7 @@ export {
   HorizontalPicker,
   Switch,
 } from './components/base/input';
+export { AnimatedCounter } from './components/base/display';
 export type {
   ButtonProps,
   ButtonState,
@@ -36,6 +37,7 @@ export type {
   SwitchProps,
   SwitchSize,
 } from './components/base/input';
+export type { AnimatedCounterProps } from './components/base/display';
 
 // Navigator types.
 export type {
@@ -111,8 +113,10 @@ export {
   Marquee,
   WavyText,
   SlideInText,
+  DropInTitle,
+  HangingTitle,
 } from './behaviors';
-export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps } from './behaviors';
+export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps, DropInTitleProps, HangingTitleProps } from './behaviors';
 
 // Hooks & state utilities.
 export {

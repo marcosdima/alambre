@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { Linking, Pressable, ScrollView, StyleSheet,  View } from 'react-native';
-import { AlambreIcons, useToast, useNavigator } from 'alambre';
+import { AlambreIcons, useToast, useNavigator, DropInTitle } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
@@ -8,7 +8,6 @@ import ToggleLightDark from '../../components/ToggleLightDark';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
 import { useNotificationPermission } from '../../notifications/notification-permission-context';
-import DropInTitle from '../../components/DropInTitle';
 
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 const GITHUB_URL = 'https://github.com/marcosdima';

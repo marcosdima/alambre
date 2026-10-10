@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useNavigator, useToast } from 'alambre';
+import { useNavigator, useToast, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -13,7 +13,6 @@ import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppText from '../../components/AppText';
-import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
   const { theme } = useLightDark();

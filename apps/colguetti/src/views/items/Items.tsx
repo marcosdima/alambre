@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { Pressable, ScrollView, StyleSheet,  View } from 'react-native';
-import { useConfirm, useNavigator, useToast, Typewriter } from 'alambre';
+import { useConfirm, useNavigator, useToast, Typewriter, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -12,8 +12,6 @@ import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
-
-import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
   const { theme } = useLightDark();

@@ -8,9 +8,8 @@ import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { ItemIconKey } from '../../items/item-types';
 import { useLightDark } from '../../providers/theme';
-import { useNavigator, AlambreIcons, Typewriter, StepFlow, useStepFlow } from 'alambre';
+import { useNavigator, AlambreIcons, Typewriter, StepFlow, useStepFlow, DropInTitle } from 'alambre';
 import { useLang } from '../../providers/lang';
-import DropInTitle from '../../components/DropInTitle';
 import SkiaFrame from '../../components/SkiaFrame';
 
 import { AlarmGlyph, ItemsGlyph } from '../../components/illustrations/SkiaArt';

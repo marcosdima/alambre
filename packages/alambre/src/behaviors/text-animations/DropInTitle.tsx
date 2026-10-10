@@ -1,15 +1,25 @@
-import AppText from './AppText';
 import React, { useEffect } from 'react';
-import type { StyleProp, TextStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { View, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withDelay } from 'react-native-reanimated';
-import { useConfig } from '../providers/config';
+import { kinetics } from '../../core/kinetics';
 
-export default function DropInTitle({ text, textStyle }: { text: string; textStyle?: StyleProp<TextStyle> }) {
+export type DropInTitleProps = {
+  text: string;
+  textStyle?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DropInTitle({ text, textStyle, style }: DropInTitleProps) {
   const letters = text.split('');
 
   return (
-    <View style={styles.row}>
+    <View
+      style={[styles.row, style]}
+      accessible={true}
+      accessibilityRole="header"
+      accessibilityLabel={text}
+    >
       {letters.map((char, index) => (
         <AnimatedLetter key={`${index}-${char}`} char={char} index={index} textStyle={textStyle} />
       ))}
@@ -22,19 +32,18 @@ function AnimatedLetter({ char, index, textStyle }: { char: string, index: numbe
   const opacity = useSharedValue(0);
 
   useEffect(() => {
-    translateY.value = withDelay(index * 60, withSpring(0, { damping: 14, stiffness: 200 }));
+    translateY.value = withDelay(index * 60, withSpring(0, kinetics.spring.bouncy));
     opacity.value = withDelay(index * 60, withSpring(1));
   }, [index, opacity, translateY]);
 
-  const { config } = useConfig();
   const style = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
     opacity: opacity.value,
   }));
 
   return (
-    <Animated.Text style={[textStyle, style, { fontFamily: config.fontFamily }]}>
-      {char === ' ' ? '\u00A0' : char}
+    <Animated.Text style={[textStyle, style]} importantForAccessibility="no-hide-descendants">
+      {char === ' ' ? ' ' : char}
     </Animated.Text>
   );
 }

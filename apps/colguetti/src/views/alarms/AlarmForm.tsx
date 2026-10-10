@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Stepper, Switch, useNavigator, useToast } from 'alambre';
+import { Stepper, Switch, useNavigator, useToast, DropInTitle, AnimatedCounter } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
@@ -12,12 +12,9 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
 import SwipeableTimePicker from '../../components/SwipeableTimePicker';
-import AnimatedCounter from '../../components/AnimatedCounter';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
 import type { Weekday } from '../../alarms/alarm-types';
 import AppText from '../../components/AppText';
-import DropInTitle from '../../components/DropInTitle';
-
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
