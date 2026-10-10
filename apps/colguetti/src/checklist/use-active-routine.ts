@@ -109,6 +109,10 @@ export function useActiveRoutine() {
     let canceled = false;
     const processExpiry = async () => {
       // Async check for pending snooze from notification tap to avoid race condition
+      // Wait a moment to allow NotificationsWatcher to update active context
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (canceled) return;
+
       const response = await Notifications.getLastNotificationResponseAsync();
       if (canceled) return;
       if (response?.actionIdentifier === SNOOZE_ACTION) {

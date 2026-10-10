@@ -67,7 +67,7 @@ Headless drag-and-drop primitives, 60fps gesture physics, spatial hit-testing, a
 ### 7. [Text Animations](text-animations.md)
 Kinetic typography and animated text primitives powered by Reanimated worklets and `kinetics.ts` physics:
 * **`CountUp`**: Tabular-nums digit-column rolling counter with cubic deceleration.
-* **`Typewriter`**: Linear character-by-character progressive text reveal on the UI thread without re-renders.
+* **`Typewriter`**: Progressive text reveal character-by-character using robust JS-driven interval sequences.
 * **`Scramble`**: Randomized glyph matrix decrypting reveal with quadratic ease-out.
 * **`Marquee`**: Infinite looping horizontal content ticker with auto-measured clone wrap.
 * **`WavyText`**: Continuous staggered vertical sine oscillation across characters.

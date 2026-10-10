@@ -132,6 +132,7 @@ export default () => {
               text={lang.alarms.empty}
               textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
               initialDelay={300}
+              cursorColor={theme.primary}
             />
           </View>
         ) : (

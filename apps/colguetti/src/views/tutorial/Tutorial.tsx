@@ -8,7 +8,7 @@ import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { ItemIconKey } from '../../items/item-types';
 import { useLightDark } from '../../providers/theme';
-import { useNavigator, AlambreIcons, Typewriter } from 'alambre';
+import { useNavigator, AlambreIcons, Typewriter, StepFlow, useStepFlow } from 'alambre';
 import { useLang } from '../../providers/lang';
 import DropInTitle from '../../components/DropInTitle';
 import SkiaFrame from '../../components/SkiaFrame';
@@ -306,79 +306,80 @@ const TutorialDeleteAlarm = ({ theme, onDelete }: { theme: ThemeType; onDelete: 
   );
 };
 
+type StepDefinition = {
+  title: string;
+  description: string;
+  component: (next: () => void) => React.ReactNode;
+};
+
+function TutorialFlowContent({ steps, theme }: { steps: StepDefinition[], theme: ThemeType }) {
+  const { currentStepIndex, next } = useStepFlow();
+  const step = steps[currentStepIndex];
+
+  return (
+    <StepFlow.Stage style={styles.stepContainer}>
+      <AppText style={[styles.stepTitle, { color: theme.primary }]}>{step.title}</AppText>
+      <Typewriter
+        text={step.description}
+        textStyle={[styles.stepDesc, { color: theme.color }]}
+        speed={15}
+        cursor={false}
+      />
+      <View style={styles.componentBox}>
+        {step.component(next)}
+      </View>
+    </StepFlow.Stage>
+  );
+}
+
 export default function Tutorial() {
   const { theme } = useLightDark();
   const { previous } = useNavigator();
   const { lang } = useLang();
   const { saveField } = useConfig();
 
-  const [step, setStep] = useState(0);
-
-
-  const handleCreateItem = async () => {
-    handleNext();
-  };
-
-  const handleCreateAlarm = async () => {
-    handleNext();
-  };
-
-  const handleDeleteAlarm = async () => {
-    finishTutorial();
-  };
-
   const finishTutorial = () => {
     saveField('tutorialCompleted', 'true');
     previous();
   };
 
-  function handleNext() {
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    } else {
-      finishTutorial();
-    }
-  }
-
   const STEPS = [
     {
       title: lang.tutorial.step1Title,
       description: lang.tutorial.step1Desc,
-      component: <TutorialHomeMenu theme={theme} highlight="items" onItemsPress={handleNext} />,
+      component: (next: () => void) => <TutorialHomeMenu theme={theme} highlight="items" onItemsPress={next} />,
     },
     {
       title: lang.tutorial.step2Title,
       description: lang.tutorial.step2Desc,
-      component: <AnimatedItemForm theme={theme} onComplete={() => void handleCreateItem()} />,
+      component: (next: () => void) => <AnimatedItemForm theme={theme} onComplete={next} />,
     },
     {
       title: lang.tutorial.step3Title,
       description: lang.tutorial.step3Desc,
-      component: <TutorialHomeMenu theme={theme} highlight="alarms" onAlarmsPress={handleNext} />,
+      component: (next: () => void) => <TutorialHomeMenu theme={theme} highlight="alarms" onAlarmsPress={next} />,
     },
     {
       title: lang.tutorial.step4Title,
       description: lang.tutorial.step4Desc,
-      component: <AnimatedAlarmForm theme={theme} onComplete={() => void handleCreateAlarm()} />,
+      component: (next: () => void) => <AnimatedAlarmForm theme={theme} onComplete={next} />,
     },
     {
       title: lang.tutorial.step4bTitle,
       description: lang.tutorial.step4bDesc,
-      component: <TutorialActiveAlarm theme={theme} onPlay={handleNext} />,
+      component: (next: () => void) => <TutorialActiveAlarm theme={theme} onPlay={next} />,
     },
     {
       title: lang.tutorial.step5Title,
       description: lang.tutorial.step5Desc,
-      component: <TutorialChecklist theme={theme} onComplete={handleNext} />,
+      component: (next: () => void) => <TutorialChecklist theme={theme} onComplete={next} />,
     },
     {
       title: lang.tutorial.step6Title,
       description: lang.tutorial.step6Desc,
-      component: <TutorialDeleteAlarm theme={theme} onDelete={() => void handleDeleteAlarm()} />,
+      component: (next: () => void) => <TutorialDeleteAlarm theme={theme} onDelete={next} />,
     },
   ];
-
-
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -390,23 +391,9 @@ export default function Tutorial() {
         </View>
         <DropInTitle text={lang.settings.tutorialTitle} textStyle={[styles.title, { color: theme.color }]} />
 
-        <Animated.View
-          key={step}
-          entering={SlideInRight.duration(350).easing(Easing.linear)}
-          style={styles.stepContainer}
-        >
-          <AppText style={[styles.stepTitle, { color: theme.primary }]}>{STEPS[step].title}</AppText>
-          <Typewriter
-            text={STEPS[step].description}
-            textStyle={[styles.stepDesc, { color: theme.color }]}
-            speed={15}
-            cursor={false}
-          />
-
-          <View style={styles.componentBox}>
-            {STEPS[step].component}
-          </View>
-        </Animated.View>
+        <StepFlow.Root totalSteps={STEPS.length} onComplete={finishTutorial}>
+          <TutorialFlowContent steps={STEPS} theme={theme} />
+        </StepFlow.Root>
 
       </ScrollView>
     </View>

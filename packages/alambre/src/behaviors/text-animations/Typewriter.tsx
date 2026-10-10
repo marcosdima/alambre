@@ -107,6 +107,7 @@ export function Typewriter({
         if (loop) {
           timeoutRef.current = setTimeout(() => {
             if (eraseOnLoop) {
+              setIsDone(false);
               eraseNext();
             } else {
               currentIndex = 0;
@@ -154,15 +155,18 @@ export function Typewriter({
         style={[styles.text, textStyle]}
       >
         {visibleText}
-        <Text
-          style={[
-            styles.cursor,
-            { color: cursorColor ?? '#000000', opacity: isCursorVisible ? 1 : 0 },
-            cursorStyle,
-          ]}
-        >
-          {cursorChar}
-        </Text>
+        {cursor ? (
+          <Text
+            style={[
+              styles.cursor,
+              cursorColor ? { color: cursorColor } : null,
+              { opacity: isCursorVisible ? 1 : 0 },
+              cursorStyle,
+            ]}
+          >
+            {cursorChar}
+          </Text>
+        ) : null}
       </Text>
     </View>
   );
@@ -172,10 +176,6 @@ const styles = StyleSheet.create({
   container: {
     flexShrink: 1,
   },
-  text: {
-    fontSize: 18,
-    lineHeight: 26,
-    letterSpacing: -0.2,
-  },
+  text: {},
   cursor: {},
 });

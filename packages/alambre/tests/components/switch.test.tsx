@@ -1,16 +1,20 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
-import type { ReactTestInstance } from 'react-test-renderer';
 import type { ReactNode } from 'react';
 import React from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Switch from '../../src/components/base/input/switch/Switch';
 import { kinetics } from '../../src/core/kinetics';
 
+type ElementNode = {
+  props: Record<string, unknown>;
+  children: Array<ElementNode | string>;
+};
+
 // Mock Reanimated
-const mockWithSpring = vi.fn((val: unknown) => val);
-const mockWithTiming = vi.fn((val: unknown) => val);
+const mockWithSpring = vi.fn((val: unknown, _config?: unknown) => val);
+const mockWithTiming = vi.fn((val: unknown, _config?: unknown) => val);
 const mockInterpolateColor = vi.fn(
   (val: number, _inRange: number[], outRange: string[]) => {
     return val >= 1 ? outRange[outRange.length - 1] : outRange[0];
@@ -20,6 +24,11 @@ const mockInterpolateColor = vi.fn(
 vi.mock('react-native-reanimated', async () => {
   const ReactActual = await import('react');
   const { View: RNView } = await import('react-native');
+  const ViewComponent = RNView as unknown as React.ComponentType<{
+    ref?: unknown;
+    style?: StyleProp<ViewStyle>;
+    children?: ReactNode;
+  }>;
 
   return {
     default: {
@@ -27,7 +36,7 @@ vi.mock('react-native-reanimated', async () => {
         unknown,
         { children?: ReactNode; style?: StyleProp<ViewStyle>; testID?: string }
       >(({ children, style, ...props }, ref) =>
-        ReactActual.createElement(RNView, { ref, style, ...props }, children),
+        ReactActual.createElement(ViewComponent, { ref, style, ...props }, children),
       ),
     },
     useSharedValue: vi.fn((val: unknown) => {
@@ -35,10 +44,15 @@ vi.mock('react-native-reanimated', async () => {
       return ref.current;
     }),
     useAnimatedStyle: vi.fn((cb: () => unknown) => cb()),
-    withSpring: (...args: unknown[]) => mockWithSpring(...args),
-    withTiming: (...args: unknown[]) => mockWithTiming(...args),
-    interpolateColor: (...args: unknown[]) =>
-      mockInterpolateColor(...(args as [number, number[], string[]])),
+    withSpring: (toValue: unknown, config?: unknown) =>
+      mockWithSpring(toValue, config),
+    withTiming: (toValue: unknown, config?: unknown) =>
+      mockWithTiming(toValue, config),
+    interpolateColor: (
+      progress: number,
+      inputRange: number[],
+      outputRange: string[],
+    ) => mockInterpolateColor(progress, inputRange, outputRange),
   };
 });
 
@@ -123,8 +137,12 @@ describe('Switch', () => {
       const labelNode = getByText('Custom Label');
       const subtitleNode = getByText('Custom Subtitle');
 
-      const flatLabelStyle = StyleSheet.flatten(labelNode.props.style);
-      const flatSubtitleStyle = StyleSheet.flatten(subtitleNode.props.style);
+      const flatLabelStyle = StyleSheet.flatten<TextStyle>(
+        labelNode.props.style as StyleProp<TextStyle>,
+      );
+      const flatSubtitleStyle = StyleSheet.flatten<TextStyle>(
+        subtitleNode.props.style as StyleProp<TextStyle>,
+      );
 
       expect(flatLabelStyle.color).toBe('red');
       expect(flatSubtitleStyle.color).toBe('blue');
@@ -144,11 +162,15 @@ describe('Switch', () => {
       );
 
       const root = getByTestId('styled-switch');
-      const flatContainer = StyleSheet.flatten(root.props.style);
+      const flatContainer = StyleSheet.flatten<ViewStyle>(
+        root.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatContainer.padding).toBe(12);
 
-      const switchWrapper = root.children[1] as ReactTestInstance;
-      const flatSwitchStyle = StyleSheet.flatten(switchWrapper.props.style);
+      const switchWrapper = (root.children as ElementNode[])[1];
+      const flatSwitchStyle = StyleSheet.flatten<ViewStyle>(
+        switchWrapper.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatSwitchStyle.opacity).toBe(0.8);
     });
 
@@ -164,7 +186,9 @@ describe('Switch', () => {
       );
 
       const root = getByTestId('standalone-styled');
-      const flatStyle = StyleSheet.flatten(root.props.style);
+      const flatStyle = StyleSheet.flatten<ViewStyle>(
+        root.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatStyle.margin).toBe(10);
     });
 
@@ -187,14 +211,18 @@ describe('Switch', () => {
 
         const root = getByTestId(`switch-${size}`);
         // First child of Pressable is track Animated.View
-        const track = root.children[0] as ReactTestInstance;
-        const flatTrackStyle = StyleSheet.flatten(track.props.style);
+        const track = (root.children as ElementNode[])[0];
+        const flatTrackStyle = StyleSheet.flatten<ViewStyle>(
+          track.props.style as StyleProp<ViewStyle>,
+        );
         expect(flatTrackStyle.width).toBe(trackWidth);
         expect(flatTrackStyle.height).toBe(trackHeight);
 
         // Child of track is thumb Animated.View
-        const thumb = track.children[0] as ReactTestInstance;
-        const flatThumbStyle = StyleSheet.flatten(thumb.props.style);
+        const thumb = (track.children as ElementNode[])[0];
+        const flatThumbStyle = StyleSheet.flatten<ViewStyle>(
+          thumb.props.style as StyleProp<ViewStyle>,
+        );
         expect(flatThumbStyle.width).toBe(thumbSize);
         expect(flatThumbStyle.height).toBe(thumbSize);
       },
@@ -207,9 +235,11 @@ describe('Switch', () => {
       );
 
       const defaultRoot = getDefault('default-thumb');
-      const defaultTrack = defaultRoot.children[0] as ReactTestInstance;
-      const defaultThumb = defaultTrack.children[0] as ReactTestInstance;
-      const defaultStyle = StyleSheet.flatten(defaultThumb.props.style);
+      const defaultTrack = (defaultRoot.children as ElementNode[])[0];
+      const defaultThumb = (defaultTrack.children as ElementNode[])[0];
+      const defaultStyle = StyleSheet.flatten<ViewStyle>(
+        defaultThumb.props.style as StyleProp<ViewStyle>,
+      );
       expect(defaultStyle.backgroundColor).toBe('#ffffff');
 
       const { getByTestId: getColored } = await render(
@@ -222,9 +252,11 @@ describe('Switch', () => {
       );
 
       const root = getColored('colored-thumb');
-      const track = root.children[0] as ReactTestInstance;
-      const thumb = track.children[0] as ReactTestInstance;
-      const flatThumbStyle = StyleSheet.flatten(thumb.props.style);
+      const track = (root.children as ElementNode[])[0];
+      const thumb = (track.children as ElementNode[])[0];
+      const flatThumbStyle = StyleSheet.flatten<ViewStyle>(
+        thumb.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatThumbStyle.backgroundColor).toBe('#ff0000');
     });
 
@@ -433,7 +465,9 @@ describe('Switch', () => {
       );
 
       const element = getByTestId('disabled-style-switch');
-      const flatStyle = StyleSheet.flatten(element.props.style);
+      const flatStyle = StyleSheet.flatten<ViewStyle>(
+        element.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatStyle.opacity).toBe(0.45);
     });
 
@@ -450,7 +484,9 @@ describe('Switch', () => {
       );
 
       const element = getByTestId('disabled-row-style');
-      const flatStyle = StyleSheet.flatten(element.props.style);
+      const flatStyle = StyleSheet.flatten<ViewStyle>(
+        element.props.style as StyleProp<ViewStyle>,
+      );
       expect(flatStyle.opacity).toBe(0.45);
     });
   });
@@ -612,7 +648,7 @@ describe('Switch', () => {
 
       const row = getByTestId('a11y-decorative');
       // Children: [View(textContainer), View(decorative switch wrapper)]
-      const trackWrapper = row.children[1] as ReactTestInstance;
+      const trackWrapper = (row.children as ElementNode[])[1];
       expect(trackWrapper.props.accessible).toBe(false);
       expect(
         trackWrapper.props['aria-hidden'] ??
