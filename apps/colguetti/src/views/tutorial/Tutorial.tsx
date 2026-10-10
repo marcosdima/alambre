@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import Animated, { FadeIn, SlideInRight, Easing } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import AppText from '../../components/AppText';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
@@ -317,7 +317,7 @@ function TutorialFlowContent({ steps, theme }: { steps: StepDefinition[], theme:
   const step = steps[currentStepIndex];
 
   return (
-    <StepFlow.Stage style={styles.stepContainer}>
+    <StepFlow.Stage style={{ width: '100%' }} contentStyle={styles.stepContainer}>
       <AppText style={[styles.stepTitle, { color: theme.primary }]}>{step.title}</AppText>
       <Typewriter
         text={step.description}
@@ -391,7 +391,7 @@ export default function Tutorial() {
         </View>
         <DropInTitle text={lang.settings.tutorialTitle} textStyle={[styles.title, { color: theme.color }]} />
 
-        <StepFlow.Root totalSteps={STEPS.length} onComplete={finishTutorial}>
+        <StepFlow.Root totalSteps={STEPS.length} onComplete={finishTutorial} style={{ width: '100%' }}>
           <TutorialFlowContent steps={STEPS} theme={theme} />
         </StepFlow.Root>
 
