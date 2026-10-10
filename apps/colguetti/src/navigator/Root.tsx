@@ -7,6 +7,8 @@ import {
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
 import type { Page } from 'alambre';
+import { useConfig } from '../providers/config';
+import { useEffect } from 'react';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { useRouteIntent } from './RouteIntent';
@@ -39,6 +41,14 @@ export default () => {
   const { currentLang } = useLang();
   const { currentPage } = useNavigator();
   const { intent } = useRouteIntent();
+  const { config: { tutorialCompleted }, loading } = useConfig();
+  const { navigate } = useNavigator();
+
+  useEffect(() => {
+    if (!loading && tutorialCompleted === 'false') {
+      navigate('tutorial');
+    }
+  }, [loading, tutorialCompleted, navigate]);
 
   const title = resolvePageTitle(currentPage, intent.alarmId !== undefined || intent.itemId !== undefined);
   const headerTitle = title?.[currentLang];

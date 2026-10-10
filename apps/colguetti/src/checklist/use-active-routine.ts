@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useToast } from 'alambre';
 import { useActivation } from './activation-context';
 import { useConfirmations } from './confirmations-context';
@@ -15,6 +16,7 @@ import {
   cancelSuccessReminder,
   scheduleExpiryReminder,
   scheduleSuccessReminder,
+  SNOOZE_ACTION,
   SNOOZE_MINUTES,
 } from '../notifications/expiry';
 
@@ -103,16 +105,31 @@ export function useActiveRoutine() {
   useEffect(() => {
     if (!active || success) return;
     if (!isExpired(active, new Date(now))) return;
-    const alarm = alarms.find((current) => current.id === active.alarmId);
-    void cancelAlarmAlerts(active.alarmId);
-    setMissed({
-      alarmId: active.alarmId,
-      label: alarm?.label ?? '',
-      time: alarm?.time ?? '',
-      items: alarm ? missingItemNames(alarm.itemIds, items, ticked) : [],
-    });
-    reset();
-    void deactivate();
+
+    let canceled = false;
+    const processExpiry = async () => {
+      // Async check for pending snooze from notification tap to avoid race condition
+      const response = await Notifications.getLastNotificationResponseAsync();
+      if (canceled) return;
+      if (response?.actionIdentifier === SNOOZE_ACTION) {
+        // NotificationsWatcher will process the snooze. Do not kill routine.
+        return;
+      }
+      const alarm = alarms.find((current) => current.id === active.alarmId);
+      void cancelAlarmAlerts(active.alarmId);
+      setMissed({
+        alarmId: active.alarmId,
+        label: alarm?.label ?? '',
+        time: alarm?.time ?? '',
+        items: alarm ? missingItemNames(alarm.itemIds, items, ticked) : [],
+      });
+      reset();
+      void deactivate();
+    };
+
+    void processExpiry();
+
+    return () => { canceled = true; };
   }, [active, success, now, alarms, items, ticked, reset, deactivate]);
 
   // Keep the background reminder in sync with what is still unticked.
