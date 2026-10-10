@@ -8,6 +8,7 @@ export type StepFlowContextType = {
   totalSteps: number;
   next: () => void;
   prev: () => void;
+  goTo: (index: number) => void;
   isGated: boolean;
   setGated: (gated: boolean) => void;
   isComplete: boolean;

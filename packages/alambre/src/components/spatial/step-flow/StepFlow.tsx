@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, type ViewStyle, type StyleProp } from 'react-native';
-import Animated, { SlideInRight, SlideInLeft, SlideOutRight, SlideOutLeft, Easing } from 'react-native-reanimated';
+import Animated, { SlideInRight, SlideInLeft, SlideOutRight, SlideOutLeft, Easing, FadeIn, type EntryExitAnimationFunction, type BaseAnimationBuilder } from 'react-native-reanimated';
 import { StepFlowContext, type StepFlowDirection, useStepFlowContext } from './StepFlowContext';
 
 type RootProps = {
@@ -34,16 +34,23 @@ function Root({ children, totalSteps, initialStep = 0, onComplete, style }: Root
     }
   }, [currentStepIndex]);
 
+  const goTo = useCallback((index: number) => {
+    if (index === currentStepIndex || index < 0 || index >= totalSteps) return;
+    setDirection(index > currentStepIndex ? 'forward' : 'backward');
+    setCurrentStepIndex(index);
+  }, [currentStepIndex, totalSteps]);
+
   const value = useMemo(() => ({
     currentStepIndex,
     direction,
     totalSteps,
     next,
     prev,
+    goTo,
     isGated,
     setGated,
     isComplete: currentStepIndex >= totalSteps - 1,
-  }), [currentStepIndex, direction, totalSteps, next, prev, isGated]);
+  }), [currentStepIndex, direction, totalSteps, next, prev, goTo, isGated]);
 
   return (
     <StepFlowContext.Provider value={value}>
@@ -57,16 +64,22 @@ function Root({ children, totalSteps, initialStep = 0, onComplete, style }: Root
 type StageProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
+  entering?: BaseAnimationBuilder | typeof BaseAnimationBuilder | EntryExitAnimationFunction | Keyframe;
+  exiting?: BaseAnimationBuilder | typeof BaseAnimationBuilder | EntryExitAnimationFunction | Keyframe;
+  disableExit?: boolean;
 };
 
-function Stage({ children, style }: StageProps) {
+function Stage({ children, style, contentStyle, entering, exiting, disableExit }: StageProps) {
   const { currentStepIndex, direction } = useStepFlowContext();
 
-  const entering = direction === 'backward'
-    ? SlideInLeft.duration(350).easing(Easing.out(Easing.quad))
-    : SlideInRight.duration(350).easing(Easing.out(Easing.quad));
+  const defaultEntering = direction === 'none' 
+    ? FadeIn.duration(200)
+    : direction === 'backward'
+      ? SlideInLeft.duration(350).easing(Easing.out(Easing.quad))
+      : SlideInRight.duration(350).easing(Easing.out(Easing.quad));
 
-  const exiting = direction === 'backward'
+  const defaultExiting = direction === 'backward'
     ? SlideOutRight.duration(350).easing(Easing.in(Easing.quad))
     : SlideOutLeft.duration(350).easing(Easing.in(Easing.quad));
 
@@ -74,9 +87,9 @@ function Stage({ children, style }: StageProps) {
     <View style={[styles.stageContainer, style]}>
       <Animated.View
         key={currentStepIndex}
-        entering={entering}
-        exiting={exiting}
-        style={styles.stage}
+        entering={entering ?? defaultEntering}
+        exiting={disableExit || direction === 'none' ? undefined : (exiting ?? defaultExiting)}
+        style={[styles.stage, contentStyle]}
       >
         {children}
       </Animated.View>
@@ -87,6 +100,7 @@ function Stage({ children, style }: StageProps) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    width: '100%',
   },
   stageContainer: {
     flex: 1,
@@ -94,6 +108,11 @@ const styles = StyleSheet.create({
   },
   stage: {
     flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
 
