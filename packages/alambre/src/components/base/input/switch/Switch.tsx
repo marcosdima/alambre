@@ -19,6 +19,8 @@ export type SwitchProps = {
   size?: SwitchSize;
   activeColor?: string;
   inactiveColor?: string;
+  activeBorderColor?: string;
+  inactiveBorderColor?: string;
   thumbColor?: string;
   label?: string;
   subtitle?: string;
@@ -26,6 +28,9 @@ export type SwitchProps = {
   subtitleStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   switchStyle?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  testID?: string;
 };
 
 export default function Switch({
@@ -35,6 +40,8 @@ export default function Switch({
   size = 'md',
   activeColor = '#2563eb',
   inactiveColor = '#e5e7eb',
+  activeBorderColor,
+  inactiveBorderColor,
   thumbColor = '#ffffff',
   label,
   subtitle,
@@ -42,6 +49,9 @@ export default function Switch({
   subtitleStyle,
   containerStyle,
   switchStyle,
+  accessibilityLabel,
+  accessibilityHint,
+  testID,
 }: SwitchProps) {
   const progress = useSharedValue(checked ? 1 : 0);
   const pressScale = useSharedValue(1);
@@ -109,7 +119,7 @@ export default function Switch({
     const borderColor = interpolateColor(
       progress.value,
       [0, 1],
-      [inactiveColor, activeColor], // Often borders match inactive/active colors
+      [inactiveBorderColor ?? inactiveColor, activeBorderColor ?? activeColor],
     );
 
     return {
@@ -165,7 +175,10 @@ export default function Switch({
         onPressOut={handlePressOut}
         disabled={disabled}
         accessibilityRole="switch"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
         accessibilityState={{ checked, disabled }}
+        testID={testID}
         hitSlop={8}
         style={[disabled && styles.disabled, switchStyle]}
       >
@@ -173,6 +186,8 @@ export default function Switch({
       </Pressable>
     );
   }
+
+  const computedA11yLabel = accessibilityLabel ?? (subtitle ? `${label}, ${subtitle}` : label);
 
   return (
     <Pressable
@@ -182,8 +197,10 @@ export default function Switch({
       disabled={disabled}
       style={[styles.rowContainer, disabled && styles.disabled, containerStyle]}
       accessibilityRole="switch"
-      accessibilityLabel={label}
+      accessibilityLabel={computedA11yLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityState={{ checked, disabled }}
+      testID={testID}
     >
       <View style={styles.textContainer}>
         {label ? (
@@ -193,7 +210,7 @@ export default function Switch({
           <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
         ) : null}
       </View>
-      <View pointerEvents="none" style={switchStyle}>
+      <View pointerEvents="none" style={switchStyle} accessible={false} aria-hidden={true}>
         {trackView}
       </View>
     </Pressable>

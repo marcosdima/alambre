@@ -353,9 +353,9 @@ export default () => {
             onChange={setEnabled}
             label={lang.alarms.enabledLabel}
             activeColor={theme.primary}
-            inactiveColor={theme.border}
-            thumbColor={theme.surfaceAlt}
-            labelStyle={{ color: theme.color }}
+            inactiveColor={theme.surfaceAlt}
+            inactiveBorderColor={theme.border}
+            labelStyle={{ color: theme.color, fontFamily: config.fontFamily }}
           />
         </AppCard>
       </ScrollView>

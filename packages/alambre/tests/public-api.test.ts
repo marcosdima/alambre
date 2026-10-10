@@ -38,6 +38,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.SegmentedControl).toBe('function');
     expect(typeof Alambre.useSelect).toBe('function');
     expect(typeof Alambre.Input).toBe('function');
+    expect(typeof Alambre.Switch).toBe('function');
     expect(typeof Alambre.createConfigProvider).toBe('function');
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
@@ -176,6 +177,11 @@ describe('public API — type surface', () => {
       error: false,
       warning: false,
     };
+    const switchProps: Alambre.SwitchProps = {
+      checked: false,
+      onChange: () => undefined,
+      size: 'md',
+    };
     const sliderProps: Alambre.SliderProps = { value: 50 };
     const sliderState: Alambre.SliderState = {
       value: 50,
@@ -278,6 +284,7 @@ describe('public API — type surface', () => {
     expect(selectState).toBeDefined();
     expect(inputProps).toBeDefined();
     expect(inputState).toBeDefined();
+    expect(switchProps).toBeDefined();
     expect(toastComponentProps).toBeDefined();
     expect(confirmComponentProps).toBeDefined();
     expect(page).toBeDefined();

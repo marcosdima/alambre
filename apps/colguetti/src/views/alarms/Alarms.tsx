@@ -172,8 +172,9 @@ export default () => {
                           onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                           size="md"
                           activeColor={theme.primary}
-                          inactiveColor={theme.border}
-                          thumbColor={theme.surfaceAlt}
+                          inactiveColor={theme.surfaceAlt}
+                          inactiveBorderColor={theme.border}
+                          accessibilityLabel={`${lang.alarms.enabledLabel} ${alarm.label}`}
                         />
                       </View>
                     </View>
