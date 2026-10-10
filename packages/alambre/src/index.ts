@@ -8,6 +8,7 @@ export {
   useSelect,
   Input,
   HorizontalPicker,
+  Switch,
 } from './components/base/input';
 export type {
   ButtonProps,
@@ -32,6 +33,8 @@ export type {
   InputFieldProps,
   InputState,
   InputContextValue,
+  SwitchProps,
+  SwitchSize,
 } from './components/base/input';
 
 // Navigator types.

@@ -1,7 +1,6 @@
-import AppText from './AppText';
 import { useEffect } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet,  View } from 'react-native';
+import type { StyleProp, ViewStyle, TextStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -9,59 +8,47 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { useLightDark } from '../providers/theme';
-import { kinetics } from 'alambre';
+import { kinetics } from '../../../../core/kinetics';
 
 export type SwitchSize = 'sm' | 'md' | 'lg';
-export type SwitchTone = 'primary' | 'success' | 'warning' | 'danger';
 
-export type AppSwitchProps = {
+export type SwitchProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   size?: SwitchSize;
-  activeTone?: SwitchTone;
+  activeColor?: string;
+  inactiveColor?: string;
+  thumbColor?: string;
   label?: string;
   subtitle?: string;
+  labelStyle?: StyleProp<TextStyle>;
+  subtitleStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   switchStyle?: StyleProp<ViewStyle>;
 };
 
-export default function AppSwitch({
+export default function Switch({
   checked,
   onChange,
   disabled = false,
   size = 'md',
-  activeTone = 'primary',
+  activeColor = '#2563eb',
+  inactiveColor = '#e5e7eb',
+  thumbColor = '#ffffff',
   label,
   subtitle,
+  labelStyle,
+  subtitleStyle,
   containerStyle,
   switchStyle,
-}: AppSwitchProps) {
-  const { theme } = useLightDark();
-
+}: SwitchProps) {
   const progress = useSharedValue(checked ? 1 : 0);
   const pressScale = useSharedValue(1);
 
   useEffect(() => {
     progress.value = withSpring(checked ? 1 : 0, kinetics.spring.stiff);
   }, [checked, progress]);
-
-  const getToneColor = () => {
-    switch (activeTone) {
-      case 'success':
-        return '#10b981';
-      case 'warning':
-        return '#f59e0b';
-      case 'danger':
-        return '#ef4444';
-      case 'primary':
-      default:
-        return theme.primary;
-    }
-  };
-
-  const activeColor = getToneColor();
 
   const getSizeConfig = () => {
     switch (size) {
@@ -117,12 +104,12 @@ export default function AppSwitch({
     const backgroundColor = interpolateColor(
       progress.value,
       [0, 1],
-      [theme.surfaceAlt, activeColor],
+      [inactiveColor, activeColor],
     );
     const borderColor = interpolateColor(
       progress.value,
       [0, 1],
-      [theme.border, activeColor],
+      [inactiveColor, activeColor], // Often borders match inactive/active colors
     );
 
     return {
@@ -158,6 +145,7 @@ export default function AppSwitch({
       <Animated.View
         style={[
           styles.thumb,
+          { backgroundColor: thumbColor },
           animatedThumbStyle,
           {
             width: sizeConfig.thumbSize,
@@ -199,10 +187,10 @@ export default function AppSwitch({
     >
       <View style={styles.textContainer}>
         {label ? (
-          <AppText style={[styles.label, { color: theme.color }]}>{label}</AppText>
+          <Text style={[styles.label, labelStyle]}>{label}</Text>
         ) : null}
         {subtitle ? (
-          <AppText style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</AppText>
+          <Text style={[styles.subtitle, subtitleStyle]}>{subtitle}</Text>
         ) : null}
       </View>
       <View pointerEvents="none" style={switchStyle}>
@@ -218,7 +206,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   thumb: {
-    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1.5 },
     shadowOpacity: 0.2,
@@ -238,7 +225,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-
   },
   subtitle: {
     fontSize: 12,

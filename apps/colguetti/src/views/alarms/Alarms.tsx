@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { ScrollView, StyleSheet,  View } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import { useConfirm, useNavigator, useToast, Switch } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -13,7 +13,6 @@ import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 
-import AppSwitch from '../../components/AppSwitch';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
@@ -168,10 +167,13 @@ export default () => {
                         </AppText>
                       </View>
                       <View style={styles.switchContainer}>
-                        <AppSwitch
+                        <Switch
                           checked={alarm.enabled}
                           onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                           size="md"
+                          activeColor={theme.primary}
+                          inactiveColor={theme.border}
+                          thumbColor={theme.surfaceAlt}
                         />
                       </View>
                     </View>

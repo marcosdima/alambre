@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Stepper, useNavigator, useToast } from 'alambre';
+import { Stepper, Switch, useNavigator, useToast } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
@@ -11,7 +11,6 @@ import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
-import AppSwitch from '../../components/AppSwitch';
 import SwipeableTimePicker from '../../components/SwipeableTimePicker';
 import AnimatedCounter from '../../components/AnimatedCounter';
 import { clampActiveWindowMinutes, withActiveWindowDefault } from '../../alarms/alarms-model';
@@ -349,11 +348,14 @@ export default () => {
           selected
           style={styles.card}
         >
-          <AppSwitch
+          <Switch
             checked={enabled}
             onChange={setEnabled}
             label={lang.alarms.enabledLabel}
-            activeTone="primary"
+            activeColor={theme.primary}
+            inactiveColor={theme.border}
+            thumbColor={theme.surfaceAlt}
+            labelStyle={{ color: theme.color }}
           />
         </AppCard>
       </ScrollView>
