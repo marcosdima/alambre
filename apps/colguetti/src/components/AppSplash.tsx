@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, runOnJS } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
-import TypewriterText from './TypewriterText';
+import { Typewriter } from 'alambre';
 
 export default function AppSplash({ onFinished }: { onFinished?: () => void }) {
   const { theme } = useLightDark();
@@ -25,7 +25,7 @@ export default function AppSplash({ onFinished }: { onFinished?: () => void }) {
 
   return (
     <Animated.View style={[styles.container, { backgroundColor: theme.background }, { opacity }]}>
-      <TypewriterText
+      <Typewriter
         text="Colguetti"
         speed={120}
         initialDelay={200}

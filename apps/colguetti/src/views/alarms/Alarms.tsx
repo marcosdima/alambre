@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { ScrollView, StyleSheet,  View } from 'react-native';
-import { useConfirm, useNavigator, useToast, Switch } from 'alambre';
+import { useConfirm, useNavigator, useToast, Switch, Typewriter } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -16,7 +16,7 @@ import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
-import TypewriterText from '../../components/TypewriterText';
+
 import DropInTitle from '../../components/DropInTitle';
 import AnimatedDashedLine from '../../components/AnimatedDashedLine';
 
@@ -128,7 +128,7 @@ export default () => {
         {alarms.length === 0 ? (
           <View style={styles.emptyContainer}>
             <AlarmGlyph line={theme.color} size={140} />
-            <TypewriterText
+            <Typewriter
               text={lang.alarms.empty}
               textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
               initialDelay={300}

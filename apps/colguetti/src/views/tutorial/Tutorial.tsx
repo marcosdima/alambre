@@ -8,11 +8,11 @@ import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { ItemIconKey } from '../../items/item-types';
 import { useLightDark } from '../../providers/theme';
-import { useNavigator, AlambreIcons } from 'alambre';
+import { useNavigator, AlambreIcons, Typewriter } from 'alambre';
 import { useLang } from '../../providers/lang';
 import DropInTitle from '../../components/DropInTitle';
 import SkiaFrame from '../../components/SkiaFrame';
-import TypewriterText from '../../components/TypewriterText';
+
 import { AlarmGlyph, ItemsGlyph } from '../../components/illustrations/SkiaArt';
 import { useConfig } from '../../providers/config';
 
@@ -396,7 +396,7 @@ export default function Tutorial() {
           style={styles.stepContainer}
         >
           <AppText style={[styles.stepTitle, { color: theme.primary }]}>{STEPS[step].title}</AppText>
-          <TypewriterText
+          <Typewriter
             text={STEPS[step].description}
             textStyle={[styles.stepDesc, { color: theme.color }]}
             speed={15}

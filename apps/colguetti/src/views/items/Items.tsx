@@ -1,6 +1,6 @@
 import AppText from '../../components/AppText';
 import { Pressable, ScrollView, StyleSheet,  View } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import { useConfirm, useNavigator, useToast, Typewriter } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
@@ -12,7 +12,7 @@ import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { useRouteIntent } from '../../navigator/RouteIntent';
 import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
-import TypewriterText from '../../components/TypewriterText';
+
 import DropInTitle from '../../components/DropInTitle';
 
 export default () => {
@@ -83,7 +83,7 @@ export default () => {
         {items.length === 0 ? (
           <View style={styles.emptyContainer}>
             <ItemsGlyph line={theme.color} size={140} />
-            <TypewriterText
+            <Typewriter
               text={lang.items.empty}
               textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
               initialDelay={300}

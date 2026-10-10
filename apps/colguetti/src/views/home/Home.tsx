@@ -123,10 +123,8 @@ export default function Home() {
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 50 }}>
                         <Typewriter
                           text={currentAlarm.label}
-                          style={[styles.activeCardTitle, { color: theme.color, flex: 1, padding: 0, margin: 0 }]}
+                          textStyle={[styles.activeCardTitle, { color: theme.color, flex: 1, padding: 0, margin: 0 }]}
                           speed={2.5}
-                          multiline={false}
-                          pointerEvents="none"
                         />
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
                           {Number(currentAlarm.time.split(':')[0]) < 10 && <AppText style={{ fontSize: 18, lineHeight: 22, color: theme.color }}>0</AppText>}
