@@ -43,9 +43,11 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
     expect(typeof Alambre.createCollectionProvider).toBe('function');
+    expect(typeof Alambre.createCollection).toBe('function');
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
+    expect(typeof Alambre.NavigatorHost).toBe('function');
     expect(typeof Alambre.initNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
@@ -250,6 +252,18 @@ describe('public API — type surface', () => {
       loading: false,
       saveField: async () => undefined,
     };
+    const useCollectionType: Alambre.UseCollectionType<{ id: string }> = {
+      records: [{ id: 'item-1' }],
+      loading: false,
+      add: async () => undefined,
+      update: async () => undefined,
+      remove: async () => undefined,
+      reorder: async () => undefined,
+      move: async () => undefined,
+    };
+    const navigatorHostProps: Alambre.NavigatorHostProps = {
+      headerTitle: 'Host',
+    };
     const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
     const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
     const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };
@@ -318,6 +332,8 @@ describe('public API — type surface', () => {
     expect(navSettings).toBeDefined();
     expect(configState).toBeDefined();
     expect(useConfigType).toBeDefined();
+    expect(useCollectionType).toBeDefined();
+    expect(navigatorHostProps).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {

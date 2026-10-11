@@ -115,7 +115,9 @@ export {
   SlideInText,
   DropInTitle,
   HangingTitle,
+  NavigatorHost,
 } from './behaviors';
+export type { NavigatorHostProps } from './behaviors';
 export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps, DropInTitleProps, HangingTitleProps } from './behaviors';
 
 // Hooks & state utilities.

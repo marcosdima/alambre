@@ -20,6 +20,7 @@ export type TypewriterProps = {
   textStyle?: StyleProp<TextStyle>;
   cursorStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
+  reserveSpace?: boolean;
 };
 
 export function Typewriter({
@@ -39,6 +40,7 @@ export function Typewriter({
   textStyle,
   cursorStyle,
   containerStyle,
+  reserveSpace = true,
 }: TypewriterProps) {
   const isReducedMotion = useReducedMotion();
   const [displayedLength, setDisplayedLength] = useState(0);
@@ -139,6 +141,7 @@ export function Typewriter({
   ]);
 
   const visibleText = text.slice(0, displayedLength);
+  const remainingText = reserveSpace ? text.slice(displayedLength) : '';
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
   const isCursorVisible = showCursor && (!isDone || blink);
 
@@ -155,7 +158,24 @@ export function Typewriter({
         style={[styles.text, textStyle]}
       >
         {visibleText}
-        {cursor ? (
+        {showCursor && (!reserveSpace || !isDone) ? (
+          <Text
+            style={[
+              styles.cursor,
+              cursorColor ? { color: cursorColor } : null,
+              { opacity: isCursorVisible ? 1 : 0 },
+              cursorStyle,
+            ]}
+          >
+            {cursorChar}
+          </Text>
+        ) : null}
+        {reserveSpace && remainingText ? (
+          <Text style={{ opacity: 0 }}>
+            {remainingText}
+          </Text>
+        ) : null}
+        {showCursor && reserveSpace && isDone ? (
           <Text
             style={[
               styles.cursor,

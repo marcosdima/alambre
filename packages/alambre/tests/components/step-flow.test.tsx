@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { View, Text } from 'react-native';
 import { render, fireEvent, act } from '@testing-library/react-native';
@@ -25,9 +25,9 @@ describe('StepFlow', () => {
         <StepFlow.Stage>
           <FlowConsumer testId="flow" />
         </StepFlow.Stage>
-      </StepFlow.Root>
+      </StepFlow.Root>,
     );
-    
+
     expect(getByTestId('flow-current').props.children).toBe(0);
     expect(getByTestId('flow-total').props.children).toBe(4);
     expect(getByTestId('flow-complete').props.children).toBe('false');
@@ -40,7 +40,7 @@ describe('StepFlow', () => {
 
     await act(async () => { fireEvent.press(getByTestId('flow-prev')); });
     expect(getByTestId('flow-current').props.children).toBe(1);
-    
+
     await act(async () => { fireEvent.press(getByTestId('flow-goto')); });
     expect(getByTestId('flow-current').props.children).toBe(2);
   });

@@ -123,4 +123,27 @@ describe('createCollection', () => {
     await actions.remove('x');
     expect(store.getState().records).toEqual([]);
   });
+
+  it('reorders and moves items within the collection', async () => {
+    const storage = createMemoryStorage({ items: JSON.stringify(items) });
+    const { store, actions } = createCollection<Item>({
+      storage,
+      storageKey: 'items',
+    });
+
+    await waitFor(() => expect(store.getState().loading).toBe(false));
+
+    await actions.reorder([{ id: 'b', name: 'wallet' }, { id: 'a', name: 'keys' }]);
+    expect(store.getState().records[0].id).toBe('b');
+    expect(store.getState().records[1].id).toBe('a');
+    expect(JSON.parse(storage.data.items)[0].id).toBe('b');
+
+    await actions.move(1, 0);
+    expect(store.getState().records[0].id).toBe('a');
+    expect(store.getState().records[1].id).toBe('b');
+    expect(JSON.parse(storage.data.items)[0].id).toBe('a');
+
+    await actions.move(5, 0);
+    expect(store.getState().records[0].id).toBe('a');
+  });
 });

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, type ViewStyle, type StyleProp } from 'react-native';
-import Animated, { SlideInRight, SlideInLeft, SlideOutRight, SlideOutLeft, Easing, FadeIn, type EntryExitAnimationFunction, type BaseAnimationBuilder } from 'react-native-reanimated';
+import Animated, { SlideInRight, SlideInLeft, SlideOutRight, SlideOutLeft, Easing, FadeIn, type EntryOrExitLayoutType } from 'react-native-reanimated';
 import { StepFlowContext, type StepFlowDirection, useStepFlowContext } from './StepFlowContext';
 
 type RootProps = {
@@ -65,15 +65,15 @@ type StageProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
-  entering?: any;
-  exiting?: any;
+  entering?: EntryOrExitLayoutType;
+  exiting?: EntryOrExitLayoutType;
   disableExit?: boolean;
 };
 
-function Stage({ children, style, contentStyle, entering, exiting, disableExit }: StageProps) {
+function Stage({ children, style, contentStyle, entering, exiting, disableExit = true }: StageProps) {
   const { currentStepIndex, direction } = useStepFlowContext();
 
-  const defaultEntering = direction === 'none' 
+  const defaultEntering = direction === 'none'
     ? FadeIn.duration(200)
     : direction === 'backward'
       ? SlideInLeft.duration(350).easing(Easing.out(Easing.quad))
@@ -99,20 +99,13 @@ function Stage({ children, style, contentStyle, entering, exiting, disableExit }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
     width: '100%',
   },
   stageContainer: {
-    flex: 1,
-    overflow: 'hidden',
+    width: '100%',
   },
   stage: {
-    flex: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    width: '100%',
   },
 });
 

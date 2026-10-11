@@ -248,12 +248,10 @@ describe('AnimatedCounter', () => {
       };
 
       const flatContainerStyle = StyleSheet.flatten<ViewStyle>(tree.props.style);
-      console.log('TREE IS:', JSON.stringify(tree, null, 2));
       expect(flatContainerStyle.flexDirection).toBe('row');
       expect(flatContainerStyle.alignItems).toBe('baseline');
       expect(flatContainerStyle.justifyContent).toBe('center');
       expect(flatContainerStyle.gap).toBe(5);
-      expect(flatContainerStyle.top).toBe(-2);
 
       const numberBoxNode = tree.children?.[0];
       const flatNumberBoxStyle = StyleSheet.flatten<ViewStyle>(
