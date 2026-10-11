@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button } from 'alambre';
-import AppTitle, { AppText } from '../AppTitle';
+import { AppText } from '../AppTitle';
 
 export interface ConfigSwitchProps {
   label: string;

@@ -1,17 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
-import { useLightDark } from '../../providers/theme';
-import Svg, { Circle, Path, Rect, G, Line } from 'react-native-svg';
+import Svg, { Circle, Path, Rect, Line } from 'react-native-svg';
 import { AlambreIcons, SettingsIcon } from 'alambre';
 
 const Heart = AlambreIcons.Heart;
 
 export default function ColguettiMenuTestbed() {
-  const { theme } = useLightDark();
-
   // Background colors from the design
   const bgColor = '#181b19';
-  const dotColor = '#2b332d';
   const card1Bg = '#374136';
   const card2Bg = '#403833';
   const textPrimary = '#f6f2e6';

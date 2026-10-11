@@ -262,9 +262,9 @@ describe('Playground test-utils suite', () => {
 
       expect(screen.getByText('Enable Haptics')).toBeDefined();
 
-      const switchComponent = screen.getByRole('switch');
-      expect(switchComponent).toBeDefined();
-      fireEvent(switchComponent, 'valueChange', true);
+      const onButton = screen.getByText('On');
+      expect(onButton).toBeDefined();
+      fireEvent.press(onButton);
 
       expect(onChange).toHaveBeenCalledWith(true);
     });

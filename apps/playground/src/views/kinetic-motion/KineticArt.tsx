@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { SharedValue } from 'react-native-reanimated';
 import Animated, { useAnimatedProps, useAnimatedStyle, useDerivedValue } from 'react-native-reanimated';
 import Svg, { Circle, G, Line, Path, Polygon, Rect } from 'react-native-svg';
 import { useHarmonicMotion, useRipplePulse } from 'alambre';
@@ -154,7 +155,7 @@ function RippleRing({ index, wave, active, clock }: {
   index: number;
   wave: (index: number) => { scale: number; opacity: number };
   active: boolean;
-  clock: import('react-native-reanimated').SharedValue<number>;
+  clock: SharedValue<number>;
 }) {
   const isActive = useDerivedValue(() => active, [active]);
   const animatedProps = useAnimatedProps(() => {
