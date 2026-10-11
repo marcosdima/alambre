@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming, runOnJS } from 'react-native-reanimated';
+import Animated, { useSharedValue, withTiming, runOnJS } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
 import { Typewriter } from 'alambre';
 

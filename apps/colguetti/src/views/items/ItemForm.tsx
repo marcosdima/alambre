@@ -11,17 +11,16 @@ import { searchIcons } from '../../items/icon-tags';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
-import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppText from '../../components/AppText';
 
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
   const { items, addItem, updateItem } = useItems();
-  const { intent, setIntent } = useRouteIntent();
-  const { previous } = useNavigator();
+  const { previous, currentParams } = useNavigator();
   const { show } = useToast();
 
+  const intent = (currentParams as { itemId?: string }) || {};
   const editing = items.find((item) => item.id === intent.itemId);
 
   const [name, setName] = useState(editing?.name ?? '');
@@ -43,7 +42,6 @@ export default () => {
   }, [searchQuery, isTransitioning]);
 
   const close = () => {
-    setIntent({});
     previous();
   };
 
@@ -201,6 +199,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
     gap: 16,
   },
   sectionCard: {

@@ -1,7 +1,7 @@
 import AppText from '../../components/AppText';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, PanResponder } from 'react-native';
-import Animated, { useAnimatedStyle, useDerivedValue, withSpring, FadeIn } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useDerivedValue, withSpring } from 'react-native-reanimated';
 import { useNavigator, AlambreIcons, Typewriter, CountUp, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
@@ -101,7 +101,7 @@ export default function Home() {
 
         <View style={styles.center}>
           <HangingMobile line={theme.color} size={300} />
-          <DropInTitle text="Colguetti" textStyle={[styles.title, { color: theme.color, marginTop: -10 }]} />
+          <DropInTitle text="Colguetti" textStyle={[styles.title, { color: theme.color, marginTop: -14 }]} />
         </View>
 
         <View style={styles.menuGrid}>

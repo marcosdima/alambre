@@ -9,7 +9,6 @@ import navigator from './src/navigator/navigator';
 import { ColguettiToast } from './src/providers/toast';
 import ConfirmDialog from './src/components/ConfirmDialog';
 import AppSplash from './src/components/AppSplash';
-import { RouteIntentProvider } from './src/navigator/RouteIntent';
 import { ItemsProvider } from './src/items/items-context';
 import { AlarmsProvider } from './src/alarms/alarms-context';
 import { ConfirmationsProvider } from './src/checklist/confirmations-context';
@@ -31,26 +30,24 @@ export default function App() {
         <LightDarkProvider>
           <LangProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <RouteIntentProvider>
-                <ItemsProvider>
-                  <AlarmsProvider>
-                    <ConfirmationsProvider>
-                      <ActivationProvider>
-                        <NotificationPermissionProvider>
-                          <NavigatorProvider pages={navigator}>
-                            <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                              <ToastProvider ToastComponent={ColguettiToast}>
-                                <Root />
-                                <AppSplash />
-                              </ToastProvider>
-                            </ConfirmProvider>
-                          </NavigatorProvider>
-                        </NotificationPermissionProvider>
-                      </ActivationProvider>
-                    </ConfirmationsProvider>
-                  </AlarmsProvider>
-                </ItemsProvider>
-              </RouteIntentProvider>
+              <ItemsProvider>
+                <AlarmsProvider>
+                  <ConfirmationsProvider>
+                    <ActivationProvider>
+                      <NotificationPermissionProvider>
+                        <NavigatorProvider pages={navigator}>
+                          <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+                            <ToastProvider ToastComponent={ColguettiToast}>
+                              <Root />
+                              <AppSplash />
+                            </ToastProvider>
+                          </ConfirmProvider>
+                        </NavigatorProvider>
+                      </NotificationPermissionProvider>
+                    </ActivationProvider>
+                  </ConfirmationsProvider>
+                </AlarmsProvider>
+              </ItemsProvider>
             </GestureHandlerRootView>
           </LangProvider>
         </LightDarkProvider>

@@ -5,44 +5,17 @@ import {
   FadeInLeft,
   FadeInRight,
 } from 'react-native-reanimated';
-import { useNavigator } from 'alambre';
-import type { Page } from 'alambre';
+import { useNavigator, NavigatorHost } from 'alambre';
 import { useConfig } from '../providers/config';
 import { useEffect } from 'react';
 import { useLightDark } from '../providers/theme';
-import { useLang } from '../providers/lang';
-import { useRouteIntent } from './RouteIntent';
-import { pages, type PageTitle } from './navigator';
-import AppNavigatorBody from './AppNavigatorBody';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 import ActivationOverlay from '../checklist/ActivationOverlay';
 
-const resolvePageTitle = (
-  page: Page,
-  editing: boolean,
-): PageTitle | undefined => {
-  for (const entry of Object.values(pages)) {
-    if (entry === page) return entry.title;
-    if (entry.subpages) {
-      for (const sub of Object.values(entry.subpages)) {
-        if (sub === page) {
-          if (sub.title) return sub.title;
-          if (sub.titles) return editing ? sub.titles.edit : sub.titles.add;
-        }
-      }
-    }
-  }
-
-  return undefined;
-};
-
 export default () => {
   const { theme } = useLightDark();
-  const { currentLang } = useLang();
-  const { currentPage } = useNavigator();
-  const { intent } = useRouteIntent();
-  const { config: { tutorialCompleted }, loading } = useConfig();
   const { navigate } = useNavigator();
+  const { config: { tutorialCompleted }, loading } = useConfig();
 
   useEffect(() => {
     if (!loading && tutorialCompleted === 'false') {
@@ -50,12 +23,9 @@ export default () => {
     }
   }, [loading, tutorialCompleted, navigate]);
 
-  const title = resolvePageTitle(currentPage, intent.alarmId !== undefined || intent.itemId !== undefined);
-  const headerTitle = title?.[currentLang];
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppNavigatorBody
+      <NavigatorHost
         style={styles.container}
         arrowColor={theme.primary}
         arrowBackgroundColor={theme.overlayBar}

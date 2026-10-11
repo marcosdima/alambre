@@ -9,7 +9,7 @@ import type { Ticks } from './activation-model';
 import { useAlarms } from '../alarms/alarms-context';
 import { useItems } from '../items/items-context';
 import { useLang } from '../providers/lang';
-import { useRouteIntent } from '../navigator/RouteIntent';
+import { useNavigator } from 'alambre';
 import {
   cancelAlarmAlerts,
   cancelExpiryReminder,
@@ -42,7 +42,8 @@ export function useActiveRoutine() {
   const { items } = useItems();
   const { confirm } = useConfirmations();
   const { active, deactivate, snooze } = useActivation();
-  const { intent, setIntent } = useRouteIntent();
+  const { navigate, currentParams } = useNavigator();
+  const intent = (currentParams as { missing?: string[]; alarmId?: string }) || {};
   const { show } = useToast();
 
   const [ticked, setTicked] = useState<Ticks>({});
@@ -98,8 +99,8 @@ export function useActiveRoutine() {
       items: intent.missing,
     });
     void deactivate();
-    setIntent({});
-  }, [intent.alarmId, intent.missing, alarms, setIntent, deactivate]);
+    navigate('home', { params: {} });
+  }, [intent.alarmId, intent.missing, alarms, navigate, deactivate]);
 
   // Window elapsed while the app was open.
   useEffect(() => {

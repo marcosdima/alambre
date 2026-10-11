@@ -10,31 +10,24 @@ import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
-import { useRouteIntent } from '../../navigator/RouteIntent';
 import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
 
 export default () => {
   const { theme } = useLightDark();
   const { lang } = useLang();
-  const { items, removeItem, reorderItems } = useItems();
+  const { items, removeItem, moveItem: moveItemApi } = useItems();
   const { alarms, updateAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
-  const { setIntent } = useRouteIntent();
 
   const openForm = (item?: Item) => {
-    setIntent({ itemId: item?.id });
-    navigate('items', { subpage: 'item-form' });
+    navigate('items', { subpage: 'item-form', params: { itemId: item?.id } });
   };
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= items.length) return;
-    const reordered = [...items];
-    const [moved] = reordered.splice(index, 1);
-    reordered.splice(targetIndex, 0, moved);
-    void reorderItems(reordered);
+    void moveItemApi(index, targetIndex);
   };
 
   const tryDelete = async (item: Item) => {

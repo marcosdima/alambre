@@ -14,7 +14,6 @@ import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 
 import SwipeableItemRow from '../../components/SwipeableItemRow';
-import { useRouteIntent } from '../../navigator/RouteIntent';
 import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
 import AnimatedDashedLine from '../../components/AnimatedDashedLine';
 
@@ -88,13 +87,11 @@ export default () => {
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
-  const { setIntent } = useRouteIntent();
   const cardColors = [theme.primary, theme.secondary, theme.warning, theme.danger, theme.success, theme.sand];
   const now = new Date();
 
   const openForm = (alarm?: Alarm) => {
-    setIntent({ alarmId: alarm?.id });
-    navigate('alarms', { subpage: 'alarm-form' });
+    navigate('alarms', { subpage: 'alarm-form', params: { alarmId: alarm?.id } });
   };
 
   const tryDelete = async (alarm: Alarm) => {

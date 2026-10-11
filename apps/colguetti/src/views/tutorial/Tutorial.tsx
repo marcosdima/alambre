@@ -403,14 +403,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  title: {
+    fontSize: 42,
+    marginBottom: 24,
+  },
   scroll: {
     padding: 24,
     paddingTop: 24,
+    paddingBottom: 48,
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 42,
-    marginBottom: 40,
   },
   stepContainer: {
     width: '100%',

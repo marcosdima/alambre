@@ -9,7 +9,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AlambreIcons, kinetics, useSwipeableRow } from 'alambre';
-import { useLightDark } from '../providers/theme';
 
 type SwipeableItemRowProps = {
   children: ReactNode;
@@ -28,7 +27,7 @@ export default function SwipeableItemRow({
   disabled = false,
   peekIndex,
 }: SwipeableItemRowProps) {
-  const { theme } = useLightDark();
+
 
   const { translationX, panGesture, snapTo } = useSwipeableRow({
     leftSnapPoints: [],

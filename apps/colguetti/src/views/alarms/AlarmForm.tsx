@@ -7,7 +7,6 @@ import { useConfig } from '../../providers/config';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
-import { useRouteIntent } from '../../navigator/RouteIntent';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
@@ -21,10 +20,10 @@ export default () => {
   const { config } = useConfig();
   const { alarms, addAlarm, updateAlarm } = useAlarms();
   const { items } = useItems();
-  const { previous } = useNavigator();
+  const { previous, currentParams } = useNavigator();
   const { show } = useToast();
-  const { intent, setIntent } = useRouteIntent();
 
+  const intent = (currentParams as { alarmId?: string }) || {};
   const editing = alarms.find((a) => a.id === intent.alarmId);
   const defaultGraceMinutes = parseInt(config.leaveGraceMinutes, 10) || 10;
 
@@ -54,7 +53,6 @@ export default () => {
   }, [items, itemIds, isTransitioning]);
 
   const close = () => {
-    setIntent({});
     previous();
   };
 
