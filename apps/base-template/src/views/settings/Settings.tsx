@@ -1,6 +1,7 @@
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
+import { useConfig } from '../../providers/config';
 import { useLightDark, light as lightTokens, dark as darkTokens } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
@@ -9,9 +10,21 @@ import ToggleLightDark from '../../components/ToggleLightDark';
 const GITHUB_URL = 'https://github.com/marcosdima';
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 
+export const FONTS = [
+  'Inter',
+  'Nunito',
+  'PlayfairDisplay',
+  'SpaceMono',
+  'Kranky',
+  'sans-serif',
+  'serif',
+  'monospace',
+];
+
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
   const { lang, currentLang, changeLang } = useLang();
+  const { config, saveField } = useConfig();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
@@ -45,6 +58,7 @@ export default () => {
 
     if (confirmed) {
       await changeLang('es');
+      await saveField('fontFamily', 'Inter');
       if (currThemeName !== 'light') {
         toggleTheme();
       }
@@ -147,6 +161,53 @@ export default () => {
             }}
           />
         </View>
+      </AppCard>
+
+      {/* Tipografía / Typography */}
+      <AppCard
+        variant="outlined"
+        title={lang.settings.typography}
+        subtitle={lang.settings.typographySubtitle}
+        style={styles.card}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.fontsScroll}
+        >
+          {FONTS.map((font) => {
+            const active = config.fontFamily === font;
+            const displayLabel =
+              font === 'PlayfairDisplay' ? 'Playfair' : font === 'SpaceMono' ? 'Space Mono' : font;
+            return (
+              <Pressable
+                key={font}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => void saveField('fontFamily', font)}
+                style={[
+                  styles.fontChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.fontChipText,
+                    {
+                      color: active ? theme.primary : theme.color,
+                      fontFamily: font,
+                    },
+                  ]}
+                >
+                  {displayLabel}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
       </AppCard>
 
       {/* Permisos del sistema / Permissions subpage */}
@@ -381,6 +442,21 @@ const styles = StyleSheet.create({
   arrowIcon: {
     width: 20,
     height: 14,
+  },
+  fontsScroll: {
+    gap: 10,
+    paddingVertical: 4,
+  },
+  fontChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  fontChipText: {
+    fontSize: 15,
   },
 });
 

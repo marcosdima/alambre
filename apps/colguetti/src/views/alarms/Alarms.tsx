@@ -1,7 +1,9 @@
 import AppText from '../../components/AppText';
-import { ScrollView, StyleSheet,  View } from 'react-native';
+import { useRef } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useConfirm, useNavigator, useToast, Switch, Typewriter, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
@@ -81,12 +83,14 @@ const AlarmVisualSummary = ({
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
   const { items } = useItems();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
+  const deletingRef = useRef(false);
   const cardColors = [theme.primary, theme.secondary, theme.warning, theme.danger, theme.success, theme.sand];
   const now = new Date();
 
@@ -95,17 +99,23 @@ export default () => {
   };
 
   const tryDelete = async (alarm: Alarm) => {
-    const ok = await confirm({
-      title: lang.common.confirmDeleteTitle,
-      message: lang.alarms.confirmDeleteMessage.replace('{name}', alarm.label),
-      confirmLabel: lang.common.confirm,
-      cancelLabel: lang.common.cancel,
-      tone: 'danger',
-    });
-    if (!ok) return;
-    await removeAlarm(alarm.id);
-    void cancelAlarmAlerts(alarm.id);
-    show({ payload: { title: lang.alarms.deleted, content: alarm.label, tone: 'success' }, duration: 3000 });
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    try {
+      const ok = await confirm({
+        title: lang.common.confirmDeleteTitle,
+        message: lang.alarms.confirmDeleteMessage.replace('{name}', alarm.label),
+        confirmLabel: lang.common.confirm,
+        cancelLabel: lang.common.cancel,
+        tone: 'danger',
+      });
+      if (!ok) return;
+      await removeAlarm(alarm.id);
+      void cancelAlarmAlerts(alarm.id);
+      show({ payload: { title: lang.alarms.deleted, content: alarm.label, tone: 'success' }, duration: 3000 });
+    } finally {
+      deletingRef.current = false;
+    }
   };
 
 
@@ -117,7 +127,11 @@ export default () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.screenHeader}>
-          <DropInTitle text={lang.alarms.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
+          <DropInTitle
+            text={lang.alarms.title}
+            fontFamily={config.fontFamily}
+            textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+          />
         </View>
 
         {alarms.length === 0 ? (
@@ -125,7 +139,8 @@ export default () => {
             <AlarmGlyph line={theme.color} size={140} />
             <Typewriter
               text={lang.alarms.empty}
-              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6, fontFamily: config.fontFamily }]}
+              fontFamily={config.fontFamily}
               initialDelay={300}
               cursorColor={theme.primary}
             />
@@ -143,6 +158,7 @@ export default () => {
                   onDelete={() => void tryDelete(alarm)}
                   onPress={() => openForm(alarm)}
                   peekIndex={index === 0 ? 0 : undefined}
+                  deleteLabel={lang.common.delete}
                 >
                   <AppCard
                     variant="soft"

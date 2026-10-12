@@ -1,4 +1,10 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import { Nunito_400Regular } from '@expo-google-fonts/nunito';
+import { PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
+import { SpaceMono_400Regular } from '@expo-google-fonts/space-mono';
+import { Kranky_400Regular } from '@expo-google-fonts/kranky';
 import { ConfigProvider } from './src/providers/config';
 import { LightDarkProvider } from './src/providers/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,6 +16,16 @@ import { TemplateToast } from './src/providers/toast';
 import ConfirmDialog from './src/components/ConfirmDialog';
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter: Inter_400Regular,
+    Nunito: Nunito_400Regular,
+    PlayfairDisplay: PlayfairDisplay_400Regular,
+    SpaceMono: SpaceMono_400Regular,
+    Kranky: Kranky_400Regular,
+  });
+
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaProvider>
       <ConfigProvider>

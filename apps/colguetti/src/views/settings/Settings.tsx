@@ -12,7 +12,16 @@ import { useNotificationPermission } from '../../notifications/notification-perm
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 const GITHUB_URL = 'https://github.com/marcosdima';
 
-export const FONTS = ['Kranky', 'sans-serif', 'serif', 'monospace', 'Georgia', 'Arial', 'Courier'];
+export const FONTS = [
+  'Kranky',
+  'Inter',
+  'Nunito',
+  'PlayfairDisplay',
+  'SpaceMono',
+  'sans-serif',
+  'serif',
+  'monospace',
+];
 
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
@@ -80,7 +89,11 @@ export default () => {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.screenHeader}>
-        <DropInTitle text={lang.settings.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
+        <DropInTitle
+          text={lang.settings.title}
+          fontFamily={config.fontFamily}
+          textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+        />
       </View>
 
       {/* Tutorial */}
@@ -227,16 +240,19 @@ export default () => {
 
       <AppCard
         variant="soft"
-        title="Tipografía"
-        subtitle="Elegí la fuente de la aplicación"
+        title={lang.settings.typography}
+        subtitle={lang.settings.typographySubtitle}
         style={styles.card}
       >
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
           {FONTS.map((font) => {
             const active = config.fontFamily === font;
+            const displayLabel = font === 'PlayfairDisplay' ? 'Playfair' : font === 'SpaceMono' ? 'Space Mono' : font;
             return (
               <Pressable
                 key={font}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => void saveField('fontFamily', font)}
                 style={[
                   styles.fontChip,
@@ -253,7 +269,7 @@ export default () => {
                     fontSize: 16,
                   }}
                 >
-                  {font}
+                  {displayLabel}
                 </AppText>
               </Pressable>
             );

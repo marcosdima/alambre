@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useSharedValue, withTiming, runOnJS } from 'react-native-reanimated';
 import { useLightDark } from '../providers/theme';
+import { useConfig } from '../providers/config';
 import { Typewriter } from 'alambre';
 
 export default function AppSplash({ onFinished }: { onFinished?: () => void }) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const opacity = useSharedValue(1);
   const [visible, setVisible] = useState(true);
 
@@ -34,7 +36,9 @@ export default function AppSplash({ onFinished }: { onFinished?: () => void }) {
         hideCursorOnComplete={true}
         cursorColor={theme.primary}
         onComplete={handleComplete}
-        textStyle={[styles.title, { color: theme.color }]}
+        reserveSpace={false}
+        fontFamily={config.fontFamily}
+        textStyle={[styles.title, { color: theme.color, fontFamily: config.fontFamily }]}
       />
     </Animated.View>
   );

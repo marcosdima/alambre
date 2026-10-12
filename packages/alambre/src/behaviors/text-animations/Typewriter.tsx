@@ -21,6 +21,7 @@ export type TypewriterProps = {
   cursorStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   reserveSpace?: boolean;
+  fontFamily?: string;
 };
 
 export function Typewriter({
@@ -40,12 +41,21 @@ export function Typewriter({
   textStyle,
   cursorStyle,
   containerStyle,
-  reserveSpace = true,
+  reserveSpace = false,
+  fontFamily,
 }: TypewriterProps) {
   const isReducedMotion = useReducedMotion();
-  const [displayedLength, setDisplayedLength] = useState(0);
-  const [isDone, setIsDone] = useState(false);
+  const [displayedLength, setDisplayedLength] = useState(isReducedMotion ? text.length : 0);
+  const [isDone, setIsDone] = useState(isReducedMotion);
   const [blink, setBlink] = useState(true);
+
+  // Synchronize state during render when text changes to prevent rendering stale length with new text
+  const [prevText, setPrevText] = useState(text);
+  if (prevText !== text) {
+    setPrevText(text);
+    setDisplayedLength(isReducedMotion ? text.length : 0);
+    setIsDone(isReducedMotion);
+  }
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onCompleteRef = useRef(onComplete);
@@ -141,9 +151,49 @@ export function Typewriter({
   ]);
 
   const visibleText = text.slice(0, displayedLength);
-  const remainingText = reserveSpace ? text.slice(displayedLength) : '';
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
   const isCursorVisible = showCursor && (!isDone || blink);
+
+  if (reserveSpace) {
+    return (
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={text}
+        style={[styles.container, containerStyle]}
+      >
+        <Text
+          textBreakStrategy="simple"
+          numberOfLines={numberOfLines}
+          style={[styles.text, textStyle, fontFamily ? { fontFamily } : null, { opacity: 0 }]}
+          aria-hidden
+        >
+          {text}
+          {cursor ? cursorChar : null}
+        </Text>
+        <View style={StyleSheet.absoluteFill}>
+          <Text
+            textBreakStrategy="simple"
+            numberOfLines={numberOfLines}
+            style={[styles.text, textStyle, fontFamily ? { fontFamily } : null]}
+          >
+            {visibleText}
+            {isCursorVisible ? (
+              <Text
+                style={[
+                  styles.cursor,
+                  cursorColor ? { color: cursorColor } : null,
+                  cursorStyle,
+                ]}
+              >
+                {cursorChar}
+              </Text>
+            ) : null}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -155,32 +205,14 @@ export function Typewriter({
       <Text
         textBreakStrategy="simple"
         numberOfLines={numberOfLines}
-        style={[styles.text, textStyle]}
+        style={[styles.text, textStyle, fontFamily ? { fontFamily } : null]}
       >
         {visibleText}
-        {showCursor && (!reserveSpace || !isDone) ? (
+        {isCursorVisible ? (
           <Text
             style={[
               styles.cursor,
               cursorColor ? { color: cursorColor } : null,
-              { opacity: isCursorVisible ? 1 : 0 },
-              cursorStyle,
-            ]}
-          >
-            {cursorChar}
-          </Text>
-        ) : null}
-        {reserveSpace && remainingText ? (
-          <Text style={{ opacity: 0 }}>
-            {remainingText}
-          </Text>
-        ) : null}
-        {showCursor && reserveSpace && isDone ? (
-          <Text
-            style={[
-              styles.cursor,
-              cursorColor ? { color: cursorColor } : null,
-              { opacity: isCursorVisible ? 1 : 0 },
               cursorStyle,
             ]}
           >

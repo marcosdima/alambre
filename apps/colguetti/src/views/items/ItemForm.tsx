@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useNavigator, useToast, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
@@ -15,6 +16,7 @@ import AppText from '../../components/AppText';
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { items, addItem, updateItem } = useItems();
   const { previous, currentParams } = useNavigator();
@@ -68,7 +70,11 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <DropInTitle text={editing ? lang.items.editTitle : lang.items.addTitle} textStyle={{ color: theme.color, fontSize: 32, marginBottom: 12 }} />
+      <DropInTitle
+        text={editing ? lang.items.editTitle : lang.items.addTitle}
+        fontFamily={config.fontFamily}
+        textStyle={{ color: theme.color, fontSize: 32, marginBottom: 12, fontFamily: config.fontFamily }}
+      />
       <AppTextInput
         testID="item-name-input"
         label={lang.items.nameLabel}

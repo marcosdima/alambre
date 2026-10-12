@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import type { ColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useLightDark } from '../providers/theme';
+import { useConfig } from '../providers/config';
 
 export type TitleLevel = 1 | 2 | 3;
 export type TitleBadgeTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
@@ -32,6 +33,7 @@ export default function AppTitle({
   ...props
 }: AppTitleProps) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
 
   const getLevelStyles = () => {
     switch (level) {
@@ -85,7 +87,7 @@ export default function AppTitle({
       {...props}
       style={[
         levelStyles,
-        { color: color ?? theme.color, textAlign: align },
+        { color: color ?? theme.color, textAlign: align, fontFamily: config.fontFamily },
         style,
       ]}
     >
@@ -163,6 +165,7 @@ export function AppText({
   ...props
 }: AppTextProps) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
 
   const getVariantStyle = () => {
     switch (variant) {
@@ -211,6 +214,7 @@ export function AppText({
       {...props}
       style={[
         variantStyle,
+        { fontFamily: variant === 'code' ? 'monospace' : config.fontFamily },
         color ? { color } : null,
         style,
       ]}

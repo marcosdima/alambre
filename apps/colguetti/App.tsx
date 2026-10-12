@@ -15,11 +15,19 @@ import { ConfirmationsProvider } from './src/checklist/confirmations-context';
 import { ActivationProvider } from './src/checklist/activation-context';
 import { NotificationPermissionProvider } from './src/notifications/notification-permission-context';
 import { useFonts } from 'expo-font';
+import { Kranky_400Regular } from '@expo-google-fonts/kranky';
+import { Inter_400Regular } from '@expo-google-fonts/inter';
+import { SpaceMono_400Regular } from '@expo-google-fonts/space-mono';
+import { PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
+import { Nunito_400Regular } from '@expo-google-fonts/nunito';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    // eslint-disable-next-line no-undef
-    'Kranky': require('./assets/Kranky-Regular.ttf'),
+    Kranky: Kranky_400Regular,
+    Inter: Inter_400Regular,
+    SpaceMono: SpaceMono_400Regular,
+    PlayfairDisplay: PlayfairDisplay_400Regular,
+    Nunito: Nunito_400Regular,
   });
 
   if (!fontsLoaded) return null;

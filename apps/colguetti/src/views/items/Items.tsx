@@ -1,7 +1,9 @@
 import AppText from '../../components/AppText';
-import { Pressable, ScrollView, StyleSheet,  View } from 'react-native';
+import { useRef } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useConfirm, useNavigator, useToast, Typewriter, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -14,12 +16,14 @@ import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { items, removeItem, moveItem: moveItemApi } = useItems();
   const { alarms, updateAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
+  const deletingRef = useRef(false);
 
   const openForm = (item?: Item) => {
     navigate('items', { subpage: 'item-form', params: { itemId: item?.id } });
@@ -31,33 +35,39 @@ export default () => {
   };
 
   const tryDelete = async (item: Item) => {
-    const affectedAlarms = alarms.filter((alarm) => alarm.itemIds.includes(item.id));
-    const message = affectedAlarms.length > 0
-      ? lang.items.confirmDeleteWithAlarms
-        .replace('{name}', item.name)
-        .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
-      : lang.items.confirmDeleteMessage.replace('{name}', item.name);
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    try {
+      const affectedAlarms = alarms.filter((alarm) => alarm.itemIds.includes(item.id));
+      const message = affectedAlarms.length > 0
+        ? lang.items.confirmDeleteWithAlarms
+          .replace('{name}', item.name)
+          .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
+        : lang.items.confirmDeleteMessage.replace('{name}', item.name);
 
-    const ok = await confirm({
-      title: lang.common.confirmDeleteTitle,
-      message,
-      confirmLabel: lang.common.confirm,
-      cancelLabel: lang.common.cancel,
-      tone: 'danger',
-    });
-    if (!ok) return;
+      const ok = await confirm({
+        title: lang.common.confirmDeleteTitle,
+        message,
+        confirmLabel: lang.common.confirm,
+        cancelLabel: lang.common.cancel,
+        tone: 'danger',
+      });
+      if (!ok) return;
 
-    await Promise.all(
-      alarms
-        .filter((alarm) => alarm.itemIds.includes(item.id))
-        .map((alarm) =>
-          updateAlarm(alarm.id, {
-            itemIds: alarm.itemIds.filter((id) => id !== item.id),
-          }),
-        ),
-    );
-    await removeItem(item.id);
-    show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
+      await Promise.all(
+        alarms
+          .filter((alarm) => alarm.itemIds.includes(item.id))
+          .map((alarm) =>
+            updateAlarm(alarm.id, {
+              itemIds: alarm.itemIds.filter((id) => id !== item.id),
+            }),
+          ),
+      );
+      await removeItem(item.id);
+      show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
+    } finally {
+      deletingRef.current = false;
+    }
   };
 
   return (
@@ -68,7 +78,11 @@ export default () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.screenHeader}>
-          <DropInTitle text={lang.items.title} textStyle={[styles.screenTitle, { color: theme.color }]} />
+          <DropInTitle
+            text={lang.items.title}
+            fontFamily={config.fontFamily}
+            textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+          />
         </View>
 
         {items.length === 0 ? (
@@ -76,7 +90,8 @@ export default () => {
             <ItemsGlyph line={theme.color} size={140} />
             <Typewriter
               text={lang.items.empty}
-              textStyle={[styles.empty, { color: theme.color, opacity: 0.6 }]}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6, fontFamily: config.fontFamily }]}
+              fontFamily={config.fontFamily}
               initialDelay={300}
               cursorColor={theme.primary}
             />
@@ -89,6 +104,7 @@ export default () => {
                 onDelete={() => void tryDelete(item)}
                 onPress={() => openForm(item)}
                 peekIndex={index === 0 ? 0 : undefined}
+                deleteLabel={lang.common.delete}
               >
                 <AppCard
                   variant="soft"

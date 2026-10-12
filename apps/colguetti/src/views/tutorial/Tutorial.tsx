@@ -8,7 +8,7 @@ import SwipeableItemRow from '../../components/SwipeableItemRow';
 import { ItemIcon } from '../../items/icon-catalog';
 import type { ItemIconKey } from '../../items/item-types';
 import { useLightDark } from '../../providers/theme';
-import { useNavigator, AlambreIcons, Typewriter, StepFlow, useStepFlow, DropInTitle } from 'alambre';
+import { useNavigator, AlambreIcons, Typewriter, CountUp, StepFlow, useStepFlow, DropInTitle } from 'alambre';
 import { useLang } from '../../providers/lang';
 import SkiaFrame from '../../components/SkiaFrame';
 
@@ -20,18 +20,19 @@ type ThemeType = Record<string, string>;
 
 const AnimatedAlarmForm = ({ theme, onComplete }: { theme: ThemeType; onComplete: () => void }) => {
   const { lang } = useLang();
+  const { config } = useConfig();
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     if (phase === 0) {
-      timeoutId = setTimeout(() => setPhase(1), 400); // show time
+      timeoutId = setTimeout(() => setPhase(1), 350); // roll time
     } else if (phase === 1) {
-      timeoutId = setTimeout(() => setPhase(2), 400); // select days
+      timeoutId = setTimeout(() => setPhase(2), 900); // select days
     } else if (phase === 2) {
       timeoutId = setTimeout(() => {
         setPhase(3);
-      }, 400); // done
+      }, 700); // done
     }
     return () => clearTimeout(timeoutId);
   }, [phase]);
@@ -39,9 +40,26 @@ const AnimatedAlarmForm = ({ theme, onComplete }: { theme: ThemeType; onComplete
   return (
     <View style={{ gap: 16, width: '100%' }}>
       <View style={{ alignItems: 'center' }}>
-        <AppText style={{ fontSize: 48, color: theme.color, fontWeight: '700' }}>
-          {phase >= 1 ? lang.tutorial.mockAlarmTime : '00:00'}
-        </AppText>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+          accessible={true}
+          accessibilityRole="text"
+          accessibilityLabel={phase >= 1 ? '08:30' : '00:00'}
+        >
+          <CountUp
+            value={phase >= 1 ? 8 : 0}
+            padZeroes={2}
+            duration={700}
+            style={{ fontSize: 50, color: theme.color, fontFamily: config.fontFamily }}
+          />
+          <AppText style={{ fontSize: 50, color: theme.color, marginHorizontal: 2, fontFamily: config.fontFamily }}>:</AppText>
+          <CountUp
+            value={phase >= 1 ? 30 : 0}
+            padZeroes={2}
+            duration={850}
+            style={{ fontSize: 50, color: theme.color, fontFamily: config.fontFamily }}
+          />
+        </View>
       </View>
 
       <View>
@@ -150,40 +168,50 @@ const AnimatedItemForm = ({ theme, onComplete }: { theme: ThemeType; onComplete:
 const TutorialHomeMenu = ({ theme, highlight, onItemsPress, onAlarmsPress }: { theme: ThemeType; highlight: 'items' | 'alarms'; onItemsPress?: () => void; onAlarmsPress?: () => void; }) => {
   const { lang } = useLang();
   return (
-    <View style={{ flexDirection: 'row', gap: 16, width: '100%' }}>
-      <View style={{ flex: 1 }}>
+    <View style={{ flexDirection: 'row', gap: 16, width: '100%', alignItems: 'stretch' }}>
+      <View style={{ flex: 1, minHeight: 185 }}>
         <AppCard
           variant="soft"
-          padding="lg"
+          padding="sm"
           onPress={onAlarmsPress}
-          style={{ width: '100%', opacity: highlight === 'alarms' ? 1 : 0.6 }}
-          contentStyle={{ backgroundColor: highlight === 'alarms' ? theme.primarySoft : theme.surfaceAlt }}
+          style={{ width: '100%', flex: 1, opacity: highlight === 'alarms' ? 1 : 0.6 }}
+          contentStyle={{ backgroundColor: highlight === 'alarms' ? theme.primarySoft : theme.surfaceAlt, flex: 1, justifyContent: 'space-between' }}
         >
-          <View style={{ flexDirection: 'column', alignItems: 'center', gap: 16, paddingVertical: 12 }}>
-            <View style={{ alignItems: 'center', gap: 4 }}>
-              <AppText style={{ fontSize: 22, color: theme.color, textAlign: 'center' }}>{lang.alarms.title}</AppText>
-              <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>{lang.home.manageAlarms}</AppText>
+          <View style={{ flexDirection: 'column', alignItems: 'center', gap: 12, paddingVertical: 8, flex: 1, justifyContent: 'space-between' }}>
+            <View style={{ width: '100%', paddingHorizontal: 8, alignItems: 'center', gap: 3, minHeight: 52, justifyContent: 'center' }}>
+              <AppText numberOfLines={1} style={{ fontSize: 20, lineHeight: 24, includeFontPadding: false, color: theme.color, textAlign: 'center' }}>{lang.alarms.title}</AppText>
+              <AppText
+                numberOfLines={2}
+                style={{ color: theme.color, opacity: 0.6, textAlign: 'center', fontSize: 13, lineHeight: 16, width: '100%' }}
+              >
+                {lang.home.manageAlarms}
+              </AppText>
             </View>
-            <AlarmGlyph line={theme.color} size={70} ringing={highlight === 'alarms'} rippleWaves={3} />
+            <AlarmGlyph line={theme.color} size={68} ringing={highlight === 'alarms'} rippleWaves={3} />
           </View>
         </AppCard>
         {highlight === 'alarms' && <SkiaFrame color={theme.primary} inset={16} cornerGap={12} strokeWidth={2} cornerShape="square" />}
       </View>
 
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, minHeight: 185 }}>
         <AppCard
           variant="soft"
-          padding="lg"
+          padding="sm"
           onPress={onItemsPress}
-          style={{ width: '100%', opacity: highlight === 'items' ? 1 : 0.6 }}
-          contentStyle={{ backgroundColor: highlight === 'items' ? theme.dangerSoft : theme.surfaceAlt }}
+          style={{ width: '100%', flex: 1, opacity: highlight === 'items' ? 1 : 0.6 }}
+          contentStyle={{ backgroundColor: highlight === 'items' ? theme.dangerSoft : theme.surfaceAlt, flex: 1, justifyContent: 'space-between' }}
         >
-          <View style={{ flexDirection: 'column', alignItems: 'center', gap: 16, paddingVertical: 12 }}>
-            <View style={{ alignItems: 'center', gap: 4 }}>
-              <AppText style={{ fontSize: 22, color: theme.color, textAlign: 'center' }}>{lang.items.title}</AppText>
-              <AppText style={{ color: theme.color, opacity: 0.6, textAlign: 'center' }}>{lang.tutorial.collection}</AppText>
+          <View style={{ flexDirection: 'column', alignItems: 'center', gap: 12, paddingVertical: 8, flex: 1, justifyContent: 'space-between' }}>
+            <View style={{ width: '100%', paddingHorizontal: 8, alignItems: 'center', gap: 3, minHeight: 52, justifyContent: 'center' }}>
+              <AppText numberOfLines={1} style={{ fontSize: 20, lineHeight: 24, includeFontPadding: false, color: theme.color, textAlign: 'center' }}>{lang.items.title}</AppText>
+              <AppText
+                numberOfLines={2}
+                style={{ color: theme.color, opacity: 0.6, textAlign: 'center', fontSize: 13, lineHeight: 16, width: '100%' }}
+              >
+                {lang.tutorial.collection}
+              </AppText>
             </View>
-            <ItemsGlyph line={theme.color} size={70} />
+            <ItemsGlyph line={theme.color} size={68} />
           </View>
         </AppCard>
         {highlight === 'items' && <SkiaFrame color={theme.danger} inset={16} cornerGap={12} strokeWidth={2} cornerShape="triangle" rotateCorners />}
@@ -289,7 +317,7 @@ const TutorialDeleteAlarm = ({ theme, onDelete }: { theme: ThemeType; onDelete: 
             <AppText style={{ fontSize: 24, color: theme.danger }}>{lang.tutorial.deleted}</AppText>
           </Animated.View>
         ) : (
-          <SwipeableItemRow onDelete={() => setDeleted(true)} peekIndex={0}>
+          <SwipeableItemRow onDelete={() => setDeleted(true)} peekIndex={0} deleteLabel={lang.common.delete}>
             <TutorialAlarm theme={theme} />
           </SwipeableItemRow>
         )}
@@ -313,6 +341,7 @@ type StepDefinition = {
 
 function TutorialFlowContent({ steps, theme }: { steps: StepDefinition[], theme: ThemeType }) {
   const { currentStepIndex, next } = useStepFlow();
+  const { config } = useConfig();
   const step = steps[currentStepIndex];
 
   return (
@@ -320,7 +349,8 @@ function TutorialFlowContent({ steps, theme }: { steps: StepDefinition[], theme:
       <AppText style={[styles.stepTitle, { color: theme.primary }]}>{step.title}</AppText>
       <Typewriter
         text={step.description}
-        textStyle={[styles.stepDesc, { color: theme.color }]}
+        textStyle={[styles.stepDesc, { color: theme.color, fontFamily: config.fontFamily }]}
+        fontFamily={config.fontFamily}
         speed={15}
         cursor={false}
       />
@@ -335,7 +365,7 @@ export default function Tutorial() {
   const { theme } = useLightDark();
   const { previous } = useNavigator();
   const { lang } = useLang();
-  const { saveField } = useConfig();
+  const { saveField, config } = useConfig();
 
   const finishTutorial = () => {
     saveField('tutorialCompleted', 'true');
@@ -388,7 +418,11 @@ export default function Tutorial() {
             <AppText style={{ color: theme.muted, fontSize: 16 }}>{lang.tutorial.skip}</AppText>
           </Pressable>
         </View>
-        <DropInTitle text={lang.settings.tutorialTitle} textStyle={[styles.title, { color: theme.color }]} />
+        <DropInTitle
+          text={lang.settings.tutorialTitle}
+          fontFamily={config.fontFamily}
+          textStyle={[styles.title, { color: theme.color, fontFamily: config.fontFamily }]}
+        />
 
         <StepFlow.Root totalSteps={STEPS.length} onComplete={finishTutorial} style={{ width: '100%' }}>
           <TutorialFlowContent steps={STEPS} theme={theme} />

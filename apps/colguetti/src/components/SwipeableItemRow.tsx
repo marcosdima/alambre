@@ -1,6 +1,6 @@
 import AppText from './AppText';
-import { useEffect, type ReactNode } from 'react';
-import { Pressable, StyleSheet,  View } from 'react-native';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
@@ -16,6 +16,7 @@ type SwipeableItemRowProps = {
   onPress?: () => void;
   disabled?: boolean;
   peekIndex?: number;
+  deleteLabel?: string;
 };
 
 const MAX_SWIPE = -55;
@@ -26,8 +27,19 @@ export default function SwipeableItemRow({
   onPress,
   disabled = false,
   peekIndex,
+  deleteLabel = 'Borrar',
 }: SwipeableItemRowProps) {
+  const isTriggeredRef = useRef(false);
 
+  const triggerDelete = () => {
+    if (isTriggeredRef.current) return;
+    isTriggeredRef.current = true;
+    snapTo(0);
+    onDelete();
+    setTimeout(() => {
+      isTriggeredRef.current = false;
+    }, 600);
+  };
 
   const { translationX, panGesture, snapTo } = useSwipeableRow({
     leftSnapPoints: [],
@@ -36,13 +48,12 @@ export default function SwipeableItemRow({
     triggerThreshold: 40,
     onActionTriggered: (direction) => {
       if (direction === 'right') {
-        onDelete();
+        triggerDelete();
       }
     },
-    onSnap: (dir, point) => {
+    onSnap: (_dir, point) => {
       if (point === MAX_SWIPE) {
-        onDelete();
-        snapTo(0);
+        triggerDelete();
       }
     },
   });
@@ -89,15 +100,31 @@ export default function SwipeableItemRow({
           animatedBgStyle,
         ]}
       >
-        <Animated.View style={[styles.actionContent, animatedActionStyle]}>
-          <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
-          <AppText style={[styles.deleteLabel, { color: '#ffffff' }]}>Borrar</AppText>
-        </Animated.View>
+        <Pressable
+          onPress={triggerDelete}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={deleteLabel}
+          style={styles.actionContent}
+        >
+          <Animated.View style={[styles.actionContent, animatedActionStyle]}>
+            <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
+            <AppText style={[styles.deleteLabel, { color: '#ffffff' }]}>{deleteLabel}</AppText>
+          </Animated.View>
+        </Pressable>
       </Animated.View>
 
       {/* 2. Foreground Card */}
       <GestureDetector gesture={panGestureEnabled}>
-        <Animated.View style={[styles.frontCard, animatedCardStyle]}>
+        <Animated.View
+          style={[styles.frontCard, animatedCardStyle]}
+          accessibilityActions={[{ name: 'delete', label: deleteLabel }]}
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === 'delete') {
+              triggerDelete();
+            }
+          }}
+        >
           <Pressable onPress={onPress}>
             {children}
           </Pressable>
