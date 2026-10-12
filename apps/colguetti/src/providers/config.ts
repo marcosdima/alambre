@@ -3,7 +3,7 @@ import { storage } from '../storage';
 
 const config = {
   leaveGraceMinutes: '10',
-  fontFamily: 'Kranky',
+  fontFamily: 'Nunito',
   tutorialCompleted: 'false',
 };
 

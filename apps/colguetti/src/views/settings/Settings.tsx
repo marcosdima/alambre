@@ -13,9 +13,9 @@ const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 const GITHUB_URL = 'https://github.com/marcosdima';
 
 export const FONTS = [
+  'Nunito',
   'Kranky',
   'Inter',
-  'Nunito',
   'PlayfairDisplay',
   'SpaceMono',
   'sans-serif',
