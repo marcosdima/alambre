@@ -32,6 +32,7 @@ export type AppCardProps = {
   onPress?: () => void;
   interactive?: boolean;
   disabled?: boolean;
+  accessibilityLabel?: string;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   headerStyle?: StyleProp<ViewStyle>;
@@ -55,6 +56,7 @@ export default function AppCard({
   onPress,
   interactive = false,
   disabled = false,
+  accessibilityLabel,
   style,
   contentStyle,
   headerStyle,
@@ -242,6 +244,7 @@ export default function AppCard({
         onPressOut={handlePressOut}
         disabled={disabled}
         accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
         accessibilityState={{ selected, disabled }}
         style={style}
       >
@@ -256,6 +259,7 @@ export default function AppCard({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
+        accessibilityLabel={accessibilityLabel}
         accessibilityState={{ selected, disabled }}
         style={style}
       >

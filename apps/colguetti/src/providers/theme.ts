@@ -20,6 +20,7 @@ export const light = {
   warning: '#d97706',
   danger: '#c16757', // rust
   dangerSoft: '#e2c5c0', // light rust
+  dangerText: '#943828', // high-contrast rust for text over dangerSoft
   overlay: 'rgba(45, 47, 45, 0.45)',
   overlayBar: 'rgba(45, 47, 45, 0.05)',
 };
@@ -43,6 +44,7 @@ export const dark = {
   warning: '#fbbf24',
   danger: '#e2c5c0',
   dangerSoft: '#472d28',
+  dangerText: '#e2c5c0',
   overlay: 'rgba(0, 0, 0, 0.65)',
   overlayBar: 'rgba(236, 230, 214, 0.15)',
 };

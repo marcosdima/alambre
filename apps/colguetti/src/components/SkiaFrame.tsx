@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Canvas, Circle, Path, Group, vec, DashPathEffect } from '@shopify/react-native-skia';
 
-import { useSharedValue, withTiming } from 'react-native-reanimated';
+import { useSharedValue, withTiming, useReducedMotion } from 'react-native-reanimated';
 
 export default function SkiaFrame({
   color = '#000',
@@ -24,11 +24,12 @@ export default function SkiaFrame({
   dashed?: boolean;
 }) {
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const isReducedMotion = useReducedMotion();
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withTiming(1, { duration: 1000 });
-  }, [progress]);
+    progress.value = isReducedMotion ? 1 : withTiming(1, { duration: 1000 });
+  }, [progress, isReducedMotion]);
 
   const renderCorner = (cx: number, cy: number, angle: number) => {
     let shape;
