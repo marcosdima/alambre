@@ -7,9 +7,8 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
-import { kinetics } from 'alambre';
 
 export type BadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'danger';
 export type BadgeVariant = 'soft' | 'solid' | 'outline';
@@ -109,8 +108,8 @@ export default function AppBadge({
     switch (size) {
       case 'sm':
         return {
-          paddingHorizontal: 6,
-          paddingVertical: 1,
+          paddingHorizontal: 7,
+          paddingVertical: 2,
           fontSize: 10,
           borderRadius: 6,
           gap: 4,
@@ -209,7 +208,7 @@ export function AppChip({
 
   const handlePressOut = () => {
     if (disabled) return;
-    scale.value = withSpring(1, kinetics.spring.bouncy);
+    scale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const animatedScale = useAnimatedStyle(() => ({
@@ -225,6 +224,7 @@ export function AppChip({
 
   return (
     <Pressable
+      accessibilityLabel={label}
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
@@ -292,13 +292,15 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   badgeText: {
     fontWeight: '800',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   chip: {
     flexDirection: 'row',

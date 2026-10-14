@@ -82,23 +82,32 @@ const styles = StyleSheet.create({
 
 ## 2. `<Typewriter>`
 
-Progressively reveals text string character-by-character on the UI thread. By leveraging an uneditable `AnimatedTextInput` with Reanimated's `useAnimatedProps`, text advances smoothly without triggering repeated React component re-renders.
+Progressively reveals text string character-by-character on the UI thread. By leveraging an uneditable `AnimatedTextInput` with Reanimated's `useAnimatedProps` (or just simple timeout rendering based on config), text advances smoothly.
 
 ### Props Contract (`TypewriterProps`)
-
-Extends `Omit<TextInputProps, 'value' | 'editable'>`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `text` | `string` | **Required** | The text content to progressively type out. |
-| `duration` | `number` | `2000` | Total duration to complete typing the entire string (ms). |
-| `delay` | `number` | `0` | Milliseconds to wait before starting typing. |
-| `speed` | `number` | `1` | Speed multiplier scaling the typing rate. |
-| `style` | `StyleProp<TextStyle>` | `undefined` | Typography style for the rendered text input. |
+| `speed` | `number` | `40` | Delay between each character stroke (ms). |
+| `initialDelay` | `number` | `150` | Milliseconds to wait before starting typing. |
+| `cursor` | `boolean` | `true` | Whether to show a blinking cursor at the end. |
+| `hideCursorOnComplete` | `boolean` | `false` | If true, the cursor disappears when typing finishes. |
+| `cursorChar` | `string` | `'▍'` | The character to use for the cursor. |
+| `cursorColor` | `string` | `undefined` | Optional explicitly defined color for the cursor. Inherits textStyle color if omitted. |
+| `loop` | `boolean` | `false` | Whether to erase and re-type endlessly. |
+| `pauseOnLoopMs` | `number` | `2000` | Delay before erasing/restarting in loop mode. |
+| `eraseOnLoop` | `boolean` | `true` | Whether to animate erasing backwards before looping. |
+| `eraseSpeed` | `number` | `Math.max(15, speed / 2)` | Delay between each character erase (ms). |
+| `numberOfLines` | `number` | `undefined` | Limits text to a specific number of lines. |
+| `onComplete` | `() => void` | `undefined` | Callback fired when the string is fully typed. |
+| `textStyle` | `StyleProp<TextStyle>` | `undefined` | Typography style for the rendered text. |
+| `cursorStyle` | `StyleProp<TextStyle>` | `undefined` | Custom style applied only to the cursor text node. |
+| `containerStyle` | `StyleProp<ViewStyle>` | `undefined` | Style applied to the wrapping flex container. |
 
 ### Motion & Kinematics
-* **Linear UI-Thread Worklet:** Advances progress from `0` to `text.length` via `Easing.linear`.
-* **Zero-Re-Render Streaming:** Uses `useAnimatedProps` to mutate the native `text` attribute of `TextInput` directly on the native frame thread.
+* **Timeout Scheduling:** Sequences typing and erasing using React `setTimeout` orchestrations mapped onto state boundaries.
+* **Color Inheritance:** The cursor natively inherits the font size and color of `textStyle` via React Native's `<Text>` component nesting.
 
 ### Example Usage
 
@@ -111,9 +120,11 @@ export function TerminalGreeting({ username }: { username: string }) {
     <View style={styles.terminal}>
       <Typewriter
         text={`Welcome back, ${username}. System diagnostics complete.`}
-        duration={2500}
-        delay={300}
-        style={styles.codeText}
+        speed={40}
+        initialDelay={300}
+        cursor={true}
+        cursorColor="#38bdf8"
+        textStyle={styles.codeText}
       />
     </View>
   );

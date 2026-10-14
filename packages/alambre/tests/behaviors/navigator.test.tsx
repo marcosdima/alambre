@@ -83,6 +83,48 @@ describe('Headless Navigator behavior & store mechanics', () => {
     expect(result.current.noPreviousPages).toBe(true);
   });
 
+  it('navigate sets params and previous restores them', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms', { params: { id: 1 } });
+    });
+
+    expect(result.current.currentParams).toEqual({ id: 1 });
+
+    act(() => {
+      result.current.navigate('items', { params: { filter: 'active' } });
+    });
+
+    expect(result.current.currentParams).toEqual({ filter: 'active' });
+
+    act(() => {
+      result.current.previous();
+    });
+
+    expect(result.current.currentParams).toEqual({ id: 1 });
+
+    act(() => {
+      result.current.previous();
+    });
+
+    expect(result.current.currentParams).toBeUndefined();
+  });
+
+  it('navigating to the same current page with identical params is a no-op', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms', { params: { id: 1 } });
+    });
+    expect(result.current.pageKey).toBe('home');
+
+    act(() => {
+      result.current.navigate('alarms', { params: { id: 1 } });
+    });
+    expect(result.current.pageKey).toBe('home'); // stack didn't grow
+  });
+
   it('navigating to the same current page is a no-op and does not pollute the stack', () => {
     const { result } = renderHook(() => useNavigator());
 

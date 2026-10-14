@@ -1,5 +1,6 @@
+import AppText from './AppText';
 import { useCallback } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet,  View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useWheelPicker } from 'alambre';
@@ -63,7 +64,7 @@ function WheelColumn({
             const isSelected = item === selected;
             return (
               <View key={index} style={styles.numberRow}>
-                <Text
+                <AppText
                   style={[
                     styles.numberText,
                     {
@@ -75,7 +76,7 @@ function WheelColumn({
                   ]}
                 >
                   {format(item)}
-                </Text>
+                </AppText>
               </View>
             );
           })}
@@ -119,16 +120,16 @@ export default function SwipeableTimePicker({
       style={[
         styles.container,
         {
-          backgroundColor: theme.surfaceAlt,
-          borderColor: theme.border,
+          backgroundColor: theme.surface,
+          borderColor: theme.borderSoft,
         },
       ]}
       testID={testID}
     >
       <View style={styles.labelsRow}>
-        <Text style={[styles.columnLabel, { color: theme.muted }]}>HORA</Text>
+        <AppText style={[styles.columnLabel, { color: theme.muted }]}>HORA</AppText>
         <View style={styles.colonSpacer} />
-        <Text style={[styles.columnLabel, { color: theme.muted }]}>MIN</Text>
+        <AppText style={[styles.columnLabel, { color: theme.muted }]}>MIN</AppText>
       </View>
 
       <View style={styles.wheelsRow}>
@@ -140,7 +141,7 @@ export default function SwipeableTimePicker({
         />
 
         <View style={styles.colonContainer}>
-          <Text style={[styles.colonText, { color: theme.primary }]}>:</Text>
+          <AppText style={[styles.colonText, { color: theme.primary }]}>:</AppText>
         </View>
 
         <WheelColumn
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   },
   columnLabel: {
     fontSize: 11,
-    fontWeight: '800',
+
     letterSpacing: 1,
     textAlign: 'center',
     width: 60,
@@ -225,7 +226,7 @@ const styles = StyleSheet.create({
   },
   colonText: {
     fontSize: 26,
-    fontWeight: '900',
+
     lineHeight: 30,
   },
 });

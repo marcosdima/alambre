@@ -2,49 +2,51 @@ import { createLightDarkProvider } from 'alambre';
 import { storage } from '../storage';
 
 export const light = {
-  color: '#1c2128',
-  background: '#fbf9f4',
-  surface: '#ffffff',
-  surfaceAlt: '#f1ede2',
-  primary: '#15803d',
-  primarySoft: '#dcfce7',
+  color: '#2d2f2d', // ink
+  background: '#ece6d6', // cream
+  surface: '#f3eedf', // light cream
+  surfaceAlt: '#d2bca8', // sand
+  primary: '#475440', // dark sage
+  primarySoft: '#c3ceb3', // sage
   onPrimary: '#ffffff',
   secondary: '#1d4ed8',
   secondarySoft: '#dbeafe',
-  sand: '#b45309',
-  sandSoft: '#fef3c7',
-  border: '#374151',
-  borderSoft: '#e2ddd0',
-  muted: '#64748b',
+  sand: '#a37042', // dark sand
+  sandSoft: '#e0cdbb', // light sand
+  border: '#8f938f',
+  borderSoft: '#d6cfbd',
+  muted: '#737a73',
   success: '#16a34a',
   warning: '#d97706',
-  danger: '#dc2626',
-  dangerSoft: '#fee2e2',
-  overlay: 'rgba(15, 23, 42, 0.45)',
-  overlayBar: 'rgba(15, 23, 42, 0.05)',
+  danger: '#c16757', // rust
+  dangerSoft: '#e2c5c0', // light rust
+  dangerText: '#943828', // high-contrast rust for text over dangerSoft
+  overlay: 'rgba(45, 47, 45, 0.45)',
+  overlayBar: 'rgba(45, 47, 45, 0.05)',
 };
 
 export const dark = {
-  color: '#f1f5f9',
-  background: '#0c1322',
-  surface: '#141d30',
-  surfaceAlt: '#1c2842',
-  primary: '#4ade80',
-  primarySoft: '#143825',
-  onPrimary: '#0c1322',
+  color: '#ece6d6', // cream
+  background: '#1a1c1a', // super dark ink
+  surface: '#252725', // dark surface
+  surfaceAlt: '#3a352f', // dark sand
+  primary: '#c3ceb3', // sage
+  primarySoft: '#333b30', // dark sage soft
+  onPrimary: '#1a1c1a',
   secondary: '#60a5fa',
   secondarySoft: '#1e355b',
-  sand: '#fbbf24',
-  sandSoft: '#3d2f0f',
-  border: '#2e405f',
-  borderSoft: '#1e2d45',
-  muted: '#94a3b8',
+  sand: '#d2bca8',
+  sandSoft: '#3a352f',
+  border: '#4d504d',
+  borderSoft: '#313431',
+  muted: '#a3a8a3',
   success: '#34d399',
   warning: '#fbbf24',
-  danger: '#f87171',
-  dangerSoft: '#381619',
-  overlay: 'rgba(2, 6, 14, 0.65)',
-  overlayBar: 'rgba(96, 165, 250, 0.15)',
+  danger: '#e2c5c0',
+  dangerSoft: '#472d28',
+  dangerText: '#e2c5c0',
+  overlay: 'rgba(0, 0, 0, 0.65)',
+  overlayBar: 'rgba(236, 230, 214, 0.15)',
 };
 
 export const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);

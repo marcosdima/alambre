@@ -7,12 +7,10 @@ import Animated, {
   withTiming,
   withSpring,
   interpolateColor,
-  interpolate,
 } from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import { AlambreIcons, kinetics } from 'alambre';
 import type { ComponentProps } from 'react';
 import type { View as AlambreView } from 'react-native';
-import { kinetics } from 'alambre';
 
 const BORDER = 2;
 
@@ -20,7 +18,6 @@ type Colors = {
   background?: ColorValue;
   border?: ColorValue;
   circle?: ColorValue;
-  circleOpacity?: number;
   sun?: ColorValue;
   moon?: ColorValue;
 };
@@ -44,18 +41,16 @@ const getColorConfig = (colors?: ThemeColors) => {
 
   return {
     light: {
-      background: safe(light.background, '#e8eef7'),
+      background: safe(light.background, '#e6edf7'),
       border: safe(light.border, '#c9d6ea'),
-      circle: safe(light.circle, '#0b525b'),
-      circleOpacity: light.circleOpacity ?? 0.25,
+      circle: safe(light.circle, '#0f7b6c'),
       sun: safe(light.sun, '#f59e0b'),
-      moon: safe(light.moon, '#5e6a7f'),
+      moon: safe(light.moon, '#6b7280'),
     },
     dark: {
-      background: safe(dark.background, '#1d2d45'),
-      border: safe(dark.border, '#32455f'),
-      circle: safe(dark.circle, '#9eebce'),
-      circleOpacity: dark.circleOpacity ?? 0.25,
+      background: safe(dark.background, '#1c2a42'),
+      border: safe(dark.border, '#2b3d5c'),
+      circle: safe(dark.circle, '#3dc8b4'),
       sun: safe(dark.sun, '#ffc266'),
       moon: safe(dark.moon, '#9eb0c8'),
     },
@@ -76,7 +71,7 @@ export default (
   const [side, setSide] = useState(setLeft ? 0 : 1);
   const [iconCenters, setIconCenters] = useState({ left: 0, right: 0 });
 
-  const progress = useSharedValue(setLeft ? 0 : 1);
+  const progress = useSharedValue(setLeft ? 1 : 0);
   const radius = useSharedValue(0);
 
   useEffect(() => {
@@ -84,13 +79,13 @@ export default (
   }, [setLeft]);
 
   useEffect(() => {
-    progress.value = withSpring(side);
+    progress.value = withSpring(side, kinetics.spring.stiff);
   }, [progress, side]);
 
   useEffect(() => {
     const max = Math.min(size.width, size.height) / 2 - BORDER;
     if (max <= 0) return;
-    radius.value = max * 0.935;
+    radius.value = max * 0.85;
   }, [radius, size]);
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -100,21 +95,21 @@ export default (
   };
 
   const onIconLayout = (
-    sideKey: 'left' | 'right',
+    side: 'left' | 'right',
   ) => (event: LayoutChangeEvent) => {
     const layout = event?.nativeEvent?.layout;
     if (!layout) return;
     setIconCenters((current) => {
       const center = layout.x + layout.width / 2;
-      if (current[sideKey] === center) return current;
-      return { ...current, [sideKey]: center };
+      if (current[side] === center) return current;
+      return { ...current, [side]: center };
     });
   };
 
   const onBegin = () => {
     const max = Math.min(size.width, size.height) / 2 - BORDER;
     if (max <= 0) return;
-    radius.value = withTiming(Math.min(radius.value * 1.10, max), kinetics.timing.base);
+    radius.value = withTiming(Math.min(radius.value * 1.2, max), kinetics.timing.base);
   };
 
   const onFinalize = () => {
@@ -122,7 +117,7 @@ export default (
     setSide(change);
     toggle();
     const max = Math.min(size.width, size.height) / 2 - BORDER;
-    if (max > 0) radius.value = withTiming(max * 0.935, kinetics.timing.base);
+    if (max > 0) radius.value = withTiming(max * 0.85, kinetics.timing.base);
   };
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -151,11 +146,7 @@ export default (
         [0, 1],
         [light.circle, dark.circle],
       ),
-      opacity: interpolate(
-        progress.value,
-        [0, 1],
-        [light.circleOpacity, dark.circleOpacity],
-      ),
+      opacity: 0.22,
     };
   });
 
@@ -163,6 +154,9 @@ export default (
 
   return (
     <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel="Theme toggle"
+      accessibilityState={{ checked: side === 1 }}
       onPressIn={onBegin}
       onPressOut={onFinalize}
       {...props}
@@ -172,7 +166,6 @@ export default (
         style={[styles.container, containerStyle]}
       >
         <Animated.View style={[styles.circle, circleStyle]} />
-
         <View style={styles.row}>
           <View style={styles.iconWrap} onLayout={onIconLayout('left')}>
             <AlambreIcons.Sun
@@ -210,11 +203,6 @@ const styles = StyleSheet.create({
   circle: {
     position: 'absolute',
     zIndex: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
   },
   row: {
     ...StyleSheet.absoluteFillObject,

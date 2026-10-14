@@ -1,5 +1,6 @@
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { AlambreIcons, useToast } from 'alambre';
+import AppText from '../../components/AppText';
+import { Linking, Pressable, ScrollView, StyleSheet,  View } from 'react-native';
+import { AlambreIcons, useToast, useNavigator, DropInTitle } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useLightDark } from '../../providers/theme';
 import { useConfig } from '../../providers/config';
@@ -11,6 +12,17 @@ import { useNotificationPermission } from '../../notifications/notification-perm
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';
 const GITHUB_URL = 'https://github.com/marcosdima';
 
+export const FONTS = [
+  'Nunito',
+  'Kranky',
+  'Inter',
+  'PlayfairDisplay',
+  'SpaceMono',
+  'sans-serif',
+  'serif',
+  'monospace',
+];
+
 export default () => {
   const { theme, toggleTheme, currThemeName } = useLightDark();
   const { lang, currentLang, changeLang } = useLang();
@@ -18,6 +30,8 @@ export default () => {
   const { show } = useToast();
   const { permission, loading, requestPermission, openSettings, sendTestNotification } =
     useNotificationPermission();
+
+  const { navigate } = useNavigator();
 
   const permissionHint = loading
     ? lang.settings.notificationsChecking
@@ -74,9 +88,33 @@ export default () => {
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
+      <View style={styles.screenHeader}>
+        <DropInTitle
+          text={lang.settings.title}
+          fontFamily={config.fontFamily}
+          textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+        />
+      </View>
+
+      {/* Tutorial */}
+      <AppCard
+        variant="soft"
+        title={lang.settings.tutorialTitle}
+        subtitle={lang.settings.tutorialSubtitle}
+        style={styles.card}
+      >
+        <AppButton
+          variant="outline"
+          tone="primary"
+          label={lang.settings.tutorialAction}
+          onPress={() => navigate('tutorial')}
+          fullWidth
+        />
+      </AppCard>
+
       {/* Idioma / Language */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.language}
         style={styles.card}
       >
@@ -106,7 +144,7 @@ export default () => {
                   ],
                 ]}
               >
-                <Text
+                <AppText
                   style={[
                     styles.segmentedText,
                     {
@@ -116,7 +154,7 @@ export default () => {
                   ]}
                 >
                   {label}
-                </Text>
+                </AppText>
               </Pressable>
             );
           })}
@@ -125,7 +163,7 @@ export default () => {
 
       {/* Tema / Theme */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.theme}
         subtitle={
           currThemeName === 'light'
@@ -161,7 +199,7 @@ export default () => {
 
       {/* Tiempo de preparación predeterminado / Routine duration */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.routineDuration}
         subtitle={lang.settings.routineDurationHint}
         style={styles.card}
@@ -183,7 +221,7 @@ export default () => {
                   },
                 ]}
               >
-                <Text
+                <AppText
                   style={[
                     styles.durationText,
                     {
@@ -193,16 +231,55 @@ export default () => {
                   ]}
                 >
                   {mins} min
-                </Text>
+                </AppText>
               </Pressable>
             );
           })}
         </View>
       </AppCard>
 
+      <AppCard
+        variant="soft"
+        title={lang.settings.typography}
+        subtitle={lang.settings.typographySubtitle}
+        style={styles.card}
+      >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingVertical: 4 }}>
+          {FONTS.map((font) => {
+            const active = config.fontFamily === font;
+            const displayLabel = font === 'PlayfairDisplay' ? 'Playfair' : font === 'SpaceMono' ? 'Space Mono' : font;
+            return (
+              <Pressable
+                key={font}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => void saveField('fontFamily', font)}
+                style={[
+                  styles.fontChip,
+                  {
+                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
+                    borderColor: active ? theme.primary : theme.borderSoft,
+                  },
+                ]}
+              >
+                <AppText
+                  style={{
+                    color: active ? theme.primary : theme.color,
+                    fontFamily: font,
+                    fontSize: 16,
+                  }}
+                >
+                  {displayLabel}
+                </AppText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </AppCard>
+
       {/* Notificaciones */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.notifications}
         subtitle={permissionHint}
         badge={permissionBadge.label}
@@ -245,14 +322,14 @@ export default () => {
             />
           )}
         </View>
-        <Text style={[styles.batteryHintText, { color: theme.muted }]}>
+        <AppText style={[styles.batteryHintText, { color: theme.muted }]}>
           {lang.settings.batteryOptimizationHint}
-        </Text>
+        </AppText>
       </AppCard>
 
       {/* Apoyar el proyecto / Support */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.supportTitle}
         subtitle={lang.settings.supportHint}
         style={styles.card}
@@ -275,27 +352,27 @@ export default () => {
 
       {/* Acerca de / About (no identity badges per user explicit request) */}
       <AppCard
-        variant="outlined"
+        variant="soft"
         title={lang.settings.aboutTitle}
         style={styles.card}
       >
         <View style={styles.aboutContent}>
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+            <AppText style={[styles.aboutLabel, { color: theme.muted }]}>
               {lang.settings.version}
-            </Text>
-            <Text style={[styles.aboutValue, { color: theme.color }]}>
+            </AppText>
+            <AppText style={[styles.aboutValue, { color: theme.color }]}>
               1.0.0
-            </Text>
+            </AppText>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+            <AppText style={[styles.aboutLabel, { color: theme.muted }]}>
               {lang.settings.developer}
-            </Text>
-            <Text style={[styles.aboutValue, { color: theme.primary }]}>
+            </AppText>
+            <AppText style={[styles.aboutValue, { color: theme.primary }]}>
               @marcosdima
-            </Text>
+            </AppText>
           </View>
 
           <View style={styles.aboutActions}>
@@ -327,8 +404,19 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     gap: 16,
   },
+  screenHeader: {
+    paddingVertical: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  screenTitle: {
+
+    fontSize: 42,
+    letterSpacing: 2,
+  },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   segmentedContainer: {
     flexDirection: 'row',
@@ -408,7 +496,7 @@ const styles = StyleSheet.create({
   },
   aboutValue: {
     fontSize: 14,
-    fontWeight: '600',
+
   },
   aboutDivider: {
     height: StyleSheet.hairlineWidth,
@@ -424,6 +512,14 @@ const styles = StyleSheet.create({
   arrowIcon: {
     width: 22,
     height: 16,
+  },
+  fontChip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
   },
 });
 

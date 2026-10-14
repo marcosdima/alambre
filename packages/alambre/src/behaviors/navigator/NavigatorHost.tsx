@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react';
-import { useEffect, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Pressable, View } from 'react-native';
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
-import type { NavigatorReturn } from 'alambre';
-import { View } from 'react-native';
-import { AlambreIcons } from 'alambre';
+import type { NavigatorReturn } from '../../types/navigator';
+import * as AlambreIcons from '../../components/icons';
+import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 import Animated, {
   Easing,
   FadeIn,
@@ -14,13 +14,13 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
-import type { EntryOrExitLayoutType } from 'react-native-reanimated';
+import { useNavigator as useDefaultNavigator } from './navigator-provider';
 
-type AppNavigatorAnimations = {
+type NavigatorAnimations = {
   pageEntering?: EntryOrExitLayoutType;
 };
 
-type AppNavigatorBodyProps = ComponentProps<typeof View> & {
+export type NavigatorHostProps = ComponentProps<typeof View> & {
   arrowColor?: ColorValue;
   arrowBackgroundColor?: ColorValue;
   arrowBorderColor?: ColorValue;
@@ -29,14 +29,15 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   headerTitle?: string;
   titleColor?: ColorValue;
   headerStyle?: StyleProp<ViewStyle>;
+  initialMountDelay?: number;
   animations?: {
-    go?: AppNavigatorAnimations;
-    return?: AppNavigatorAnimations;
+    go?: NavigatorAnimations;
+    return?: NavigatorAnimations;
   };
-  useNavigator: () => NavigatorReturn;
+  useNavigator?: () => NavigatorReturn;
 };
 
-export default ({
+export const NavigatorHost = ({
   style,
   animations,
   arrowColor = 'black',
@@ -46,9 +47,11 @@ export default ({
   headerTitle,
   titleColor = 'black',
   headerStyle,
-  useNavigator,
+  initialMountDelay = 50,
+  useNavigator = useDefaultNavigator,
+  pressStyle,
   ...props
-}: AppNavigatorBodyProps) => {
+}: NavigatorHostProps) => {
   const {
     previous,
     currentPage,
@@ -104,6 +107,7 @@ export default ({
   }));
 
   const isReturningRef = useRef(false);
+  const isNavigatingRef = useRef(false);
 
   const onPressIn = () => {
     scale.value = withTiming(0.85, { duration: 300 });
@@ -111,6 +115,8 @@ export default ({
 
   const onPressOut = () => {
     scale.value = withSpring(1, { damping: 6, stiffness: 250, mass: 1 });
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
     isReturningRef.current = true;
     setTimeout(previous, 10);
   };
@@ -121,6 +127,8 @@ export default ({
       onPressOut={onPressOut}
       disabled={!canShowArrow}
       hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel="Volver"
     >
       <Animated.View style={[styles.iconBody, iconStyle]}>
         <AlambreIcons.Arrow
@@ -147,31 +155,34 @@ export default ({
     ? { borderColor: arrowBorderColor, borderWidth: StyleSheet.hairlineWidth }
     : null;
 
-  const {
-    pressStyle = {
-      position: 'absolute',
-      top: 12,
-      left: 12,
-      zIndex: 999,
-      minWidth: 44,
-      height: 34,
-      paddingHorizontal: 10,
-      borderRadius: 18,
-      backgroundColor: arrowBackgroundColor,
-      justifyContent: 'center',
-      alignItems: 'center',
-      ...pillBorder,
-    },
-  } = props;
+  const defaultPressStyle = {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    zIndex: 999,
+    minWidth: 44,
+    height: 34,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    backgroundColor: arrowBackgroundColor,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...pillBorder,
+  } as const;
+
+  const appliedPressStyle = pressStyle ?? defaultPressStyle;
 
   const direction = isReturningRef.current ? 'return' : 'go';
   const animationsSelected = direction === 'return' ? animations?.return : animations?.go;
 
+  const isFirstMount = useRef(true);
   const enterAnimation = animationsSelected?.pageEntering
-    ?? FadeInDown.duration(500).delay(350).easing(Easing.ease);
+    ?? FadeInDown.duration(400).delay(isFirstMount.current ? initialMountDelay : 50).easing(Easing.out(Easing.cubic));
 
   useEffect(() => {
+    isFirstMount.current = false;
     isReturningRef.current = false;
+    isNavigatingRef.current = false;
   }, [pageKey]);
 
   return (
@@ -203,25 +214,25 @@ export default ({
         </Animated.View>
       )}
 
-      <ScrollView
+      <View
         style={styles.pageScroll}
-        contentContainerStyle={styles.pageScrollContent}
-        onScroll={(event) => setScrollTop(Math.max(0, event.nativeEvent.contentOffset.y))}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
+        onLayout={() => {
+          // Keep scrollTop at 0 so arrow remains visible
+          setScrollTop(0);
+        }}
       >
         <Animated.View
           key={pageKey}
           style={styles.pageContainer}
           entering={enterAnimation}
         >
-          {currentPage.component}
+          {currentPage?.component}
         </Animated.View>
-      </ScrollView>
+      </View>
 
       {!headerMode && (
         <Animated.View
-          style={[pressStyle, animatedStyle]}
+          style={[appliedPressStyle, animatedStyle]}
           pointerEvents={canShowArrow ? 'auto' : 'none'}
         >
           {arrowButton}
@@ -251,7 +262,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    fontWeight: '700',
+
   },
   pageScroll: {
     flex: 1,

@@ -1,3 +1,4 @@
+import AppText from './AppText';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import {
@@ -6,7 +7,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
+
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -164,13 +165,13 @@ export default function AppDialog({
           )}
 
           {/* Title */}
-          <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
+          <AppText style={[styles.title, { color: theme.color }]}>{title}</AppText>
 
           {/* Description */}
           {description ? (
-            <Text style={[styles.description, { color: theme.muted }]}>
+            <AppText style={[styles.description, { color: theme.muted }]}>
               {description}
-            </Text>
+            </AppText>
           ) : null}
 
           {/* Optional Children Content */}
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 19,
-    fontWeight: '700',
+
     textAlign: 'center',
     letterSpacing: -0.2,
   },

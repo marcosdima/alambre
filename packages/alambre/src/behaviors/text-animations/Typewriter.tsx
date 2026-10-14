@@ -1,56 +1,233 @@
-import React, { useEffect } from 'react';
-import type { TextInputProps } from 'react-native';
-import { TextInput, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  withDelay,
-  Easing,
-} from 'react-native-reanimated';
+import { useEffect, useRef, useState } from 'react';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
-
-export interface TypewriterProps extends Omit<TextInputProps, 'value' | 'editable'> {
+export type TypewriterProps = {
   text: string;
-  duration?: number;
-  delay?: number;
   speed?: number;
-}
+  initialDelay?: number;
+  cursor?: boolean;
+  hideCursorOnComplete?: boolean;
+  cursorChar?: string;
+  cursorColor?: string;
+  loop?: boolean;
+  pauseOnLoopMs?: number;
+  eraseOnLoop?: boolean;
+  eraseSpeed?: number;
+  numberOfLines?: number;
+  onComplete?: () => void;
+  textStyle?: StyleProp<TextStyle>;
+  cursorStyle?: StyleProp<TextStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  reserveSpace?: boolean;
+  fontFamily?: string;
+};
 
-export function Typewriter({ text, duration = 2000, delay = 0, speed = 1, style, ...props }: TypewriterProps) {
-  const progress = useSharedValue(0);
+export function Typewriter({
+  text,
+  speed = 40,
+  initialDelay = 150,
+  cursor = true,
+  hideCursorOnComplete = false,
+  cursorChar = '▍',
+  cursorColor,
+  loop = false,
+  pauseOnLoopMs = 2000,
+  eraseOnLoop = true,
+  eraseSpeed,
+  numberOfLines,
+  onComplete,
+  textStyle,
+  cursorStyle,
+  containerStyle,
+  reserveSpace = false,
+  fontFamily,
+}: TypewriterProps) {
+  const isReducedMotion = useReducedMotion();
+  const [displayedLength, setDisplayedLength] = useState(isReducedMotion ? text.length : 0);
+  const [isDone, setIsDone] = useState(isReducedMotion);
+  const [blink, setBlink] = useState(true);
+
+  // Synchronize state during render when text changes to prevent rendering stale length with new text
+  const [prevText, setPrevText] = useState(text);
+  if (prevText !== text) {
+    setPrevText(text);
+    setDisplayedLength(isReducedMotion ? text.length : 0);
+    setIsDone(isReducedMotion);
+  }
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  const actualEraseSpeed = eraseSpeed ?? Math.max(15, Math.round(speed / 2));
+
+  // Blinking cursor only when typing has finished (idle) and cursor is enabled
+  useEffect(() => {
+    if (!cursor || !isDone) {
+      setBlink(true);
+      return;
+    }
+    let count = 0;
+    const interval = setInterval(() => {
+      count += 1;
+      setBlink((b) => !b);
+      if (count >= 6) {
+        clearInterval(interval);
+      }
+    }, 530);
+    return () => clearInterval(interval);
+  }, [cursor, isDone]);
 
   useEffect(() => {
-    progress.value = 0;
-    progress.value = withDelay(
-      delay,
-      withTiming(text.length, {
-        duration: duration / Math.max(0.1, speed),
-        easing: Easing.linear,
-      }),
-    );
-  }, [text, duration, delay, speed, progress]);
+    // Immediate full display if user requested reduced motion
+    if (isReducedMotion) {
+      setDisplayedLength(text.length);
+      setIsDone(true);
+      onCompleteRef.current?.();
+      return;
+    }
 
-  const animatedProps = useAnimatedProps(() => {
-    const currentLength = Math.floor(progress.value);
-    return {
-      text: text.substring(0, currentLength),
+    // Reset typing state on text or loop settings change
+    setDisplayedLength(0);
+    setIsDone(false);
+
+    let currentIndex = 0;
+    const totalLength = text.length;
+
+    const eraseNext = () => {
+      if (currentIndex > 0) {
+        currentIndex -= 1;
+        setDisplayedLength(currentIndex);
+        timeoutRef.current = setTimeout(eraseNext, actualEraseSpeed);
+      } else {
+        setIsDone(false);
+        timeoutRef.current = setTimeout(typeNext, initialDelay);
+      }
     };
-  });
+
+    const typeNext = () => {
+      if (currentIndex < totalLength) {
+        currentIndex += 1;
+        setDisplayedLength(currentIndex);
+        timeoutRef.current = setTimeout(typeNext, speed);
+      } else {
+        setIsDone(true);
+        onCompleteRef.current?.();
+
+        if (loop) {
+          timeoutRef.current = setTimeout(() => {
+            if (eraseOnLoop) {
+              setIsDone(false);
+              eraseNext();
+            } else {
+              currentIndex = 0;
+              setDisplayedLength(0);
+              setIsDone(false);
+              timeoutRef.current = setTimeout(typeNext, initialDelay);
+            }
+          }, pauseOnLoopMs);
+        }
+      }
+    };
+
+    timeoutRef.current = setTimeout(typeNext, initialDelay);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [
+    text,
+    speed,
+    initialDelay,
+    loop,
+    pauseOnLoopMs,
+    eraseOnLoop,
+    actualEraseSpeed,
+    isReducedMotion,
+  ]);
+
+  const visibleText = text.slice(0, displayedLength);
+  const showCursor = cursor && (!hideCursorOnComplete || !isDone);
+  const isCursorVisible = showCursor && (!isDone || blink);
+
+  if (reserveSpace) {
+    return (
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={text}
+        style={[styles.container, containerStyle]}
+      >
+        <Text
+          textBreakStrategy="simple"
+          numberOfLines={numberOfLines}
+          style={[styles.text, textStyle, fontFamily ? { fontFamily } : null, { opacity: 0 }]}
+          aria-hidden
+        >
+          {text}
+          {cursor ? cursorChar : null}
+        </Text>
+        <View style={StyleSheet.absoluteFill}>
+          <Text
+            textBreakStrategy="simple"
+            numberOfLines={numberOfLines}
+            style={[styles.text, textStyle, fontFamily ? { fontFamily } : null]}
+          >
+            {visibleText}
+            {isCursorVisible ? (
+              <Text
+                style={[
+                  styles.cursor,
+                  cursorColor ? { color: cursorColor } : null,
+                  cursorStyle,
+                ]}
+              >
+                {cursorChar}
+              </Text>
+            ) : null}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <AnimatedTextInput
-      {...props}
-      animatedProps={animatedProps as Partial<TextInputProps>}
-      editable={false}
-      style={[styles.text, style]}
-    />
+    <View
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={text}
+      style={[styles.container, containerStyle]}
+    >
+      <Text
+        textBreakStrategy="simple"
+        numberOfLines={numberOfLines}
+        style={[styles.text, textStyle, fontFamily ? { fontFamily } : null]}
+      >
+        {visibleText}
+        {isCursorVisible ? (
+          <Text
+            style={[
+              styles.cursor,
+              cursorColor ? { color: cursorColor } : null,
+              cursorStyle,
+            ]}
+          >
+            {cursorChar}
+          </Text>
+        ) : null}
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  text: {
-    color: '#000',
+  container: {
+    flexShrink: 1,
   },
+  text: {},
+  cursor: {},
 });

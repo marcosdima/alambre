@@ -154,6 +154,9 @@ export default (
 
   return (
     <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel="Theme toggle"
+      accessibilityState={{ checked: side === 1 }}
       onPressIn={onBegin}
       onPressOut={onFinalize}
       {...props}

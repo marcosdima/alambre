@@ -1,3 +1,4 @@
+import AppText from './AppText';
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import {
@@ -7,7 +8,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
+
   View,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -125,12 +126,12 @@ export default function AppActionSheet({
                 {(title || description) && (
                   <View style={styles.header}>
                     {title ? (
-                      <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
+                      <AppText style={[styles.title, { color: theme.color }]}>{title}</AppText>
                     ) : null}
                     {description ? (
-                      <Text style={[styles.description, { color: theme.muted }]}>
+                      <AppText style={[styles.description, { color: theme.muted }]}>
                         {description}
-                      </Text>
+                      </AppText>
                     ) : null}
                   </View>
                 )}
@@ -184,13 +185,13 @@ export default function AppActionSheet({
                       ) : null}
 
                       <View style={styles.optionContent}>
-                        <Text style={[styles.optionLabel, { color: textColor }]}>
+                        <AppText style={[styles.optionLabel, { color: textColor }]}>
                           {option.label}
-                        </Text>
+                        </AppText>
                         {option.subtitle ? (
-                          <Text style={[styles.optionSubtitle, { color: theme.muted }]}>
+                          <AppText style={[styles.optionSubtitle, { color: theme.muted }]}>
                             {option.subtitle}
-                          </Text>
+                          </AppText>
                         ) : null}
                       </View>
                     </Pressable>
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+
     textAlign: 'center',
   },
   description: {
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 16,
-    fontWeight: '600',
+
   },
   optionSubtitle: {
     fontSize: 13,

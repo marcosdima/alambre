@@ -13,4 +13,6 @@ export type UseCollectionType<T extends CollectionRecord> = {
   add: (record: T) => Promise<void>;
   update: (id: string, patch: Partial<T>) => Promise<void>;
   remove: (id: string) => Promise<void>;
+  reorder: (records: T[]) => Promise<void>;
+  move: (fromIndex: number, toIndex: number) => Promise<void>;
 };

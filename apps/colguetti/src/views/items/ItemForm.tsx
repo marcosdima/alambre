@@ -1,34 +1,49 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { useNavigator, useToast } from 'alambre';
+import { useNavigator, useToast, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { ItemIcon, catalogDrawAnimation } from '../../items/icon-catalog';
 import { itemColors } from '../../items/items-model';
 import { itemIconKeys, type ItemIconKey } from '../../items/item-types';
+import { searchIcons } from '../../items/icon-tags';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import AppTextInput from '../../components/AppTextInput';
-import { useRouteIntent } from '../../navigator/RouteIntent';
+import AppText from '../../components/AppText';
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { items, addItem, updateItem } = useItems();
-  const { intent, setIntent } = useRouteIntent();
-  const { previous } = useNavigator();
+  const { previous, currentParams } = useNavigator();
   const { show } = useToast();
 
+  const intent = (currentParams as { itemId?: string }) || {};
   const editing = items.find((item) => item.id === intent.itemId);
 
   const [name, setName] = useState(editing?.name ?? '');
   const [nameError, setNameError] = useState(false);
   const [color, setColor] = useState(editing?.color ?? itemColors[0]);
   const [icon, setIcon] = useState<ItemIconKey>(editing?.icon ?? 'keys');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsTransitioning(false), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  const filteredIcons = useMemo(() => {
+    if (isTransitioning) return [];
+    return searchIcons(searchQuery, itemIconKeys);
+  }, [searchQuery, isTransitioning]);
 
   const close = () => {
-    setIntent({});
     previous();
   };
 
@@ -55,6 +70,11 @@ export default () => {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <DropInTitle
+        text={editing ? lang.items.editTitle : lang.items.addTitle}
+        fontFamily={config.fontFamily}
+        textStyle={{ color: theme.color, fontSize: 32, marginBottom: 12, fontFamily: config.fontFamily }}
+      />
       <AppTextInput
         testID="item-name-input"
         label={lang.items.nameLabel}
@@ -67,14 +87,20 @@ export default () => {
         placeholder={lang.items.namePlaceholder}
         clearable
         errorMessage={nameError ? lang.items.nameRequired : undefined}
+        shellStyle={{ backgroundColor: theme.primarySoft, borderColor: theme.primary }}
       />
 
       <AppCard
-        variant="outlined"
+        variant="soft"
+        selected
         title={lang.items.colorLabel}
         style={styles.sectionCard}
       >
-        <View style={styles.colorRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.colorRow}
+        >
           {itemColors.map((c) => {
             const active = color === c;
             return (
@@ -94,42 +120,62 @@ export default () => {
               />
             );
           })}
-        </View>
+        </ScrollView>
       </AppCard>
 
       <AppCard
-        variant="outlined"
+        variant="soft"
+        selected
         title={lang.items.iconLabel}
         style={styles.sectionCard}
       >
         <View style={styles.iconGrid}>
-          {itemIconKeys.map((key, index) => {
-            const active = icon === key;
-            return (
-              <Pressable
-                key={key}
-                onPress={() => setIcon(key)}
-                style={({ pressed }) => [
-                  styles.iconCell,
-                  {
-                    borderColor: active ? theme.primary : theme.border,
-                    backgroundColor: active ? theme.primarySoft : theme.surfaceAlt,
-                    borderWidth: active ? 2 : 1.5,
-                  },
-                  pressed && styles.selectionPressed,
-                ]}
-              >
-                <ItemIcon
-                  icon={key}
-                  color={color}
-                  lineWidth={2}
-                  style={styles.cellIcon}
-                  delay={100 + index * 40}
-                  iconAnimation={catalogDrawAnimation}
-                />
-              </Pressable>
-            );
-          })}
+          {filteredIcons.length === 0 ? (
+            <AppText style={{ color: theme.muted, paddingVertical: 12 }}>No se encontraron íconos</AppText>
+          ) : isTransitioning ? (
+            <View style={{ height: 100, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <AppText style={{ color: theme.muted, fontSize: 13 }}>Cargando íconos...</AppText>
+            </View>
+          ) : (
+            filteredIcons.map((key, index) => {
+              const active = icon === key;
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() => setIcon(key)}
+                  style={({ pressed }) => [
+                    styles.iconCell,
+                    {
+                      borderColor: active ? theme.primary : theme.borderSoft,
+                      backgroundColor: active ? theme.primary : theme.surface,
+                      borderWidth: active ? 2 : 1.5,
+                    },
+                    pressed && styles.selectionPressed,
+                  ]}
+                >
+                  <ItemIcon
+                    icon={key}
+                    color={active ? theme.onPrimary : color}
+                    lineWidth={2}
+                    style={styles.cellIcon}
+                    delay={100 + index * 40}
+                    iconAnimation={catalogDrawAnimation}
+                  />
+                </Pressable>
+              );
+            })
+          )}
+        </View>
+
+        <View style={styles.searchWrapper}>
+          <AppTextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Buscar ícono..."
+            clearable
+            maxLength={20}
+            shellStyle={{ backgroundColor: theme.primarySoft, borderColor: theme.primary }}
+          />
         </View>
       </AppCard>
 
@@ -159,16 +205,19 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 40,
     gap: 16,
   },
   sectionCard: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   colorRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
     paddingTop: 6,
+    paddingBottom: 6,
+    paddingHorizontal: 4,
   },
   colorDot: {
     width: 34,
@@ -199,6 +248,12 @@ const styles = StyleSheet.create({
   cellIcon: {
     width: 28,
     height: 22,
+  },
+  searchWrapper: {
+    marginTop: 16,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 240,
   },
   actions: {
     flexDirection: 'row',

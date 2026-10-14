@@ -104,7 +104,7 @@ export default function AppSwitch({
 
   const handlePressOut = () => {
     if (disabled) return;
-    pressScale.value = withSpring(1, kinetics.spring.bouncy);
+    pressScale.value = withSpring(1, kinetics.spring.stiff);
   };
 
   const handleToggle = () => {

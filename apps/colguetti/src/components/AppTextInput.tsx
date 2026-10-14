@@ -1,3 +1,4 @@
+import AppText from './AppText';
 import type { ComponentProps, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import type {
@@ -6,7 +7,7 @@ import type {
   ViewStyle,
   TextInput,
 } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -15,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AlambreIcons, Input, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
+import { useConfig } from '../providers/config';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
 export type InputTone = 'default' | 'success' | 'warning' | 'danger';
@@ -66,6 +68,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
   ...props
 }: AppTextInputProps, ref) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const innerRef = useRef<TextInput>(null);
 
   useImperativeHandle(ref, () => innerRef.current as TextInput);
@@ -220,7 +223,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
           <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }]}>
             {label}
           </Input.Label>
-          {required ? <Text style={styles.requiredAsterisk}>*</Text> : null}
+          {required ? <AppText style={styles.requiredAsterisk}>*</AppText> : null}
         </View>
       ) : null}
 
@@ -267,6 +270,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
               {
                 fontSize: sizeConfig.fontSize,
                 color: theme.color,
+                fontFamily: config.fontFamily,
               },
               multiline && styles.multilineInput,
               style,
@@ -358,13 +362,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '700',
+
     letterSpacing: 0.2,
   },
   requiredAsterisk: {
     color: '#ef4444',
     fontSize: 14,
-    fontWeight: '700',
+
   },
   shell: {
     flexDirection: 'row',
@@ -413,6 +417,6 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '500',
+
   },
 });

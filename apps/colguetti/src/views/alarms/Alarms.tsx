@@ -1,120 +1,123 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import AppText from '../../components/AppText';
+import { useRef } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useConfirm, useNavigator, useToast, Switch, Typewriter, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useAlarms } from '../../alarms/alarms-context';
 import { useItems } from '../../items/items-context';
-import { ItemIcon } from '../../items/icon-catalog';
+
 import type { Item } from '../../items/item-types';
 import { nextOccurrence } from '../../alarms/alarms-model';
 import { cancelAlarmAlerts } from '../../notifications/expiry';
 import type { Alarm } from '../../alarms/alarm-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
-import AppBadge from '../../components/AppBadge';
-import AppSwitch from '../../components/AppSwitch';
+
 import SwipeableItemRow from '../../components/SwipeableItemRow';
-import { useRouteIntent } from '../../navigator/RouteIntent';
+import { AlarmGlyph } from '../../components/illustrations/SkiaArt';
+import AnimatedDashedLine from '../../components/AnimatedDashedLine';
 
-const MAX_VISIBLE_ITEMS = 3;
-
-const AlarmItemsSummary = ({
+const AlarmVisualSummary = ({
   items,
   theme,
+
+  weekdays,
   emptyLabel,
+  lang,
+  accentColor,
 }: {
   items: Item[];
-  theme: {
-    color: string;
-    borderSoft: string;
-    surfaceAlt: string;
-    primary: string;
-  };
+  theme: ReturnType<typeof useLightDark>['theme'];
+
+  weekdays: number[];
   emptyLabel: string;
+  lang: ReturnType<typeof useLang>['lang'];
+  accentColor: string;
 }) => {
-  if (items.length === 0) {
-    return (
-      <View style={styles.itemSummaryRow}>
-        <AppBadge label={emptyLabel} tone="neutral" variant="soft" size="sm" />
-      </View>
-    );
-  }
-
-  const visible = items.slice(0, MAX_VISIBLE_ITEMS);
-  const remaining = items.length - MAX_VISIBLE_ITEMS;
-
   return (
-    <View style={styles.itemSummaryRow}>
-      {visible.map((item) => (
-        <View
-          key={item.id}
-          style={[
-            styles.itemChip,
-            {
-              borderColor: item.color || theme.borderSoft,
-              backgroundColor: theme.surfaceAlt,
-            },
-          ]}
-        >
-          <View style={styles.itemIconBubble}>
-            <ItemIcon
-              icon={item.icon}
-              color={item.color}
-              lineWidth={1.8}
-            />
-          </View>
-          <Text
-            numberOfLines={1}
-            style={[styles.itemChipName, { color: theme.color }]}
-          >
-            {item.name}
-          </Text>
-        </View>
-      ))}
+    <View style={styles.footerRow}>
+      <View style={styles.daysRow}>
+        {[1, 2, 3, 4, 5, 6, 0].map((day) => {
+          const isActive = weekdays.includes(day);
+          return (
+            <View
+              key={day}
+              style={[
+                styles.dayBadge,
+                {
+                  backgroundColor: isActive ? accentColor : '#ffffff',
+                },
+              ]}
+            >
+              <AppText
+                style={{
+                  fontSize: 12,
+                  color: isActive ? theme.background : '#8f938f', // or theme.border, using dark gray
+                  fontWeight: isActive ? '600' : '400',
+                }}
+              >
+                {lang.alarms.weekdays[day]}
+              </AppText>
+            </View>
+          );
+        })}
+      </View>
 
-      {remaining > 0 && (
-        <AppBadge
-          label={`+${remaining}`}
-          tone="neutral"
-          variant="outline"
-          size="sm"
-        />
-      )}
+      <View
+        style={[
+          styles.itemPill,
+          { backgroundColor: items.length > 0 ? theme.surfaceAlt : 'transparent' },
+        ]}
+      >
+        <AppText style={{ fontSize: 13, color: items.length > 0 ? accentColor : theme.muted, fontWeight: '500' }}>
+          {items.length === 0
+            ? emptyLabel
+            : lang.alarms.count.replace('{count}', items.length.toString())}
+        </AppText>
+      </View>
     </View>
   );
 };
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
   const { alarms, updateAlarm, removeAlarm } = useAlarms();
   const { items } = useItems();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
-  const { setIntent } = useRouteIntent();
+  const deletingRef = useRef(false);
+  const cardColors = [theme.primary, theme.secondary, theme.warning, theme.danger, theme.success, theme.sand];
   const now = new Date();
 
   const openForm = (alarm?: Alarm) => {
-    setIntent({ alarmId: alarm?.id });
-    navigate('alarms', { subpage: 'alarm-form' });
+    navigate('alarms', { subpage: 'alarm-form', params: { alarmId: alarm?.id } });
   };
 
   const tryDelete = async (alarm: Alarm) => {
-    const ok = await confirm({
-      title: lang.common.confirmDeleteTitle,
-      message: lang.alarms.confirmDeleteMessage.replace('{name}', alarm.label),
-      confirmLabel: lang.common.confirm,
-      cancelLabel: lang.common.cancel,
-      tone: 'danger',
-    });
-    if (!ok) return;
-    await removeAlarm(alarm.id);
-    void cancelAlarmAlerts(alarm.id);
-    show({ payload: { title: lang.alarms.deleted, content: alarm.label, tone: 'success' }, duration: 3000 });
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    try {
+      const ok = await confirm({
+        title: lang.common.confirmDeleteTitle,
+        message: lang.alarms.confirmDeleteMessage.replace('{name}', alarm.label),
+        confirmLabel: lang.common.confirm,
+        cancelLabel: lang.common.cancel,
+        tone: 'danger',
+      });
+      if (!ok) return;
+      await removeAlarm(alarm.id);
+      void cancelAlarmAlerts(alarm.id);
+      show({ payload: { title: lang.alarms.deleted, content: alarm.label, tone: 'success' }, duration: 3000 });
+    } finally {
+      deletingRef.current = false;
+    }
   };
 
-  const weekdayLabels = lang.alarms.weekdays;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -123,19 +126,31 @@ export default () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.screenHeader}>
+          <DropInTitle
+            text={lang.alarms.title}
+            fontFamily={config.fontFamily}
+            textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+          />
+        </View>
+
         {alarms.length === 0 ? (
-          <AppCard variant="outlined" style={styles.emptyCard}>
-            <Text style={[styles.empty, { color: theme.muted }]}>{lang.alarms.empty}</Text>
-          </AppCard>
+          <View style={styles.emptyContainer}>
+            <AlarmGlyph line={theme.color} size={140} />
+            <Typewriter
+              text={lang.alarms.empty}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6, fontFamily: config.fontFamily }]}
+              fontFamily={config.fontFamily}
+              initialDelay={300}
+              cursorColor={theme.primary}
+            />
+          </View>
         ) : (
           <View style={styles.list}>
             {alarms.map((alarm, index) => {
               const next = nextOccurrence(alarm, now);
-              const weekdaysString = alarm.weekdays
-                .map((d) => weekdayLabels[d])
-                .join(' · ');
-
               const alarmItems = items.filter((it) => alarm.itemIds.includes(it.id));
+              const accentColor = alarm.enabled ? cardColors[index % cardColors.length] : theme.muted;
 
               return (
                 <SwipeableItemRow
@@ -143,43 +158,59 @@ export default () => {
                   onDelete={() => void tryDelete(alarm)}
                   onPress={() => openForm(alarm)}
                   peekIndex={index === 0 ? 0 : undefined}
+                  deleteLabel={lang.common.delete}
                 >
                   <AppCard
-                    variant="outlined"
-                    padding="md"
-                    style={styles.card}
+                    variant="soft"
+                    padding="lg"
+                    style={[
+                      styles.card,
+                      { borderColor: '#ffffff' },
+                      !alarm.enabled && { backgroundColor: theme.surfaceAlt, opacity: 0.75 },
+                    ]}
                   >
                     <View style={styles.cardHeader}>
                       <View style={styles.headerLeft}>
-                        <Text style={[styles.label, { color: theme.color }]} numberOfLines={1}>
+                        <AppText style={[styles.timeText, { color: accentColor }]}>
+                          {alarm.time}
+                        </AppText>
+                        <AppText style={[styles.label, { color: alarm.enabled ? theme.color : theme.muted }]} numberOfLines={1}>
                           {alarm.label}
-                        </Text>
-                        <AppBadge
-                          label={alarm.time}
-                          tone={alarm.enabled ? 'primary' : 'neutral'}
-                          variant={alarm.enabled ? 'soft' : 'outline'}
+                        </AppText>
+                      </View>
+                      <View style={styles.switchContainer}>
+                        <Switch
+                          checked={alarm.enabled}
+                          onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
                           size="md"
+                          activeColor={theme.primary}
+                          inactiveColor={theme.surfaceAlt}
+                          inactiveBorderColor={theme.border}
+                          accessibilityLabel={`${lang.alarms.enabledLabel} ${alarm.label}`}
                         />
                       </View>
-                      <AppSwitch
-                        checked={alarm.enabled}
-                        onChange={(enabled) => updateAlarm(alarm.id, { enabled })}
-                        size="sm"
-                      />
                     </View>
 
-                    <View style={styles.metaRow}>
-                      <Text style={[styles.metaText, { color: theme.muted }]}>
-                        {weekdaysString}{next ? ` · Próx: ${next.toLocaleDateString()}` : ''}
-                      </Text>
-                    </View>
+                    {next && (
+                      <View style={styles.metaRow}>
+                        <AppText style={[styles.metaText, { color: theme.muted }]}>
+                          Próx: {next.toLocaleDateString()}
+                        </AppText>
+                      </View>
+                    )}
 
-                    <View style={[styles.cardFooter, { borderTopColor: theme.borderSoft }]}>
-                      <AlarmItemsSummary
-                        items={alarmItems}
-                        theme={theme}
-                        emptyLabel={lang.alarms.itemsLabel}
-                      />
+                    <View style={styles.cardFooter}>
+                      <AnimatedDashedLine color={theme.borderSoft} delay={200 + index * 100} />
+                      <View style={{ paddingTop: 12 }}>
+                        <AlarmVisualSummary
+                          items={alarmItems}
+                          theme={theme}
+                          weekdays={alarm.weekdays}
+                          emptyLabel={lang.alarms.itemsLabel}
+                          lang={lang}
+                          accentColor={accentColor}
+                        />
+                      </View>
                     </View>
                   </AppCard>
                 </SwipeableItemRow>
@@ -211,9 +242,21 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 20,
   },
-  emptyCard: {
+  screenHeader: {
+    paddingVertical: 12,
+    marginBottom: 16,
     alignItems: 'center',
-    paddingVertical: 32,
+  },
+  screenTitle: {
+
+    fontSize: 42,
+    letterSpacing: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 24,
   },
   empty: {
     fontSize: 15,
@@ -226,6 +269,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -236,59 +280,61 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
     minWidth: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 0,
+  },
+  timeText: {
+    fontSize: 48,
+
+    letterSpacing: 1,
+    lineHeight: 52,
+    includeFontPadding: false,
+
+  },
+  switchContainer: {
+    justifyContent: 'center',
+    paddingLeft: 16,
   },
   label: {
     fontSize: 16,
-    fontWeight: '700',
     letterSpacing: -0.2,
     flexShrink: 1,
   },
   metaRow: {
-    marginTop: 6,
+    marginTop: 0,
   },
   metaText: {
     fontSize: 13,
-    lineHeight: 18,
   },
   cardFooter: {
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 16,
   },
   pressed: {
     opacity: 0.7,
     transform: [{ scale: 0.95 }],
   },
-  itemSummaryRow: {
+  footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    minHeight: 28,
+    justifyContent: 'space-between',
   },
-  itemChip: {
+  daysRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingVertical: 3,
-    paddingHorizontal: 7,
-    borderRadius: 8,
-    borderWidth: 1.2,
-    maxWidth: 110,
-    flexShrink: 1,
+    gap: 4,
   },
-  itemIconBubble: {
-    width: 16,
-    height: 16,
+  dayBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  itemChipName: {
-    fontSize: 12,
-    fontWeight: '600',
-    flexShrink: 1,
+  itemPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   footer: {
     padding: 20,

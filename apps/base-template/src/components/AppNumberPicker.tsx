@@ -1,8 +1,9 @@
+import type { ComponentProps } from 'react';
 import { HorizontalPicker } from 'alambre';
 import { View, Text, StyleSheet } from 'react-native';
 import { useLightDark } from '../providers/theme';
 
-export type AppNumberPickerProps = React.ComponentProps<typeof HorizontalPicker.Root> & {
+export type AppNumberPickerProps = ComponentProps<typeof HorizontalPicker.Root> & {
   label?: string;
   unit?: string;
 };
@@ -47,7 +48,7 @@ export default function AppNumberPicker({
         itemWidth={itemWidth}
         visibleItems={visibleItems}
         cycles={cycles}
-        style={(state: any) => [styles.pickerArea, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }, typeof style === 'function' ? style(state) : style]}
+        style={(state) => [styles.pickerArea, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }, typeof style === 'function' ? style(state) : style]}
         {...props}
       >
         <HorizontalPicker.Track>

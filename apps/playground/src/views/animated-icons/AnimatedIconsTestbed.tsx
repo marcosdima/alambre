@@ -68,7 +68,14 @@ export default function AnimatedIconsTestbed() {
   );
 }
 
-function FavoriteScenario({ theme, iconAnimation, offset }: any) {
+interface ScenarioProps {
+  theme: Record<string, string>;
+  iconAnimation?: Record<string, unknown>;
+  offset?: number;
+  duration?: number;
+}
+
+function FavoriteScenario({ theme, iconAnimation, offset }: ScenarioProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
@@ -98,7 +105,7 @@ function FavoriteScenario({ theme, iconAnimation, offset }: any) {
   );
 }
 
-function TaskScenario({ theme, iconAnimation, offset }: any) {
+function TaskScenario({ theme, iconAnimation, offset }: ScenarioProps) {
   const [isDone, setIsDone] = useState(false);
 
   return (
@@ -129,7 +136,7 @@ function TaskScenario({ theme, iconAnimation, offset }: any) {
   );
 }
 
-function WeatherScenario({ theme, iconAnimation, offset }: any) {
+function WeatherScenario({ theme, iconAnimation, offset }: ScenarioProps) {
   const [isRaining, setIsRaining] = useState(true);
 
   return (
@@ -160,7 +167,7 @@ const styles = StyleSheet.create({
   checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
 });
 
-function MorphScenario({ theme, duration }: any) {
+function MorphScenario({ theme, duration }: ScenarioProps) {
   const [isSettings, setIsSettings] = useState(false);
 
   return (
@@ -195,7 +202,7 @@ function MorphScenario({ theme, duration }: any) {
   );
 }
 
-function SvgButtonScenario({ theme, iconAnimation, offset }: any) {
+function SvgButtonScenario({ theme, iconAnimation, offset }: ScenarioProps) {
   const [isPressed, setIsPressed] = useState(false);
 
   return (

@@ -1,17 +1,14 @@
-import { useEffect, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import AppText from './AppText';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  Easing,
-  runOnJS,
   useAnimatedStyle,
-  useSharedValue,
   withDelay,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons, kinetics } from 'alambre';
-import { useLightDark } from '../providers/theme';
+import { AlambreIcons, kinetics, useSwipeableRow } from 'alambre';
 
 type SwipeableItemRowProps = {
   children: ReactNode;
@@ -19,11 +16,9 @@ type SwipeableItemRowProps = {
   onPress?: () => void;
   disabled?: boolean;
   peekIndex?: number;
+  deleteLabel?: string;
 };
 
-const REST_OFFSET = 0;
-const SWIPE_TRIGGER_THRESHOLD = 35;
-const RESISTANCE = 0.25;
 const MAX_SWIPE = -55;
 
 export default function SwipeableItemRow({
@@ -32,82 +27,104 @@ export default function SwipeableItemRow({
   onPress,
   disabled = false,
   peekIndex,
+  deleteLabel = 'Borrar',
 }: SwipeableItemRowProps) {
-  const { theme } = useLightDark();
-  const translateX = useSharedValue(REST_OFFSET);
+  const isTriggeredRef = useRef(false);
+
+  const triggerDelete = () => {
+    if (isTriggeredRef.current) return;
+    isTriggeredRef.current = true;
+    snapTo(0);
+    onDelete();
+    setTimeout(() => {
+      isTriggeredRef.current = false;
+    }, 600);
+  };
+
+  const { translationX, panGesture, snapTo } = useSwipeableRow({
+    leftSnapPoints: [],
+    rightSnapPoints: [MAX_SWIPE],
+    friction: 0.25,
+    triggerThreshold: 40,
+    onActionTriggered: (direction) => {
+      if (direction === 'right') {
+        triggerDelete();
+      }
+    },
+    onSnap: (_dir, point) => {
+      if (point === MAX_SWIPE) {
+        triggerDelete();
+      }
+    },
+  });
 
   useEffect(() => {
     // Only peek the first item once page transition finishes (educational affordance)
     if (peekIndex !== 0 || disabled) return;
     const baseDelay = 420;
     const timer = setTimeout(() => {
-      translateX.value = withSequence(
+      translationX.value = withSequence(
         withTiming(-20, kinetics.timing.fast),
         withDelay(120, withTiming(0, kinetics.timing.fast)),
       );
     }, baseDelay);
     return () => clearTimeout(timer);
-  }, [peekIndex, disabled, translateX]);
+  }, [peekIndex, disabled, translationX]);
 
-  const panGesture = Gesture.Pan()
-    .enabled(!disabled)
-    .activeOffsetX([-15, 15])
-    .failOffsetY([-12, 12])
-    .onUpdate((e) => {
-      'worklet';
-      const delta = e.translationX;
-      if (delta < 0) {
-        translateX.value = Math.max(MAX_SWIPE, delta * RESISTANCE);
-      } else {
-        translateX.value = Math.min(0, delta * 0.05);
-      }
-    })
-    .onEnd((e) => {
-      'worklet';
-      if (translateX.value <= -SWIPE_TRIGGER_THRESHOLD || (e.velocityX < -450 && translateX.value < -20)) {
-        translateX.value = withTiming(0, kinetics.timing.fast);
-        runOnJS(onDelete)();
-      } else {
-        translateX.value = withTiming(0, kinetics.timing.fast);
-      }
-    });
+  const panGestureEnabled = panGesture.enabled(!disabled);
 
   const animatedCardStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [{ translateX: translationX.value }],
   }));
 
   const animatedBgStyle = useAnimatedStyle(() => ({
-    opacity: translateX.value < -2 ? 1 : 0,
+    opacity: translationX.value < -2 ? 1 : 0,
   }));
 
   const animatedActionStyle = useAnimatedStyle(() => ({
-    opacity: Math.min(1, Math.max(0, (Math.abs(translateX.value) - 6) / 20)),
+    opacity: Math.min(1, Math.max(0, (Math.abs(translationX.value) - 6) / 20)),
     transform: [
       {
-        scale: Math.min(1.05, Math.max(0.75, Math.abs(translateX.value) / SWIPE_TRIGGER_THRESHOLD)),
+        scale: Math.min(1.05, Math.max(0.75, Math.abs(translationX.value) / 35)),
       },
     ],
   }));
 
   return (
     <View style={styles.container}>
-      {/* 1. Background reveal: Red zone strictly on the right, only visible when swiping or peeking */}
+      {/* 1. Background reveal */}
       <Animated.View
         style={[
           styles.actionBackground,
-          { backgroundColor: theme.danger },
+          { backgroundColor: '#dc2626' },
           animatedBgStyle,
         ]}
       >
-        <Animated.View style={[styles.actionContent, animatedActionStyle]}>
-          <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
-          <Text style={styles.deleteLabel}>Borrar</Text>
-        </Animated.View>
+        <Pressable
+          onPress={triggerDelete}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={deleteLabel}
+          style={styles.actionContent}
+        >
+          <Animated.View style={[styles.actionContent, animatedActionStyle]}>
+            <AlambreIcons.Trash color="#ffffff" lineWidth={2.2} style={styles.deleteIcon} />
+            <AppText style={[styles.deleteLabel, { color: '#ffffff' }]}>{deleteLabel}</AppText>
+          </Animated.View>
+        </Pressable>
       </Animated.View>
 
       {/* 2. Foreground Card */}
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.frontCard, animatedCardStyle]}>
+      <GestureDetector gesture={panGestureEnabled}>
+        <Animated.View
+          style={[styles.frontCard, animatedCardStyle]}
+          accessibilityActions={[{ name: 'delete', label: deleteLabel }]}
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === 'delete') {
+              triggerDelete();
+            }
+          }}
+        >
           <Pressable onPress={onPress}>
             {children}
           </Pressable>
@@ -150,6 +167,6 @@ const styles = StyleSheet.create({
   deleteLabel: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '800',
+
   },
 });

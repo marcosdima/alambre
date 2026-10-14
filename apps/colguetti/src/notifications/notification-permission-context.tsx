@@ -84,8 +84,6 @@ export const NotificationPermissionProvider = ({ children }: { children: ReactNo
       const current = await readPermission();
       if (current === 'undetermined') {
         await Notifications.requestPermissionsAsync();
-      } else if (current === 'denied') {
-        await Linking.openSettings().catch(() => undefined);
       }
       const after = await readPermission();
       setPermission(after);

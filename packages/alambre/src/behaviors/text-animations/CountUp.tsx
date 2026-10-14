@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
+  useReducedMotion,
 } from 'react-native-reanimated';
 
 export interface CountUpProps extends Omit<TextProps, 'style'> {
@@ -15,6 +16,7 @@ export interface CountUpProps extends Omit<TextProps, 'style'> {
   duration?: number;
   delay?: number;
   speed?: number;
+  padZeroes?: number;
   style?: StyleProp<TextStyle>;
 }
 
@@ -33,9 +35,14 @@ function Tick({ digit, height, style, duration, delay, speed, ...textProps }: Ti
   const isNumber = !isNaN(Number(digit)) && digit !== ' ' && digit !== '.' && digit !== '-' && digit !== ',';
   const numericValue = isNumber ? Number(digit) : 0;
 
-  const animatedValue = useSharedValue(0);
+  const isReducedMotion = useReducedMotion();
+  const animatedValue = useSharedValue(isReducedMotion ? numericValue : 0);
 
   useEffect(() => {
+    if (isReducedMotion) {
+      animatedValue.value = numericValue;
+      return;
+    }
     const dur = duration / Math.max(0.1, speed);
     animatedValue.value = withDelay(
       delay,
@@ -44,7 +51,7 @@ function Tick({ digit, height, style, duration, delay, speed, ...textProps }: Ti
         easing: Easing.out(Easing.cubic),
       }),
     );
-  }, [numericValue, duration, delay, speed, animatedValue]);
+  }, [numericValue, duration, delay, speed, animatedValue, isReducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -81,6 +88,7 @@ export function CountUp({
   duration = 1000,
   delay = 0,
   speed = 1,
+  padZeroes,
   style,
   ...props
 }: CountUpProps) {
@@ -92,9 +100,9 @@ export function CountUp({
     }
   };
 
-  const strValue = value.toString();
-  const parts = strValue.split('.');
-  const intPart = parts[0];
+  const rawStr = value.toString();
+  const parts = rawStr.split('.');
+  const intPart = padZeroes ? parts[0].padStart(padZeroes, '0') : parts[0];
   const decPart = parts.length > 1 ? '.' + parts[1] : '';
 
   const renderTick = (char: string, key: string) => (
@@ -102,7 +110,7 @@ export function CountUp({
       key={key}
       digit={char}
       height={height}
-      style={[styles.text, style, { fontVariant: ['tabular-nums'] }]}
+      style={[styles.text, style]}
       duration={duration}
       delay={delay}
       speed={speed}

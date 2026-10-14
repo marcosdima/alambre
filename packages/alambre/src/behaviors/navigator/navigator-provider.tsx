@@ -12,7 +12,8 @@ import { createStore } from '../../core/store';
 type NavigatorState = {
   pages: NavigatorObject;
   currentPage: string;
-  stack: string[];
+  currentParams?: Record<string, unknown>;
+  stack: { page: string; params?: Record<string, unknown> }[];
   scrollTop: number;
 };
 
@@ -32,14 +33,21 @@ export const navigatorActions = {
   navigate: (target: string, settings: NavigationSettings = {}) => {
     const state = navigatorStore.get();
     if (!state) return;
-    const { subpage } = settings;
+    const { subpage, params } = settings;
     const aux = subpage ? `${target},${subpage}` : String(target);
-    if (aux === state.currentPage) return;
+    let sameParams = false;
+    try {
+      sameParams = JSON.stringify(params) === JSON.stringify(state.currentParams);
+    } catch {
+      sameParams = params === state.currentParams;
+    }
+    if (aux === state.currentPage && sameParams) return;
 
     navigatorStore.set((prev) => prev ? {
       ...prev,
-      stack: [...prev.stack, prev.currentPage],
+      stack: [...prev.stack, { page: prev.currentPage, params: prev.currentParams }],
       currentPage: aux,
+      currentParams: params,
       scrollTop: 0,
     } : prev);
   },
@@ -56,21 +64,26 @@ export const navigatorActions = {
       return {
         ...prev,
         stack: newStack,
-        currentPage: target,
+        currentPage: target.page,
+        currentParams: target.params,
         scrollTop: 0,
       };
     });
   },
 
   setScrollTop: (scrollTop: number) => {
-    navigatorStore.set((prev) => prev ? { ...prev, scrollTop } : prev);
+    navigatorStore.set((prev) => {
+      if (!prev || prev.scrollTop === scrollTop) return prev;
+      return { ...prev, scrollTop };
+    });
   },
 };
 
 export const useNavigator = <
   TRoute extends string | Record<string, unknown> = string,
   TSubpage extends string = string,
->(): NavigatorReturn<TRoute, TSubpage> => {
+  TParams = Record<string, unknown>,
+>(): NavigatorReturn<TRoute, TSubpage, TParams> => {
   const state = useSyncExternalStore(navigatorStore.subscribe, navigatorStore.get);
 
   useEffect(() => {
@@ -98,6 +111,7 @@ export const useNavigator = <
     const [firstKey, ...rest] = path;
     if (!firstKey) return pages[firstPage];
     const first = pages[firstKey];
+    if (!first) return pages[firstPage] ?? { component: null };
     if (rest.length === 0) return first;
     return rest.reduce(
       (acc, key) => acc?.subpages?.[key],
@@ -107,10 +121,11 @@ export const useNavigator = <
 
   return {
     currentPage: getComponent(state.currentPage.split(',')),
-    pageKey: state.stack.join(', '),
+    pageKey: state.stack.map((s) => s.page).join(', '),
+    currentParams: state.currentParams as TParams | undefined,
     noPreviousPages: state.stack.length === 0,
     scrollTop: state.scrollTop,
-    navigate: navigatorActions.navigate as NavigatorReturn<TRoute, TSubpage>['navigate'],
+    navigate: navigatorActions.navigate as NavigatorReturn<TRoute, TSubpage, TParams>['navigate'],
     previous: navigatorActions.previous,
     setScrollTop: navigatorActions.setScrollTop,
   };
@@ -120,5 +135,8 @@ export const NavigatorProvider = ({ children, pages }: NavigatorProviderProps) =
   if (!navigatorStore.get()) {
     initNavigator(pages);
   }
+  useEffect(() => {
+    navigatorStore.set((prev) => prev ? { ...prev, pages } : prev);
+  }, [pages]);
   return <>{children}</>;
 };

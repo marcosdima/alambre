@@ -63,6 +63,28 @@ const createCollection = <T extends CollectionRecord>({
     await persist(next);
   };
 
+  const reorder = async (records: T[]) => {
+    const prev = store.getState();
+    const next: CollectionState<T> = { ...prev, records };
+    store.setState(next);
+    await persist(next);
+  };
+
+  const move = async (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const prev = store.getState();
+    const records = [...prev.records];
+    if (fromIndex < 0 || fromIndex >= records.length || toIndex < 0 || toIndex >= records.length) {
+      return;
+    }
+    const [movedItem] = records.splice(fromIndex, 1);
+    records.splice(toIndex, 0, movedItem);
+
+    const next: CollectionState<T> = { ...prev, records };
+    store.setState(next);
+    await persist(next);
+  };
+
   const hydrate = async () => {
     const raw = await storage.get(storageKey);
     store.setState({ records: parseRecords(raw, initialValue), loading: false });
@@ -78,12 +100,14 @@ const createCollection = <T extends CollectionRecord>({
       add,
       update,
       remove,
+      reorder,
+      move,
     };
   };
 
   return {
     store,
-    actions: { add, update, remove },
+    actions: { add, update, remove, reorder, move },
     useCollection,
     useValue: useCollection,
     Provider,

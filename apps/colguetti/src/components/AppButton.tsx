@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import type { ReactNode } from 'react';
 import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet  } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -203,7 +204,7 @@ export default function AppButton({
               <>
                 {leftIcon}
                 {label ? (
-                  <Text
+                  <AppText
                     style={[
                       styles.labelText,
                       {
@@ -215,13 +216,13 @@ export default function AppButton({
                     numberOfLines={1}
                   >
                     {label}
-                  </Text>
+                  </AppText>
                 ) : null}
                 {typeof children === 'function'
                   ? children({ pressed, disabled: isDisabled, loading: isLoading })
                   : typeof children === 'string'
                     ? (
-                      <Text
+                      <AppText
                         style={[
                           styles.labelText,
                           {
@@ -233,7 +234,7 @@ export default function AppButton({
                         numberOfLines={1}
                       >
                         {children}
-                      </Text>
+                      </AppText>
                     )
                     : children}
                 {rightIcon}
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   labelText: {
-    fontWeight: '700',
+
     flexShrink: 1,
   },
   spinner: {

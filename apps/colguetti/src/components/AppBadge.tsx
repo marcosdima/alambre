@@ -1,6 +1,7 @@
+import AppText from './AppText';
 import type { ComponentProps, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet,  View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -150,7 +151,7 @@ export default function AppBadge({
     >
       {icon}
       {typeof content === 'string' ? (
-        <Text
+        <AppText
           style={[
             styles.badgeText,
             {
@@ -161,7 +162,7 @@ export default function AppBadge({
           ]}
         >
           {content}
-        </Text>
+        </AppText>
       ) : (
         content
       )}
@@ -251,7 +252,7 @@ export function AppChip({
         ]}
       >
         {icon}
-        <Text
+        <AppText
           style={[
             styles.chipText,
             {
@@ -262,7 +263,7 @@ export function AppChip({
           ]}
         >
           {label}
-        </Text>
+        </AppText>
 
         {onRemove ? (
           <Pressable
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeText: {
-    fontWeight: '800',
+
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     includeFontPadding: false,

@@ -1,2 +1,2 @@
-import type { AnimatedView } from 'react-native-reanimated/src/component/View';
-let a: AnimatedView;
+import type Animated from 'react-native-reanimated';
+let _a: typeof Animated.View;

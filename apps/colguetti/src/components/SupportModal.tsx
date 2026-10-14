@@ -1,5 +1,6 @@
+import AppText from './AppText';
 import { useEffect, useState } from 'react';
-import { Linking, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, StyleSheet,  View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
@@ -71,12 +72,12 @@ export default function SupportModal({ visible, onClose }: SupportModalProps) {
             <View style={[styles.iconCircle, { backgroundColor: theme.primarySoft, borderColor: theme.primary }]}>
               <AlambreIcons.Heart color={theme.primary} lineWidth={2.5} style={styles.heartIcon} />
             </View>
-            <Text style={[styles.title, { color: theme.color }]}>
+            <AppText style={[styles.title, { color: theme.color }]}>
               {currentLang === 'en' ? 'Support Colguetti!' : '¡Apoyá a Colguetti!'}
-            </Text>
-            <Text style={[styles.subtitle, { color: theme.muted }]}>
+            </AppText>
+            <AppText style={[styles.subtitle, { color: theme.muted }]}>
               {quoteText}
-            </Text>
+            </AppText>
           </View>
 
           <View style={styles.actions}>
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '800',
+
     letterSpacing: -0.3,
     textAlign: 'center',
   },

@@ -38,13 +38,16 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.SegmentedControl).toBe('function');
     expect(typeof Alambre.useSelect).toBe('function');
     expect(typeof Alambre.Input).toBe('function');
+    expect(typeof Alambre.Switch).toBe('function');
     expect(typeof Alambre.createConfigProvider).toBe('function');
     expect(typeof Alambre.createLangProvider).toBe('function');
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
     expect(typeof Alambre.createCollectionProvider).toBe('function');
+    expect(typeof Alambre.createCollection).toBe('function');
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
+    expect(typeof Alambre.NavigatorHost).toBe('function');
     expect(typeof Alambre.initNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
@@ -57,6 +60,15 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.readCollection).toBe('function');
     expect(typeof Alambre.writeCollection).toBe('function');
     expect(typeof Alambre.useHistoryState).toBe('function');
+    expect(typeof Alambre.CountUp).toBe('function');
+    expect(typeof Alambre.Typewriter).toBe('function');
+    expect(typeof Alambre.Scramble).toBe('function');
+    expect(typeof Alambre.Marquee).toBe('function');
+    expect(typeof Alambre.WavyText).toBe('function');
+    expect(typeof Alambre.SlideInText).toBe('function');
+    expect(typeof Alambre.DropInTitle).toBe('function');
+    expect(typeof Alambre.HangingTitle).toBe('function');
+    expect(typeof Alambre.AnimatedCounter).toBe('function');
     expect(typeof Alambre.createHistory).toBe('function');
     expect(typeof Alambre.pushHistory).toBe('function');
     expect(typeof Alambre.undoHistory).toBe('function');
@@ -176,6 +188,11 @@ describe('public API — type surface', () => {
       error: false,
       warning: false,
     };
+    const switchProps: Alambre.SwitchProps = {
+      checked: false,
+      onChange: () => undefined,
+      size: 'md',
+    };
     const sliderProps: Alambre.SliderProps = { value: 50 };
     const sliderState: Alambre.SliderState = {
       value: 50,
@@ -235,6 +252,18 @@ describe('public API — type surface', () => {
       loading: false,
       saveField: async () => undefined,
     };
+    const useCollectionType: Alambre.UseCollectionType<{ id: string }> = {
+      records: [{ id: 'item-1' }],
+      loading: false,
+      add: async () => undefined,
+      update: async () => undefined,
+      remove: async () => undefined,
+      reorder: async () => undefined,
+      move: async () => undefined,
+    };
+    const navigatorHostProps: Alambre.NavigatorHostProps = {
+      headerTitle: 'Host',
+    };
     const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
     const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
     const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };
@@ -278,6 +307,7 @@ describe('public API — type surface', () => {
     expect(selectState).toBeDefined();
     expect(inputProps).toBeDefined();
     expect(inputState).toBeDefined();
+    expect(switchProps).toBeDefined();
     expect(toastComponentProps).toBeDefined();
     expect(confirmComponentProps).toBeDefined();
     expect(page).toBeDefined();
@@ -302,6 +332,8 @@ describe('public API — type surface', () => {
     expect(navSettings).toBeDefined();
     expect(configState).toBeDefined();
     expect(useConfigType).toBeDefined();
+    expect(useCollectionType).toBeDefined();
+    expect(navigatorHostProps).toBeDefined();
   });
 
   it('does not expose internal/plumbing namespaces', () => {

@@ -1,14 +1,13 @@
-import { useMemo, type ReactNode } from 'react';
-import { createCollectionProvider } from 'alambre';
+import { useMemo } from 'react';
+import { createCollection } from 'alambre';
 import { storage } from '../storage';
 import { createId } from '../utils/id';
 import { withActiveWindowDefault } from './alarms-model';
 import type { Alarm, AlarmInput } from './alarm-types';
 
-const { Provider: AlarmsCollectionProvider, useValue } = createCollectionProvider<Alarm>({
+const collection = createCollection<Alarm>({
   storage,
   storageKey: 'colguetti.alarms',
-  hookName: 'Alarms',
 });
 
 type UseAlarmsReturn = {
@@ -19,24 +18,22 @@ type UseAlarmsReturn = {
   removeAlarm: (id: string) => Promise<void>;
 };
 
-export const AlarmsProvider = ({ children }: { children: ReactNode }) => (
-  <AlarmsCollectionProvider>{children}</AlarmsCollectionProvider>
-);
+export const AlarmsProvider = collection.Provider;
 
 export const useAlarms = (): UseAlarmsReturn => {
-  const value = useValue();
+  const { records, loading, add, update, remove } = collection.useCollection();
 
   return useMemo(
     () => ({
-      alarms: value.records.map((alarm) => ({
+      alarms: records.map((alarm) => ({
         ...alarm,
         activeWindowMinutes: withActiveWindowDefault(alarm.activeWindowMinutes),
       })),
-      loading: value.loading,
-      addAlarm: (input) => value.add({ ...input, id: createId() }),
-      updateAlarm: value.update,
-      removeAlarm: value.remove,
+      loading,
+      addAlarm: (input) => add({ ...input, id: createId() }),
+      updateAlarm: update,
+      removeAlarm: remove,
     }),
-    [value],
+    [records, loading, add, update, remove],
   );
 };

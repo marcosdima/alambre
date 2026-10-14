@@ -13,9 +13,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { AlambreIcons, Input } from 'alambre';
+import { AlambreIcons, Input, kinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
-import { kinetics } from 'alambre';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
 export type InputTone = 'default' | 'success' | 'warning' | 'danger';

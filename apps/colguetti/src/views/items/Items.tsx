@@ -1,6 +1,9 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useConfirm, useNavigator, useToast } from 'alambre';
+import AppText from '../../components/AppText';
+import { useRef } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useConfirm, useNavigator, useToast, Typewriter, DropInTitle } from 'alambre';
 import { useLightDark } from '../../providers/theme';
+import { useConfig } from '../../providers/config';
 import { useLang } from '../../providers/lang';
 import { useItems } from '../../items/items-context';
 import { useAlarms } from '../../alarms/alarms-context';
@@ -9,60 +12,62 @@ import type { Item } from '../../items/item-types';
 import AppButton from '../../components/AppButton';
 import AppCard from '../../components/AppCard';
 import SwipeableItemRow from '../../components/SwipeableItemRow';
-import { useRouteIntent } from '../../navigator/RouteIntent';
+import { ItemsGlyph } from '../../components/illustrations/SkiaArt';
 
 export default () => {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { lang } = useLang();
-  const { items, removeItem, reorderItems } = useItems();
+  const { items, removeItem, moveItem: moveItemApi } = useItems();
   const { alarms, updateAlarm } = useAlarms();
   const { navigate } = useNavigator();
   const { show } = useToast();
   const { confirm } = useConfirm();
-  const { setIntent } = useRouteIntent();
+  const deletingRef = useRef(false);
 
   const openForm = (item?: Item) => {
-    setIntent({ itemId: item?.id });
-    navigate('items', { subpage: 'item-form' });
+    navigate('items', { subpage: 'item-form', params: { itemId: item?.id } });
   };
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= items.length) return;
-    const reordered = [...items];
-    const [moved] = reordered.splice(index, 1);
-    reordered.splice(targetIndex, 0, moved);
-    void reorderItems(reordered);
+    void moveItemApi(index, targetIndex);
   };
 
   const tryDelete = async (item: Item) => {
-    const affectedAlarms = alarms.filter((alarm) => alarm.itemIds.includes(item.id));
-    const message = affectedAlarms.length > 0
-      ? lang.items.confirmDeleteWithAlarms
-        .replace('{name}', item.name)
-        .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
-      : lang.items.confirmDeleteMessage.replace('{name}', item.name);
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    try {
+      const affectedAlarms = alarms.filter((alarm) => alarm.itemIds.includes(item.id));
+      const message = affectedAlarms.length > 0
+        ? lang.items.confirmDeleteWithAlarms
+          .replace('{name}', item.name)
+          .replace('{alarms}', affectedAlarms.map((a) => a.label).join(', '))
+        : lang.items.confirmDeleteMessage.replace('{name}', item.name);
 
-    const ok = await confirm({
-      title: lang.common.confirmDeleteTitle,
-      message,
-      confirmLabel: lang.common.confirm,
-      cancelLabel: lang.common.cancel,
-      tone: 'danger',
-    });
-    if (!ok) return;
+      const ok = await confirm({
+        title: lang.common.confirmDeleteTitle,
+        message,
+        confirmLabel: lang.common.confirm,
+        cancelLabel: lang.common.cancel,
+        tone: 'danger',
+      });
+      if (!ok) return;
 
-    await Promise.all(
-      alarms
-        .filter((alarm) => alarm.itemIds.includes(item.id))
-        .map((alarm) =>
-          updateAlarm(alarm.id, {
-            itemIds: alarm.itemIds.filter((id) => id !== item.id),
-          }),
-        ),
-    );
-    await removeItem(item.id);
-    show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
+      await Promise.all(
+        alarms
+          .filter((alarm) => alarm.itemIds.includes(item.id))
+          .map((alarm) =>
+            updateAlarm(alarm.id, {
+              itemIds: alarm.itemIds.filter((id) => id !== item.id),
+            }),
+          ),
+      );
+      await removeItem(item.id);
+      show({ payload: { title: lang.items.deleted, tone: 'success' }, duration: 3000 });
+    } finally {
+      deletingRef.current = false;
+    }
   };
 
   return (
@@ -72,10 +77,25 @@ export default () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.screenHeader}>
+          <DropInTitle
+            text={lang.items.title}
+            fontFamily={config.fontFamily}
+            textStyle={[styles.screenTitle, { color: theme.color, fontFamily: config.fontFamily }]}
+          />
+        </View>
+
         {items.length === 0 ? (
-          <AppCard variant="outlined" style={styles.emptyCard}>
-            <Text style={[styles.empty, { color: theme.muted }]}>{lang.items.empty}</Text>
-          </AppCard>
+          <View style={styles.emptyContainer}>
+            <ItemsGlyph line={theme.color} size={140} />
+            <Typewriter
+              text={lang.items.empty}
+              textStyle={[styles.empty, { color: theme.color, opacity: 0.6, fontFamily: config.fontFamily }]}
+              fontFamily={config.fontFamily}
+              initialDelay={300}
+              cursorColor={theme.primary}
+            />
+          </View>
         ) : (
           <View style={styles.list}>
             {items.map((item, index) => (
@@ -84,9 +104,10 @@ export default () => {
                 onDelete={() => void tryDelete(item)}
                 onPress={() => openForm(item)}
                 peekIndex={index === 0 ? 0 : undefined}
+                deleteLabel={lang.common.delete}
               >
                 <AppCard
-                  variant="outlined"
+                  variant="soft"
                   padding="sm"
                   style={styles.card}
                 >
@@ -100,9 +121,9 @@ export default () => {
                         iconAnimation={catalogDrawAnimation}
                       />
                     </View>
-                    <Text style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>
+                    <AppText style={[styles.cardName, { color: theme.color }]} numberOfLines={1}>
                       {item.name}
-                    </Text>
+                    </AppText>
                     <View style={styles.cardActions}>
                       {items.length > 1 && (
                         <View style={styles.reorderGroup}>
@@ -124,7 +145,7 @@ export default () => {
                               pressed && styles.pressed,
                             ]}
                           >
-                            <Text style={[styles.stepperArrow, { color: theme.color }]}>▲</Text>
+                            <AppText style={[styles.stepperArrow, { color: theme.color }]}>▲</AppText>
                           </Pressable>
                           <Pressable
                             disabled={index === items.length - 1}
@@ -144,7 +165,7 @@ export default () => {
                               pressed && styles.pressed,
                             ]}
                           >
-                            <Text style={[styles.stepperArrow, { color: theme.color }]}>▼</Text>
+                            <AppText style={[styles.stepperArrow, { color: theme.color }]}>▼</AppText>
                           </Pressable>
                         </View>
                       )}
@@ -179,9 +200,21 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 20,
   },
-  emptyCard: {
+  screenHeader: {
+    paddingVertical: 12,
+    marginBottom: 16,
     alignItems: 'center',
-    paddingVertical: 32,
+  },
+  screenTitle: {
+
+    fontSize: 42,
+    letterSpacing: 2,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 24,
   },
   empty: {
     fontSize: 15,
@@ -194,6 +227,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1.5,
+    borderRadius: 24,
   },
   cardRow: {
     flexDirection: 'row',
@@ -207,7 +241,7 @@ const styles = StyleSheet.create({
   cardName: {
     flex: 1,
     fontSize: 15,
-    fontWeight: '700',
+
     letterSpacing: -0.1,
   },
   crossIcon: {
@@ -233,7 +267,7 @@ const styles = StyleSheet.create({
   },
   stepperArrow: {
     fontSize: 11,
-    fontWeight: '800',
+
   },
   pressed: {
     opacity: 0.7,

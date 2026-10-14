@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,20 +8,26 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { kinetics } from 'alambre';
+import { kinetics } from '../../../../core/kinetics';
 
-type AnimatedCounterProps = {
+export type AnimatedCounterProps = {
   value: number;
   suffix?: string;
-  color: string;
+  color?: string;
   fontSize?: number;
+  padLeadingZeroes?: boolean;
+  textStyle?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
 };
 
-export default function AnimatedCounter({
+export function AnimatedCounter({
   value,
   suffix,
-  color,
+  color = '#000',
   fontSize = 20,
+  padLeadingZeroes = false,
+  textStyle,
+  style,
 }: AnimatedCounterProps) {
   const scale = useSharedValue(1);
   const translateY = useSharedValue(0);
@@ -44,15 +51,17 @@ export default function AnimatedCounter({
     ],
   }));
 
+  const displayValue = padLeadingZeroes ? String(value).padStart(2, '0') : value;
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Animated.View style={[styles.numberBox, animatedStyle]}>
-        <Text style={[styles.valueText, { color, fontSize }]}>{value}</Text>
+        <Animated.Text style={[styles.valueText, { color, fontSize }, textStyle]}>{displayValue}</Animated.Text>
       </Animated.View>
       {suffix ? (
-        <Text style={[styles.suffixText, { color, fontSize: fontSize * 0.75 }]}>
+        <Animated.Text style={[styles.suffixText, { color, fontSize: fontSize * 0.75 }, textStyle]}>
           {suffix}
-        </Text>
+        </Animated.Text>
       ) : null}
     </View>
   );
@@ -70,11 +79,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontWeight: '900',
     letterSpacing: -0.5,
+    includeFontPadding: false,
   },
   suffixText: {
-    fontWeight: '700',
     opacity: 0.85,
+    includeFontPadding: false,
   },
 });

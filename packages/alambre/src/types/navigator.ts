@@ -11,8 +11,9 @@ export type Page = {
 
 export type NavigatorObject = Record<string, Page>;
 
-export type NavigationSettings<TSubpage extends string = string> = {
+export type NavigationSettings<TSubpage extends string = string, TParams = Record<string, unknown>> = {
   subpage?: TSubpage;
+  params?: TParams;
 };
 
 export type NavigatorRouteKey<TRoute> = TRoute extends string
@@ -22,14 +23,16 @@ export type NavigatorRouteKey<TRoute> = TRoute extends string
 export type NavigatorReturn<
   TRoute extends string | Record<string, unknown> = string,
   TSubpage extends string = string,
+  TParams = Record<string, unknown>,
 > = {
   currentPage: Page;
   pageKey: string;
+  currentParams?: TParams;
   noPreviousPages: boolean;
   scrollTop: number;
   navigate: (
     target: NavigatorRouteKey<TRoute>,
-    settings?: NavigationSettings<TSubpage>,
+    settings?: NavigationSettings<TSubpage, TParams>,
   ) => void;
   previous: () => void;
   setScrollTop: (value: number) => void;

@@ -4,7 +4,6 @@ import * as Notifications from 'expo-notifications';
 import { useNavigator } from 'alambre';
 import { useAlarms } from '../alarms/alarms-context';
 import { useLang } from '../providers/lang';
-import { useRouteIntent } from '../navigator/RouteIntent';
 import { useActivation } from '../checklist/activation-context';
 import { useNotificationPermission } from './notification-permission-context';
 import { ACTIVATION_CATEGORY, syncSchedule } from './sync';
@@ -19,7 +18,6 @@ export const NotificationsWatcher = () => {
   const { alarms } = useAlarms();
   const { lang } = useLang();
   const { navigate } = useNavigator();
-  const { setIntent } = useRouteIntent();
   const { active, activate, snooze } = useActivation();
   const { permission, requestPermission } = useNotificationPermission();
 
@@ -86,11 +84,11 @@ export const NotificationsWatcher = () => {
 
       if (typeof alarmId === 'string') {
         dismiss(response);
-        setIntent(Array.isArray(missing) ? { alarmId, missing } : { alarmId });
-        navigate('home');
+        const params = Array.isArray(missing) ? { alarmId, missing } : { alarmId };
+        navigate('home', { params });
       }
     },
-    [navigate, setIntent, activate, snooze, dismiss],
+    [navigate, activate, snooze, dismiss],
   );
 
   useEffect(() => {
