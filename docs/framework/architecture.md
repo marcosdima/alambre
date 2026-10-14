@@ -183,7 +183,7 @@ The versioning policy for this public contract is defined in §9.
 
 - Breaking changes must still be intentional. Each one is recorded in §8 "Compatibility implications" and validated by the public API contract test (`packages/alambre/tests/public-api.test.ts`).
 - Changes that alter an adopted architectural principle require discussion before implementation (§7 and §9).
-- `packages/alambre/CHANGELOG.md` collects changes manually so nothing is lost for the future baseline.
+- Git commit history and `docs/logs/discoveries.md` collect changes and patterns continuously so nothing is lost for the future baseline declaration (eliminating the need for an out-of-sync manual CHANGELOG.md during rapid pre-baseline evolution).
 
 ### Baseline declaration (future)
 

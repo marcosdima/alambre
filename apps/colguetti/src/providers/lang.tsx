@@ -1,4 +1,4 @@
-import { createLangProvider } from 'alambre';
+import { createLang } from 'alambre';
 import { storage } from '../storage';
 
 export const langs = {
@@ -294,4 +294,4 @@ export const langs = {
   },
 };
 
-export const { LangProvider, useLang } = createLangProvider(langs, storage);
+export const { useLang, actions: { changeLang } } = createLang(langs, storage);

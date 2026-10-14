@@ -1,17 +1,18 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
-  useAnimatedStyle, useSharedValue,
-  withSpring,
+  useAnimatedStyle,
+  useSharedValue,
   interpolate,
   Extrapolation,
   withTiming,
 } from 'react-native-reanimated';
 import type { IconProps } from '../../../types/icons';
+import type { AnimatedIconProps } from './createAnimatedIcon';
 
 export interface MorphIconProps extends IconProps {
-  IconA: React.ComponentType<any>;
-  IconB: React.ComponentType<any>;
+  IconA: React.ComponentType<AnimatedIconProps>;
+  IconB: React.ComponentType<AnimatedIconProps>;
   isActive: boolean;
   onPress?: () => void;
   size?: number;
@@ -33,7 +34,7 @@ export function MorphIcon({
 
   React.useEffect(() => {
     progress.value = withTiming(isActive ? 1 : 0, { duration });
-  }, [isActive, duration]);
+  }, [isActive, duration, progress]);
 
   const styleA = useAnimatedStyle(() => {
     const rotation = interpolate(progress.value, [0, 1], [0, 90]);

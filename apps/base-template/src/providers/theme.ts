@@ -1,4 +1,4 @@
-import { createLightDarkProvider } from 'alambre';
+import { createLightDark } from 'alambre';
 import { storage } from '../storage';
 
 export const light = {
@@ -47,5 +47,5 @@ export const dark = {
   overlayBar: 'rgba(236, 230, 214, 0.15)',
 };
 
-export const { LightDarkProvider, useLightDark } = createLightDarkProvider(light, dark, storage);
+export const { useLightDark, actions: { toggleTheme, setThemeName } } = createLightDark(light, dark, storage);
 

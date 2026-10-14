@@ -214,8 +214,33 @@ export type {
   NeighborShiftMode,
   SortableRowProps,
 } from './types/dnd';
-export * from './core';
-export * from './components/spatial';
-export { createAnimatedIcon } from './components/icons/base';
-export { MorphIcon } from './components/icons/base/MorphIcon';
-export * from './components/icons/generated';
+// Core state & kinetics.
+export {
+  createStore,
+  useExternalStore,
+  kinetics,
+  rubberBandFriction,
+} from './core';
+export type { Store, StoreListener } from './core';
+
+// Spatial components.
+export {
+  AccordionItem,
+  InteractiveCard,
+  StepFlow,
+  useStepFlow,
+  StepFlowControls,
+} from './components/spatial';
+export type {
+  AccordionItemProps,
+  InteractiveCardProps,
+  StepFlowDirection,
+  StepFlowContextType,
+  StepFlowControlsProps,
+} from './components/spatial';
+
+// Animated Icons & Helpers.
+export { createAnimatedIcon, MorphIcon } from './components/icons/base';
+export type { AnimatedIconConfig, AnimatedIconProps, MorphIconProps } from './components/icons/base';
+export { HomeIcon, SettingsIcon } from './components/icons/generated';
+

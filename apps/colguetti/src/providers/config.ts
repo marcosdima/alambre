@@ -1,4 +1,4 @@
-import { createConfigProvider } from 'alambre';
+import { createConfig } from 'alambre';
 import { storage } from '../storage';
 
 const config = {
@@ -7,4 +7,5 @@ const config = {
   tutorialCompleted: 'false',
 };
 
-export const { ConfigProvider, useConfig } = createConfigProvider(config, storage);
+export const { useConfig, actions: { saveField } } = createConfig(config, storage);
+

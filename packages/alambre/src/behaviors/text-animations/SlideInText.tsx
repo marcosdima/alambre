@@ -5,7 +5,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
   withDelay,
   interpolate,
 } from 'react-native-reanimated';
@@ -53,7 +52,7 @@ export function SlideInText({
   );
 }
 
-function SlideInItem({ item, index, offset, staggerDelay, mode, style }: { item: string; index: number; offset: number; staggerDelay: number; mode: string; style?: any }) {
+function SlideInItem({ item, index, offset, staggerDelay, mode, style }: { item: string; index: number; offset: number; staggerDelay: number; mode: string; style?: StyleProp<TextStyle> }) {
   const progress = useSharedValue(0);
 
   useEffect(() => {

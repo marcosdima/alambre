@@ -4,13 +4,11 @@ import type { TextStyle, ViewStyle, StyleProp } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withDelay,
   withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { kinetics } from '../../core/kinetics';
 
 export interface WavyTextProps {
   text: string;
@@ -54,7 +52,7 @@ export function WavyText({
   );
 }
 
-function WavyChar({ char, index, amplitude, staggerDelay, speed, style }: { char: string; index: number; amplitude: number; staggerDelay: number; speed: number; style?: any }) {
+function WavyChar({ char, index, amplitude, staggerDelay, speed, style }: { char: string; index: number; amplitude: number; staggerDelay: number; speed: number; style?: StyleProp<TextStyle> }) {
   const translateY = useSharedValue(0);
 
   useEffect(() => {

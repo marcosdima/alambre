@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react';
 import React, { useMemo } from 'react';
 import type { ViewStyle, StyleProp } from 'react-native';
-import { StyleSheet, Pressable, View } from 'react-native';
+import { StyleSheet, Pressable } from 'react-native';
 import Animated, {
-  FadeIn,
   LinearTransition,
   useSharedValue,
   useAnimatedStyle,
@@ -64,7 +63,7 @@ export function InteractiveCard({
       } else {
         translateY.value = withSpring(0, { damping, stiffness, mass });
       }
-    }), [isExpanded, damping, stiffness, mass, onCollapse]);
+    }), [isExpanded, damping, stiffness, mass, onCollapse, isDragging, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const scale = interpolate(

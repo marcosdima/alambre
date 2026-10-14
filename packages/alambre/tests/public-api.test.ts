@@ -102,6 +102,17 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.AlambreIcons).toBe('object');
     expect(typeof Alambre.kinetics).toBe('object');
     expect(typeof Alambre.rubberBandFriction).toBe('function');
+    expect(typeof Alambre.createStore).toBe('function');
+    expect(typeof Alambre.useExternalStore).toBe('function');
+    expect(typeof Alambre.AccordionItem).toBe('function');
+    expect(typeof Alambre.InteractiveCard).toBe('function');
+    expect(typeof Alambre.StepFlow).toBe('object');
+    expect(typeof Alambre.useStepFlow).toBe('function');
+    expect(typeof Alambre.StepFlowControls).toBe('function');
+    expect(typeof Alambre.createAnimatedIcon).toBe('function');
+    expect(typeof Alambre.MorphIcon).toBe('function');
+    expect(typeof Alambre.HomeIcon).toBe('function');
+    expect(typeof Alambre.SettingsIcon).toBe('function');
   });
 
   it('exposes the icon family alongside its low-level primitives', () => {
@@ -277,11 +288,11 @@ describe('public API — type surface', () => {
     const sortableItem: Alambre.SortableItem = { id: 'item-1' };
     const dropMode: Alambre.DropAnimationMode = 'seamless';
     const neighborMode: Alambre.NeighborShiftMode = 'glide';
-    const harmonicProfile: Alambre.HarmonicProfile = 'sine';
-    const harmonicOptions: Alambre.HarmonicMotionOptions = { profile: 'sine', amplitude: 1 };
-    const rippleOptions: Alambre.RipplePulseOptions = { duration: 2000 };
-    const rippleWave: Alambre.RippleWave = { scale: 1, opacity: 1 };
-    const rippleReturn: Alambre.UseRipplePulseReturn = { count: 1, wave: () => rippleWave, clock: { value: 0 } as any };
+    const _harmonicProfile: Alambre.HarmonicProfile = 'sine';
+    const _harmonicOptions: Alambre.HarmonicMotionOptions = { profile: 'sine', amplitude: 1 };
+    const _rippleOptions: Alambre.RipplePulseOptions = { duration: 2000 };
+    const _rippleWave: Alambre.RippleWave = { scale: 1, opacity: 1 };
+    const _rippleReturn: Alambre.UseRipplePulseReturn = { count: 1, wave: () => _rippleWave, clock: { value: 0 } as unknown as Alambre.UseRipplePulseReturn['clock'] };
     const carouselConfig: Alambre.UseCarouselConfig = {
       cardWidth: 300,
       cardGap: 16,

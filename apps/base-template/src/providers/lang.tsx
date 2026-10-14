@@ -1,4 +1,4 @@
-import { createLangProvider } from 'alambre';
+import { createLang } from 'alambre';
 import { storage } from '../storage';
 
 const langs = {
@@ -138,8 +138,9 @@ const langs = {
 
 export type AppLang = typeof langs.es;
 
-export const { LangProvider, useLang } = createLangProvider(
+export const { useLang, actions: { changeLang } } = createLang(
   langs,
   storage,
 );
+
 

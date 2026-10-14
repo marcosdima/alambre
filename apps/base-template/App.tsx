@@ -5,10 +5,7 @@ import { Nunito_400Regular } from '@expo-google-fonts/nunito';
 import { PlayfairDisplay_400Regular } from '@expo-google-fonts/playfair-display';
 import { SpaceMono_400Regular } from '@expo-google-fonts/space-mono';
 import { Kranky_400Regular } from '@expo-google-fonts/kranky';
-import { ConfigProvider } from './src/providers/config';
-import { LightDarkProvider } from './src/providers/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { LangProvider } from './src/providers/lang';
 import Root from './src/navigator/Root';
 import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
@@ -28,21 +25,15 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <ConfigProvider>
-        <LightDarkProvider>
-          <LangProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <NavigatorProvider pages={navigator}>
-                <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-                  <ToastProvider ToastComponent={TemplateToast}>
-                    <Root />
-                  </ToastProvider>
-                </ConfirmProvider>
-              </NavigatorProvider>
-            </GestureHandlerRootView>
-          </LangProvider>
-        </LightDarkProvider>
-      </ConfigProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <NavigatorProvider pages={navigator}>
+          <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+            <ToastProvider ToastComponent={TemplateToast}>
+              <Root />
+            </ToastProvider>
+          </ConfirmProvider>
+        </NavigatorProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
