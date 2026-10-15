@@ -1,5 +1,0 @@
-appId: host.exp.exponent
----
-# Subflow: Returns safely to the app under test after external navigation (Settings/Browser)
-- launchApp:
-    clearState: false

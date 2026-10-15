@@ -1,8 +1,0 @@
-appId: host.exp.exponent
----
-# Subflow: Conditionally dismisses or grants OS notification permission dialog
-- runFlow:
-    when:
-      visible: ".*(Allow|Permitir|Mientras la app esté en uso|While using the app).*"
-    commands:
-      - tapOn: ".*(Allow|Permitir|Mientras la app esté en uso|While using the app).*"

@@ -4,14 +4,13 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 
 ## 🗺️ Navigation Map
 
-### Framework & Architecture
-- **[Architecture & Principles](./framework/architecture.md)**: Monorepo structure, dependency direction (`alambre` -> apps), and core headless concepts.
-- **[UI Decisions (`ui-decisions.md`)](./framework/ui-decisions.md)**: Concrete UI direction and component decisions.
+### Packages
+- **[Framework Core (`packages/alambre`)](./framework/architecture.md)**: Monorepo structure, dependency direction, headless architecture, and public contracts.
+- **[UI Kit (`packages/ui`)](./framework/ui-decisions.md)**: Tactile mobile design system, theme tokens, and component contracts.
 
 ### Applications
-- **[Base Template (`apps/base-template`)](./apps/base-template.md)**: The canonical UI skin. Use this to understand standard component contracts.
+- **[Base Template (`apps/base-template`)](./apps/base-template.md)**: The canonical starter application and app agent guidelines.
 - **[Playground (`apps/playground`)](./apps/playground.md)**: Strict rules for the behavioral testing proving ground.
-- **[Colguetti (`apps/colguetti`)](./apps/colguetti.md)**: Reference app logic, Android Doze mode rules, and background execution.
 
 ### Guidelines & Workflows
 - **[Agent Matrix & Routing](./guidelines/agents.md)**: Subagent definitions, routing tier rules, and prompts.
