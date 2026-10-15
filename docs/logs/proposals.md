@@ -128,16 +128,10 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 
 ---
 
-## Proposal 5: Formalizing the Headless Swipe-to-Action Primitive (`useSwipeableRow`)
+## Proposal 5: Formalizing the Headless Swipe-to-Action Primitive (`useSwipeableRow`) [RESOLVED]
 
-### 1. Current Problem
-- An untracked file `packages/alambre/src/hooks/use-swipeable-row.ts` was started, but it currently has 4 ESLint errors (`@typescript-eslint/consistent-type-imports`, `comma-dangle`, `no-trailing-spaces`), is not exported in `src/index.ts`, and has no tests.
+### Status: RESOLVED
+- Shipped in `packages/alambre/src/hooks/use-swipeable-row.ts`.
+- Exported in `src/index.ts` and covered by contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts`.
+- Documented in `docs/reference/hooks.md`.
 
-### 2. Proposed Solution
-- Adopt and formalize `useSwipeableRow` as a headless physics hook:
-  - Fix the 4 ESLint errors and export it properly.
-  - Add contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts` and document it in `docs/reference/hooks.md`.
-
-### 3. Pros & Cons
-- **Pros:** Cleans up untracked debt and ESLint failures; promotes a battle-tested gesture pattern into a headless hook.
-- **Cons:** Requires thorough multi-touch and emulator gesture testing to ensure no responder contention across lists.
