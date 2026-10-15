@@ -183,7 +183,7 @@ The versioning policy for this public contract is defined in §9.
 
 - Breaking changes must still be intentional. Each one is recorded in §8 "Compatibility implications" and validated by the public API contract test (`packages/alambre/tests/public-api.test.ts`).
 - Changes that alter an adopted architectural principle require discussion before implementation (§7 and §9).
-- Git commit history and `docs/logs/discoveries.md` collect changes and patterns continuously so nothing is lost for the future baseline declaration (eliminating the need for an out-of-sync manual CHANGELOG.md during rapid pre-baseline evolution).
+- Git commit history collects changes continuously so nothing is lost for the future baseline declaration (eliminating the need for an out-of-sync manual CHANGELOG.md during rapid pre-baseline evolution).
 
 ### Baseline declaration (future)
 
@@ -218,7 +218,7 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `DndProvider`, `useDraggable`, `useDroppable`, `Draggable`, `Droppable`, and `SortableRow` are additive headless drag-and-drop primitives for spatial hit-testing and sortable lists (see `docs/reference/dnd.md`). Validated by `tests/public-api.test.ts`.
 
-Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/logs/discoveries.md`).
+Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/guidelines/agents.md` §6).
 
 `useHarmonicMotion` and `useRipplePulse` are additive headless motion hooks for UI-thread continuous kinetics (see `docs/reference/hooks.md`). Evaluated pure helper worklets (`harmonicValue`, `rippleSample`) are also exported to compose with custom timing loops.
 

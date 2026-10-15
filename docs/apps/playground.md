@@ -7,7 +7,10 @@
 4. **Mandatory Wrappers:** Every testbed must be wrapped in `TestCard` (providing Title and Description).
 5. **State Wiring:** Configuration controls must be strictly wired to the component. Do not leave dead sliders. Use `runOnJS` or reactive shared values if interfacing with Reanimated.
 6. **Sub-navigation:** Use `GummyTabs` if a testbed requires multiple views.
-7. **Lifecycle & Extraction (The Survey Phase):** Playground is an ephemeral proving ground. The mandatory workflow is: Prototype in Playground -> Test and refine -> **Survey the implementation** -> Extract mature, generic patterns to `alambre` and app-specific patterns to `apps/base-template` -> Refactor the Playground testbed to consume the extracted components (or delete it entirely) to avoid dragging obsolete test code.
+7. **Lifecycle & Extraction (The Survey Phase):** Playground is the living candidate catalog and an ephemeral proving ground. Do not write prose "discovery" entries for what you build here; the running testbed is the record. The mandatory workflow is: Prototype in Playground -> Test and refine -> **Extraction Audit** (`docs/guidelines/agents.md` §6, run by `@reviewer` at the end of the cycle) -> promote according to the audit -> refactor the testbed to consume the extracted component (or delete it) to avoid dragging obsolete test code. Destinations:
+   - **`packages/alambre`:** headless, presentation-neutral behavior with >= 2 consumers and contract tests.
+   - **`apps/base-template`:** presentation or compound UI that does not belong in the framework (it carries a visual skin or app-level opinions) but is welcome as a template starting point.
+   - **Stays here / stays in its app:** single-consumer, domain-specific (e.g. card-game mechanics, edge relays) or experimental ideas. Keep them as testbeds or delete them.
 8. **Subagent Peer Review:** After implementing a complex visual or mechanical testbed, the Lead must invoke the `@ui-reviewer` subagent to audit the code to avoid "maker's blindness". The reviewer must specifically check for Rule 2 violations (e.g., leaving hardcoded physics instead of using ConfigSliders) and Reanimated UI-thread state desyncs.
 
 ## Canonical Testbed Example

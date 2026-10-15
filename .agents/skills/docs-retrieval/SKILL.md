@@ -21,7 +21,7 @@ Start from `docs/index.md` (the catalog), then navigate to the relevant document
 - `docs/guidelines/agents.md` — the agent system, model routing, UI verification, and anti-drift guardrails (§5).
 - `docs/guidelines/workflow.md` — validation order, E2E invocation, and commit format.
 - `docs/guidelines/testing.md` — Maestro E2E flow architecture and unit test rules.
-- `docs/logs/discoveries.md` — reusable patterns observed in apps that could be rescued into the framework.
+- `docs/guidelines/agents.md` §6 — the Extraction Audit: how reusable code is promoted to `alambre` or `base-template`.
 - `docs/logs/proposals.md` — pending framework changes and roadmap items.
 - `docs/reference/*.md` — functional reference for capabilities, behaviors, hooks, storage, and components.
 - `docs/apps/*.md` — per-application contracts and constraints.
@@ -55,9 +55,11 @@ When adding or changing documented knowledge:
 3. If the change adds a new document or reference entry, update the catalog
    entry in `docs/index.md` (and `docs/reference/index.md` for functional
    reference additions).
-4. Record newly observed reusable patterns only in `docs/logs/discoveries.md`
-   with a status line (nothing is adopted until validated and discussed);
-   adopted decisions are documented in `docs/framework/architecture.md` / `docs/framework/ui-decisions.md`.
+4. Do not log "discoveries" after finishing work. Reusable candidates are
+   handled by the Extraction Audit (`docs/guidelines/agents.md` §6); only
+   contract changes are documented (`docs/framework/architecture.md` /
+   `docs/framework/ui-decisions.md` / `docs/reference/*.md`), and pending
+   design decisions go to `docs/logs/proposals.md`.
 5. Keep `frontmatter` (`title`, `summary`) accurate for retrieval.
 6. Do not duplicate content into `AGENTS.md` or agent definitions.
 

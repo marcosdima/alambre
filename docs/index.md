@@ -18,6 +18,5 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 - **[Testing](./guidelines/testing.md)**: Maestro E2E testing architecture and unit test rules.
 - **[Workflow](./guidelines/workflow.md)**: Build commands, linting, publishing, and PR workflows.
 
-### Historical Logs
-- **[Discoveries](./logs/discoveries.md)**: Append-only architectural decisions and technical debt discoveries.
-- **[Proposals](./logs/proposals.md)**: Pending framework changes and RFCs.
+### Logs
+- **[Proposals](./logs/proposals.md)**: Pending framework changes and RFCs. Promotion of reusable code follows the Extraction Audit in [Agent Matrix & Routing](./guidelines/agents.md) §6.

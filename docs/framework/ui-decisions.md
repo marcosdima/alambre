@@ -176,3 +176,15 @@ In `alambre`, containers are implemented as **headless physics hooks**:
 * **Framework role:** Provides stack state tracking, swipe translation shared values, and history undo capabilities without dictating card styles or overlay badges.
 * **Application ownership:** The application pairs the shared values with its gesture detectors and drives rotation or scale interpolation (demonstrated in `apps/playground/src/views/containers/DeckTestbed.tsx`).
 * **API contract & examples:** Documented in [`docs/reference/behaviors.md`](../reference/behaviors.md#6-usedeck--swipeable-stack-kinematics).
+
+---
+
+## 8. Platform Traps (Negative Knowledge)
+
+Short, non-obvious engine and OS defects that unit tests cannot catch. Only silent traps belong here; standard React Native knowledge does not.
+
+* **Transparent text is not a layout probe:** In Fabric (Android `ForegroundColorSpan`), `color: 'transparent'` normalizes to `0`, which `SharedColor` treats as undefined, so `TextAttributes::apply` falls back to the parent foreground color and the text renders fully opaque. Do not pre-layout hidden text this way; use `textBreakStrategy="simple"` with progressive string slicing and a container `minHeight`.
+* **Reanimated exit animations teleport on gesture dismiss:** Cards that combine swipe-to-dismiss with `exiting={FadeOut*}` snap back to the layout origin on unmount. Split into an outer wrapper that suppresses the exit animation once the gesture dismissed the card, and an inner interactive card (see `apps/base-template/src/providers/toast.tsx`).
+* **Compound controls need a single accessibility node:** When a row and its switch are both accessible, TalkBack/VoiceOver announce the toggle twice. Make the outer row the only accessible node and mark the visual track `accessible={false}` with `pointerEvents="none"` (see `AppSwitch.tsx`).
+* **Wrapped inputs must forward refs:** Wrapping `TextInput` in a styled shell without `forwardRef` + `useImperativeHandle` breaks `onSubmitEditing` focus chaining (see `AppTextInput.tsx`).
+* **Do not interpolate `withSpring`/`withTiming`:** See `docs/guidelines/agents.md` §5 (Reanimated Syntax Guardrail).

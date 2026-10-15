@@ -40,7 +40,7 @@ Extract pure headless overlay behaviors into `packages/alambre/src/behaviors/` o
 ## Proposal 2: Compound Form Primitives & Focus Chaining Architecture (`Input`, `Stepper`, `Slider`)
 
 ### 1. Current Problem
-- **Broken Focus Chaining:** `Input.tsx` does not forward native refs via `React.forwardRef`. This breaks `onSubmitEditing` focus chaining (`nextRef.current?.focus()`), violating Discovery `[UI-06]`. Because of this, every app (`colguetti`, `base-template`, `playground`) completely abandoned `alambre.Input` and wrote a custom 412 LOC `AppTextInput.tsx` directly over RN's `TextInput`.
+- **Broken Focus Chaining:** `Input.tsx` does not forward native refs via `React.forwardRef`. This breaks `onSubmitEditing` focus chaining (`nextRef.current?.focus()`; see `docs/framework/ui-decisions.md` §8). Because of this, every app (`colguetti`, `base-template`, `playground`) completely abandoned `alambre.Input` and wrote a custom 412 LOC `AppTextInput.tsx` directly over RN's `TextInput`.
 - **Lack of Slots:** Form inputs regularly need labels, leading/trailing icons, clear buttons, password visibility toggles, and validation error messages. `alambre.Input` is a bare `RNTextInput` wrapper without any of these capabilities.
 - **Monolithic Render-Props in `Stepper` and `Slider`:** Both components force consumers into a single monolithic callback (`children(state)`), requiring consumers to manually wire decrement buttons, value textboxes, increment buttons, tracks, and thumbs from scratch.
 
@@ -63,7 +63,7 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 - **Pros:**
   - Enables clean declarative composition without cumbersome render-prop boilerplate.
   - Automatically satisfies accessibility contracts (`role="spinbutton"`, `role="adjustable"`, `aria-invalid`).
-  - Resolves Discovery `[UI-06]` and allows `AppTextInput` in all apps to wrap `alambre.Input` instead of bypassing it.
+  - Resolves the focus-chaining trap (`docs/framework/ui-decisions.md` §8) and allows `AppTextInput` in all apps to wrap `alambre.Input` instead of bypassing it.
 - **Cons:**
   - Slightly larger public component surface (requires exporting subcomponents on the parent namespace).
 
@@ -131,12 +131,12 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 ## Proposal 5: Formalizing the Headless Swipe-to-Action Primitive (`useSwipeableRow`)
 
 ### 1. Current Problem
-- An untracked file `packages/alambre/src/hooks/use-swipeable-row.ts` was started, but it currently has 4 ESLint errors (`@typescript-eslint/consistent-type-imports`, `comma-dangle`, `no-trailing-spaces`), is not exported in `src/index.ts`, has no tests, and is not registered in `docs/logs/discoveries.md`.
+- An untracked file `packages/alambre/src/hooks/use-swipeable-row.ts` was started, but it currently has 4 ESLint errors (`@typescript-eslint/consistent-type-imports`, `comma-dangle`, `no-trailing-spaces`), is not exported in `src/index.ts`, and has no tests.
 
 ### 2. Proposed Solution
 - Adopt and formalize `useSwipeableRow` as a headless physics hook:
   - Fix the 4 ESLint errors and export it properly.
-  - Document in `docs/logs/discoveries.md` under [F-10] and add contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts`.
+  - Add contract tests in `packages/alambre/tests/hooks/use-swipeable-row.test.ts` and document it in `docs/reference/hooks.md`.
 
 ### 3. Pros & Cons
 - **Pros:** Cleans up untracked debt and ESLint failures; promotes a battle-tested gesture pattern into a headless hook.
