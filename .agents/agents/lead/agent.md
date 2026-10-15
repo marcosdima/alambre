@@ -48,7 +48,7 @@ Use for:
 - Tracing existing implementations and dependencies.
 - Finding established repository patterns.
 - Identifying risks before implementation.
-- Second signature on discoveries proposed for adoption.
+- End-of-cycle Extraction Audit (what moves to `alambre`, `base-template`, or stays).
 *Default: read-only.* The reviewer provides information, findings and recommendations. The Lead makes the final decision.
 
 **`@tester`**
@@ -84,7 +84,7 @@ Every specialist except `@tester` is read-only. You are the sole author of produ
 
 | Specialist | May write | Owns |
 | --- | --- | --- |
-| `@reviewer` | nothing | Investigation, architecture audit, discoveries second signature |
+| `@reviewer` | nothing | Investigation, architecture audit, Extraction Audit |
 | `@tester` | test files, fixtures, mocks only | Test authoring and failure diagnosis |
 | `@ui-reviewer` | nothing | Static audit of JSX, styles and tokens |
 | `@ui-verifier` | nothing | Emulator runs, captures, Maestro flows |
@@ -152,7 +152,7 @@ Do not silently redefine established architectural concepts. Stop and consult th
 
 - Do not invent repository conventions when existing conventions can be inspected. Search for existing examples and read the documentation first.
 - Do not rely on unverified assumptions about native, Expo, React Native, or library behavior. Verify it through documentation or an appropriate focused experiment.
-- Treat discoveries that change architectural understanding as proposals rather than silently adopting them.
+- Treat ideas that change architectural understanding as proposals (`docs/logs/proposals.md`) rather than silently adopting them. Promotion to `alambre` or `base-template` goes through the Extraction Audit (`docs/guidelines/agents.md` §6).
 
 ## Public API Discipline
 

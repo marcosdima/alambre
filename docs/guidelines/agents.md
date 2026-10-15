@@ -13,7 +13,7 @@ All roles share the retrieval protocol defined in `.agents/skills/docs-retrieval
 | Role | Identifier | Model Tier | Recommended Model | Primary Cognitive Load / Responsibility |
 | --- | --- | --- | --- | --- |
 | **Lead / Orchestrator** | `@lead` | `pro` | Gemini 3.1 Pro | Requirement decomposition, implementation of all production code, dependency mapping, conflict resolution, and final synthesis. Selectable as the primary agent. |
-| **Code Reviewer & Investigator** | `@reviewer` | `flash` | Gemini 3.8 Flash | Architecture and API audits, framework/app boundary and dependency-direction review, regression-risk analysis, investigation of unfamiliar code, and second signature on proposed discoveries. |
+| **Code Reviewer & Investigator** | `@reviewer` | `flash` | Gemini 3.8 Flash | Architecture and API audits, framework/app boundary and dependency-direction review, regression-risk analysis, investigation of unfamiliar code, and the Extraction Audit (§6). |
 | **Test & QA Engineer** | `@tester` | `flash` | Gemini 3.8 Flash | Test suite authoring, edge case generation, mocks/fixtures setup, and test execution. High volume of tool calls, so the flash tier keeps cost low. |
 | **UI Reviewer** | `@ui-reviewer` | `flash` | Gemini 3.8 Flash | Static (source-only) audit of JSX, styles, and design tokens against the UI contracts — hierarchy, spacing, a11y, theming. No device access. |
 | **UI Verifier** | `@ui-verifier` | `pro` | Gemini 3.1 Pro (multimodal) | Runtime verification on the running Android emulator — deterministic screenshots, UI hierarchies, and Maestro flows. Device-only. |
@@ -90,7 +90,7 @@ Flow:
 
 ## 5. Dynamic Routing & Anti-Drift Guardrails
 
-To prevent agent drift (such as a single agent assuming success on unverified native rendering tricks or prematurely marking discoveries as adopted), `@lead` dynamically routes incoming requests according to a 4-level classification:
+To prevent agent drift (such as a single agent assuming success on unverified native rendering tricks or prematurely promoting code into the framework), `@lead` dynamically routes incoming requests according to a 4-level classification:
 
 | Level | Scope | Routing & Delegation | Quality Gate | Token Cost |
 | --- | --- | --- | --- | --- |
@@ -102,5 +102,42 @@ To prevent agent drift (such as a single agent assuming success on unverified na
 ### Anti-Drift Guardrails
 
 1. **Zero Unverified Native Hacks:** If a proposed fix relies on non-standard React Native rendering assumptions (e.g. transparent ghost text spans, unusual flex overrides), the agent is strictly prohibited from considering it solved without empirical verification on device/emulator.
-2. **Double-Signature Gate for Discoveries:** No agent may mark a pattern as `ADOPTED` in `docs/logs/discoveries.md` unilaterally. New patterns must be logged as `PROPOSAL` by the author (the `@lead`), and can only transition to `ADOPTED` after validation by a second consumer and second-signature review by `@reviewer`.
+2. **Extraction Audit Gate:** No agent promotes code into `packages/alambre` or `apps/base-template` unilaterally, and no agent writes a "discovery" log entry after finishing a task. Promotion happens only through the Extraction Audit (§6).
 3. **Resource-Conscious Review Tiers:** The auditors (`@reviewer`, `@ui-reviewer`) and `@tester` run in the `flash` tier to keep token consumption and response latency minimal during day-to-day work.
+4. **File Tool Safety:** Never use `cat` (or heredocs/`echo >>`) in bash to create or append files; it echoes the content into the context window and risks escaping corruption. Use the structured file tools (`replace_file_content` or the dedicated file write tools).
+5. **Reanimated Syntax Guardrail:** Never pass `withSpring()` / `withTiming()` into `interpolate(...)`; they return animation objects, not numbers, which yields `NaN` and invisible UI. Either assign them directly to the style property (`{ width: withSpring(...) }`) or wrap them in `useDerivedValue` (`const progress = useDerivedValue(() => withSpring(value)); interpolate(progress.value, ...)`).
+6. **Communication Language:** Agents communicate in English (see `.agents/rules/language.md`).
+
+---
+
+## 6. Extraction Audit (Promotion Gate)
+
+`apps/playground` is the living candidate catalog: patterns are prototyped there (or inside a consumer app) and live as running code, not as prose. There is no separate discoveries log. When a development cycle ends, `@lead` asks `@reviewer` for an **Extraction Audit** over the diff and the affected testbeds.
+
+```
+[ Feature development ]  (apps/colguetti, apps/cross-logic, apps/playground)
+            |
+            v
+[ End-of-cycle pass ] --> @reviewer Extraction Audit
+            |
+            +--> Generic, headless, >= 2 consumers, tested  --> packages/alambre
+            +--> Presentational / UI skin, reusable by apps   --> apps/base-template
+            +--> Single-consumer or domain-specific           --> stays in its app (no docs)
+            +--> Experimental kinetic idea                    --> stays as a playground testbed
+            +--> Needs design consensus                       --> RFC in docs/logs/proposals.md
+```
+
+Destination criteria:
+
+| Destination | Criteria |
+| --- | --- |
+| `packages/alambre` | Headless and presentation-neutral (no colors, layout wrappers, domain data); has >= 2 real consumers (Rule of Two); covered by contract tests (`tests/public-api.test.ts`) and validated on device when kinetic. |
+| `apps/base-template` | Presentation or compound UI that is not framework-worthy (it carries a visual skin, theme tokens, or app-level opinions) but is broadly welcome as a starting point for new apps. Needs no second consumer, but must respect `apps/base-template` conventions (semantic theme colors, accessibility, no leaks into `alambre`). |
+| Stays in the app | Single-consumer, domain-specific (e.g. card-game mechanics, edge relays), or standard React Native knowledge. Do not document it. |
+| `docs/logs/proposals.md` | Cross-cutting or breaking changes that require user discussion before implementation. |
+
+Rules:
+
+1. Writing code in an app is not a reason to create documentation. Record only what changes a contract: an extraction (documented in `docs/reference/*.md` / `architecture.md` §8 or `docs/apps/base-template.md`), or an RFC.
+2. Genuine platform traps that tests cannot catch (silent engine/OS defects) go in the document of the layer they affect (e.g. `docs/apps/colguetti.md` for OS behavior, `docs/framework/ui-decisions.md` for UI) as a short note, not in a global ledger.
+3. `@reviewer` provides the audit and recommendation; `@lead` decides and performs the extraction.

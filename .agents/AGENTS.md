@@ -9,7 +9,7 @@ these definition files are thin wiring.
 | Identifier | Definition | Responsibility |
 | --- | --- | --- |
 | `@lead` | `.agents/agents/lead/agent.md` | Orchestrator and sole author of production code; decomposition, implementation, synthesis. `mainAgent`. |
-| `@reviewer` | `.agents/agents/reviewer/agent.md` | Architecture/API audits, investigation, regression risk, discoveries second signature. Read-only. |
+| `@reviewer` | `.agents/agents/reviewer/agent.md` | Architecture/API audits, investigation, regression risk, Extraction Audit. Read-only. |
 | `@tester` | `.agents/agents/tester/agent.md` | Test authoring, edge cases, validation loops. Writes test files only. |
 | `@ui-reviewer` | `.agents/agents/ui-reviewer/agent.md` | Static UI/a11y audit of JSX, styles and tokens. Read-only, source-only. |
 | `@ui-verifier` | `.agents/agents/ui-verifier/agent.md` | Emulator verification, deterministic capture, Maestro flows. Read-only, device-only. |
