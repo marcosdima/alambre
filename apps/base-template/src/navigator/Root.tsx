@@ -9,6 +9,7 @@ import type { Page } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { pages, type PageTitleFn } from './navigator';
+import { ThemeProvider } from '@alambre/ui';
 import AppNavigatorBody from './AppNavigatorBody';
 
 const resolvePageTitle = (
@@ -35,26 +36,28 @@ export default () => {
 
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <AppNavigatorBody
-        style={styles.container}
-        arrowColor={theme.primary}
-        arrowBackgroundColor={theme.surfaceAlt}
-        arrowBorderColor={theme.border}
-        headerStyle={{ backgroundColor: theme.surfaceAlt }}
-        titleColor={theme.color}
-        headerTitle={headerTitle}
-        animations={{
-          go: {
-            pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
-          },
-          return: {
-            pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
-          },
-        }}
-        useNavigator={useNavigator}
-      />
-    </SafeAreaView>
+    <ThemeProvider theme={theme}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <AppNavigatorBody
+          style={styles.container}
+          arrowColor={theme.primary}
+          arrowBackgroundColor={theme.surfaceAlt}
+          arrowBorderColor={theme.border}
+          headerStyle={{ backgroundColor: theme.surfaceAlt }}
+          titleColor={theme.color}
+          headerTitle={headerTitle}
+          animations={{
+            go: {
+              pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
+            },
+            return: {
+              pageEntering: FadeIn.duration(200).easing(Easing.out(Easing.cubic)),
+            },
+          }}
+          useNavigator={useNavigator}
+        />
+      </SafeAreaView>
+    </ThemeProvider>
   );
 };
 

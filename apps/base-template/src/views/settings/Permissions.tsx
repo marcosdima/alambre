@@ -3,8 +3,7 @@ import { AppState, Linking, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
-import AppCard from '../../components/AppCard';
-import AppButton from '../../components/AppButton';
+import { AppCard, AppButton } from '@alambre/ui';
 
 export default function Permissions() {
   const { theme } = useLightDark();
