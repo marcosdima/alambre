@@ -12,19 +12,14 @@ export default () => {
 
   const navItems = [
     {
-      key: 'animatedIcons',
-      label: 'Animated Icons Testbed',
-      onPress: () => navigate('animatedIcons'),
+      key: 'kinetics',
+      label: 'Kinetic Orchestrator (Wavefront & Stagger)',
+      onPress: () => navigate('kinetics'),
     },
     {
-      key: 'colguetti',
-      label: 'Colguetti Menu',
-      onPress: () => navigate('colguetti'),
-    },
-    {
-      key: 'kineticMotion',
-      label: 'Kinetic Motion Testbed',
-      onPress: () => navigate('kineticMotion'),
+      key: 'cardGame',
+      label: 'Card Game Engine (Pending)',
+      onPress: () => navigate('cardGame'),
     },
   ];
 

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "skipLibCheck": true
+    "ignoreDeprecations": "6.0",
+    "baseUrl": "."
   }
 }

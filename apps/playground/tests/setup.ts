@@ -1,5 +1,75 @@
 import { vi } from 'vitest';
 
+// Stub __workletsModuleProxy for react-native-worklets 0.10.x in test environment
+const dummySerializable: Record<string, unknown> = {};
+const dummyProxy: Record<string, unknown> = {
+  createSerializableNull: () => dummySerializable,
+  createSerializableUndefined: () => dummySerializable,
+  createSerializableBoolean: () => dummySerializable,
+  createSerializableNumber: () => dummySerializable,
+  createSerializableString: () => dummySerializable,
+  createSerializableBigInt: () => dummySerializable,
+  createSerializableTurboModuleLike: () => dummySerializable,
+  createSerializableObject: () => dummySerializable,
+  createSerializableHostObject: () => dummySerializable,
+  createSerializableArray: () => dummySerializable,
+  createSerializableArrayBuffer: () => dummySerializable,
+  createSerializableMap: () => dummySerializable,
+  createSerializableSet: () => dummySerializable,
+  createSerializableError: () => dummySerializable,
+  createSerializableRegExp: () => dummySerializable,
+  createSerializableArrayBufferView: () => dummySerializable,
+  createSerializableInitializer: () => dummySerializable,
+  createSerializableNonWorkletFunction: () => dummySerializable,
+  createSerializableWorklet: () => dummySerializable,
+  createCustomSerializable: () => dummySerializable,
+  registerCustomSerializable: () => {},
+  createShareable: () => dummySerializable,
+  scheduleOnRN: (fn: unknown, args: unknown[]) => {
+    if (typeof fn === 'function') {
+      fn(...(args ?? []));
+    }
+  },
+  scheduleOnUI: () => {},
+  runOnUISync: (fn: unknown) => {
+    if (typeof fn === 'function') {
+      return fn();
+    }
+    return undefined;
+  },
+  createWorkletRuntime: () => ({}),
+  scheduleOnRuntime: () => {},
+  scheduleOnRuntimeWithId: () => {},
+  runOnRuntimeSync: (_runtime: unknown, fn: unknown) => {
+    if (typeof fn === 'function') {
+      return fn();
+    }
+    return undefined;
+  },
+  runOnRuntimeSyncWithId: (_id: unknown, fn: unknown) => {
+    if (typeof fn === 'function') {
+      return fn();
+    }
+    return undefined;
+  },
+  handlePromise: () => {},
+  createSynchronizable: (val: unknown) => ({ value: val }),
+  synchronizableGetDirty: () => false,
+  synchronizableGetBlocking: () => null,
+  synchronizableSetBlocking: () => {},
+  synchronizableLock: () => {},
+  synchronizableUnlock: () => {},
+  reportFatalErrorOnJS: () => {},
+  getStaticFeatureFlag: () => false,
+  setDynamicFeatureFlag: () => {},
+  getUIRuntimeHolder: () => ({}),
+  getUISchedulerHolder: () => ({}),
+  toggleSlowAnimationsOnUIRuntime: () => false,
+  loadUnpackers: () => {},
+};
+(globalThis as unknown as Record<string, unknown>).__workletsModuleProxy = dummyProxy;
+(globalThis as unknown as Record<string, unknown>)._WORKLETS_VERSION_CPP = '0.10.1';
+
 // react-native-worklets checks isWorkletFunction(fn) via fn.__workletHash.
 // In test environments, Babel worklet compilation is not run on node_modules.
 Object.defineProperty(Function.prototype, '__workletHash', {

@@ -1,13 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { AlambreIcons } from 'alambre';
+import Animated from 'react-native-reanimated';
+import { AlambreIcons, usePressKinetics } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
@@ -58,23 +53,14 @@ export default function AppCard({
   children,
 }: AppCardProps) {
   const { theme } = useLightDark();
-  const scale = useSharedValue(1);
 
   const isInteractive = Boolean(onPress) && !disabled;
 
-  const handlePressIn = () => {
-    if (!isInteractive) return;
-    scale.value = withTiming(0.98, { duration: 90 });
-  };
-
-  const handlePressOut = () => {
-    if (!isInteractive) return;
-    scale.value = withSpring(1, { damping: 14, stiffness: 320 });
-  };
-
-  const animatedScaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { animatedStyle: animatedScaleStyle, pressProps } = usePressKinetics({
+    activeScale: 0.98,
+    disabled: !isInteractive,
+    onPress,
+  });
 
   const getPaddingValue = () => {
     switch (padding) {
@@ -221,10 +207,7 @@ export default function AppCard({
   if (onPress) {
     return (
       <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
+        {...pressProps}
         accessibilityRole="button"
         accessibilityState={{ selected, disabled }}
         style={style}

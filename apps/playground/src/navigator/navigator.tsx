@@ -1,7 +1,6 @@
 import Home from '../views/home/Home';
-import AnimatedIconsTestbed from '../views/animated-icons/AnimatedIconsTestbed';
-import ColguettiMenuTestbed from '../views/colguetti/ColguettiMenuTestbed';
-import KineticMotionTestbed from '../views/kinetic-motion/KineticMotionTestbed';
+import KineticOrchestratorTestbed from '../views/kinetics/KineticOrchestratorTestbed';
+import CardGameTestbed from '../views/card-game/CardGameTestbed';
 import type { Page } from 'alambre';
 
 export type PageTitle = Record<'es' | 'en', string>;
@@ -15,17 +14,13 @@ export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
   },
-  animatedIcons: {
-    title: { es: 'Animated Icons', en: 'Animated Icons' },
-    component: <AnimatedIconsTestbed />,
+  kinetics: {
+    title: { es: 'Kinetic Orchestrator', en: 'Kinetic Orchestrator' },
+    component: <KineticOrchestratorTestbed />,
   },
-  colguetti: {
-    title: { es: 'Colguetti Menu', en: 'Colguetti Menu' },
-    component: <ColguettiMenuTestbed />,
-  },
-  kineticMotion: {
-    title: { es: 'Kinetic Motion', en: 'Kinetic Motion' },
-    component: <KineticMotionTestbed />,
+  cardGame: {
+    title: { es: 'Card Game Engine (Pending)', en: 'Card Game Engine (Pending)' },
+    component: <CardGameTestbed />,
   },
 };
 
