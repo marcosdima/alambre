@@ -133,15 +133,27 @@ export {
   formatStopwatchTime,
   useStagger,
   calculateStaggerDelay,
+  calculateBudgetedStaggerDelay,
   StaggerProvider,
+
   useStaggerItem,
   useCollapsible,
   useSwipeableRow,
   useContinuousPress,
+  useLoopClock,
+
+  wrapPhase,
   useHarmonicMotion,
   harmonicValue,
   useRipplePulse,
   rippleSample,
+  useWavefront,
+  useKineticOrchestrator,
+  WavefrontProvider,
+  useWavefrontItem,
+  KineticOrchestratorProvider,
+  useKineticOrchestratorItem,
+  usePressKinetics,
 } from './hooks';
 export type {
   HistoryState,
@@ -159,12 +171,34 @@ export type {
   UseSwipeableRowConfig,
   UseSwipeableRowReturn,
   SwipeDirection,
+  LoopClock,
+  LoopClockOptions,
   HarmonicProfile,
   HarmonicMotionOptions,
   RipplePulseOptions,
   RippleWave,
   UseRipplePulseReturn,
+  WavefrontCurve,
+  WavefrontPreset,
+  WavefrontItemPreset,
+  WavefrontStyleWorklet,
+  WavefrontProviderProps,
+  UseWavefrontOptions,
+  UseWavefrontReturn,
+  UseWavefrontItemOptions,
+  UseWavefrontItemReturn,
+  UseKineticOrchestratorOptions,
+  UseKineticOrchestratorReturn,
+  KineticOrchestratorProviderProps,
+  UseKineticOrchestratorItemOptions,
+  UseKineticOrchestratorItemReturn,
+  KineticPreset,
+  KineticItemPreset,
+  UsePressKineticsOptions,
+  UsePressKineticsReturn,
 } from './hooks';
+
+
 
 // Icons.
 import * as AlambreIcons from './components/icons';
@@ -220,8 +254,14 @@ export {
   useExternalStore,
   kinetics,
   rubberBandFriction,
+  criticallyDampedCurve,
+  bouncyCurve,
+  cubicEaseOutCurve,
+  polynomialOvershootCurve,
+  calculateWavefrontPhase,
 } from './core';
-export type { Store, StoreListener } from './core';
+export type { Store, StoreListener, WavefrontPhaseOptions } from './core';
+
 
 // Spatial components.
 export {

@@ -79,9 +79,23 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.formatStopwatchTime).toBe('function');
     expect(typeof Alambre.useStagger).toBe('function');
     expect(typeof Alambre.calculateStaggerDelay).toBe('function');
+    expect(typeof Alambre.calculateBudgetedStaggerDelay).toBe('function');
     expect(typeof Alambre.StaggerProvider).toBe('function');
     expect(typeof Alambre.useStaggerItem).toBe('function');
+    expect(typeof Alambre.useWavefront).toBe('function');
+    expect(typeof Alambre.useKineticOrchestrator).toBe('function');
+    expect(typeof Alambre.WavefrontProvider).toBe('function');
+    expect(typeof Alambre.useWavefrontItem).toBe('function');
+    expect(typeof Alambre.KineticOrchestratorProvider).toBe('function');
+    expect(typeof Alambre.useKineticOrchestratorItem).toBe('function');
+    expect(typeof Alambre.usePressKinetics).toBe('function');
+    expect(typeof Alambre.criticallyDampedCurve).toBe('function');
+    expect(typeof Alambre.bouncyCurve).toBe('function');
+    expect(typeof Alambre.cubicEaseOutCurve).toBe('function');
+    expect(typeof Alambre.polynomialOvershootCurve).toBe('function');
+    expect(typeof Alambre.calculateWavefrontPhase).toBe('function');
     expect(typeof Alambre.useCollapsible).toBe('function');
+
     expect(typeof Alambre.useHarmonicMotion).toBe('function');
     expect(typeof Alambre.harmonicValue).toBe('function');
     expect(typeof Alambre.useRipplePulse).toBe('function');
@@ -307,6 +321,37 @@ describe('public API — type surface', () => {
       onSelect: () => undefined,
       rowHeight: 44,
     };
+    const wavefrontOptions: Alambre.UseWavefrontOptions = {
+      count: 10,
+    };
+    const wavefrontCurve: Alambre.WavefrontCurve = 'criticallyDamped';
+    const wavefrontPhaseOptions: Alambre.WavefrontPhaseOptions = {
+      staggerMs: 40,
+    };
+    expect(wavefrontOptions).toBeDefined();
+    expect(wavefrontCurve).toBeDefined();
+    expect(wavefrontPhaseOptions).toBeDefined();
+
+    const wavefrontPreset: Alambre.WavefrontPreset = 'slide-up';
+    const wavefrontItemOptions: Alambre.UseWavefrontItemOptions = {
+      preset: wavefrontPreset,
+      distance: 25,
+    };
+    const kineticPreset: Alambre.KineticPreset = 'pop';
+    const kineticItemOptions: Alambre.UseKineticOrchestratorItemOptions = {
+      preset: kineticPreset,
+    };
+    expect(wavefrontPreset).toBeDefined();
+    expect(wavefrontItemOptions).toBeDefined();
+    expect(kineticPreset).toBeDefined();
+    expect(kineticItemOptions).toBeDefined();
+
+    const pressKineticsOptions: Alambre.UsePressKineticsOptions = {
+      activeScale: 0.95,
+      disabled: false,
+    };
+    expect(pressKineticsOptions).toBeDefined();
+
 
     expect(buttonProps).toBeDefined();
     expect(buttonState).toBeDefined();

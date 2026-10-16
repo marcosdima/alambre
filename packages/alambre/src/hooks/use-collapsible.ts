@@ -76,10 +76,7 @@ export type UseCollapsibleReturn = {
   /**
    * Animated style to apply to the collapsible container view.
    */
-  animatedStyle: {
-    height: number | undefined;
-    overflow: 'hidden';
-  };
+  animatedStyle: ReturnType<typeof useAnimatedStyle<{ height: number | undefined; overflow: 'hidden'; }>>;
   /**
    * Helper props to spread onto an off-screen measurement probe container.
    */

@@ -27,9 +27,11 @@ export type {
 export {
   useStagger,
   calculateStaggerDelay,
+  calculateBudgetedStaggerDelay,
   StaggerProvider,
   useStaggerItem,
 } from './use-stagger';
+
 export type {
   StaggerOptions,
   StaggerContextValue,
@@ -54,8 +56,45 @@ export type {
   SwipeDirection,
 } from './use-swipeable-row';
 export * from './use-continuous-press';
+export { usePressKinetics } from './use-press-kinetics';
+export type {
+  UsePressKineticsOptions,
+  UsePressKineticsReturn,
+} from './use-press-kinetics';
 
+export { useLoopClock, wrapPhase } from './use-loop-clock';
+export type { LoopClock, LoopClockOptions } from './use-loop-clock';
 export { useHarmonicMotion, harmonicValue } from './use-harmonic-motion';
 export type { HarmonicProfile, HarmonicMotionOptions } from './use-harmonic-motion';
 export { useRipplePulse, rippleSample } from './use-ripple-pulse';
 export type { RipplePulseOptions, RippleWave, UseRipplePulseReturn } from './use-ripple-pulse';
+
+
+export {
+  useWavefront,
+  useKineticOrchestrator,
+  WavefrontProvider,
+  useWavefrontItem,
+  KineticOrchestratorProvider,
+  useKineticOrchestratorItem,
+} from './use-wavefront';
+export type {
+  WavefrontCurve,
+  WavefrontPreset,
+  WavefrontItemPreset,
+  WavefrontStyleWorklet,
+  WavefrontProviderProps,
+  UseWavefrontOptions,
+  UseWavefrontReturn,
+  UseWavefrontItemOptions,
+  UseWavefrontItemReturn,
+  UseKineticOrchestratorOptions,
+  UseKineticOrchestratorReturn,
+  KineticOrchestratorProviderProps,
+  UseKineticOrchestratorItemOptions,
+  UseKineticOrchestratorItemReturn,
+  KineticPreset,
+  KineticItemPreset,
+} from './use-wavefront';
+
+

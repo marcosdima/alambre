@@ -17,6 +17,14 @@ export interface StaggerOptions {
    * @default 500
    */
   maxDelay?: number;
+  /**
+   * Optional batch size to group items and pace concurrent animations.
+   */
+  batchSize?: number;
+  /**
+   * Optional interval between batches (in ms).
+   */
+  batchIntervalMs?: number;
 }
 
 export interface StaggerContextValue {
@@ -39,6 +47,36 @@ export function calculateStaggerDelay(
   const { initialDelay = 60, staggerMs = 50, maxDelay = 500 } = options;
   return Math.min(maxDelay, Math.max(0, initialDelay + index * staggerMs));
 }
+
+/**
+ * Calculates a frame-budgeted stagger delay that paces concurrent animations into
+ * bounded waves, preventing thread overload when many items mount simultaneously.
+ */
+export function calculateBudgetedStaggerDelay(
+  index: number,
+  options: StaggerOptions = {},
+  isReducedMotion = false,
+): number {
+  if (isReducedMotion) return 0;
+  const {
+    initialDelay = 60,
+    staggerMs = 45,
+    maxDelay = 600,
+    batchSize = 4,
+    batchIntervalMs,
+  } = options;
+
+  if (batchSize > 0) {
+    const batchIndex = Math.floor(index / batchSize);
+    const inBatchIndex = index % batchSize;
+    const interval = batchIntervalMs ?? Math.max(120, batchSize * staggerMs * 0.8);
+    const delay = initialDelay + batchIndex * interval + inBatchIndex * (staggerMs * 0.4);
+    return Math.min(maxDelay, Math.max(0, Math.round(delay)));
+  }
+
+  return calculateStaggerDelay(index, options, isReducedMotion);
+}
+
 
 /**
  * Headless hook that provides stagger delay calculations for a group of elements.
