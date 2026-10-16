@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parabolicAltitudeCurve, calculateHandFan } from '../../src/core/spatial';
+import {
+  parabolicAltitudeCurve,
+  calculateHandFan,
+  calculateCarouselTransform,
+  calculateSwipeTilt,
+} from '../../src/core/spatial';
 import { kinetics } from '../../src/core/kinetics';
 
 describe('spatial kinetics primitives', () => {
@@ -25,6 +30,8 @@ describe('spatial kinetics primitives', () => {
     it('is accessible via kinetics.spatial token namespace', () => {
       expect(kinetics.spatial.parabolicAltitude).toBe(parabolicAltitudeCurve);
       expect(kinetics.spatial.calculateHandFan).toBe(calculateHandFan);
+      expect(kinetics.spatial.calculateCarouselTransform).toBe(calculateCarouselTransform);
+      expect(kinetics.spatial.calculateSwipeTilt).toBe(calculateSwipeTilt);
     });
   });
 
@@ -93,6 +100,76 @@ describe('spatial kinetics primitives', () => {
       expect(selected.rotateDeg).toBeCloseTo(unselected.rotateDeg * 0.2, 5);
       expect(selected.zIndex).toBe(999);
       expect(unselected.zIndex).toBe(1);
+    });
+  });
+
+  describe('calculateCarouselTransform', () => {
+    it('returns identity for flat preset', () => {
+      const res = calculateCarouselTransform(1.5, 'flat');
+      expect(res.transform).toEqual([]);
+      expect(res.opacity).toBe(1);
+      expect(res.zIndex).toBe(1);
+    });
+
+    it('returns scale 1.0 and opacity 1.0 for centered item (distance = 0)', () => {
+      const res = calculateCarouselTransform(0, 'scale-fade');
+      expect(res.transform).toEqual([{ scale: 1 }]);
+      expect(res.opacity).toBe(1);
+      expect(res.zIndex).toBe(50);
+    });
+
+    it('scales and fades adjacent items symmetrically for scale-fade preset', () => {
+      const left = calculateCarouselTransform(-1, 'scale-fade');
+      const right = calculateCarouselTransform(1, 'scale-fade');
+
+      expect(left.transform).toEqual(right.transform);
+      expect(left.opacity).toBe(right.opacity);
+      expect(left.opacity).toBeLessThan(1);
+      expect(left.zIndex).toBe(right.zIndex);
+    });
+
+    it('applies perspective and 3D rotateY for coverflow preset', () => {
+      const center = calculateCarouselTransform(0, 'coverflow');
+      const left = calculateCarouselTransform(-1, 'coverflow');
+      const right = calculateCarouselTransform(1, 'coverflow');
+
+      // Center has 0 rotation
+      expect(center.transform).toContainEqual({ rotateY: '0deg' });
+
+      // Left and right have opposing rotations
+      expect(left.transform).toContainEqual({ rotateY: '38deg' });
+      expect(right.transform).toContainEqual({ rotateY: '-38deg' });
+      expect(center.zIndex).toBeGreaterThan(left.zIndex);
+    });
+
+    it('applies directional offsets for card-stack preset', () => {
+      const left = calculateCarouselTransform(-1, 'card-stack');
+      const right = calculateCarouselTransform(1, 'card-stack');
+
+      expect(left.zIndex).toBeGreaterThanOrEqual(9);
+      expect(right.zIndex).toBeLessThanOrEqual(9);
+    });
+  });
+
+  describe('calculateSwipeTilt', () => {
+    it('returns 0 at center', () => {
+      expect(calculateSwipeTilt(0)).toBe(0);
+    });
+
+    it('returns proportional positive tilt when dragging right', () => {
+      const tilt = calculateSwipeTilt(120, 14, 240);
+      expect(tilt).toBe(7);
+    });
+
+    it('clamps tilt at max distance', () => {
+      const maxRight = calculateSwipeTilt(500, 14, 240);
+      const maxLeft = calculateSwipeTilt(-500, 14, 240);
+      expect(maxRight).toBe(14);
+      expect(maxLeft).toBe(-14);
+    });
+
+    it('handles zero or negative maxDistance safely', () => {
+      expect(calculateSwipeTilt(50, 14, 0)).toBe(0);
     });
   });
 });

@@ -91,8 +91,15 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.usePressKinetics).toBe('function');
     expect(typeof Alambre.useSpatialFlip).toBe('function');
     expect(typeof Alambre.useFlightTrajectory).toBe('function');
+    expect(typeof Alambre.useKineticSwipe).toBe('function');
+    expect(typeof Alambre.useKineticCarousel).toBe('function');
+    expect(typeof Alambre.useKineticCarouselItem).toBe('function');
+    expect(typeof Alambre.KineticCarouselContext).toBe('object');
+    expect(typeof Alambre.KineticCarouselProvider).toBe('function');
     expect(typeof Alambre.calculateHandFan).toBe('function');
     expect(typeof Alambre.parabolicAltitudeCurve).toBe('function');
+    expect(typeof Alambre.calculateCarouselTransform).toBe('function');
+    expect(typeof Alambre.calculateSwipeTilt).toBe('function');
     expect(typeof Alambre.criticallyDampedCurve).toBe('function');
     expect(typeof Alambre.bouncyCurve).toBe('function');
     expect(typeof Alambre.cubicEaseOutCurve).toBe('function');
@@ -367,9 +374,25 @@ describe('public API — type surface', () => {
     const handFanOptions: Alambre.HandFanOptions = {
       spreadAngle: 5,
     };
+    const swipeOptions: Alambre.UseKineticSwipeOptions = {
+      threshold: 150,
+      escapeVelocity: 700,
+    };
+    const carouselKineticsOptions: Alambre.UseKineticCarouselOptions = {
+      itemWidth: 220,
+      totalItems: 4,
+      preset: 'coverflow',
+    };
+    const carouselPreset: Alambre.CarouselPreset = 'card-stack';
+    const kineticSwipeDir: Alambre.KineticSwipeDirection = 'down';
+
     expect(spatialFlipOptions).toBeDefined();
     expect(flightOptions).toBeDefined();
     expect(handFanOptions).toBeDefined();
+    expect(swipeOptions).toBeDefined();
+    expect(carouselKineticsOptions).toBeDefined();
+    expect(carouselPreset).toBe('card-stack');
+    expect(kineticSwipeDir).toBe('down');
 
 
     expect(buttonProps).toBeDefined();

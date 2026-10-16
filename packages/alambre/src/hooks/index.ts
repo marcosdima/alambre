@@ -113,3 +113,26 @@ export type {
   UseFlightTrajectoryOptions,
   UseFlightTrajectoryReturn,
 } from './use-flight-trajectory';
+
+export {
+  useKineticSwipe,
+} from './use-kinetic-swipe';
+export type {
+  KineticSwipeDirection,
+  UseKineticSwipeOptions,
+  UseKineticSwipeReturn,
+} from './use-kinetic-swipe';
+
+export {
+  useKineticCarousel,
+  useKineticCarouselItem,
+  KineticCarouselContext,
+  KineticCarouselProvider,
+} from './use-kinetic-carousel';
+export type {
+  UseKineticCarouselOptions,
+  UseKineticCarouselReturn,
+  UseKineticCarouselItemOptions,
+  UseKineticCarouselItemReturn,
+  KineticCarouselProviderProps,
+} from './use-kinetic-carousel';

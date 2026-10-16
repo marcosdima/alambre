@@ -1,5 +1,10 @@
 import type { WithSpringConfig, WithTimingConfig } from 'react-native-reanimated';
-import { calculateHandFan, parabolicAltitudeCurve } from './spatial';
+import {
+  calculateHandFan,
+  parabolicAltitudeCurve,
+  calculateCarouselTransform,
+  calculateSwipeTilt,
+} from './spatial';
 
 export function rubberBandFriction(overscroll: number, constant: number = 0.55): number {
   'worklet';
@@ -125,6 +130,8 @@ export const kinetics = {
   spatial: {
     parabolicAltitude: parabolicAltitudeCurve,
     calculateHandFan,
+    calculateCarouselTransform,
+    calculateSwipeTilt,
   },
 };
 

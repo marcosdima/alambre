@@ -156,6 +156,11 @@ export {
   usePressKinetics,
   useSpatialFlip,
   useFlightTrajectory,
+  useKineticSwipe,
+  useKineticCarousel,
+  useKineticCarouselItem,
+  KineticCarouselContext,
+  KineticCarouselProvider,
 } from './hooks';
 export type {
   HistoryState,
@@ -204,6 +209,14 @@ export type {
   FlightStartOverrides,
   UseFlightTrajectoryOptions,
   UseFlightTrajectoryReturn,
+  KineticSwipeDirection,
+  UseKineticSwipeOptions,
+  UseKineticSwipeReturn,
+  UseKineticCarouselOptions,
+  UseKineticCarouselReturn,
+  UseKineticCarouselItemOptions,
+  UseKineticCarouselItemReturn,
+  KineticCarouselProviderProps,
 } from './hooks';
 
 
@@ -269,6 +282,8 @@ export {
   calculateWavefrontPhase,
   parabolicAltitudeCurve,
   calculateHandFan,
+  calculateCarouselTransform,
+  calculateSwipeTilt,
 } from './core';
 export type {
   Store,
@@ -276,6 +291,8 @@ export type {
   WavefrontPhaseOptions,
   HandFanOptions,
   HandFanItemTransform,
+  CarouselPreset,
+  CarouselItemTransform,
 } from './core';
 
 
