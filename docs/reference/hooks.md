@@ -326,3 +326,156 @@ const styles = StyleSheet.create({
 });
 ```
 
+---
+
+## 6. `useWavefront` (alias: `useKineticOrchestrator`)
+
+Headless single-clock kinetic wavefront orchestrator for coordinated staggered animations on the UI thread. Instead of spawning $N$ concurrent numerical ODE spring solvers with `withSpring()`, `useWavefront` drives a single master progress clock ($\tau \in [0, 1]$) and partitions phase analytically to compute individual item progress in $O(1)$ worklet math.
+
+### Signature
+```typescript
+import {
+  useWavefront,
+  type UseWavefrontOptions,
+  type UseWavefrontReturn,
+  type WavefrontCurve,
+} from 'alambre';
+
+const {
+  progress,
+  getItemProgress,
+  getItemPhase,
+  start,
+  reset,
+  totalDuration,
+} = useWavefront(options: UseWavefrontOptions);
+```
+
+### Options (`UseWavefrontOptions`)
+* `count: number`: Total number of items in the staggered collection.
+* `staggerMs?: number`: Delay in milliseconds between consecutive items starting (default: `35ms`).
+* `itemDuration?: number`: Duration in milliseconds for each item's transition (default: `260ms`).
+* `curve?: WavefrontCurve | ((phase: number) => number)`: Analytical transfer function curve. Built-in curves: `'criticallyDamped'`, `'bouncy'`, `'overshoot'`, `'cubicEaseOut'` (default: `'criticallyDamped'`). Custom worklet functions are also accepted.
+* `autoStart?: boolean`: Whether to start the wavefront immediately on mount (default: `true`).
+* `driver?: 'timing' | 'spring'`: Progress driver mode. Timing uses `withTiming(1, { duration, easing: Easing.linear })`; spring uses `withSpring(1, kinetics.spring.responsive)` (default: `'timing'`).
+
+### Properties & Actions (`UseWavefrontReturn`)
+* `progress: SharedValue<number>`: Master normalized progress clock ($\tau \in [0, 1]$).
+* `getItemProgress(index: number): number`: Worklet function to evaluate the curve-transformed progress ($[0, 1]$) for item at `index`. Run directly inside `useAnimatedStyle`.
+* `getItemPhase(index: number): number`: Worklet function to evaluate the raw normalized phase ($\phi \in [0, 1]$) without curve application.
+* `start(): void`: Starts or restarts the wavefront animation.
+* `reset(): void`: Resets master progress back to `0`.
+* `totalDuration: number`: Total elapsed time in milliseconds from wave start to the final item completing.
+
+### Context Propagation: `WavefrontProvider` & `useWavefrontItem` (The 3-Line Rule)
+
+To eliminate worklet boilerplate for consumer components and AI agents writing app screens, use `WavefrontProvider` and `useWavefrontItem`:
+
+```typescript
+import { View } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { WavefrontProvider, useWavefrontItem } from 'alambre';
+
+export function StaggeredList({ items }: { items: string[] }) {
+  return (
+    <WavefrontProvider count={items.length} staggerMs={35} itemDuration={250}>
+      <View>
+        {items.map((item, index) => (
+          <StaggeredCard key={item} item={item} index={index} />
+        ))}
+      </View>
+    </WavefrontProvider>
+  );
+}
+
+function StaggeredCard({ item, index }: { item: string; index: number }) {
+  // 3-Line Rule: 1 line hook, 1 line element, 0 worklet boilerplate
+  const { animatedStyle } = useWavefrontItem(index, { preset: 'slide-up' });
+
+  return (
+    <Animated.View style={animatedStyle}>
+      {/* Presentation item */}
+    </Animated.View>
+  );
+}
+```
+
+#### Presets (`WavefrontPreset`)
+* `'slide-up'`: translates upward from `distance` with opacity 0 to 1 (default).
+* `'slide-scale'`: translates upward with subtle scale (0.96 to 1) and opacity.
+* `'slide-down'`: translates downward from `-distance` with opacity.
+* `'fade'`: opacity 0 to 1.
+* `'scale'`: subtle scale 0.9 to 1 with opacity.
+* `'pop'`: tactile scale pop 0.8 to 1 with opacity (ideal with bouncy/overshoot curves).
+
+Custom style worklets are also supported:
+```typescript
+const { animatedStyle } = useWavefrontItem(index, {
+  style: (p, phase) => {
+    'worklet';
+    return { opacity: p, transform: [{ rotateZ: `${(1 - p) * 20}deg` }] };
+  },
+});
+```
+
+---
+
+## 7. `usePressKinetics`
+
+Universal headless tactile interaction hook. Provides instant 60/120 FPS UI-thread micro-touch feedback (spring scale, depress translation, clamped opacity) with asymmetric physics (immediate responsive press-in, bouncy tactile release) and zero JS thread re-render overhead.
+
+### Signature
+```typescript
+import { usePressKinetics, type UsePressKineticsOptions } from 'alambre';
+
+const { pressProps, animatedStyle, progress, isPressed, pressed } = usePressKinetics(options?: UsePressKineticsOptions);
+```
+
+### Options (`UsePressKineticsOptions`)
+* `activeScale?: number`: Scale factor applied when pressed down (default: `0.96`).
+* `activeOpacity?: number`: Opacity factor applied when pressed down (default: `1`).
+* `activeTranslateY?: number`: Translation Y in points when pressed down for 3D depress effect (default: `0`).
+* `springConfig?: WithSpringConfig`: General fallback spring configuration.
+* `pressInSpringConfig?: WithSpringConfig`: Spring configuration on press down (default: `kinetics.spring.responsive`).
+* `pressOutSpringConfig?: WithSpringConfig`: Spring configuration on press release (default: `kinetics.spring.bouncy`).
+* `disabled?: boolean`: Whether interaction is disabled (default: `false`).
+* `forceReducedMotion?: boolean`: Snaps scale/opacity instantly without spring delay (default: `false`).
+* `trackState?: boolean`: Synchronizes React boolean `pressed` state. Default `false` to avoid JS thread re-renders.
+* `hapticFeedback?: () => void`: Optional callback fired on press down for tactile haptics.
+* `onPress?: (event: GestureResponderEvent) => void`: Optional callback on press release.
+* `onLongPress?: (event: GestureResponderEvent) => void`: Optional callback on long press.
+* `onPressIn?: (event: GestureResponderEvent) => void`: Optional callback when press begins.
+* `onPressOut?: (event: GestureResponderEvent) => void`: Optional callback when press ends.
+
+### Properties (`UsePressKineticsReturn`)
+* `pressProps`: Spreadable handlers for `<Pressable {...pressProps}>`.
+* `animatedStyle`: Animated style object to apply to `<Animated.View style={animatedStyle}>` or `<AnimatedPressable style={animatedStyle}>`.
+* `progress`: Reanimated `SharedValue<number>` representing animated press progress (0 = idle, 1 = pressed).
+* `isPressed`: Alias for `progress`.
+* `pressed`: Synchronous JS boolean representing active press state (only updated if `trackState: true`).
+
+### Example (The 3-Line Rule)
+```typescript
+import { Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { usePressKinetics } from 'alambre';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+export function InteractiveCard({ onPress, children }: { onPress: () => void; children: React.ReactNode }) {
+  const { pressProps, animatedStyle } = usePressKinetics({
+    activeScale: 0.97,
+    activeTranslateY: 2,
+    onPress,
+  });
+
+  return (
+    <AnimatedPressable {...pressProps} style={[styles.card, animatedStyle]}>
+      {children}
+    </AnimatedPressable>
+  );
+}
+```
+
+
+

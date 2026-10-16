@@ -168,6 +168,8 @@ Intentional public type contracts:
 * `IconProps` — the shared prop contract of the concrete icons (`Arrow`, `Cross`, `Tick`, `Sun`, `Moon`).
 * `HarmonicProfile`, `HarmonicMotionOptions` — the `useHarmonicMotion` headless motion contract.
 * `RipplePulseOptions`, `RippleWave`, `UseRipplePulseReturn` — the `useRipplePulse` headless pulse contract.
+* `WavefrontCurve`, `WavefrontPreset`, `WavefrontItemPreset`, `WavefrontStyleWorklet`, `WavefrontProviderProps`, `UseWavefrontOptions`, `UseWavefrontReturn`, `UseWavefrontItemOptions`, `UseWavefrontItemReturn` (and kinetic orchestrator aliases) — the `useWavefront`, `WavefrontProvider`, and `useWavefrontItem` single-clock traveling wave orchestration contract.
+* `UsePressKineticsOptions`, `UsePressKineticsReturn` — the `usePressKinetics` universal headless tactile interaction contract.
 
 `src/index.ts` must export its types explicitly and intentionally. Blanket namespace re-exports (`export * as ...`) that turn internal type modules into public API are not allowed.
 
@@ -221,6 +223,10 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 Two Q3 prototypes were intentionally **not** extracted: navigator params (the app's `RouteIntent` context) and the shared `createId` util. Both delight the app but stayed application-level until a second consumer demonstrates reuse (see `docs/guidelines/agents.md` §6).
 
 `useHarmonicMotion` and `useRipplePulse` are additive headless motion hooks for UI-thread continuous kinetics (see `docs/reference/hooks.md`). Evaluated pure helper worklets (`harmonicValue`, `rippleSample`) are also exported to compose with custom timing loops.
+
+`useWavefront` (alias `useKineticOrchestrator`), `WavefrontProvider`, and `useWavefrontItem` (alias `useKineticOrchestratorItem`) provide single-clock UI-thread wavefront orchestration fulfilling the 3-Line Rule without $N$-ODE spring concurrency overload (see `docs/reference/hooks.md`). Closed-form analytical curve worklets (`criticallyDampedCurve`, `bouncyCurve`, `cubicEaseOutCurve`, `polynomialOvershootCurve`), `calculateWavefrontPhase`, Apple-style duration springs, and `calculateBudgetedStaggerDelay` provide $O(1)$ CPU-budgeted staggered kinetics.
+
+`usePressKinetics` is an additive universal headless tactile interaction hook providing 60/120 FPS UI-thread micro-touch feedback (spring scale, depress translation, clamped opacity) with asymmetric physics (responsive press-in, bouncy release) and zero JS thread re-render overhead. Validated in `tests/hooks/use-press-kinetics.test.ts` and `tests/public-api.test.ts`.
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
