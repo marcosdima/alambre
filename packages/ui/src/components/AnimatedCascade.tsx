@@ -9,8 +9,10 @@ import Animated, {
   FadeInUp,
   LinearTransition,
   ZoomIn,
+  useAnimatedStyle,
+  type SharedValue,
 } from 'react-native-reanimated';
-import { useStagger } from 'alambre';
+import { useStagger, useWavefront, type WavefrontCurve } from 'alambre';
 
 export type CascadePattern = 'top-to-bottom' | 'bottom-to-top' | 'alternate' | 'pop';
 
@@ -22,22 +24,99 @@ export type AnimatedCascadeProps = {
   initialDelay?: number;
   maxDelay?: number;
   distance?: number;
+  /**
+   * Whether to run in frame-budgeted wavefront orchestrator mode (pure UI thread, 0 layout thrashing).
+   * @default true
+   */
+  orchestrated?: boolean;
+  /**
+   * Closed-form analytical curve to use in orchestrated mode.
+   * @default 'criticallyDamped'
+   */
+  curve?: WavefrontCurve;
   layoutTransition?: boolean;
   style?: StyleProp<ViewStyle>;
   itemStyle?: StyleProp<ViewStyle>;
 };
 
+function OrchestratedItem({
+  child,
+  index,
+  pattern,
+  distance,
+  progress,
+  getItemProgress,
+  itemStyle,
+}: {
+  child: ReactNode;
+  index: number;
+  pattern: CascadePattern;
+  distance: number;
+  progress: SharedValue<number>;
+  getItemProgress: (index: number, progressOverride?: number) => number;
+  itemStyle?: StyleProp<ViewStyle>;
+}) {
+  const animatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    const tau = progress.value;
+    const p = getItemProgress(index, tau);
+    let transform: ViewStyle['transform'];
+
+    switch (pattern) {
+      case 'bottom-to-top':
+        transform = [{ translateY: (1 - p) * distance }];
+        break;
+      case 'alternate':
+        transform = [{ translateX: (index % 2 === 0 ? -1 : 1) * (1 - p) * distance }];
+        break;
+      case 'pop':
+        transform = [{ scale: 0.92 + p * 0.08 }];
+        break;
+      case 'top-to-bottom':
+      default:
+        transform = [{ translateY: (1 - p) * -distance }];
+        break;
+    }
+
+    return {
+      opacity: p,
+      transform,
+    };
+  });
+
+  return (
+    <Animated.View style={[itemStyle, animatedStyle]}>
+      {child}
+    </Animated.View>
+  );
+}
+
 export default function AnimatedCascade({
   children,
   pattern = 'top-to-bottom',
   duration = 260,
-  staggerMs = 50,
+  staggerMs = 40,
   initialDelay = 0,
   maxDelay = 1500,
-  layoutTransition = true,
+  distance = 18,
+  orchestrated = true,
+  curve = 'criticallyDamped',
+  layoutTransition = false,
   style,
   itemStyle,
 }: AnimatedCascadeProps) {
+  const childArray = Children.toArray(children).filter(isValidElement);
+
+  // Frame-budgeted wavefront orchestration mode (default: 1 master clock, 0 layout thrashing)
+  const wavefront = useWavefront({
+    count: childArray.length,
+    staggerMs,
+    itemDuration: duration,
+    curve,
+    autoStart: true,
+  });
+
+  // Classic entering fallback mode if explicitly disabled
   const { getDelay, isReducedMotion } = useStagger({
     initialDelay,
     staggerMs,
@@ -66,7 +145,27 @@ export default function AnimatedCascade({
     }
   };
 
-  const childArray = Children.toArray(children).filter(isValidElement);
+  if (orchestrated) {
+    return (
+      <View style={style}>
+        {childArray.map((child, index) => {
+          const key = (child as any).key ?? `cascade-${index}`;
+          return (
+            <OrchestratedItem
+              key={key}
+              child={child}
+              index={index}
+              pattern={pattern}
+              distance={distance}
+              progress={wavefront.masterProgress}
+              getItemProgress={wavefront.getItemProgress}
+              itemStyle={itemStyle}
+            />
+          );
+        })}
+      </View>
+    );
+  }
 
   return (
     <View style={style}>
@@ -78,7 +177,7 @@ export default function AnimatedCascade({
 
         return (
           <Animated.View
-            key={child.key ?? `cascade-${index}`}
+            key={(child as any).key ?? `cascade-${index}`}
             entering={entering}
             layout={layout}
             style={itemStyle}
@@ -90,3 +189,4 @@ export default function AnimatedCascade({
     </View>
   );
 }
+

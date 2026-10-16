@@ -1,18 +1,12 @@
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  Easing,
   useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { useTheme } from '../../theme';
-import { kinetics } from 'alambre';
+import { harmonicValue, useLoopClock, wrapPhase } from 'alambre';
 
 export type WavyTextProps = {
   text: string;
@@ -34,6 +28,7 @@ type WavyUnitProps = {
   staggerMs: number;
   active: boolean;
   isReducedMotion: boolean;
+  clock: SharedValue<number>;
   textStyle?: StyleProp<TextStyle>;
 };
 
@@ -45,42 +40,22 @@ const WavyUnit = memo(function WavyUnit({
   staggerMs,
   active,
   isReducedMotion,
+  clock,
   textStyle,
 }: WavyUnitProps) {
-  const progress = useSharedValue(0);
-  const animAmplitude = useSharedValue(amplitude);
+  const phaseStep = staggerMs / Math.max(1, duration);
 
-  // Smoothly update amplitude without disrupting running wave phase
-  useEffect(() => {
-    animAmplitude.value = withTiming(amplitude, kinetics.timing.base);
-  }, [amplitude, animAmplitude]);
-
-  // Wave oscillation driver - strictly independent from amplitude
-  useEffect(() => {
-    if (!active || isReducedMotion) {
-      progress.value = withTiming(0, kinetics.timing.base);
-      return;
+  const animatedStyle = useAnimatedStyle(() => {
+    if (isReducedMotion || !active) {
+      return { transform: [{ translateY: 0 }] };
     }
-
-    const half = duration / 2;
-    const delay = index * staggerMs;
-
-    progress.value = withDelay(
-      delay,
-      withRepeat(
-        withSequence(
-          withTiming(1, { duration: half, easing: Easing.inOut(Easing.quad) }),
-          withTiming(0, { duration: half, easing: Easing.inOut(Easing.quad) }),
-        ),
-        -1,
-        false,
-      ),
-    );
-  }, [active, duration, index, staggerMs, progress, isReducedMotion]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -progress.value * animAmplitude.value }],
-  }));
+    const charPhase = wrapPhase(clock.value - index * phaseStep);
+    // swell: 0 -> amplitude -> 0 on the UI thread
+    const y = -harmonicValue('swell', charPhase, amplitude);
+    return {
+      transform: [{ translateY: y }],
+    };
+  });
 
   return (
     <Animated.Text style={[styles.baseText, textStyle, animatedStyle]}>
@@ -88,6 +63,7 @@ const WavyUnit = memo(function WavyUnit({
     </Animated.Text>
   );
 });
+
 
 export default function WavyText({
   text,
@@ -101,7 +77,10 @@ export default function WavyText({
   containerStyle,
 }: WavyTextProps) {
   const { theme } = useTheme();
-  const isReducedMotion = useReducedMotion();
+  const { clock, isStatic } = useLoopClock({
+    duration: Math.max(100, duration),
+    paused: !active,
+  });
   const textColor = color ?? theme.color;
 
   // Split into words so flexWrap wraps on whole word boundaries
@@ -127,7 +106,8 @@ export default function WavyText({
                 duration={duration}
                 staggerMs={staggerMs}
                 active={active}
-                isReducedMotion={isReducedMotion}
+                isReducedMotion={isStatic}
+                clock={clock}
                 textStyle={[{ color: textColor }, textStyle]}
               />
               {wordIndex < words.length - 1 ? (
@@ -163,11 +143,13 @@ export default function WavyText({
                   duration={duration}
                   staggerMs={staggerMs}
                   active={active}
-                  isReducedMotion={isReducedMotion}
+                  isReducedMotion={isStatic}
+                  clock={clock}
                   textStyle={[{ color: textColor }, textStyle]}
                 />
               );
             })}
+
             {wordIndex < words.length - 1 ? (
               <Text
                 style={[

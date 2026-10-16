@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   row: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',

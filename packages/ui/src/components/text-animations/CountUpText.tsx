@@ -71,16 +71,22 @@ export default function CountUpText({
 
     const startTime = Date.now();
     const diff = value - startVal;
+    let lastCommitTime = 0;
+    const FRAME_BUDGET_MS = 28; // Paced to ~35fps to avoid Fabric text layout thrashing
 
     let animId: number;
     const tick = () => {
-      const elapsed = Date.now() - startTime;
+      const now = Date.now();
+      const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
       // Cubic ease-out: 1 - (1 - progress)^3
       const eased = 1 - Math.pow(1 - progress, 3);
       const currentVal = startVal + diff * eased;
 
-      setDisplayNumber(currentVal);
+      if (now - lastCommitTime >= FRAME_BUDGET_MS || progress >= 1) {
+        lastCommitTime = now;
+        setDisplayNumber(progress >= 1 ? value : currentVal);
+      }
 
       if (progress < 1) {
         animId = globalThis.requestAnimationFrame(tick);
@@ -89,6 +95,7 @@ export default function CountUpText({
         onCompleteRef.current?.();
       }
     };
+
 
     animId = globalThis.requestAnimationFrame(tick);
     return () => {

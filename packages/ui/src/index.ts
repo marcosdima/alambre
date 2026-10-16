@@ -44,7 +44,8 @@ export { default as AppTitle, default as Title, AppText, AppText as Text } from 
 export type { AppTitleProps, AppTitleProps as TitleProps, AppTextProps, AppTextProps as TextProps } from './components/AppTitle';
 
 export { default as AnimatedCascade } from './components/AnimatedCascade';
-export type { AnimatedCascadeProps } from './components/AnimatedCascade';
+export type { AnimatedCascadeProps, CascadePattern } from './components/AnimatedCascade';
+
 
 export { default as ConfirmDialog } from './components/ConfirmDialog';
 export { default as ToggleLightDark } from './components/ToggleLightDark';
