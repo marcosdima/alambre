@@ -477,5 +477,116 @@ export function InteractiveCard({ onPress, children }: { onPress: () => void; ch
 }
 ```
 
+---
 
+## 8. `useSpatialFlip`
 
+Headless 3D perspective flip hook for playing cards, tiles, badges, and flipping tokens. Solves the React Native rendering quirk where container-level perspective fails to propagate to children (causing flat 2D projection on Android) by injecting perspective directly into front and back face transforms, while container styles execute 2D clamped parabolic elevation and scale.
+
+### Signature
+```typescript
+import { useSpatialFlip, type UseSpatialFlipOptions } from 'alambre';
+
+const {
+  frontAnimatedStyle,
+  backAnimatedStyle,
+  containerAnimatedStyle,
+  isFlipped,
+  progress,
+  flip,
+  setFlipped,
+} = useSpatialFlip(options?: UseSpatialFlipOptions);
+```
+
+### Options (`UseSpatialFlipOptions`)
+* `flipped?: boolean`: Controlled boolean flip state (false = front, true = back).
+* `initialFlipped?: boolean`: Initial state in uncontrolled mode (default: `false`).
+* `perspective?: number`: Perspective distance in points injected into face transforms (default: `1000`).
+* `direction?: 'horizontal' | 'vertical'`: 3D rotation axis (default: `'horizontal'` for `rotateY`, `'vertical'` for `rotateX`).
+* `liftHeight?: number`: Peak vertical parabolic elevation off the surface in points (default: `22`).
+* `peakScale?: number`: Midpoint scale multiplier during flight (default: `1.08`).
+* `springConfig?: WithSpringConfig`: Spring physics configuration (default: `kinetics.spring.snap`).
+* `onFlip?: (flipped: boolean) => void`: Callback fired immediately when flip begins.
+* `onFlipComplete?: (flipped: boolean) => void`: Callback fired when flip spring finishes settling.
+* `forceReducedMotion?: boolean`: Snaps flip instantly without spring oscillations.
+
+### Properties (`UseSpatialFlipReturn`)
+* `frontAnimatedStyle`: Animated style for front face (`transform: [{ perspective }, { rotateY }], opacity, zIndex`).
+* `backAnimatedStyle`: Animated style for back face (`transform: [{ perspective }, { rotateY }], opacity, zIndex`).
+* `containerAnimatedStyle`: Animated style for container (`transform: [{ translateY: liftY }, { scale }]`).
+* `isFlipped: boolean`: Synchronous JS boolean representing active state.
+* `progress: SharedValue<number>`: Shared value tracking progress (0 = front, 1 = back).
+* `flip(): void`: Toggles flip state.
+* `setFlipped(flipped: boolean | ((prev: boolean) => boolean)): void`: Sets flip state explicitly.
+
+---
+
+## 9. `useFlightTrajectory`
+
+Headless ballistic flight trajectory hook for moving elements through 3D space (dealing cards from deck to hand, flying tokens to slots, dismissal to tray). Applies closed-form parabolic altitude lift, perspective scale peaks, angle interpolation, and mid-flight 180° face flips with unmount safety and dynamic runtime target overrides.
+
+### Signature
+```typescript
+import { useFlightTrajectory, type UseFlightTrajectoryOptions } from 'alambre';
+
+const {
+  animatedStyle,
+  frontAnimatedStyle,
+  backAnimatedStyle,
+  progress,
+  start,
+  reset,
+  isFlying,
+} = useFlightTrajectory(options: UseFlightTrajectoryOptions);
+```
+
+### Options (`UseFlightTrajectoryOptions`)
+* `from: { x: number; y: number }`: Starting launch coordinates in points.
+* `to: { x: number; y: number }`: Destination landing coordinates in points.
+* `fromRotation?: number`: Initial rotation angle in degrees (default: `0`).
+* `targetRotation?: number`: Final rotation angle upon arrival (default: `0`).
+* `liftHeight?: number`: Peak parabolic altitude lift in points (default: `55`).
+* `peakScale?: number`: Mid-flight altitude scale multiplier (default: `1.15`).
+* `startScale?: number`: Scale upon launch (default: `0.9`).
+* `endScale?: number`: Scale upon landing (default: `1.0`).
+* `durationMs?: number`: Flight duration in milliseconds (default: `380`).
+* `easing?: (t: number) => number`: Easing curve (default: snappy cubic bezier `0.22, 1, 0.36, 1`).
+* `autoStart?: boolean`: Whether flight triggers automatically on mount (default: `true`).
+* `flipOnFly?: boolean`: Whether element flips 180° mid-flight from face-down to face-up (default: `false`).
+* `perspective?: number`: Perspective distance in points (default: `1000`).
+* `zIndex?: number`: Container zIndex during flight (default: `9999`).
+* `onComplete?: () => void`: Callback fired upon landing.
+* `forceReducedMotion?: boolean`: Instantly places element at destination.
+
+### Properties (`UseFlightTrajectoryReturn`)
+* `animatedStyle`: Animated style for flying container (`transform: [{ perspective }, { translateX }, { translateY }, { rotate }, { scale }], zIndex`).
+* `frontAnimatedStyle`: Animated style for front face (active when `flipOnFly: true`).
+* `backAnimatedStyle`: Animated style for back face (active when `flipOnFly: true`).
+* `progress: SharedValue<number>`: Shared value tracking flight progress [0, 1].
+* `start(overrides?: FlightStartOverrides): void`: Launches flight with optional runtime coordinate overrides.
+* `reset(): void`: Resets flight progress immediately to 0.
+* `isFlying: boolean`: Synchronous JS boolean representing flight state.
+
+---
+
+## 10. `calculateHandFan & Spatial Curves`
+
+Worklet-safe pure math functions for curved item layouts and ballistic trajectories.
+
+### `calculateHandFan`
+Calculates radial fanning, vertical arc drop, automatic width span compression, and selection lift for hands of cards, radial menus, or overlapping badges.
+
+```typescript
+import { calculateHandFan, type HandFanItemTransform } from 'alambre';
+
+const { translateX, translateY, rotateDeg, scale, zIndex } = calculateHandFan(index, total, {
+  spreadAngle: 6,      // Degrees per item
+  arcCurvature: 4,     // Vertical drop intensity in points
+  itemSpacing: 38,     // Horizontal spacing between centers
+  maxSpan: 270,        // Max allowed width before auto-compressing spacing
+  isSelected: true,    // Applies selection lift (-36pt), scale (1.08), and straightens rotation
+});
+```
+
+### `parabolicAltitudeCurve`
+Closed-form normalized parabolic trajectory curve: $f(t) = 4t(1 - t)$. Peaks at $t = 0.5$ with value 1.0, settling at 0.0 at $t = 0$ and $t = 1$. Available directly and under `kinetics.spatial.parabolicAltitude`.

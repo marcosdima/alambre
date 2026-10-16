@@ -228,6 +228,8 @@ Two Q3 prototypes were intentionally **not** extracted: navigator params (the ap
 
 `usePressKinetics` is an additive universal headless tactile interaction hook providing 60/120 FPS UI-thread micro-touch feedback (spring scale, depress translation, clamped opacity) with asymmetric physics (responsive press-in, bouncy release) and zero JS thread re-render overhead. Validated in `tests/hooks/use-press-kinetics.test.ts` and `tests/public-api.test.ts`.
 
+`useSpatialFlip` and `useFlightTrajectory` are additive headless spatial kinetics hooks for 3D card flips, projectile flights, and token dealing (see `docs/reference/hooks.md` §8 and §9). Face-injected perspective solves cross-platform 2D projection quirks on Android, clamped parabolic math guarantees upward elevation without table depression on spring overshoot, and unmount cancellation prevents memory leaks. `calculateHandFan` and `parabolicAltitudeCurve` provide domain-neutral UI-thread worklet math for auto-compressed curved decks and ballistic elevation (see `docs/reference/hooks.md` §10). Validated in `tests/core/spatial.test.ts`, `tests/hooks/use-spatial-flip.test.ts`, `tests/hooks/use-flight-trajectory.test.ts`, and `tests/public-api.test.ts`.
+
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
 The versioning policy for this public contract is defined in §9.
