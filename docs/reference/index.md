@@ -71,11 +71,17 @@ Kinetic typography and animated text primitives powered by Reanimated worklets a
 * **`Scramble`**: Randomized glyph matrix decrypting reveal with quadratic ease-out.
 * **`Marquee`**: Infinite looping horizontal content ticker with auto-measured clone wrap.
 * **`WavyText`**: Continuous staggered vertical sine oscillation across characters.
-* **`SlideInText`**: Physics-driven staggered card/glyph cascade powered by `kinetics.spring.bouncy`.
+### 8. [Room Relay](room-relay.md)
+Lightweight headless ephemeral room relay for multi-device multiplayer and casual state synchronization:
+* **`RoomRelayClient` & `createRoomRelay`**: Headless state machine with typed event routing, heartbeat watchdog, exponential backoff, and atomic room changes.
+* **`useRoomRelay` & `useRoomRelaySelector`**: React reactive bindings synchronized via `useSyncExternalStore`.
+* **`SimulatedRelayTransport` & `createSimulatedRelayHub`**: In-memory edge hub for offline development, multi-peer testing, and unit tests.
+* **`WebSocketRelayTransport`**: Edge WebSocket transport for Cloudflare Durable Objects / PartyKit relays.
+* **`generateRoomCode`**: Unambiguous 4-character room codes excluding easily confused glyphs.
 
 ---
 
-## 8. Canonical Root Hierarchy (Zero-Context Architecture)
+## 9. Canonical Root Hierarchy (Zero-Context Architecture)
 
 In Alambre's Headless architecture, global capabilities (**Config, Lang, LightDark, Collection**) run on external stores (`useSyncExternalStore`) and require **zero context providers** in `App.tsx`. Components consume them directly without wrapping providers or unmount risks.
 

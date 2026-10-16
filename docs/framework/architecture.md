@@ -232,6 +232,8 @@ Two Q3 prototypes were intentionally **not** extracted: navigator params (the ap
 
 `useKineticSwipe`, `useKineticCarousel`, `KineticCarouselProvider`, and `useKineticCarouselItem` are additive headless kinetic container primitives (see `docs/reference/hooks.md` §11 and §12). `useKineticSwipe` provides dual-gesture support (120 FPS UI-thread `Gesture.Pan()` + universal `PanResponder` fallback) with escape velocity flick detection and rotational tilt. `useKineticCarousel` provides discrete snap tracking, auto-play with active interaction pause, and pure mathematical worklet presets (`calculateCarouselTransform` for `coverflow`, `card-stack`, `scale-fade`, `flat`). Validated in `tests/hooks/use-kinetic-swipe.test.ts`, `tests/hooks/use-kinetic-carousel.test.tsx`, and `tests/public-api.test.ts`.
 
+`@alambre/room-relay` is an extracted headless workspace package providing lightweight ephemeral room synchronization over WebSockets and in-memory simulated transport (see `docs/reference/room-relay.md`). It features `RoomRelayClient`, `createRoomRelay`, `useRoomRelay`, `useRoomRelaySelector`, `SimulatedRelayTransport`, `WebSocketRelayTransport`, and unambiguous `generateRoomCode`. Decoupled from native modules, it operates in React Native, Expo, and Node/Web with zero DOM or external backend dependencies. Validated by 24 unit and contract tests in `packages/room-relay/tests/`.
+
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
 The versioning policy for this public contract is defined in §9.

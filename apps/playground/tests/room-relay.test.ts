@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   generateRoomCode,
   SimulatedRelayTransport,
-} from '../src/views/card-game/relay/roomRelay';
+} from '@alambre/room-relay';
 
 describe('generateRoomCode', () => {
   it('returns a 4-character uppercase alphanumeric string without ambiguous characters', () => {

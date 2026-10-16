@@ -20,7 +20,7 @@ import { FlipCard } from './components/FlipCard';
 import { CardHand } from './components/CardHand';
 import { CardTable } from './components/CardTable';
 import { FlyingCard } from './components/FlyingCard';
-import { useRoomRelay, generateRoomCode } from './relay/roomRelay';
+import { useRoomRelay, generateRoomCode } from '@alambre/room-relay';
 import type { PlayingCardData, Rank, Suit } from './types';
 
 export interface CardPhysicsConfig {

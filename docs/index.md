@@ -7,6 +7,7 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 ### Packages
 - **[Framework Core (`packages/alambre`)](./framework/architecture.md)**: Monorepo structure, dependency direction, headless architecture, and public contracts.
 - **[UI Kit (`packages/ui`)](./framework/ui-decisions.md)**: Tactile mobile design system, theme tokens, and component contracts.
+- **[Room Relay (`packages/room-relay`)](./reference/room-relay.md)**: Lightweight ephemeral multi-device room synchronization over WebSockets and in-memory simulated transport.
 
 ### Applications
 - **[Base Template (`apps/base-template`)](./apps/base-template.md)**: The canonical starter application and app agent guidelines.
