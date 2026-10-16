@@ -590,3 +590,125 @@ const { translateX, translateY, rotateDeg, scale, zIndex } = calculateHandFan(in
 
 ### `parabolicAltitudeCurve`
 Closed-form normalized parabolic trajectory curve: $f(t) = 4t(1 - t)$. Peaks at $t = 0.5$ with value 1.0, settling at 0.0 at $t = 0$ and $t = 1$. Available directly and under `kinetics.spatial.parabolicAltitude`.
+
+---
+
+## 11. `useKineticSwipe`
+
+Headless physical swipe and flick gesture hook with dual-gesture support (120 FPS UI-thread `Gesture.Pan()` via `react-native-gesture-handler` + universal `PanResponder` fallback), escape velocity detection, rotational tilt, and directional boundary snap-back.
+
+### Signature
+```typescript
+import { useKineticSwipe, type UseKineticSwipeOptions, type UseKineticSwipeReturn } from 'alambre';
+
+const {
+  gesture,
+  panHandlers,
+  animatedStyle,
+  translation,
+  isDragging,
+  dismiss,
+  reset,
+  isDismissed,
+  isDismissedShared,
+} = useKineticSwipe(options?: UseKineticSwipeOptions);
+```
+
+### Options (`UseKineticSwipeOptions`)
+* `threshold?: number`: Distance in points needed to trigger dismiss when dragging (default: `120`).
+* `escapeVelocity?: number`: Velocity in points/second to trigger a flick dismissal even if threshold distance isn't reached (default: `800`).
+* `tiltAngle?: number`: Maximum tilt angle in degrees when dragging horizontally (default: `14`).
+* `directions?: KineticSwipeDirection[]`: Allowed swipe directions: `['left', 'right', 'up', 'down']` (default: `['left', 'right']`).
+* `springConfig?: WithSpringConfig`: Spring configuration for snapping back (default: `kinetics.spring.responsive`).
+* `dismissDistance?: number`: Distance off-screen in points to animate during dismissal (default: `600`).
+* `dismissDuration?: number`: Duration of exit animation in ms (default: `260`).
+* `disabled?: boolean`: Whether swiping interaction is disabled (default: `false`).
+* `forceReducedMotion?: boolean`: Snaps directly to destination without animations.
+* `onDismissStart?: (direction: KineticSwipeDirection) => void`: Fired when threshold or escape velocity is triggered.
+* `onDismiss?: (direction: KineticSwipeDirection) => void`: Fired when exit animation completes and card is safe to unmount.
+* `onSnapBack?: () => void`: Fired when card returns to origin.
+* `onDragStart?: () => void`: Fired on touch start.
+* `onDragEnd?: () => void`: Fired on touch release.
+
+### Properties (`UseKineticSwipeReturn`)
+* `gesture`: `Gesture.Pan()` instance for `<GestureDetector gesture={gesture}>`.
+* `panHandlers`: Standard `PanResponder` handlers for bare React Native `<View {...panHandlers}>`.
+* `animatedStyle`: Pre-calculated transform style (`translateX`, `translateY`, `rotate: ${tilt}deg`).
+* `translation`: Raw shared values `{ x, y }`.
+* `isDragging`: Shared value indicating active touch drag.
+* `dismiss(direction?: KineticSwipeDirection)`: Programmatic exit trigger.
+* `reset()`: Resets translation to origin (0, 0).
+* `isDismissed`: Synchronous JS boolean indicating dismissed state.
+* `isDismissedShared`: Reanimated SharedValue indicating dismissed state.
+
+---
+
+## 12. `useKineticCarousel` & `useKineticCarouselItem`
+
+Headless paging and 3D kinetic carousel driver with single-source-of-truth scroll tracking, discrete snap physics, auto-play with active interaction pause, and pre-calculated visual presets (`coverflow`, `card-stack`, `scale-fade`, `flat`).
+
+### Signature
+```typescript
+import {
+  useKineticCarousel,
+  useKineticCarouselItem,
+  KineticCarouselProvider,
+  type UseKineticCarouselOptions,
+} from 'alambre';
+
+// 1. Container level:
+const carousel = useKineticCarousel({
+  itemWidth: 200,
+  itemGap: 16,
+  totalItems: cards.length,
+  preset: 'coverflow', // 'coverflow' | 'card-stack' | 'scale-fade' | 'flat'
+  autoPlay: true,
+});
+
+// 2. JSX level (3-line rule):
+return (
+  <KineticCarouselProvider value={carousel}>
+    <Animated.ScrollView {...carousel.scrollProps}>
+      {cards.map((c, i) => <CardItem key={c.id} index={i} />)}
+    </Animated.ScrollView>
+  </KineticCarouselProvider>
+);
+
+// 3. Item level:
+function CardItem({ index }: { index: number }) {
+  const { animatedStyle } = useKineticCarouselItem(index);
+  return <Animated.View style={animatedStyle}>...</Animated.View>;
+}
+```
+
+### Options (`UseKineticCarouselOptions`)
+* `itemWidth: number`: Width in points of a single carousel item.
+* `itemGap?: number`: Gap between items in points (default: `12`).
+* `totalItems: number`: Total number of items in carousel.
+* `preset?: CarouselPreset`: Visual transformation preset (`'coverflow' | 'card-stack' | 'scale-fade' | 'flat'`, default: `'scale-fade'`).
+* `autoPlay?: boolean`: Whether to auto-play periodically (default: `false`).
+* `autoPlayInterval?: number`: Interval in ms between auto-play advances (default: `3000`).
+* `initialIndex?: number`: Initial active index (default: `0`).
+* `onIndexChange?: (index: number) => void`: Callback when discrete active index changes.
+
+---
+
+## 13. Spatial Carousel & Swipe Tilt Transformations
+
+### `calculateCarouselTransform`
+Calculates domain-neutral 3D perspective rotation, scale, opacity, and zIndex for carousel items based on normalized distance from center $d = (scrollX - index \cdot snapInterval) / snapInterval$. Pure worklet.
+
+```typescript
+import { calculateCarouselTransform, type CarouselPreset } from 'alambre';
+
+const { transform, opacity, zIndex } = calculateCarouselTransform(distance, 'coverflow');
+```
+
+### `calculateSwipeTilt`
+Calculates rotation tilt angle in degrees for horizontal swipe drag gestures, clamped to $[-maxTiltAngle, maxTiltAngle]$. Pure worklet.
+
+```typescript
+import { calculateSwipeTilt } from 'alambre';
+
+const tiltDeg = calculateSwipeTilt(translateX, 16, 240);
+```
