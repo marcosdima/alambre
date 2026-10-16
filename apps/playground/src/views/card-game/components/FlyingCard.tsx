@@ -13,7 +13,7 @@ export interface FlyingCardProps {
   targetRotation?: number;
   flipOnFly?: boolean;
   durationMs?: number;
-  onComplete: () => void;
+  onComplete?: () => void;
   size?: 'sm' | 'md' | 'lg';
 }
 

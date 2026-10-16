@@ -5,14 +5,6 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Easing,
-  Extrapolation,
-} from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
 import AppCard from '../../components/AppCard';
 import AppButton from '../../components/AppButton';
@@ -539,50 +531,15 @@ function CardFlipScenario({ physics }: { physics: CardPhysicsConfig }) {
 
 function FlipWithTranslationDemo({ flightDuration }: { flightDuration: number }) {
   const [atDestination, setAtDestination] = useState(false);
-  const travelProgress = useSharedValue(0);
+  const [flightKey, setFlightKey] = useState(0);
 
   const toggleTravel = () => {
-    const next = !atDestination;
-    setAtDestination(next);
-    travelProgress.value = withTiming(next ? 1 : 0, {
-      duration: flightDuration,
-      easing: Easing.bezier(0.22, 1, 0.36, 1),
-    });
+    setAtDestination((prev) => !prev);
+    setFlightKey((k) => k + 1);
   };
 
-  const travelAnimatedStyle = useAnimatedStyle(() => {
-    const travelX = interpolate(travelProgress.value, [0, 1], [-90, 90]);
-    const arcLift = -Math.sin(travelProgress.value * Math.PI) * 40;
-    const rotateZ = interpolate(travelProgress.value, [0, 0.5, 1], [0, 8, 0]);
-
-    return {
-      transform: [
-        { translateX: travelX },
-        { translateY: arcLift },
-        { rotate: `${rotateZ}deg` },
-      ],
-    };
-  });
-
-  const frontStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(travelProgress.value, [0, 1], [180, 0], Extrapolation.CLAMP);
-    const opacity = travelProgress.value >= 0.5 ? 1 : 0;
-    return {
-      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: travelProgress.value >= 0.5 ? 2 : 1,
-    };
-  });
-
-  const backStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(travelProgress.value, [0, 1], [360, 180], Extrapolation.CLAMP);
-    const opacity = travelProgress.value < 0.5 ? 1 : 0;
-    return {
-      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: travelProgress.value < 0.5 ? 2 : 1,
-    };
-  });
+  const from = atDestination ? { x: 90, y: 0 } : { x: -90, y: 0 };
+  const to = atDestination ? { x: -90, y: 0 } : { x: 90, y: 0 };
 
   return (
     <View style={styles.travelTrackContainer}>
@@ -595,14 +552,17 @@ function FlipWithTranslationDemo({ flightDuration }: { flightDuration: number })
         </View>
       </View>
 
-      <Animated.View style={[styles.travelingCardWrapper, travelAnimatedStyle]}>
-        <Animated.View style={[styles.cardFaceLayer, frontStyle]}>
-          <PlayingCard suit="spades" rank="A" faceUp={true} size="md" />
-        </Animated.View>
-        <Animated.View style={[styles.cardFaceLayer, backStyle]}>
-          <PlayingCard suit="spades" rank="A" faceUp={false} size="md" />
-        </Animated.View>
-      </Animated.View>
+      <View style={styles.travelingCardWrapper}>
+        <FlyingCard
+          key={flightKey}
+          card={{ id: 'demo_ace', suit: 'spades', rank: 'A' }}
+          from={from}
+          to={to}
+          flipOnFly={true}
+          durationMs={flightDuration}
+          size="md"
+        />
+      </View>
 
       <View style={styles.travelControlRow}>
         <AppButton

@@ -17,6 +17,11 @@ export default () => {
       onPress: () => navigate('kinetics'),
     },
     {
+      key: 'kineticContainers',
+      label: 'Kinetic Containers (Carousel & Swipe Deck)',
+      onPress: () => navigate('kineticContainers'),
+    },
+    {
       key: 'cardGame',
       label: 'Card Game Engine (Pending)',
       onPress: () => navigate('cardGame'),
