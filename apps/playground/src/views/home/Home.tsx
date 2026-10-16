@@ -23,9 +23,10 @@ export default () => {
     },
     {
       key: 'cardGame',
-      label: 'Card Game Engine (Pending)',
+      label: 'Card Game Engine (Active)',
       onPress: () => navigate('cardGame'),
     },
+
   ];
 
   return (

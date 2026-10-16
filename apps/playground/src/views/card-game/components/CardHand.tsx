@@ -1,18 +1,23 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
+  runOnJS,
 } from 'react-native-reanimated';
-import { calculateHandFan } from 'alambre';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { calculateHandFan, useKineticSwipe } from 'alambre';
 import { PlayingCard } from './PlayingCard';
 import type { PlayingCardData } from '../types';
+
 
 export interface CardHandProps {
   cards: PlayingCardData[];
   selectedCardId?: string | null;
   onSelectCard?: (card: PlayingCardData) => void;
+  onPlayCard?: (card: PlayingCardData) => void;
+  enableSwipeToPlay?: boolean;
   spreadAngle?: number; // degrees per card
   arcCurvature?: number; // vertical curve intensity
   cardSpacing?: number; // px horizontal distance between centers
@@ -26,6 +31,8 @@ export const CardHand = memo(function CardHand({
   cards,
   selectedCardId = null,
   onSelectCard,
+  onPlayCard,
+  enableSwipeToPlay = false,
   spreadAngle = 6,
   arcCurvature = 4,
   cardSpacing = 38,
@@ -55,11 +62,14 @@ export const CardHand = memo(function CardHand({
           springDamping={springDamping}
           springStiffness={springStiffness}
           onPress={() => onSelectCard?.(card)}
+          onPlayCard={onPlayCard}
+          enableSwipeToPlay={enableSwipeToPlay}
         />
       ))}
     </View>
   );
 });
+
 
 interface HandCardItemProps {
   card: PlayingCardData;
@@ -73,6 +83,8 @@ interface HandCardItemProps {
   springDamping: number;
   springStiffness: number;
   onPress: () => void;
+  onPlayCard?: (card: PlayingCardData) => void;
+  enableSwipeToPlay?: boolean;
 }
 
 function HandCardItem({
@@ -87,6 +99,8 @@ function HandCardItem({
   springDamping,
   springStiffness,
   onPress,
+  onPlayCard,
+  enableSwipeToPlay = false,
 }: HandCardItemProps) {
   const fanTransform = calculateHandFan(index, total, {
     spreadAngle,
@@ -136,6 +150,63 @@ function HandCardItem({
     };
   });
 
+  const swipe = useKineticSwipe({
+    directions: ['up'],
+    threshold: 55,
+    escapeVelocity: 450,
+    disabled: card.isArriving || !enableSwipeToPlay || !onPlayCard,
+    onDismissStart: () => {
+      onPlayCard?.(card);
+    },
+  });
+
+  const tapGesture = useMemo(() => {
+    return Gesture.Tap()
+      .maxDuration(250)
+      .onEnd(() => {
+        'worklet';
+        runOnJS(onPress)();
+      });
+  }, [onPress]);
+
+  const gesture = useMemo(() => {
+    if (!enableSwipeToPlay || !onPlayCard) {
+      return tapGesture;
+    }
+    return Gesture.Exclusive(swipe.gesture, tapGesture);
+  }, [enableSwipeToPlay, onPlayCard, swipe.gesture, tapGesture]);
+
+  if (enableSwipeToPlay && onPlayCard) {
+    return (
+      <Animated.View
+        style={[
+          styles.cardWrapper,
+          { zIndex: fanTransform.zIndex },
+          animatedStyle,
+        ]}
+      >
+        <GestureDetector gesture={gesture}>
+          <Animated.View
+            style={[swipe.animatedStyle]}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={`${card.rank} of ${card.suit}`}
+            accessibilityHint="Double tap to select, or swipe up to play to table"
+            accessibilityState={{ selected: isSelected }}
+          >
+            <PlayingCard
+              suit={card.suit}
+              rank={card.rank}
+              faceUp={card.faceUp ?? true}
+              selected={isSelected}
+              size={size}
+            />
+          </Animated.View>
+        </GestureDetector>
+      </Animated.View>
+    );
+  }
+
   return (
     <Animated.View
       style={[
@@ -164,6 +235,7 @@ function HandCardItem({
     </Animated.View>
   );
 }
+
 
 const styles = StyleSheet.create({
   handContainer: {

@@ -20,6 +20,7 @@ import { FlipCard } from './components/FlipCard';
 import { CardHand } from './components/CardHand';
 import { CardTable } from './components/CardTable';
 import { FlyingCard } from './components/FlyingCard';
+import { MultiplayerArena } from './components/MultiplayerArena';
 import { useRoomRelay, generateRoomCode } from '@alambre/room-relay';
 import type { PlayingCardData, Rank, Suit } from './types';
 
@@ -47,11 +48,13 @@ export default function CardGameTestbed() {
   };
 
   const tabs = [
-    { id: 'relay', label: 'Edge Relay', content: <EdgeRelayScenario /> },
-    { id: 'flip', label: '3D Flip', content: <CardFlipScenario physics={physics} /> },
-    { id: 'hand', label: 'Hand Fan', content: <CardHandScenario physics={physics} /> },
+    { id: 'arena', label: 'Multiplayer Arena', content: <MultiplayerArena physics={physics} /> },
     { id: 'table', label: 'Table Play', content: <CardTableScenario physics={physics} /> },
+    { id: 'hand', label: 'Hand Fan', content: <CardHandScenario physics={physics} /> },
+    { id: 'flip', label: '3D Flip', content: <CardFlipScenario physics={physics} /> },
+    { id: 'relay', label: 'Raw Relay', content: <EdgeRelayScenario /> },
   ];
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -824,11 +827,10 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
     });
   };
 
-  const handlePlaySelected = () => {
-    if (!selectedId || activeFlight) return;
-    const cardIndex = hand.findIndex((c) => c.id === selectedId);
+  const handlePlayCard = (cardToPlay: PlayingCardData) => {
+    if (activeFlight) return;
+    const cardIndex = hand.findIndex((c) => c.id === cardToPlay.id);
     if (cardIndex === -1) return;
-    const cardToPlay = hand[cardIndex];
 
     const sourceCoord = getHandCardCoord(cardIndex, hand.length);
     const sourceRotation = getHandCardRotation(cardIndex, hand.length);
@@ -836,8 +838,10 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
 
     // Immediately remove from hand so remaining sibling cards
     // smoothly spring together to close the gap *during* flight
-    setHand((prev) => prev.filter((c) => c.id !== selectedId));
-    setSelectedId(null);
+    setHand((prev) => prev.filter((c) => c.id !== cardToPlay.id));
+    if (selectedId === cardToPlay.id) {
+      setSelectedId(null);
+    }
 
     setActiveFlight({
       id: `flight_${Date.now()}`,
@@ -850,6 +854,15 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
       destination: 'table',
     });
   };
+
+  const handlePlaySelected = () => {
+    if (!selectedId || activeFlight) return;
+    const cardToPlay = hand.find((c) => c.id === selectedId);
+    if (cardToPlay) {
+      handlePlayCard(cardToPlay);
+    }
+  };
+
 
   const handleFlightComplete = React.useCallback(() => {
     if (!activeFlight) return;
@@ -929,8 +942,8 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
                 activeFlight
                   ? 'Card in Flight...'
                   : selectedId
-                    ? 'Tap Table to Play Selected Card'
-                    : 'Select a Card from Hand or Tap Deck'
+                    ? 'Swipe Up or Tap Table to Play'
+                    : 'Swipe Up Card to Play, or Tap Deck to Draw'
               }
             />
           </AppCard>
@@ -961,6 +974,8 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
                 cards={hand}
                 selectedCardId={selectedId}
                 onSelectCard={(c) => setSelectedId(selectedId === c.id ? null : c.id)}
+                onPlayCard={handlePlayCard}
+                enableSwipeToPlay={true}
                 cardSpacing={36}
                 spreadAngle={5}
                 arcCurvature={3}
@@ -969,6 +984,7 @@ function CardTableScenario({ physics }: { physics: CardPhysicsConfig }) {
                 springStiffness={physics.springStiffness}
               />
             </View>
+
 
             <View style={styles.resetRow}>
               <AppButton

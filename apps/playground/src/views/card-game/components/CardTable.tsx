@@ -13,9 +13,15 @@ export interface CardTableProps {
   onDrawCard: () => void;
   onTablePress?: () => void;
   activePrompt?: string;
+  opponent?: {
+    name: string;
+    cardCount: number;
+    isTurn?: boolean;
+  };
   onMatLayout?: (layout: { x: number; y: number; width: number; height: number }) => void;
   onDeckLayout?: (layout: { x: number; y: number; width: number; height: number }) => void;
   onPlayZoneLayout?: (layout: { x: number; y: number; width: number; height: number }) => void;
+  onOpponentLayout?: (layout: { x: number; y: number; width: number; height: number }) => void;
 }
 
 export function CardTable({
@@ -24,9 +30,11 @@ export function CardTable({
   onDrawCard,
   onTablePress,
   activePrompt = 'Tap deck to draw, or select a card to play',
+  opponent,
   onMatLayout,
   onDeckLayout,
   onPlayZoneLayout,
+  onOpponentLayout,
 }: CardTableProps) {
   const { theme } = useLightDark();
 
@@ -37,6 +45,38 @@ export function CardTable({
     >
       {/* Table Inner Border & Felt Pattern */}
       <View style={styles.feltBorder} />
+
+      {/* Opponent Zone Header */}
+      {opponent && (
+        <View
+          onLayout={(e) => onOpponentLayout?.(e.nativeEvent.layout)}
+          style={styles.opponentRow}
+        >
+          <View style={styles.opponentInfo}>
+            <AppBadge
+              label={`${opponent.name} (${opponent.cardCount} cards)`}
+              tone={opponent.isTurn ? 'warning' : 'neutral'}
+              variant={opponent.isTurn ? 'solid' : 'soft'}
+              size="sm"
+            />
+            {opponent.isTurn && (
+              <AppBadge
+                label="THINKING..."
+                tone="warning"
+                variant="solid"
+                size="sm"
+              />
+            )}
+          </View>
+          <View style={styles.miniCardStack}>
+            {Array.from({ length: Math.min(6, opponent.cardCount) }).map((_, i) => (
+              <View key={i} style={[styles.miniCard, { marginLeft: i > 0 ? -12 : 0 }]}>
+                <CardBackPattern width={24} height={34} radius={3} />
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Table Status / Prompt */}
       <View style={styles.promptBadgeWrapper}>
@@ -49,6 +89,7 @@ export function CardTable({
       </View>
 
       <View style={styles.zonesRow}>
+
         {/* Draw Deck Zone */}
         <Pressable
           accessible={true}
@@ -165,10 +206,36 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
     pointerEvents: 'none',
   },
+  opponentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 8,
+  },
+  opponentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  miniCardStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  miniCard: {
+    borderRadius: 3,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   promptBadgeWrapper: {
     alignSelf: 'center',
     marginBottom: 12,
   },
+
   zonesRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',

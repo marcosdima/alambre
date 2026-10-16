@@ -24,9 +24,10 @@ export const pages: Record<string, AppPage> = {
     component: <KineticContainerTestbed />,
   },
   cardGame: {
-    title: { es: 'Card Game Engine (Pending)', en: 'Card Game Engine (Pending)' },
+    title: { es: 'Card Game Engine (Active)', en: 'Card Game Engine (Active)' },
     component: <CardGameTestbed />,
   },
+
 };
 
 export default pages;
