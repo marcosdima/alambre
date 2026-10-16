@@ -130,24 +130,29 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
     callbacksRef.current = { onFlip, onFlipComplete, springConfig };
   });
 
+  const handleFlipFinished = useCallback((flipped: boolean) => {
+    callbacksRef.current.onFlipComplete?.(flipped);
+  }, []);
+
   const animateTo = useCallback(
     (targetFlipped: boolean) => {
       const targetValue = targetFlipped ? 1 : 0;
 
       if (isReducedMotion) {
         progress.value = targetValue;
-        callbacksRef.current.onFlipComplete?.(targetFlipped);
+        handleFlipFinished(targetFlipped);
         return;
       }
 
-      progress.value = withSpring(targetValue, callbacksRef.current.springConfig, (finished) => {
+      const activeSpringConfig = callbacksRef.current.springConfig;
+      progress.value = withSpring(targetValue, activeSpringConfig, (finished) => {
         'worklet';
-        if (finished && callbacksRef.current.onFlipComplete) {
-          runOnJS(callbacksRef.current.onFlipComplete)(targetValue === 1);
+        if (finished) {
+          runOnJS(handleFlipFinished)(targetValue === 1);
         }
       });
     },
-    [isReducedMotion, progress],
+    [handleFlipFinished, isReducedMotion, progress],
   );
 
   useEffect(() => {

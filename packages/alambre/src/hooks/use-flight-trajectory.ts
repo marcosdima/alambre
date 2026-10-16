@@ -200,6 +200,11 @@ export function useFlightTrajectory(options: UseFlightTrajectoryOptions): UseFli
     toRot.value = targetRotation;
   }, [from.x, from.y, to.x, to.y, fromRotation, targetRotation, fromX, fromY, toX, toY, fromRot, toRot]);
 
+  const handleFlightFinished = useCallback(() => {
+    setIsFlying(false);
+    configRef.current.onComplete?.();
+  }, []);
+
   const start = useCallback(
     (overrides?: FlightStartOverrides) => {
       if (overrides?.from) {
@@ -226,8 +231,7 @@ export function useFlightTrajectory(options: UseFlightTrajectoryOptions): UseFli
 
       if (isReducedMotion) {
         progress.value = 1;
-        setIsFlying(false);
-        configRef.current.onComplete?.();
+        handleFlightFinished();
         return;
       }
 
@@ -240,15 +244,12 @@ export function useFlightTrajectory(options: UseFlightTrajectoryOptions): UseFli
         (finished) => {
           'worklet';
           if (finished) {
-            runOnJS(setIsFlying)(false);
-            if (configRef.current.onComplete) {
-              runOnJS(configRef.current.onComplete)();
-            }
+            runOnJS(handleFlightFinished)();
           }
         },
       );
     },
-    [fromRot, fromX, fromY, isReducedMotion, progress, toRot, toX, toY],
+    [fromRot, fromX, fromY, handleFlightFinished, isReducedMotion, progress, toRot, toX, toY],
   );
 
   const reset = useCallback(() => {

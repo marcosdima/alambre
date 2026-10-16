@@ -255,6 +255,14 @@ export function useKineticSwipe(
     setIsDismissed(false);
   }, [isDismissedShared, translateX, translateY]);
 
+  const handleDragStartJS = useCallback(() => {
+    optionsRef.current.onDragStart?.();
+  }, []);
+
+  const handleDragEndJS = useCallback(() => {
+    optionsRef.current.onDragEnd?.();
+  }, []);
+
   // Dual Gesture 1: Gesture.Pan (UI-thread, zero JS latency)
   const panGesture = useMemo(() => {
     return Gesture.Pan()
@@ -265,8 +273,7 @@ export function useKineticSwipe(
         isDragging.value = true;
         startX.value = translateX.value;
         startY.value = translateY.value;
-        const cb = optionsRef.current.onDragStart;
-        if (cb) runOnJS(cb)();
+        runOnJS(handleDragStartJS)();
       })
       .onUpdate((event) => {
         'worklet';
@@ -278,8 +285,7 @@ export function useKineticSwipe(
         'worklet';
         if (isDismissedShared.value) return;
         isDragging.value = false;
-        const endCb = optionsRef.current.onDragEnd;
-        if (endCb) runOnJS(endCb)();
+        runOnJS(handleDragEndJS)();
 
         const tx = translateX.value;
         const ty = translateY.value;
@@ -319,6 +325,8 @@ export function useKineticSwipe(
     translateY,
     triggerDismiss,
     triggerSnapBack,
+    handleDragStartJS,
+    handleDragEndJS,
   ]);
 
   // Dual Gesture 2: PanResponder (Universal fallback for bare React Native)
