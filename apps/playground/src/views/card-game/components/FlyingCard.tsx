@@ -1,14 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Easing,
-  runOnJS,
-  Extrapolation,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
+import { useFlightTrajectory } from 'alambre';
 import { PlayingCard } from './PlayingCard';
 import type { PlayingCardData } from '../types';
 
@@ -35,78 +28,24 @@ export function FlyingCard({
   onComplete,
   size = 'md',
 }: FlyingCardProps) {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = 0;
-    progress.value = withTiming(
-      1,
-      {
-        duration: Math.max(260, durationMs),
-        easing: Easing.bezier(0.22, 1, 0.36, 1), // Snappy launch with smooth decelerating landing
-      },
-      (finished) => {
-        'worklet';
-        if (finished) {
-          runOnJS(onComplete)();
-        }
-      },
-    );
-  }, [durationMs, onComplete, progress, from.x, from.y, to.x, to.y]);
-
-  const containerAnimatedStyle = useAnimatedStyle(() => {
-    const curX = interpolate(progress.value, [0, 1], [from.x, to.x]);
-    // Parabolic mid-flight arc: lifts upward in Y
-    const arcLift = -Math.sin(progress.value * Math.PI) * 55;
-    const curY = interpolate(progress.value, [0, 1], [from.y, to.y]) + arcLift;
-
-    const curRot = interpolate(progress.value, [0, 1], [fromRotation, targetRotation]);
-    const scale = interpolate(
-      progress.value,
-      [0, 0.5, 1],
-      [0.9, 1.15, 1],
-      Extrapolation.CLAMP,
-    );
-
-    return {
-      transform: [
-        { perspective: 1000 },
-        { translateX: curX },
-        { translateY: curY },
-        { rotate: `${curRot}deg` },
-        { scale },
-      ],
-      zIndex: 9999,
-    };
-  });
-
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = flipOnFly
-      ? interpolate(progress.value, [0, 1], [180, 0], Extrapolation.CLAMP)
-      : 0;
-    const opacity = flipOnFly && progress.value < 0.5 ? 0 : 1;
-    return {
-      transform: [{ rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: progress.value >= 0.5 ? 2 : 1,
-    };
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    if (!flipOnFly) return { opacity: 0 };
-    const rotateY = interpolate(progress.value, [0, 1], [360, 180], Extrapolation.CLAMP);
-    const opacity = progress.value >= 0.5 ? 0 : 1;
-    return {
-      transform: [{ rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: progress.value < 0.5 ? 2 : 1,
-    };
+  const { animatedStyle, frontAnimatedStyle, backAnimatedStyle } = useFlightTrajectory({
+    from,
+    to,
+    fromRotation,
+    targetRotation,
+    flipOnFly,
+    durationMs: Math.max(260, durationMs),
+    liftHeight: 55,
+    peakScale: 1.15,
+    startScale: 0.9,
+    endScale: 1.0,
+    onComplete,
   });
 
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.flyingWrapper, containerAnimatedStyle]}
+      style={[styles.flyingWrapper, animatedStyle]}
     >
       {/* Front Face */}
       <Animated.View style={[styles.cardLayer, frontAnimatedStyle]}>

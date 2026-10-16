@@ -1,12 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Pressable, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
+import { useSpatialFlip } from 'alambre';
 import { PlayingCard, type PlayingCardProps } from './PlayingCard';
 
 const CARD_SIZES = {
@@ -36,54 +31,16 @@ export function FlipCard({
   springStiffness = 110,
 }: FlipCardProps) {
   const cardDim = CARD_SIZES[size];
-  // 0 = faceUp (front), 1 = faceDown (back)
-  const flipProgress = useSharedValue(faceUp ? 0 : 1);
 
-  useEffect(() => {
-    flipProgress.value = withSpring(faceUp ? 0 : 1, {
+  const { frontAnimatedStyle, backAnimatedStyle, containerAnimatedStyle } = useSpatialFlip({
+    flipped: !faceUp,
+    liftHeight: 22,
+    peakScale: 1.08,
+    springConfig: {
       damping: springDamping,
       stiffness: springStiffness,
       mass: 0.8,
-    });
-  }, [faceUp, flipProgress, springDamping, springStiffness]);
-
-  const frontAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(flipProgress.value, [0, 1], [0, 180], Extrapolation.CLAMP);
-    const opacity = flipProgress.value > 0.5 ? 0 : 1;
-    return {
-      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: flipProgress.value < 0.5 ? 2 : 1,
-    };
-  });
-
-  const backAnimatedStyle = useAnimatedStyle(() => {
-    const rotateY = interpolate(flipProgress.value, [0, 1], [180, 360], Extrapolation.CLAMP);
-    const opacity = flipProgress.value <= 0.5 ? 0 : 1;
-    return {
-      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
-      opacity,
-      zIndex: flipProgress.value >= 0.5 ? 2 : 1,
-    };
-  });
-
-  const containerAnimatedStyle = useAnimatedStyle(() => {
-    // Parabolic lift during the flip: peaks at midpoint (progress 0.5)
-    const liftY = interpolate(
-      flipProgress.value,
-      [0, 0.5, 1],
-      [0, -22, 0],
-      Extrapolation.CLAMP,
-    );
-    const scale = interpolate(
-      flipProgress.value,
-      [0, 0.5, 1],
-      [1, 1.08, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      transform: [{ translateY: liftY }, { scale }],
-    };
+    },
   });
 
   return (

@@ -5,6 +5,7 @@ import Animated, {
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated';
+import { calculateHandFan } from 'alambre';
 import { PlayingCard } from './PlayingCard';
 import type { PlayingCardData } from '../types';
 
@@ -35,10 +36,6 @@ export const CardHand = memo(function CardHand({
 }: CardHandProps) {
   const total = cards.length;
 
-  // Auto-compress card spacing if hand grows large to prevent overflowing screen boundaries
-  const maxHandSpan = 270;
-  const effectiveSpacing = total > 1 ? Math.min(cardSpacing, maxHandSpan / (total - 1)) : cardSpacing;
-
   return (
     <View
       onLayout={(e) => onHandLayout?.(e.nativeEvent.layout)}
@@ -53,7 +50,7 @@ export const CardHand = memo(function CardHand({
           isSelected={selectedCardId === card.id}
           spreadAngle={spreadAngle}
           arcCurvature={arcCurvature}
-          cardSpacing={effectiveSpacing}
+          cardSpacing={cardSpacing}
           size={size}
           springDamping={springDamping}
           springStiffness={springStiffness}
@@ -91,30 +88,41 @@ function HandCardItem({
   springStiffness,
   onPress,
 }: HandCardItemProps) {
-  const normalized = total > 1 ? index - (total - 1) / 2 : 0;
-  const targetRotation = normalized * spreadAngle;
-  const targetX = normalized * cardSpacing;
-  const targetY = Math.abs(normalized) * arcCurvature;
+  const fanTransform = calculateHandFan(index, total, {
+    spreadAngle,
+    arcCurvature,
+    itemSpacing: cardSpacing,
+    isSelected,
+  });
 
   // If card is currently arriving via flight, keep invisible so siblings open slot smoothly
   const initialOp = card.isArriving ? 0 : 0.4;
-  const transX = useSharedValue(targetX);
-  const transY = useSharedValue(targetY + (card.isArriving ? 0 : 24));
-  const rot = useSharedValue(targetRotation);
+  const transX = useSharedValue(fanTransform.translateX);
+  const transY = useSharedValue(fanTransform.translateY + (card.isArriving ? 0 : 24));
+  const rot = useSharedValue(fanTransform.rotateDeg);
   const sc = useSharedValue(card.isArriving ? 1 : 0.85);
   const op = useSharedValue(initialOp);
 
   React.useEffect(() => {
-    const liftY = isSelected ? -36 : 0;
-    const finalRot = isSelected ? targetRotation * 0.15 : targetRotation;
-    const finalScale = isSelected ? 1.08 : 1.0;
-
-    transX.value = withSpring(targetX, { damping: springDamping, stiffness: springStiffness });
-    transY.value = withSpring(targetY + liftY, { damping: springDamping, stiffness: springStiffness });
-    rot.value = withSpring(finalRot, { damping: springDamping, stiffness: springStiffness });
-    sc.value = withSpring(finalScale, { damping: Math.max(10, springDamping - 2), stiffness: springStiffness + 10 });
+    transX.value = withSpring(fanTransform.translateX, { damping: springDamping, stiffness: springStiffness });
+    transY.value = withSpring(fanTransform.translateY, { damping: springDamping, stiffness: springStiffness });
+    rot.value = withSpring(fanTransform.rotateDeg, { damping: springDamping, stiffness: springStiffness });
+    sc.value = withSpring(fanTransform.scale, { damping: Math.max(10, springDamping - 2), stiffness: springStiffness + 10 });
     op.value = card.isArriving ? 0 : 1;
-  }, [targetX, targetY, targetRotation, isSelected, card.isArriving, transX, transY, rot, sc, op, springDamping, springStiffness]);
+  }, [
+    fanTransform.translateX,
+    fanTransform.translateY,
+    fanTransform.rotateDeg,
+    fanTransform.scale,
+    card.isArriving,
+    transX,
+    transY,
+    rot,
+    sc,
+    op,
+    springDamping,
+    springStiffness,
+  ]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -132,7 +140,7 @@ function HandCardItem({
     <Animated.View
       style={[
         styles.cardWrapper,
-        { zIndex: isSelected ? 99 : index + 1 },
+        { zIndex: fanTransform.zIndex },
         animatedStyle,
       ]}
     >
