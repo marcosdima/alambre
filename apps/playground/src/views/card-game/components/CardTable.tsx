@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { useLightDark } from '../../../providers/theme';
 import AppBadge from '../../../components/AppBadge';
 import { AppText } from '../../../components/AppTitle';
 import { PlayingCard, CardBackPattern } from './PlayingCard';
@@ -36,12 +35,10 @@ export function CardTable({
   onPlayZoneLayout,
   onOpponentLayout,
 }: CardTableProps) {
-  const { theme } = useLightDark();
-
   return (
     <View
       onLayout={(e) => onMatLayout?.(e.nativeEvent.layout)}
-      style={[styles.tableMat, { borderColor: theme.border }]}
+      style={styles.tableMat}
     >
       {/* Table Inner Border & Felt Pattern */}
       <View style={styles.feltBorder} />
@@ -96,6 +93,7 @@ export function CardTable({
           accessibilityRole="button"
           accessibilityLabel={`Draw deck, ${deckCount} cards remaining`}
           accessibilityHint="Double tap to draw a card to your hand"
+          accessibilityState={{ disabled: deckCount === 0 }}
           onPress={onDrawCard}
           onLayout={(e) => onDeckLayout?.(e.nativeEvent.layout)}
           disabled={deckCount === 0}
@@ -165,6 +163,7 @@ export function CardTable({
                         rank={card.rank}
                         faceUp={true}
                         size="md"
+                        accessible={false}
                       />
                     </Animated.View>
                   );
@@ -302,7 +301,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: 'rgba(255, 255, 255, 0.75)',
     fontSize: 11,
   },
   playZone: {
@@ -321,20 +320,20 @@ const styles = StyleSheet.create({
     height: 116,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
   },
   dropZoneText: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   dropZoneSubtext: {
-    color: 'rgba(255, 255, 255, 0.35)',
+    color: 'rgba(255, 255, 255, 0.70)',
     fontSize: 9,
   },
   playedCardsStack: {
@@ -348,7 +347,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   zoneLabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.6,

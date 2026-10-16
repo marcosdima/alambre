@@ -54,6 +54,7 @@ export function FlyingCard({
           rank={card.rank}
           faceUp={true}
           size={size}
+          accessible={false}
         />
       </Animated.View>
 
@@ -65,6 +66,7 @@ export function FlyingCard({
             rank={card.rank}
             faceUp={false}
             size={size}
+            accessible={false}
           />
         </Animated.View>
       )}

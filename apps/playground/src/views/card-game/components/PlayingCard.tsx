@@ -11,6 +11,7 @@ export interface PlayingCardProps {
   size?: 'sm' | 'md' | 'lg';
   style?: StyleProp<ViewStyle>;
   elevation?: number;
+  accessible?: boolean;
 }
 
 const SIZE_CONFIGS = {
@@ -26,6 +27,7 @@ export const PlayingCard = memo(function PlayingCard({
   selected = false,
   size = 'md',
   style,
+  accessible = true,
 }: PlayingCardProps) {
   const config = SIZE_CONFIGS[size];
   const isRed = suit === 'hearts' || suit === 'diamonds';
@@ -34,8 +36,8 @@ export const PlayingCard = memo(function PlayingCard({
   if (!faceUp) {
     return (
       <View
-        accessible={true}
-        accessibilityLabel="Playing card, face down"
+        accessible={accessible}
+        accessibilityLabel={accessible ? 'Playing card, face down' : undefined}
         style={[
           styles.cardBase,
           {
@@ -56,8 +58,8 @@ export const PlayingCard = memo(function PlayingCard({
 
   return (
     <View
-      accessible={true}
-      accessibilityLabel={`${rank} of ${suit}`}
+      accessible={accessible}
+      accessibilityLabel={accessible ? `${rank} of ${suit}` : undefined}
       style={[
         styles.cardBase,
         {

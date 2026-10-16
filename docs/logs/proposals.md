@@ -303,5 +303,38 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
   - Added 24 unit and contract tests in `packages/room-relay/tests/` and re-pointed `apps/playground/src/views/card-game/CardGameTestbed.tsx` and playground tests to consume `@alambre/room-relay`.
   - Documented in `docs/reference/room-relay.md`, `docs/framework/architecture.md` §8, and `docs/index.md`.
 
+---
+
+## Proposal 11: Headless Kinetic Pipeline & Inter-Animation Coordinator (`useKineticPipeline`)
+- **Status**: OPEN (Proposed)
+- **Author**: @lead
+
+### 1. Current Problem
+- **Ad-Hoc Animation Sticking:** While `alambre` provides isolated kinetic primitives (`useKineticSwipe`, `useFlightTrajectory`, `useSpatialFlip`, `calculateHandFan`), chaining them across interaction lifecycles currently relies on asynchronous React state handoffs (`useState` + `onComplete` / `onDismissStart` callbacks).
+- **React Commit Latency & Visual Flashing:** Unmounting an element in one container (e.g. `CardHand`) while mounting its projectile in another (e.g. `FlyingCard`) introduces a 1–2 frame React reconciliation delay. On lower-end devices or under JS thread activity, this causes cards to flicker, briefly vanish, or snap to slightly mismatched coordinate origins.
+- **Inertia & Velocity Discontinuity:** When a card is dismissed via upward flick (`useKineticSwipe`), its terminal gesture velocity ($v_x, v_y$) is dropped upon release, resetting initial velocity to zero in `useFlightTrajectory` instead of smoothly continuing the ballistic impulse.
+- **Race Conditions in Event Sequencing:** Multi-card sequential events (e.g. dealing 5 cards across room relay or rapid consecutive discards) lack a coordinated FIFO queue, causing in-flight transitions to overwrite one another's target coordinates.
+
+### 2. Proposed Solution
+Extract a headless, presentation-neutral **Kinetic Pipeline** primitive:
+1. **`useKineticPipeline<TStage extends string, TContext>`:**
+   - Finite State Machine on the UI thread managing transition stages (e.g. `'idle' -> 'drag' -> 'flight' -> 'landing' -> 'settled'`).
+   - Exposes: `{ stage, isTransitioning, startStage, nextStage, context, sharedPosition }`.
+   - Continuous shared value propagation: `translateX`, `translateY`, `rotation`, and `scale` hand off smoothly from gesture responders to flight trajectories without unmounting or re-rendering.
+2. **Velocity Continuity Vector:**
+   - Injects gesture release velocities ($v_x, v_y$) into ballistic trajectories to preserve physical inertia across boundaries.
+3. **Atomic Kinetic Queue:**
+   - Built-in FIFO stage queue (`enqueueStage`, `enqueueBatch`) with configurable stagger intervals, preventing multi-card action collisions.
+4. **Zero-Tearing Slot Placeholders:**
+   - Coordinate reservation helper ensuring origin layout slots maintain their spatial geometry until the projectile reaches its destination.
+
+### 3. Pros & Cons
+- **Pros:**
+  - Completely eliminates visual stutter, flashing, and coordinate jumps between gestures, flights, and landing surfaces.
+  - Satisfies the 3-Line Rule for complex multi-stage flows without requiring application developers to write manual state machines or coordinate glue.
+  - Retains headless purity: zero native dependencies, 100% presentation-agnostic.
+- **Cons:**
+  - Adds one headless coordination hook to `packages/alambre`.
+
 
 

@@ -37,6 +37,10 @@ export interface UseKineticSwipeOptions {
   dismissDuration?: number;
   /** Whether swiping interaction is disabled. @default false */
   disabled?: boolean;
+  /** Horizontal activation threshold in points before gesture activates. */
+  activeOffsetX?: number | [number, number];
+  /** Vertical activation threshold in points before gesture activates. */
+  activeOffsetY?: number | [number, number];
   /** Force reduced motion (snaps without oscillations). */
   forceReducedMotion?: boolean;
   /** Fired when dismiss threshold or escape velocity is triggered (start of exit animation). */
@@ -107,6 +111,8 @@ export function useKineticSwipe(
     dismissDistance = 600,
     dismissDuration = 260,
     disabled = false,
+    activeOffsetX,
+    activeOffsetY,
     forceReducedMotion = false,
     onDismissStart,
     onDismiss,
@@ -136,6 +142,8 @@ export function useKineticSwipe(
     dismissDistance,
     dismissDuration,
     disabled,
+    activeOffsetX,
+    activeOffsetY,
     isReducedMotion,
     onDismissStart,
     onDismiss,
@@ -154,6 +162,8 @@ export function useKineticSwipe(
       dismissDistance,
       dismissDuration,
       disabled,
+      activeOffsetX,
+      activeOffsetY,
       isReducedMotion,
       onDismissStart,
       onDismiss,
@@ -170,6 +180,8 @@ export function useKineticSwipe(
     dismissDistance,
     dismissDuration,
     disabled,
+    activeOffsetX,
+    activeOffsetY,
     isReducedMotion,
     onDismissStart,
     onDismiss,
@@ -265,8 +277,14 @@ export function useKineticSwipe(
 
   // Dual Gesture 1: Gesture.Pan (UI-thread, zero JS latency)
   const panGesture = useMemo(() => {
-    return Gesture.Pan()
-      .enabled(!disabled)
+    const gesture = Gesture.Pan().enabled(!disabled);
+    if (activeOffsetX !== undefined) {
+      gesture.activeOffsetX(activeOffsetX);
+    }
+    if (activeOffsetY !== undefined) {
+      gesture.activeOffsetY(activeOffsetY);
+    }
+    return gesture
       .onStart(() => {
         'worklet';
         if (isDismissedShared.value) return;
@@ -314,6 +332,8 @@ export function useKineticSwipe(
       });
   }, [
     disabled,
+    activeOffsetX,
+    activeOffsetY,
     threshold,
     escapeVelocity,
     directions,

@@ -48,7 +48,7 @@ export default function CardGameTestbed() {
   };
 
   const tabs = [
-    { id: 'arena', label: 'Multiplayer Arena', content: <MultiplayerArena physics={physics} /> },
+    { id: 'arena', label: 'Relay Arena', content: <MultiplayerArena physics={physics} /> },
     { id: 'table', label: 'Table Play', content: <CardTableScenario physics={physics} /> },
     { id: 'hand', label: 'Hand Fan', content: <CardHandScenario physics={physics} /> },
     { id: 'flip', label: '3D Flip', content: <CardFlipScenario physics={physics} /> },
@@ -533,6 +533,7 @@ function CardFlipScenario({ physics }: { physics: CardPhysicsConfig }) {
 }
 
 function FlipWithTranslationDemo({ flightDuration }: { flightDuration: number }) {
+  const { theme } = useLightDark();
   const [atDestination, setAtDestination] = useState(false);
   const [flightKey, setFlightKey] = useState(0);
 
@@ -545,13 +546,13 @@ function FlipWithTranslationDemo({ flightDuration }: { flightDuration: number })
   const to = atDestination ? { x: -90, y: 0 } : { x: 90, y: 0 };
 
   return (
-    <View style={styles.travelTrackContainer}>
+    <View style={[styles.travelTrackContainer, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderWidth: 1 }]}>
       <View style={styles.trackLane}>
-        <View style={styles.trackSlot}>
-          <AppText style={styles.slotLabel}>DEALER (BACK)</AppText>
+        <View style={[styles.trackSlot, { borderColor: theme.border }]}>
+          <AppText style={[styles.slotLabel, { color: theme.muted }]}>DEALER (BACK)</AppText>
         </View>
-        <View style={styles.trackSlot}>
-          <AppText style={styles.slotLabel}>PLAYER (FRONT)</AppText>
+        <View style={[styles.trackSlot, { borderColor: theme.border }]}>
+          <AppText style={[styles.slotLabel, { color: theme.muted }]}>PLAYER (FRONT)</AppText>
         </View>
       </View>
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { View, StyleSheet, TextInput } from 'react-native';
 import { useLightDark } from '../../../providers/theme';
 import AppCard from '../../../components/AppCard';
 import AppButton from '../../../components/AppButton';
@@ -441,11 +441,11 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
+    <View style={styles.scrollContent}>
       {/* Room Relay Connection & Transport Bar */}
       <AppCard variant="outlined" style={styles.card}>
         <View style={styles.headerRow}>
-          <View>
+          <View style={styles.roomHeaderLeft}>
             <View style={styles.roomTitleRow}>
               <AppTitle level={3}>Room #{activeRoomCode}</AppTitle>
               <AppBadge
@@ -473,13 +473,14 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
             tone="primary"
             size="sm"
             label="New Room"
+            hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
             onPress={handleNewRoom}
           />
         </View>
 
         {/* Transport Mode Switcher */}
-        <View style={styles.transportRow}>
-          <AppText style={styles.label}>Transport:</AppText>
+        <View style={styles.settingBlock}>
+          <AppText style={styles.label}>Transport Hub:</AppText>
           <AppSegmentedControl
             options={[
               { label: 'Simulated Hub', value: 'simulated' },
@@ -494,6 +495,9 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
           <View style={styles.wsRow}>
             <AppText style={styles.label}>Edge URL:</AppText>
             <TextInput
+              accessible={true}
+              accessibilityLabel="WebSocket Server URL"
+              accessibilityHint="Enter edge WebSocket relay server address"
               style={[styles.input, { color: theme.color, borderColor: theme.border }]}
               value={customWsUrl}
               onChangeText={setCustomWsUrl}
@@ -517,32 +521,32 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
             />
           </View>
 
-          <View style={styles.gameButtonRow}>
-            <AppButton
-              variant="solid"
-              tone="primary"
-              size="sm"
-              label="Deal 5 Cards"
-              disabled={deck.length < 10 || aliceFlight !== null || bobFlight !== null}
-              onPress={handleDealGame}
-            />
-            <AppButton
-              variant="ghost"
-              tone="neutral"
-              size="sm"
-              label="Reset"
-              onPress={handleResetGame}
-            />
-          </View>
+          <AppButton
+            variant="ghost"
+            tone="neutral"
+            size="sm"
+            label="Reset"
+            hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+            onPress={handleResetGame}
+          />
         </View>
 
-        <View style={styles.actionBanner}>
+        <AppButton
+          variant="solid"
+          tone="primary"
+          size="md"
+          label="Deal 5 Cards"
+          disabled={deck.length < 10 || aliceFlight !== null || bobFlight !== null}
+          onPress={handleDealGame}
+        />
+
+        <View style={[styles.actionBanner, { backgroundColor: theme.primarySoft }]}>
           <AppText style={styles.actionText}>{lastAction}</AppText>
         </View>
 
         {/* Perspective View Switcher */}
-        <View style={styles.perspectiveRow}>
-          <AppText style={styles.label}>Perspective:</AppText>
+        <View style={styles.settingBlock}>
+          <AppText style={styles.label}>Perspective View:</AppText>
           <AppSegmentedControl
             options={[
               { label: 'Alice View', value: 'alice' },
@@ -603,7 +607,7 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
           }}
         />
       )}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -850,6 +854,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  roomHeaderLeft: {
+    flex: 1,
+    marginRight: 8,
+  },
   roomTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -859,10 +867,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
   },
-  transportRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  settingBlock: {
+    gap: 8,
     marginTop: 4,
   },
   wsRow: {
@@ -896,13 +902,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  gameButtonRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   actionBanner: {
-    backgroundColor: 'rgba(0, 87, 216, 0.08)',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -910,12 +910,6 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 13,
     fontWeight: '500',
-  },
-  perspectiveRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
   },
   tableArena: {
     position: 'relative',

@@ -5,6 +5,7 @@ import Animated, {
   withSpring,
   useSharedValue,
   runOnJS,
+  useReducedMotion,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { calculateHandFan, useKineticSwipe } from 'alambre';
@@ -117,7 +118,17 @@ function HandCardItem({
   const sc = useSharedValue(card.isArriving ? 1 : 0.85);
   const op = useSharedValue(initialOp);
 
+  const systemReducedMotion = useReducedMotion();
+
   React.useEffect(() => {
+    if (systemReducedMotion) {
+      transX.value = fanTransform.translateX;
+      transY.value = fanTransform.translateY;
+      rot.value = fanTransform.rotateDeg;
+      sc.value = fanTransform.scale;
+      op.value = card.isArriving ? 0 : 1;
+      return;
+    }
     transX.value = withSpring(fanTransform.translateX, { damping: springDamping, stiffness: springStiffness });
     transY.value = withSpring(fanTransform.translateY, { damping: springDamping, stiffness: springStiffness });
     rot.value = withSpring(fanTransform.rotateDeg, { damping: springDamping, stiffness: springStiffness });
@@ -129,6 +140,7 @@ function HandCardItem({
     fanTransform.rotateDeg,
     fanTransform.scale,
     card.isArriving,
+    systemReducedMotion,
     transX,
     transY,
     rot,
@@ -154,6 +166,7 @@ function HandCardItem({
     directions: ['up'],
     threshold: 55,
     escapeVelocity: 450,
+    activeOffsetY: [-12, 12],
     disabled: card.isArriving || !enableSwipeToPlay || !onPlayCard,
     onDismissStart: () => {
       onPlayCard?.(card);
@@ -162,12 +175,13 @@ function HandCardItem({
 
   const tapGesture = useMemo(() => {
     return Gesture.Tap()
+      .enabled(!card.isArriving)
       .maxDuration(250)
       .onEnd(() => {
         'worklet';
         runOnJS(onPress)();
       });
-  }, [onPress]);
+  }, [card.isArriving, onPress]);
 
   const gesture = useMemo(() => {
     if (!enableSwipeToPlay || !onPlayCard) {
@@ -200,6 +214,7 @@ function HandCardItem({
               faceUp={card.faceUp ?? true}
               selected={isSelected}
               size={size}
+              accessible={false}
             />
           </Animated.View>
         </GestureDetector>
@@ -230,6 +245,7 @@ function HandCardItem({
           faceUp={card.faceUp ?? true}
           selected={isSelected}
           size={size}
+          accessible={false}
         />
       </Pressable>
     </Animated.View>

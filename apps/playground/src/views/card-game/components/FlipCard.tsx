@@ -67,6 +67,7 @@ export function FlipCard({
             faceUp={true}
             selected={selected}
             size={size}
+            accessible={false}
           />
         </Animated.View>
 
@@ -78,6 +79,7 @@ export function FlipCard({
             faceUp={false}
             selected={selected}
             size={size}
+            accessible={false}
           />
         </Animated.View>
       </Animated.View>

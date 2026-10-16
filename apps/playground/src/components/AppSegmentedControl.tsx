@@ -79,6 +79,7 @@ export default function AppSegmentedControl<T = string>({
 const styles = StyleSheet.create({
   wrapper: {
     gap: 6,
+    width: '100%',
   },
   label: {
     fontSize: 12,
