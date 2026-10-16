@@ -89,6 +89,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.KineticOrchestratorProvider).toBe('function');
     expect(typeof Alambre.useKineticOrchestratorItem).toBe('function');
     expect(typeof Alambre.usePressKinetics).toBe('function');
+    expect(typeof Alambre.useSpatialFlip).toBe('function');
+    expect(typeof Alambre.useFlightTrajectory).toBe('function');
+    expect(typeof Alambre.calculateHandFan).toBe('function');
+    expect(typeof Alambre.parabolicAltitudeCurve).toBe('function');
     expect(typeof Alambre.criticallyDampedCurve).toBe('function');
     expect(typeof Alambre.bouncyCurve).toBe('function');
     expect(typeof Alambre.cubicEaseOutCurve).toBe('function');
@@ -351,6 +355,21 @@ describe('public API — type surface', () => {
       disabled: false,
     };
     expect(pressKineticsOptions).toBeDefined();
+
+    const spatialFlipOptions: Alambre.UseSpatialFlipOptions = {
+      liftHeight: 20,
+      direction: 'horizontal',
+    };
+    const flightOptions: Alambre.UseFlightTrajectoryOptions = {
+      from: { x: 0, y: 0 },
+      to: { x: 100, y: 200 },
+    };
+    const handFanOptions: Alambre.HandFanOptions = {
+      spreadAngle: 5,
+    };
+    expect(spatialFlipOptions).toBeDefined();
+    expect(flightOptions).toBeDefined();
+    expect(handFanOptions).toBeDefined();
 
 
     expect(buttonProps).toBeDefined();

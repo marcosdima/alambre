@@ -154,6 +154,8 @@ export {
   KineticOrchestratorProvider,
   useKineticOrchestratorItem,
   usePressKinetics,
+  useSpatialFlip,
+  useFlightTrajectory,
 } from './hooks';
 export type {
   HistoryState,
@@ -196,6 +198,12 @@ export type {
   KineticItemPreset,
   UsePressKineticsOptions,
   UsePressKineticsReturn,
+  UseSpatialFlipOptions,
+  UseSpatialFlipReturn,
+  Point2D,
+  FlightStartOverrides,
+  UseFlightTrajectoryOptions,
+  UseFlightTrajectoryReturn,
 } from './hooks';
 
 
@@ -259,8 +267,16 @@ export {
   cubicEaseOutCurve,
   polynomialOvershootCurve,
   calculateWavefrontPhase,
+  parabolicAltitudeCurve,
+  calculateHandFan,
 } from './core';
-export type { Store, StoreListener, WavefrontPhaseOptions } from './core';
+export type {
+  Store,
+  StoreListener,
+  WavefrontPhaseOptions,
+  HandFanOptions,
+  HandFanItemTransform,
+} from './core';
 
 
 // Spatial components.

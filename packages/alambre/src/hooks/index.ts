@@ -96,5 +96,20 @@ export type {
   KineticPreset,
   KineticItemPreset,
 } from './use-wavefront';
+export {
+  useSpatialFlip,
+} from './use-spatial-flip';
+export type {
+  UseSpatialFlipOptions,
+  UseSpatialFlipReturn,
+} from './use-spatial-flip';
 
-
+export {
+  useFlightTrajectory,
+} from './use-flight-trajectory';
+export type {
+  Point2D,
+  FlightStartOverrides,
+  UseFlightTrajectoryOptions,
+  UseFlightTrajectoryReturn,
+} from './use-flight-trajectory';
