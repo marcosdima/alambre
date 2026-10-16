@@ -1,11 +1,16 @@
-export type Langs = Record<string, object>;
+export type LangDictionary = Record<string, any>;
 
-export type LangState<T extends Langs> = {
+export type Langs<L extends LangDictionary = Record<string, any>> = Record<string, L>;
+
+export type LangState<T extends Record<string, any>> = {
   currentLang: keyof T;
 };
 
-export type UseLangType<T extends Langs> = {
-  lang: T[keyof T];
-  currentLang: keyof T;
+export type UseLangType<
+  T extends Record<string, any>,
+  K extends keyof T = keyof T,
+> = {
+  lang: T[K];
+  currentLang: K;
   changeLang: (newLangKey: keyof T) => Promise<void>;
 };

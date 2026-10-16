@@ -1,17 +1,30 @@
 import type { FC, ReactNode, ReactElement } from 'react';
 import type { Storage } from '../../types/actions';
-import createStore from '../../core/create-store';
+import createStore, { type Store } from '../../core/create-store';
 import { useExternalStore } from '../../core/use-external-store';
-import type { Langs, LangState, UseLangType } from './lang-types';
+import type { LangDictionary, LangState, UseLangType } from './lang-types';
 
 const langKey = 'currentLanguage';
 
 const LangProvider: FC<{ children?: ReactNode }> = ({ children }) => (children ?? null) as ReactElement | null;
 
-const createLang = <T extends Langs>(
+export interface CreateLangReturn<
+  T extends Record<string, L>,
+  L extends LangDictionary = T[keyof T],
+> {
+  store: Store<LangState<T>>;
+  actions: {
+    changeLang: (lang: keyof T) => Promise<void>;
+  };
+  useLang: () => UseLangType<T>;
+  LangProvider: FC<{ children?: ReactNode }>;
+}
+
+const createLang = <T extends Record<string, L>, L extends LangDictionary = T[keyof T]>(
   langs: T,
   storage: Storage,
-) => {
+): CreateLangReturn<T, L> => {
+
   const firstLangKey = Object.keys(langs).shift() as keyof T | undefined;
 
   if (!firstLangKey) {
@@ -55,3 +68,4 @@ const createLang = <T extends Langs>(
 };
 
 export default createLang;
+

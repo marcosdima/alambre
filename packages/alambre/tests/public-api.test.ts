@@ -288,7 +288,19 @@ describe('public API — type surface', () => {
       loading: false,
       saveField: async () => undefined,
     };
+    const _sampleLangs: Alambre.Langs<{ greeting: string }> = {
+      en: { greeting: 'Hello' },
+      es: { greeting: 'Hola' },
+    };
+    const _langState: Alambre.LangState<typeof _sampleLangs> = { currentLang: 'en' };
+    const _useLangType: Alambre.UseLangType<typeof _sampleLangs> = {
+      lang: { greeting: 'Hello' },
+      currentLang: 'en',
+      changeLang: async () => undefined,
+    };
+
     const useCollectionType: Alambre.UseCollectionType<{ id: string }> = {
+
       records: [{ id: 'item-1' }],
       loading: false,
       add: async () => undefined,

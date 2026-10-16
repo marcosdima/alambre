@@ -51,7 +51,9 @@ export type {
 
 // Capability types.
 export type { ConfigState, UseConfigType } from './capabilities/config';
+export type { LangDictionary, Langs, LangState, UseLangType, CreateLangReturn } from './capabilities/lang';
 export type { UseCollectionType } from './capabilities/collection';
+
 
 export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';

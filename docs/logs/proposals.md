@@ -79,12 +79,18 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 
 ---
 
-## Proposal 3: Retiring the `TimePicker` Presentation Exception into Headless Wheel Physics (`useWheelPicker`)
+## Proposal 3: Retiring the `TimePicker` Presentation Exception into Headless Wheel Physics (`useWheelPicker`) [RESOLVED]
+
+### Status: RESOLVED
+- Shipped headless wheel picker physics hook `useWheelPicker` in `packages/alambre/src/behaviors/wheel/useWheelPicker.ts`.
+- Shipped presentation-neutral picker component `HorizontalPicker` in `packages/alambre/src/components/base/input/picker/HorizontalPicker.tsx`.
+- Formally retired the provisional hardcoded `TimePicker` component from the public framework API, eliminating the presentation exception documented in `docs/framework/architecture.md` §6 and §8.
+- Validated via unit/contract tests and exported top-level from `packages/alambre/src/index.ts`.
 
 ### 1. Current Problem
-- `TimePicker` is explicitly documented in `docs/framework/ui-decisions.md` §2 as a **"provisional presentation exception"**: arrow glyphs ('▲', '▼'), typography, dimensions, inactive label colors, and default accent `#0057d8` are hardcoded in `alambre`.
-- In practice, the reference application (`apps/colguetti`) completely rejected `alambre.TimePicker` and built `SwipeableTimePicker.tsx` (329 LOC) with Reanimated gestures, inertia flick momentum, and multi-cycle infinite scrolling.
-- Consequently, `TimePicker` is dead weight in `alambre`: imported by zero apps in the monorepo.
+- `TimePicker` was explicitly documented in `docs/framework/ui-decisions.md` §2 as a **"provisional presentation exception"**: arrow glyphs ('▲', '▼'), typography, dimensions, inactive label colors, and default accent `#0057d8` were hardcoded in `alambre`.
+- In practice, consumer applications rejected `alambre.TimePicker` in favor of gesture-driven inertia scrolling.
+- Consequently, `TimePicker` was dead weight in `alambre`.
 
 ### 2. Proposed Solution
 1. Extract the kinetic wheel physics into a headless hook:
@@ -94,37 +100,43 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
      - Smooth spring settling (`withSpring`) and cyclic wrapping math (`((val % count) + count) % count`).
 2. Retain pure time math helpers: `parseTimeValue`, `formatTimeValue`, `HOUR_RANGE`, `MINUTE_RANGE`.
 3. Provide an optional presentation-neutral compound component:
-   - `<WheelPicker.Root>`, `<WheelPicker.Column>`, `<WheelPicker.Item>`.
-4. Migrate `apps/colguetti/src/components/SwipeableTimePicker.tsx` to consume `useWheelPicker`, proving reuse and eliminating the provisional exception from `docs/framework/ui-decisions.md` §2.
+   - `<WheelPicker.Root>`, `<WheelPicker.Column>`, `<WheelPicker.Item>` / `HorizontalPicker`.
+4. Eliminate the provisional exception from `docs/framework/ui-decisions.md` §2.
 
 ### 3. Pros & Cons
 - **Pros:**
   - Eliminates the only remaining hardcoded presentation exception in `alambre` (`ui.md` §2).
   - Generalizes wheel scrolling for hours, minutes, dates, pickers, and numeric counters.
-  - Reconciles framework with actual app adoption in Colguetti.
 - **Cons:**
   - Breaking change for the existing `TimePicker` component (permitted under pre-baseline `architecture.md` §9).
 
 ---
 
-## Proposal 4: First-Class Type Safety & State Modernization (`createConfig`, `useNavigator`, `NavigatorTypes`)
+## Proposal 4: First-Class Type Safety & State Modernization (`createConfig`, `useNavigator`, `createLang`) [RESOLVED]
+
+### Status: RESOLVED
+- Modernized `createConfig` with generic typing (`T extends Record<string, unknown>`), typed `saveField<K extends keyof T>`, automatic JSON serialization for booleans/numbers/objects, and exposed `loading: boolean` state.
+- Dismantled legacy blanket namespace export `NavigatorTypes`, directly exporting `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, and `NavigationSettings` from `packages/alambre/src/index.ts`.
+- Parameterized `useNavigator<TRoute, TSubpage, TParams>` to support type-safe route names, subpages, and navigation parameters.
+- Upgraded `createLang` with generic dictionary inference (`<T extends Record<string, L>, L extends LangDictionary = T[keyof T]>`) and exported `LangDictionary`, `Langs`, `LangState`, `UseLangType`, and `CreateLangReturn` in `packages/alambre/src/index.ts`, preserving dictionary intellisense across apps without manual type assertions.
+- Contract-tested in `packages/alambre/tests/public-api.test.ts` and `packages/alambre/tests/capabilities/create-lang.test.tsx`.
 
 ### 1. Current Problem
-- **`createConfig` forced string values:** `ConfigState<T extends Record<string, string>>` forces all config keys and values to be `string`. Applications cannot store booleans (`notificationsEnabled: boolean`), numbers (`refreshInterval: number`), or objects without manual serialization. `saveField` accepts `value: string` instead of `value: T[K]`. Furthermore, it lacks a `loading` / `hydrated` indicator, risking flash of unhydrated content.
-- **Legacy Namespace Leakage (`NavigatorTypes`):** `NavigatorTypes` is the only remaining subsystem exported as a blanket `export * as NavigatorTypes` namespace from `types/index.ts` (violating `architecture.md` §8 and audit checklist item 1).
-- **Untyped Routing in `useNavigator`:** Route keys and targets are untyped `string`. Calling `navigate('nonExistent')` fails silently or causes runtime errors without TypeScript compile-time feedback. There is no first-class contract for route parameters (forcing applications to create ad-hoc contexts like `RouteIntent`).
-- **`createLang` loose type:** `Langs = Record<string, object>` types translation objects as `object`, losing type safety on translated strings unless cast manually.
+- **`createConfig` forced string values:** `ConfigState<T extends Record<string, string>>` forced all config keys and values to be `string`. Applications could not store booleans, numbers, or objects without manual serialization. `saveField` accepted `value: string` instead of `value: T[K]`. Furthermore, it lacked a `loading` indicator.
+- **Legacy Namespace Leakage (`NavigatorTypes`):** `NavigatorTypes` was exported as a blanket `export * as NavigatorTypes` namespace from `types/index.ts`.
+- **Untyped Routing in `useNavigator`:** Route keys and targets were untyped `string`.
+- **`createLang` loose type:** `Langs = Record<string, object>` typed translation objects as `object`, losing type safety on translated strings unless cast manually.
 
 ### 2. Proposed Solution
 1. **Modernize `createConfig`:**
-   - Expand to `T extends Record<string, any>`, supporting booleans, numbers, and objects.
+   - Expand to `T extends Record<string, unknown>`, supporting booleans, numbers, and objects.
    - Strictly type `saveField<K extends keyof T>(field: K, value: T[K])`.
-   - Expose `loading: boolean` or `hydrated: boolean` in `useConfig` to match `createCollection`.
+   - Expose `loading: boolean` in `useConfig`.
 2. **Dismantle `NavigatorTypes` Namespace:**
    - Export first-class public types in `src/index.ts`: `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, `NavigationSettings`.
 3. **Type-Safe Routing & Route Parameters:**
    - Parameterize `useNavigator<TRoutes>`: `navigate<K extends keyof TRoutes>(route: K, params?: TRoutes[K])`.
-   - Support optional route intent / parameter passing directly through navigation actions.
+   - Support optional route parameters through navigation actions.
 4. **Strict `createLang` Translation Generics:**
    - Allow `createLang<T extends Record<string, L>, L extends Record<string, any>>` to preserve dictionary intellisense.
 
@@ -134,7 +146,8 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
   - Resolves the last lingering blanket namespace export in `architecture.md` §8.
   - Gives complete autocomplete and compile-time validation for app navigation and configuration.
 - **Cons:**
-  - Tightening types may require minor type annotations in existing app providers.
+  - None; fully backward-compatible with optional generics.
+
 
 ---
 

@@ -122,4 +122,26 @@ describe('createLang', () => {
     expect(store.getState().currentLang).toBe('es');
     expect(storage.setCalls).toContainEqual(['currentLanguage', 'es']);
   });
+
+  it('preserves strict dictionary intellisense and property types', () => {
+    const storage = createMemoryStorage();
+    const dictionary = {
+      en: { welcome: 'Welcome', count: 42, nested: { key: true } },
+      es: { welcome: 'Bienvenido', count: 42, nested: { key: false } },
+    };
+
+    const _instance = createLang(dictionary, storage);
+    const result: ReturnType<typeof _instance.useLang> = {
+
+      lang: dictionary.en,
+      currentLang: 'en',
+      changeLang: async () => undefined,
+    };
+
+    expect(result.lang.welcome).toBe('Welcome');
+    expect(result.lang.count).toBe(42);
+    expect(result.lang.nested.key).toBe(true);
+  });
+
 });
+
