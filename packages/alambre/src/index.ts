@@ -163,6 +163,7 @@ export {
   useKineticCarouselItem,
   KineticCarouselContext,
   KineticCarouselProvider,
+  useKineticPipeline,
 } from './hooks';
 export type {
   HistoryState,
@@ -219,6 +220,13 @@ export type {
   UseKineticCarouselItemOptions,
   UseKineticCarouselItemReturn,
   KineticCarouselProviderProps,
+  KineticPipelineStage,
+  KineticPipelinePoint2D,
+  KineticVelocity2D,
+  KineticPipelineTransitionOptions,
+  KineticPipelineQueueItem,
+  UseKineticPipelineOptions,
+  UseKineticPipelineReturn,
 } from './hooks';
 
 

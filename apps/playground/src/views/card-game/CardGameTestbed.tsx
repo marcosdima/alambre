@@ -21,6 +21,7 @@ import { CardHand } from './components/CardHand';
 import { CardTable } from './components/CardTable';
 import { FlyingCard } from './components/FlyingCard';
 import { MultiplayerArena } from './components/MultiplayerArena';
+import { KineticPipelineScenario } from './components/KineticPipelineScenario';
 import { useRoomRelay, generateRoomCode } from '@alambre/room-relay';
 import type { PlayingCardData, Rank, Suit } from './types';
 
@@ -49,6 +50,7 @@ export default function CardGameTestbed() {
 
   const tabs = [
     { id: 'arena', label: 'Relay Arena', content: <MultiplayerArena physics={physics} /> },
+    { id: 'pipeline', label: 'Pipeline Handoff', content: <KineticPipelineScenario physics={physics} /> },
     { id: 'table', label: 'Table Play', content: <CardTableScenario physics={physics} /> },
     { id: 'hand', label: 'Hand Fan', content: <CardHandScenario physics={physics} /> },
     { id: 'flip', label: '3D Flip', content: <CardFlipScenario physics={physics} /> },

@@ -91,6 +91,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.usePressKinetics).toBe('function');
     expect(typeof Alambre.useSpatialFlip).toBe('function');
     expect(typeof Alambre.useFlightTrajectory).toBe('function');
+    expect(typeof Alambre.useKineticPipeline).toBe('function');
     expect(typeof Alambre.useKineticSwipe).toBe('function');
     expect(typeof Alambre.useKineticCarousel).toBe('function');
     expect(typeof Alambre.useKineticCarouselItem).toBe('function');

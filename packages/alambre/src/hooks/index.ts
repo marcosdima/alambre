@@ -136,3 +136,17 @@ export type {
   UseKineticCarouselItemReturn,
   KineticCarouselProviderProps,
 } from './use-kinetic-carousel';
+
+export {
+  useKineticPipeline,
+} from './use-kinetic-pipeline';
+export type {
+  KineticPipelineStage,
+  Point2D as KineticPipelinePoint2D,
+  KineticVelocity2D,
+  TransitionFlightOptions as KineticPipelineTransitionOptions,
+  QueueItem as KineticPipelineQueueItem,
+  UseKineticPipelineOptions,
+  UseKineticPipelineReturn,
+} from './use-kinetic-pipeline';
+
