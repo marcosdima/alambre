@@ -69,9 +69,11 @@ const unsub = client.on("CARD_PLAYED", (payload, msg) => {
 // Dispatch typed message
 client.send("CARD_PLAYED", { cardId: "ace_spades", x: 120, y: 340 });
 
-// Atomic room management
-client.joinRoom("GUEST2");
-client.createRoom(); // creates new random code and reconnects
+// Atomic room lifecycle methods (unifies transport connection with room entry/exit)
+client.join("XK89");        // Cleans up previous session and connects directly to room
+client.create();            // Generates 4-letter code, designates as Host, and connects
+client.leave();             // Disconnects cleanly, clears peers, and returns to idle
+client.setServerUrl("ws://192.168.1.14:8787"); // Dynamically updates target and reconnects
 ```
 
 ### 2.3 React Hook (`useRoomRelay`)
@@ -82,17 +84,28 @@ import { useRoomRelay, useRoomRelaySelector } from "@alambre/room-relay";
 
 function MultiplayerGame() {
   const relay = useRoomRelay({
-    roomCode: "XK89",
     playerName: "Alice",
-    mode: "simulated",
+    mode: "websocket",
+    serverUrl: "ws://192.168.1.14:8787",
+    autoConnect: false, // Sit in lobby until join() or create() is called
   });
+
+  if (relay.status === "idle" || relay.status === "disconnected") {
+    return (
+      <View>
+        <Button title="Create Room" onPress={() => relay.create()} />
+        <Button title="Join XK89" onPress={() => relay.join("XK89")} />
+      </View>
+    );
+  }
 
   return (
     <View>
-      <Text>Room: {relay.roomCode}</Text>
+      <Text>Room: #{relay.roomCode} ({relay.isHost ? "Host" : "Guest"})</Text>
       <Text>Status: {relay.status} ({relay.latency}ms)</Text>
       <Text>Peers: {relay.peers.length}</Text>
       <Button title="Play Card" onPress={() => relay.send("CARD_PLAYED", { cardId: "c1" })} />
+      <Button title="Leave Room" onPress={() => relay.leave()} />
     </View>
   );
 }
@@ -143,3 +156,46 @@ const transport = new WebSocketRelayTransport({
   backoffFactor: 1.5,
 });
 ```
+
+---
+
+## Deterministic Seeded PRNG & Shuffling
+
+For verifiable fair shuffles, deterministic match replays, and reproducible Vitest multiplayer tests, `@alambre/room-relay` provides a zero-dependency 32-bit seeded PRNG (Mulberry32) and Fisher-Yates shuffle:
+
+```ts
+import { hashSeed, createSeededRng, shuffleWithSeed } from "@alambre/room-relay";
+
+const rng = createSeededRng("ROOM_XK89_ROUND_1");
+const nextFloat = rng(); // [0, 1)
+
+// Non-mutating deterministic Fisher-Yates shuffle:
+const shuffledDeck = shuffleWithSeed(deck, "ROOM_XK89_ROUND_1");
+```
+
+---
+
+## Authoritative Turn Engine (`createTurnEngine`, `useTurnEngine`)
+
+`TurnEngineClient` and `useTurnEngine<TState, TAction>` wrap `RoomRelayClient` with a reducer-driven, host-authoritative state machine featuring:
+- **Host Arbitration & Monotonic Sequencing (`seq`):** Guest `dispatch(action)` calls send `TURN_ACTION_INTENT` to the host; the host validates via `validateAction`, increments `seq`, runs `reducer(state, action, meta)`, and broadcasts `TURN_ACTION_COMMIT`.
+- **Automatic Late-Join & Reconnect Snapshot Sync:** Guests automatically emit `TURN_SYNC_REQUEST` upon connection or sequence gap detection and hydrate from the host's `TURN_SYNC_SNAPSHOT`.
+- **Optional Turn Countdown Timer:** Built-in `turnDurationMs`, `remainingTurnMs`, and host `onTurnTimeout` handler.
+
+```tsx
+import { useTurnEngine } from "@alambre/room-relay";
+
+const turn = useTurnEngine<GameState, GameAction>({
+  roomCode: "XK89",
+  playerName: "Alice",
+  isHost: true,
+  mode: "simulated",
+  initialState: createInitialState(),
+  reducer: (state, action, meta) => applyAction(state, action, meta.seq),
+  turnDurationMs: 30000,
+});
+
+// Dispatch an action (commits on host, sends intent on guest):
+turn.dispatch({ type: "PLAY_CARD", cardId: "c_spades_A" });
+```
+

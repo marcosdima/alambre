@@ -47,6 +47,8 @@ Headless interaction hooks and pure helpers:
 * **`useStagger` & `calculateStaggerDelay`**: Headless stagger timing coordination with automatic reduced-motion accessibility.
 * **`useCollapsible`**: Headless disclosure and accordion height interpolation with off-screen measurement probe and reduced motion support.
 * **`useIconAnimation`**: SVG stroke draw/reset animation driver.
+* **`useKineticChoreography`**: Multi-track UI-thread animation chaining engine with fluent step builder and worklet queue.
+* **Trajectory & Momentum Worklets**: `linearTrajectory`, `parabolicTrajectory`, `arcTrajectory`, `quadraticBezier`, `cubicBezier`, `transferVelocity`, `projectEndpoint`, `calculateCriticalDamping`, `makeCriticallyDampedConfig`.
 
 ### 5. [Components & Icons](components.md)
 Base UI primitives and icon contracts:

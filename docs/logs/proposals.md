@@ -305,28 +305,32 @@ Evolve form inputs into accessible, ref-forwarding **Compound Components**:
 
 ---
 
-## Proposal 11: Headless Kinetic Pipeline & Inter-Animation Coordinator (`useKineticPipeline`)
-- **Status**: OPEN (Proposed)
+## Proposal 11: Headless Kinetic Pipeline & Multi-Track Choreography (`useKineticPipeline`, `useKineticChoreography`, `trajectory.ts`, `handoff.ts`)
+- **Status**: RESOLVED (Implemented & Validated)
 - **Author**: @lead
+- **Resolution**:
+  - Implemented headless stage-handoff coordinator `useKineticPipeline` in `packages/alambre/src/hooks/use-kinetic-pipeline.ts` managing `'idle' -> 'drag' -> 'flight' -> 'landing' -> 'settled'` lifecycles on the UI thread with continuous shared values, velocity-scaled duration, and FIFO batch queueing (`enqueue`, `enqueueBatch`).
+  - Implemented headless multi-track animation chaining engine `useKineticChoreography` in `packages/alambre/src/hooks/use-kinetic-choreography.ts` supporting fluent `.chain().to().then().run()` sequences across 3D channels (`x`, `y`, `scale`, `rotateDeg`, `rotateXDeg`, `rotateYDeg`, `opacity`) without React render roundtrips.
+  - Implemented pure parametric trajectory worklets (`linearTrajectory`, `parabolicTrajectory`, `arcTrajectory`, `quadraticBezier`, `cubicBezier`, `interpolateScalar`) in `packages/alambre/src/core/trajectory.ts`.
+  - Implemented bounded gesture momentum transfer and critical damping math (`transferVelocity`, `projectEndpoint`, `calculateCriticalDamping`, `calculateDampingRatio`, `makeCriticallyDampedConfig`, `blendScalar`) in `packages/alambre/src/core/handoff.ts`.
+  - Exported across `packages/alambre/src/index.ts`, documented in `docs/reference/hooks.md` §14–§15 and `docs/framework/architecture.md` §8, and validated by unit and public API contract suites (`tests/hooks/use-kinetic-pipeline.test.ts`, `tests/hooks/use-kinetic-choreography.test.ts`, `tests/core/trajectory.test.ts`, `tests/core/handoff.test.ts`).
 
 ### 1. Current Problem
-- **Ad-Hoc Animation Sticking:** While `alambre` provides isolated kinetic primitives (`useKineticSwipe`, `useFlightTrajectory`, `useSpatialFlip`, `calculateHandFan`), chaining them across interaction lifecycles currently relies on asynchronous React state handoffs (`useState` + `onComplete` / `onDismissStart` callbacks).
+- **Ad-Hoc Animation Sticking:** While `alambre` provides isolated kinetic primitives (`useKineticSwipe`, `useFlightTrajectory`, `useSpatialFlip`, `calculateHandFan`), chaining them across interaction lifecycles previously relied on asynchronous React state handoffs (`useState` + `onComplete` / `onDismissStart` callbacks).
 - **React Commit Latency & Visual Flashing:** Unmounting an element in one container (e.g. `CardHand`) while mounting its projectile in another (e.g. `FlyingCard`) introduces a 1–2 frame React reconciliation delay. On lower-end devices or under JS thread activity, this causes cards to flicker, briefly vanish, or snap to slightly mismatched coordinate origins.
-- **Inertia & Velocity Discontinuity:** When a card is dismissed via upward flick (`useKineticSwipe`), its terminal gesture velocity ($v_x, v_y$) is dropped upon release, resetting initial velocity to zero in `useFlightTrajectory` instead of smoothly continuing the ballistic impulse.
-- **Race Conditions in Event Sequencing:** Multi-card sequential events (e.g. dealing 5 cards across room relay or rapid consecutive discards) lack a coordinated FIFO queue, causing in-flight transitions to overwrite one another's target coordinates.
+- **Inertia & Velocity Discontinuity:** When a card is dismissed via upward flick (`useKineticSwipe`), its terminal gesture velocity ($v_x, v_y$) was dropped upon release, resetting initial velocity to zero in `useFlightTrajectory` instead of smoothly continuing the ballistic impulse.
+- **Race Conditions in Event Sequencing:** Multi-card sequential events (e.g. dealing 5 cards across room relay or rapid consecutive discards) lacked a coordinated FIFO queue, causing in-flight transitions to overwrite one another's target coordinates.
 
 ### 2. Proposed Solution
-Extract a headless, presentation-neutral **Kinetic Pipeline** primitive:
+Extract headless, presentation-neutral **Kinetic Pipeline & Choreography** primitives:
 1. **`useKineticPipeline<TStage extends string, TContext>`:**
-   - Finite State Machine on the UI thread managing transition stages (e.g. `'idle' -> 'drag' -> 'flight' -> 'landing' -> 'settled'`).
-   - Exposes: `{ stage, isTransitioning, startStage, nextStage, context, sharedPosition }`.
-   - Continuous shared value propagation: `translateX`, `translateY`, `rotation`, and `scale` hand off smoothly from gesture responders to flight trajectories without unmounting or re-rendering.
-2. **Velocity Continuity Vector:**
-   - Injects gesture release velocities ($v_x, v_y$) into ballistic trajectories to preserve physical inertia across boundaries.
-3. **Atomic Kinetic Queue:**
-   - Built-in FIFO stage queue (`enqueueStage`, `enqueueBatch`) with configurable stagger intervals, preventing multi-card action collisions.
-4. **Zero-Tearing Slot Placeholders:**
-   - Coordinate reservation helper ensuring origin layout slots maintain their spatial geometry until the projectile reaches its destination.
+   - Finite State Machine on the UI thread managing transition stages (`'idle' -> 'drag' -> 'flight' -> 'landing' -> 'settled'`).
+   - Continuous shared value propagation: `translateX`, `translateY`, `rotateDeg`, and `scale` hand off smoothly from gesture responders to flight trajectories without unmounting or re-rendering.
+   - Built-in FIFO stage queue (`enqueue`, `enqueueBatch`).
+2. **`useKineticChoreography`:**
+   - Multi-track UI-thread sequencer with fluent `.chain().to().then().run()` builder, parametric trajectories (`linear`, `parabolic`, `arc`), and `handoffGesture` velocity transfer.
+3. **Momentum & Critical Damping Worklets (`handoff.ts`, `trajectory.ts`):**
+   - `transferVelocity` and `makeCriticallyDampedConfig` convert high-velocity gesture releases into critically damped springs ($\zeta = 1.0$) with zero runaway oscillation.
 
 ### 3. Pros & Cons
 - **Pros:**
@@ -334,7 +338,135 @@ Extract a headless, presentation-neutral **Kinetic Pipeline** primitive:
   - Satisfies the 3-Line Rule for complex multi-stage flows without requiring application developers to write manual state machines or coordinate glue.
   - Retains headless purity: zero native dependencies, 100% presentation-agnostic.
 - **Cons:**
-  - Adds one headless coordination hook to `packages/alambre`.
+  - Increases the exported hook and core math surface in `packages/alambre`, mitigated by strict public API contract tests.
 
+---
 
+## Proposal 12: Headless Spatial Coordinate Space, Target Registry & Toss Physics (`SpatialSpace`, `useSpatialTarget`, `useSpatialToss`)
+- **Status**: RESOLVED (Implemented in `packages/alambre` — `<SpatialSpace>`, `useSpatialTarget`, `useSpatialVector`, `useSpatialToss` / `useCardToss`, and spatial collision/jitter/toss helpers in `src/core/spatial.ts`)
+- **Author**: @lead
+
+### 1. Current Problem
+- **Fragile Nested `onLayout` Coordinate Chaining:** In `apps/playground/src/views/card-game/CardGameTestbed.tsx` and `MultiplayerArena.tsx`, computing projectile flight vectors between nested containers (e.g. from the Draw Deck inside `CardTable` to a slot inside `CardHand`, or from an opponent's badge to the play zone) requires maintaining 6+ separate `useState` layout objects and manually summing parent offsets (`tableCardLayout.x + tableMatLayout.x + deckLayout.x + (deckLayout.width - 76) / 2`). Any layout padding, scroll offset, or wrapper insertion silently breaks trajectory alignment.
+- **App-Locked Collision & Toss Math:** Pure 2D spatial hit-testing (`pointInBounds`, `findTargetDropZone`, `getZoneCenter`), deterministic FNV-1a pile jitter (`generateStackJitter`), inertial landing projection (`projectTossLanding`, `resolveTossDynamics`), and the `useCardToss` gesture hook currently reside inside `apps/playground/src/views/card-game/`. With the upcoming standalone Card Game application (`apps/<card-game>`) creating a second consumer (Rule of Two, `docs/guidelines/agents.md` §6), keeping this math in `playground` would force ~400 LOC of duplication.
+
+### 2. Proposed Solution
+1. **Declarative Coordinate Space Registry (`<SpatialSpace>` & `useSpatialTarget`):**
+   - `<SpatialSpace>`: Lightweight coordinate root that tracks its own container layout origin.
+   - `useSpatialTarget(id, options)`: Returns `{ onLayout, bounds, center, isMeasured }` and registers the target's bounding box and center point in the shared `<SpatialSpace>` coordinate frame, supporting arbitrary nesting depth via relative layout accumulation or `measureLayout`.
+   - `useSpatialVector(fromId, toId)`: Returns reactive `{ from, to, delta }` coordinates ready to feed directly into `useFlightTrajectory` or `useKineticChoreography`.
+2. **Promote Pure Drop-Zone & Pile Jitter Math to `packages/alambre/src/core/spatial.ts`:**
+   - Extract `pointInBounds`, `findTargetDropZone`, `getZoneCenter`, `generateStackJitter`, `projectTossLanding`, and generic `resolveTossDynamics<T>`.
+3. **Promote Headless Toss Hook (`useSpatialToss<T>`):**
+   - Extract and generalize `useCardToss` into `packages/alambre/src/hooks/use-spatial-toss.ts`, combining `Gesture.Pan()` drag tracking, horizontal velocity tilt (`calculateSwipeTilt`), inertial endpoint projection, drop-zone acceptance filtering, and critically damped spring restitution on miss.
+
+### 3. Pros & Cons
+- **Pros:**
+  - Eliminates brittle manual coordinate math across multi-zone game boards (`deck`, `discardPile`, `playerHand`, `opponentZone`, `meldSlots`).
+  - Centralizes worklet-safe 2D hit-testing and organic card-pile stacking jitter in `packages/alambre`.
+- **Cons:**
+  - Dynamic scroll containers inside a `<SpatialSpace>` require scroll offset compensation if targets move during flight.
+
+---
+
+## Proposal 13: UI-Thread Cascading Deal & Unified Interactive Hand (`useCascadeFlight`, `useInteractiveHand`)
+- **Status**: RESOLVED (Implemented in `packages/alambre` — `computeSpatialCascadePlan` / `computeDealCascadePlan`, `calculateResponsiveHandFan`, `useCascadeFlight` / `useDealCascade`, UI-thread `useCascadeFlightItem`, `reorderHandItems`, `resolveHandReorderIndex`, and `useInteractiveHand`)
+- **Author**: @lead
+
+### 1. Current Problem
+- **JS Timer Stagger Drift in Dealing:** `CascadeFlightItem.tsx` in `apps/playground` schedules sequential card deal launches using JavaScript `setTimeout(..., spec.startDelayMs)`. Under JS bridge traffic (e.g. multiplayer message processing or state updates), `setTimeout` introduces frame-pacing jitter compared to UI-thread animation delays.
+- **Single-Mode Hand Interaction:** `CardHand.tsx` only supports single-card tap selection (`selectedCardId: string | null`) and upward swipe-to-play (`useKineticSwipe` with `directions: ['up']`). Production card games require:
+  1. **Horizontal Drag-to-Reorder:** Dragging a card left/right along the curved hand fan to reorganize a hand, with neighboring cards smoothly shifting via spring physics to preview the new slot.
+  2. **Seamless Drag-Out-to-Play Handoff:** Continuing that same drag upward past an escape threshold (or releasing over a table drop zone) to transition from hand reordering into a table play/toss without lifting the finger.
+  3. **Multi-Card Combo Selection:** Selecting multiple cards simultaneously (pairs, straights, melds, or batch discards) with coordinated fan lift and batch play trajectories.
+
+### 2. Proposed Solution
+1. **UI-Thread Cascade Orchestrator (`computeSpatialCascadePlan<T>`, `useCascadeFlight<T>`):**
+   - Promote generic `computeDealCascadePlan` and `calculateResponsiveHandFan` into `packages/alambre`.
+   - Drive staggered flight delays natively on the Reanimated UI thread (`withDelay`) rather than JS `setTimeout`, exposing per-item landing callbacks (`onItemLanded`) and batch completion (`onCascadeComplete`).
+2. **Headless Interactive Hand Hook (`useInteractiveHand<T>`):**
+   - Manages ordered item state, single or multi-select sets (`selectionMode: 'single' | 'multiple'`, `maxSelected`), and responsive fan slot transforms.
+   - Unified 2D pan gesture per item:
+     - When `|translationY| < escapeThresholdY`: computes active hover slot index along the fan arc and shifts sibling slots in real time on the UI thread.
+     - When `translationY < -escapeThresholdY`: exits reorder mode and hands off to free 2D drag/toss toward table drop zones.
+
+### 3. Pros & Cons
+- **Pros:**
+  - Delivers AAA mobile card-game feel (Hearthstone / Balatro / Marvel Snap style in-hand sorting + drag-to-play + multi-card combos) as a reusable headless primitive.
+  - Zero JS timer drift during rapid multi-card dealing.
+- **Cons:**
+  - Requires careful gesture arbitration on small screens so horizontal fan dragging and vertical pull-out transitions feel predictable.
+
+---
+
+## Proposal 14: Deterministic Turn Engine, Seeded PRNG & State Snapshots (`@alambre/room-relay`)
+- **Status**: RESOLVED (Implemented in `@alambre/room-relay` — `hashSeed`, `createSeededRng`, `shuffleWithSeed`, `TurnEngineClient`, `createTurnEngine`, and `useTurnEngine`)
+- **Author**: @lead
+
+### 1. Current Problem
+- **Non-Deterministic `Math.random()` Shuffling:** `apps/playground/src/views/card-game/engine/deck.ts` and `MultiplayerArena.tsx` rely on `Math.random()`. In multiplayer card games, unseeded randomness prevents deterministic match replays, verifiable fair shuffles, and compact seed synchronization.
+- **No Late-Join or Reconnect State Recovery:** `use-card-relay-sync.ts` only broadcasts incremental action events (`GAME_DEAL`, `CARD_PLAY`, `CARD_DRAW`). If a player's mobile connection drops for 2 seconds or a spectator/peer joins an active room, `WebSocketRelayTransport` reconnects the socket, but the client has no mechanism to request or reconcile the current authoritative board state.
+- **Optimistic Race Conditions & Missing Turn Watchdogs:** Local actions apply immediately without monotonic sequence numbers (`seq`) or host arbitration, and there is no headless turn countdown/timeout primitive for enforcing turn limits.
+
+### 2. Proposed Solution
+1. **Deterministic Seeded PRNG & Collection Shuffling (`createSeededRng`, `shuffleWithSeed`):**
+   - Add a fast, zero-dependency, deterministic 32-bit PRNG (Mulberry32 / SplitMix32) and pure Fisher-Yates `shuffleWithSeed<T>(items, seed)` helper in `@alambre/room-relay` (or `packages/alambre`), allowing peers to generate identical decks from a shared numeric/string seed.
+2. **Headless Authoritative Turn Engine (`useTurnEngine<TState, TAction>` in `@alambre/room-relay`):**
+   - Wraps `useRoomRelay` with a reducer-driven state machine `(state, action) => nextState`.
+   - **Host Arbitration & Monotonic Sequencing:** Assigns strictly increasing `seq` numbers to ratified actions; guests apply optimistic previews or await host ratification (`ACTION_INTENT` $\rightarrow$ `ACTION_COMMIT`).
+   - **Automatic Snapshot Handshake:** When a peer joins or reconnects with a stale `seq`, automatically dispatches `SYNC_REQUEST` and hydrates from the Host's `SYNC_SNAPSHOT` response.
+   - **Synchronized Turn Timer:** Optional per-turn deadline (`turnDurationMs`) exposing reactive remaining time and automatic `onTurnTimeout` host callback.
+
+### 3. Pros & Cons
+- **Pros:**
+  - Turns `@alambre/room-relay` from a raw message pipe into a complete, resilient multiplayer state engine for any turn-based card or board game.
+  - Makes multiplayer matches 100% reproducible in Vitest unit tests via seeded PRNG + `SimulatedRelayTransport`.
+- **Cons:**
+  - Host-authoritative arbitration still depends on the Host remaining connected (mitigated by snapshot caching on guests for potential host migration).
+
+---
+
+## Proposal 15: Headless Sensory Cues & Tactile Audio/Haptic Contract (`createSensoryCues`, `useSensoryFeedback`)
+- **Status**: RESOLVED (Implemented in `packages/alambre/src/capabilities/sensory.ts` — `createSensoryCues` / `createSensoryCuesProvider` with per-cue cooldown throttling, persistent mute toggles, and `useSensoryCues`)
+- **Author**: @lead
+
+### 1. Current Problem
+- **Silent Kinetics:** Card games and tactile interfaces depend on synchronized micro-feedback—the crisp tick of each card dealt in a cascade, the snap of a 3D flip midpoint, the thud of a card landing on the table, or a light bump when crossing slot boundaries while reordering a hand.
+- **No Standardized Adapter Contract:** Currently, only `usePressKinetics` exposes an isolated `hapticFeedback?: () => void` callback. Other kinetic hooks (`useFlightTrajectory`, `useSpatialFlip`, `useKineticSwipe`, `useKineticChoreography`) have no unified contract to trigger haptics or low-latency sound effects without coupling `packages/alambre` to native packages (`expo-haptics`, `expo-audio`).
+
+### 2. Proposed Solution
+1. **`createSensoryCues<TCue extends string>(config)` Capability:**
+   - External-store-backed capability in `packages/alambre/src/capabilities/sensory/` following the same zero-Provider `useSyncExternalStore` pattern as `createConfig` and `createLightDark`.
+   - Applications inject platform adapters (`onHaptic?: (cue: TCue) => void`, `onSound?: (cue: TCue) => void`) and bind user preferences (`hapticsEnabled`, `soundEnabled`).
+   - Exposes imperative `cues.trigger(cue)` (callable via `runOnJS` from Reanimated worklet lifecycle points such as flip midpoint, cascade launch, or landing impact) and React hook `useSensoryCues()`.
+
+### 3. Pros & Cons
+- **Pros:**
+  - Preserves 100% headless, zero-native-dependency purity in `packages/alambre` while giving apps a first-class way to wire `expo-haptics` and `expo-audio` into every kinetic primitive.
+  - Respects user mute/vibration toggles globally without prop-drilling.
+- **Cons:**
+  - Rapid staggered cascades (e.g. <40ms intervals) require built-in cooldown throttling (`minIntervalMs`) so native haptic engines do not queue-flood.
+
+---
+
+## Proposal 16: `@alambre/ui` Consolidation, `ThemeProvider` Unification & Hygiene
+- **Status**: RESOLVED (Implemented across `packages/ui`, `apps/playground`, `README.md`, `docs/guidelines/agents.md`, and `scripts/e2e.sh`)
+- **Author**: @lead
+
+### 1. Current Problem
+- **UI Component Duplication in `apps/playground`:** `apps/playground/src/components/` still maintains local copies of `AppButton.tsx`, `AppCard.tsx`, `AppBadge.tsx`, `AppSegmentedControl.tsx`, `AppSlider.tsx`, and `AppTitle.tsx` that duplicate `@alambre/ui`. This occurred because `apps/playground/src/navigator/Root.tsx` does not wrap its tree in `@alambre/ui`'s `<ThemeProvider theme={theme}>` (unlike `apps/base-template`).
+- **Kinetic Drift Between `playground` and `@alambre/ui`:** In Proposal 7, `apps/playground`'s local `AppButton` and `AppCard` were refactored to consume `usePressKinetics`, but `packages/ui/src/components/AppButton.tsx` and `AppCard.tsx` still use legacy manual `useSharedValue(1)` + `withTiming`/`withSpring` boilerplate.
+- **Missing Test Runner in `@alambre/ui` & Stale Archive References:** `packages/ui/package.json` has `lint` and `typecheck` scripts but no `test` script or contract tests. Additionally, `README.md`, `docs/guidelines/agents.md`, and `scripts/e2e.sh` still contain references to archived apps (`apps/colguetti`, `apps/cross-logic`).
+
+### 2. Proposed Solution
+1. **Upgrade `@alambre/ui` Primitives:** Refactor `packages/ui/src/components/AppButton.tsx` and `AppCard.tsx` to consume `usePressKinetics` from `alambre`.
+2. **Unify `apps/playground` on `@alambre/ui`:** Mount `<ThemeProvider theme={theme}>` in `apps/playground/src/navigator/Root.tsx`, re-point playground imports to `@alambre/ui`, and deduplicate `apps/playground/src/components/App*.tsx` files into thin re-exports of `@alambre/ui`.
+3. **Clean Stale Docs:** Update documentation/scripts to reflect active workspace apps (`base-template`, `playground`, and the upcoming card game app).
+
+### 3. Pros & Cons
+- **Pros:**
+  - Ensures the upcoming Card Game app consumes a single, battle-tested `@alambre/ui` package with `usePressKinetics` already integrated.
+  - Eliminates ~1,300 lines of duplicated UI wrapper code in `apps/playground`.
+- **Cons:**
+  - Requires a quick visual/test pass across `apps/playground` views after switching imports to `@alambre/ui`.
 

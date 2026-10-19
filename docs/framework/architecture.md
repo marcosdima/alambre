@@ -170,6 +170,8 @@ Intentional public type contracts:
 * `RipplePulseOptions`, `RippleWave`, `UseRipplePulseReturn` — the `useRipplePulse` headless pulse contract.
 * `WavefrontCurve`, `WavefrontPreset`, `WavefrontItemPreset`, `WavefrontStyleWorklet`, `WavefrontProviderProps`, `UseWavefrontOptions`, `UseWavefrontReturn`, `UseWavefrontItemOptions`, `UseWavefrontItemReturn` (and kinetic orchestrator aliases) — the `useWavefront`, `WavefrontProvider`, and `useWavefrontItem` single-clock traveling wave orchestration contract.
 * `UsePressKineticsOptions`, `UsePressKineticsReturn` — the `usePressKinetics` universal headless tactile interaction contract.
+* `SensoryCuesState`, `SensoryCuePayload`, `CreateSensoryCuesOptions`, `SensoryCuesActions`, `UseSensoryCuesReturn` — the `createSensoryCues` (alias `createSensoryCuesProvider`) headless haptic/audio feedback capability contract.
+* `SpatialRect`, `SpatialDropZone`, `StackJitter`, `ResolveTossOptions`, `TossResolution`, `ResponsiveHandFanOptions`, `HandFanSlot`, `ResponsiveHandFanResult`, `SpatialCascadeOptions`, `SpatialFlightSpec`, `SpatialCascadePlan`, `FlightInterpolationState`, `UseSpatialTossOptions`, `UseSpatialTossReturn`, `UseCascadeFlightOptions`, `UseCascadeFlightReturn`, `UseCascadeFlightItemOptions`, `UseCascadeFlightItemReturn`, `UseInteractiveHandOptions`, `UseInteractiveHandReturn`, `SpatialTargetMeasurement`, `SpatialVector`, `SpatialSpaceContextValue`, `SpatialSpaceProps`, `UseSpatialTargetOptions`, `UseSpatialTargetReturn` — the headless spatial coordinate space, drop-zone toss physics, UI-thread cascade flight, and interactive hand contracts.
 
 `src/index.ts` must export its types explicitly and intentionally. Blanket namespace re-exports (`export * as ...`) that turn internal type modules into public API are not allowed.
 
@@ -189,7 +191,7 @@ The versioning policy for this public contract is defined in §9.
 
 ### Baseline declaration (future)
 
-A baseline will be declared when the public contract is considered solid enough to develop an application without issues, validated through the reference application (`apps/colguetti`). No change to the public contract happens implicitly.
+A baseline will be declared when the public contract is considered solid enough to develop an application without issues, validated through the reference application (`apps/base-template` and `apps/playground`). No change to the public contract happens implicitly.
 
 From the baseline onward:
 
@@ -202,7 +204,7 @@ The former `DefaultReact`, `ActionTypes`, `HooksTypes`, and `IconstTypes` namesp
 
 `BaseModule` and `createModuleProvider` are no longer part of the public API (Q1 restructure). The shared module machinery was replaced by an internal `core` (`createStore` + `createProvider`); the public surface is the concrete capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`) and behaviors (`createApiProvider`, `NavigatorProvider`/`useNavigator`, `ToastProvider`/`useToast`). This is breaking for any consumer relying on the module machinery directly.
 
-`core/create-provider.tsx` was completely removed in favor of external stores powered by `useSyncExternalStore` (`core/use-external-store.ts`). Capability factories (`createConfig`, `createLang`, `createLightDark`, `createCollection`) return `{ store, actions, use... }`. React Context is no longer used for these capabilities, and enclosing Provider components are no longer required. The `*Provider` factory names (`createConfigProvider`, etc.) remain as alias exports to prevent breaking existing imports.
+`core/create-provider.tsx` was completely removed in favor of external stores powered by `useSyncExternalStore` (`core/use-external-store.ts`). Capability factories (`createConfig`, `createLang`, `createLightDark`, `createCollection`, `createSensoryCues`) return `{ store, actions, use... }`. React Context is no longer used for these capabilities, and enclosing Provider components are no longer required. The `*Provider` factory names (`createConfigProvider`, etc.) remain as alias exports to prevent breaking existing imports.
 
 `ToastProvider` and `ConfirmProvider` are retained as aliases to `ToastHost` and `ConfirmHost` (pure component hosts for rendering modals/banners), while their state is managed via external stores (`createToastStore`, `createConfirmStore`). Imperative methods (`toast.show()`, `toast.dismiss()`, `confirm()`, `dismissConfirm()`) are directly accessible outside the React component tree.
 
@@ -232,9 +234,14 @@ Two Q3 prototypes were intentionally **not** extracted: navigator params (the ap
 
 `useKineticSwipe`, `useKineticCarousel`, `KineticCarouselProvider`, and `useKineticCarouselItem` are additive headless kinetic container primitives (see `docs/reference/hooks.md` §11 and §12). `useKineticSwipe` provides dual-gesture support (120 FPS UI-thread `Gesture.Pan()` + universal `PanResponder` fallback) with escape velocity flick detection and rotational tilt. `useKineticCarousel` provides discrete snap tracking, auto-play with active interaction pause, and pure mathematical worklet presets (`calculateCarouselTransform` for `coverflow`, `card-stack`, `scale-fade`, `flat`). Validated in `tests/hooks/use-kinetic-swipe.test.ts`, `tests/hooks/use-kinetic-carousel.test.tsx`, and `tests/public-api.test.ts`.
 
-`@alambre/room-relay` is an extracted headless workspace package providing lightweight ephemeral room synchronization over WebSockets and in-memory simulated transport (see `docs/reference/room-relay.md`). It features `RoomRelayClient`, `createRoomRelay`, `useRoomRelay`, `useRoomRelaySelector`, `SimulatedRelayTransport`, `WebSocketRelayTransport`, and unambiguous `generateRoomCode`. Decoupled from native modules, it operates in React Native, Expo, and Node/Web with zero DOM or external backend dependencies. Validated by 24 unit and contract tests in `packages/room-relay/tests/`.
+`@alambre/room-relay` is an extracted headless workspace package providing lightweight ephemeral room synchronization over WebSockets and in-memory simulated transport (see `docs/reference/room-relay.md`). It features an atomic room lifecycle (`join`, `create`, `leave`, `setServerUrl`), `RoomRelayClient`, `createRoomRelay`, `useRoomRelay` (backed by `useSyncExternalStore`), `useRoomRelaySelector`, `SimulatedRelayTransport`, `WebSocketRelayTransport`, unambiguous `generateRoomCode`, deterministic 32-bit seeded PRNG & Fisher-Yates shuffling (`hashSeed`, `createSeededRng`, `shuffleWithSeed`), and a host-authoritative turn engine (`TurnEngineClient`, `createTurnEngine`, `useTurnEngine`) with monotonic sequence tracking and late-join snapshot synchronization. Validated by 28 unit and contract tests in `packages/room-relay/tests/`.
+
+`useKineticChoreography`, `linearTrajectory`, `parabolicTrajectory`, `arcTrajectory`, `quadraticBezier`, `cubicBezier`, `transferVelocity`, `projectEndpoint`, `calculateCriticalDamping`, and `makeCriticallyDampedConfig` are additive headless kinetic coordination and momentum primitives (see `docs/reference/hooks.md` §14 and §15). They enable multi-track animation chaining directly on the Reanimated UI thread without React bridge roundtrips, and provide bounded, critically-damped momentum handoff from pan/flick gestures without runaway oscillations. Validated in `tests/core/handoff.test.ts`, `tests/core/trajectory.test.ts`, `tests/hooks/use-kinetic-choreography.test.ts`, and `tests/public-api.test.ts`.
+
+`SpatialSpace`, `useSpatialSpace`, `useSpatialTarget`, `useSpatialVector`, `useSpatialToss` (alias `useCardToss`), `useCascadeFlight` (alias `useDealCascade`), `useCascadeFlightItem`, `useInteractiveHand`, `reorderHandItems`, `resolveHandReorderIndex`, `calculateResponsiveHandFan`, `pointInBounds`, `findTargetDropZone`, `getZoneCenter`, `generateStackJitter`, `projectTossLanding`, `resolveTossDynamics`, `computeSpatialCascadePlan` (alias `computeDealCascadePlan`), `sampleFlightTrajectory`, and `createSensoryCues` (alias `createSensoryCuesProvider`) are additive card/board-game foundation primitives (Proposals 12, 13, and 15; see `docs/reference/hooks.md` §16–§18). Validated in `tests/core/spatial.test.ts` and `tests/public-api.test.ts`.
 
 Any consumer importing those types is affected by these changes. The known consumers in this repository only use retained types and are unaffected.
 
 The versioning policy for this public contract is defined in §9.
+
 

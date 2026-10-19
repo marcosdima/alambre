@@ -4,56 +4,31 @@ pnpm workspace monorepo for the `alambre` React Native framework and its applica
 
 ## Structure
 
-- `packages/alambre` — the reusable framework/library. Published to npm as `alambre`. Contains the capability factories (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, `createCollectionProvider`), behaviors (`createApiProvider`, `NavigatorProvider`, `ToastProvider`, `ConfirmProvider`), headless hooks (`useHistoryState`, `useStopwatch`), base UI components, icons and animations. Must never depend on application code.
-- `apps/colguetti` — the reference application (reminders for the things to carry when leaving home). It is a real product that exercises and validates `alambre`. Consumes the library via the `workspace:*` protocol. Ships with an Expo app configuration and an Android prebuild.
-- `apps/cross-logic` — the deductive logic puzzle game (Logic Grid Puzzle). Exercises interactive grid state, headless undo/redo history, auto-cross deduction rules and session persistence over `alambre`.
-- `apps/base-template` — the canonical application **template**: a generic, product-free skeleton to bootstrap new apps on top of `alambre` (capabilities wired, navigator with subpages, toast, storage adapters, validation setup). Its standalone copy is the GitHub template repository `marcosdima/base-expo` (see *Bootstrapping a new app* below).
+- `packages/alambre` — the reusable headless framework/library. Published to npm as `alambre`. Contains the capability factories (`createConfig`, `createLang`, `createLightDark`, `createCollection`), behaviors (`createApi`, `NavigatorProvider`, `ToastHost`, `ConfirmHost`), headless kinetic/spatial hooks (`useWavefront`, `usePressKinetics`, `useSpatialFlip`, `useFlightTrajectory`, `useKineticSwipe`, `useKineticCarousel`, `useKineticPipeline`, `useKineticChoreography`), compound form primitives, and icons. Must never depend on application code.
+- `packages/ui` (`@alambre/ui`) — tactile, accessible mobile UI kit and design token system built on top of `alambre`.
+- `packages/room-relay` (`@alambre/room-relay`) — lightweight headless ephemeral multi-device room synchronization over WebSockets and in-memory simulated hubs.
+- `apps/base-template` — the canonical application **template**: a generic, product-free skeleton to bootstrap new apps on top of `alambre` and `@alambre/ui` (capabilities wired, navigator with subpages, toast, storage adapters, validation setup). Its standalone copy is the GitHub template repository `marcosdima/base-expo` (see *Bootstrapping a new app* below).
+- `apps/playground` — the behavioral and kinetic proving ground for prototyping and verifying headless physics, spatial card mechanics, and multiplayer room synchronization before extraction.
 
 Detailed functional reference for all alambre capabilities, hooks, behaviors, and components is documented in [`docs/reference/index.md`](docs/reference/index.md).
 
-Dependency direction is one-way: `apps/* -> packages/alambre`.
+Dependency direction is strictly one-way: `apps/* -> packages/*`.
 
 ## Commands
 
 From the repository root:
 
 ```bash
-pnpm install                     # install all workspace dependencies
-pnpm build                       # build all packages
-pnpm lint                        # lint all packages
-pnpm typecheck                   # typecheck all packages
-pnpm --filter alambre build      # build the library only
-pnpm --filter @alambre/colguetti ios  # run the Colguetti app
+pnpm install                          # install all workspace dependencies
+pnpm build                            # build all packages
+pnpm lint                             # lint all packages
+pnpm typecheck                        # typecheck all packages
+pnpm test                             # run all unit & contract test suites
+pnpm --filter alambre build           # build the core library only
+pnpm --filter @alambre/playground ios # run the Playground app
 ```
 
-Inside the monorepo the apps resolve `alambre` from its TypeScript source via Metro (Fast Refresh); standalone apps bootstrapped from the template resolve it from the published package `exports` (`dist/module`). Either way, rebuild the library after a change: `pnpm --filter alambre build`.
-
-## Releasing Colguetti (Google Play)
-
-The reference app ships to Google Play as an Android App Bundle (`.aab`) built with EAS Build, which handles signing automatically. The routine is centralized in pnpm scripts at the repository root:
-
-```bash
-pnpm eas:login          # one-time: connect your Expo account (sign up at expo.dev)
-pnpm eas:build:apk      # internal APK for manual testing (EAS `preview` profile)
-pnpm eas:build:aab      # signed AAB for the Play Store (EAS `production` profile)
-pnpm eas:submit         # upload the latest EAS build to Play (needs a Google Play developer account)
-```
-
-Centralized release routine (bump `version` + `android.versionCode` in `apps/colguetti/app.json`, run typecheck/lint/test, build the AAB):
-
-```bash
-pnpm colguetti:release -- --dry-run            # preview only, writes nothing
-pnpm colguetti:release -- --version=1.0.1      # explicit version
-```
-
-Local APK builds for quick device installs (no EAS needed):
-
-```bash
-pnpm --filter @alambre/colguetti apk           # assembleDebug
-pnpm --filter @alambre/colguetti apk:install   # assemble + adb install
-```
-
-Before the first Play Store submission, `apps/colguetti/app.json` must carry the final `android.package` (`com.alambre.colguetti`), a monotonic `android.versionCode` and the store `version`. The Android package is immutable once published, so decide it before the first release. EAS builds in the cloud from `app.json` and ignores the local, gitignored `apps/*/android` prebuilds (those are only used by local `expo run:android`).
+Inside the monorepo the apps resolve `alambre`, `@alambre/ui`, and `@alambre/room-relay` from their TypeScript source via Metro (Fast Refresh); standalone apps bootstrapped from the template resolve `alambre` from the published package `exports` (`dist/module`). Either way, rebuild the library after a change: `pnpm --filter alambre build`.
 
 ## Publishing
 

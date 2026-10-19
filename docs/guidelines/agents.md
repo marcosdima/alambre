@@ -115,13 +115,13 @@ To prevent agent drift (such as a single agent assuming success on unverified na
 `apps/playground` is the living candidate catalog: patterns are prototyped there (or inside a consumer app) and live as running code, not as prose. There is no separate discoveries log. When a development cycle ends, `@lead` asks `@reviewer` for an **Extraction Audit** over the diff and the affected testbeds.
 
 ```
-[ Feature development ]  (apps/colguetti, apps/cross-logic, apps/playground)
+[ Feature development ]  (apps/playground, apps/base-template, consumer apps)
             |
             v
 [ End-of-cycle pass ] --> @reviewer Extraction Audit
             |
             +--> Generic, headless, >= 2 consumers, tested  --> packages/alambre
-            +--> Presentational / UI skin, reusable by apps   --> apps/base-template
+            +--> Presentational / UI skin, reusable by apps   --> packages/ui or apps/base-template
             +--> Single-consumer or domain-specific           --> stays in its app (no docs)
             +--> Experimental kinetic idea                    --> stays as a playground testbed
             +--> Needs design consensus                       --> RFC in docs/logs/proposals.md
@@ -132,12 +132,12 @@ Destination criteria:
 | Destination | Criteria |
 | --- | --- |
 | `packages/alambre` | Headless and presentation-neutral (no colors, layout wrappers, domain data); has >= 2 real consumers (Rule of Two); covered by contract tests (`tests/public-api.test.ts`) and validated on device when kinetic. |
-| `apps/base-template` | Presentation or compound UI that is not framework-worthy (it carries a visual skin, theme tokens, or app-level opinions) but is broadly welcome as a starting point for new apps. Needs no second consumer, but must respect `apps/base-template` conventions (semantic theme colors, accessibility, no leaks into `alambre`). |
-| Stays in the app | Single-consumer, domain-specific (e.g. card-game mechanics, edge relays), or standard React Native knowledge. Do not document it. |
+| `packages/ui` / `apps/base-template` | Presentation or compound UI that is not framework-worthy (it carries a visual skin, theme tokens, or app-level opinions) but is broadly welcome as a starting point for new apps. Needs no second consumer, but must respect `apps/base-template` conventions (semantic theme colors, accessibility, no leaks into `alambre`). |
+| Stays in the app | Single-consumer, domain-specific (e.g. specific game rules), or standard React Native knowledge. Do not document it. |
 | `docs/logs/proposals.md` | Cross-cutting or breaking changes that require user discussion before implementation. |
 
 Rules:
 
 1. Writing code in an app is not a reason to create documentation. Record only what changes a contract: an extraction (documented in `docs/reference/*.md` / `architecture.md` §8 or `docs/apps/base-template.md`), or an RFC.
-2. Genuine platform traps that tests cannot catch (silent engine/OS defects) go in the document of the layer they affect (e.g. `docs/apps/colguetti.md` for OS behavior, `docs/framework/ui-decisions.md` for UI) as a short note, not in a global ledger.
+2. Genuine platform traps that tests cannot catch (silent engine/OS defects) go in the document of the layer they affect (e.g. `docs/apps/base-template.md` for OS behavior, `docs/framework/ui-decisions.md` for UI) as a short note, not in a global ledger.
 3. `@reviewer` provides the audit and recommendation; `@lead` decides and performs the extraction.

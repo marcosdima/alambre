@@ -70,7 +70,10 @@ show_help() {
   exit 0
 }
 
-TARGET="apps/colguetti/e2e"
+TARGET="apps/playground/e2e"
+if [ ! -d "${TARGET}" ] && [ -d "apps/base-template/e2e" ]; then
+  TARGET="apps/base-template/e2e"
+fi
 TAG=""
 
 if [ $# -gt 0 ]; then
@@ -85,13 +88,11 @@ if [ $# -gt 0 ]; then
         exit 1
       fi
       ;;
-    smoke|settings|items|alarms)
-      TARGET="apps/colguetti/e2e/${1}.yaml"
-      ;;
     *)
-      # Check if shortcut matches a yaml in colguetti e2e
-      if [ -f "apps/colguetti/e2e/${1}.yaml" ]; then
-        TARGET="apps/colguetti/e2e/${1}.yaml"
+      if [ -f "apps/playground/e2e/${1}.yaml" ]; then
+        TARGET="apps/playground/e2e/${1}.yaml"
+      elif [ -f "apps/base-template/e2e/${1}.yaml" ]; then
+        TARGET="apps/base-template/e2e/${1}.yaml"
       else
         TARGET="$1"
       fi

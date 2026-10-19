@@ -712,3 +712,132 @@ import { calculateSwipeTilt } from 'alambre';
 
 const tiltDeg = calculateSwipeTilt(translateX, 16, 240);
 ```
+
+---
+
+## 14. `useKineticChoreography`
+
+Headless, multi-track animation chaining engine for complex gesture-to-animation pipelines (dealing cards, throwing tokens, multi-stage spring sequences). Executes entirely on the Reanimated UI thread via worklets, preventing React render-cycle stutters, state tearing, and bridge delays.
+
+### Signature
+```typescript
+import {
+  useKineticChoreography,
+  linearTrajectory,
+  parabolicTrajectory,
+  arcTrajectory,
+  type UseKineticChoreographyOptions,
+} from 'alambre';
+
+const choreo = useKineticChoreography({
+  initialValues: { x: 0, y: 0, scale: 1, rotateZ: 0, rotateY: 0, opacity: 1 },
+  onStepComplete: (stepIndex) => console.log(`Step ${stepIndex} complete`),
+  onComplete: () => console.log('Choreography pipeline finished'),
+});
+
+// Fluent UI-thread chaining:
+choreo.chain()
+  .to({ y: -40, scale: 1.08 }, { duration: 180 })
+  .to({ x: 200, y: 150, rotateZ: 15 }, {
+    trajectory: parabolicTrajectory,
+    duration: 350,
+    trajectoryOptions: { liftHeight: 60 },
+  })
+  .to({ rotateY: 180 }, { duration: 220 })
+  .start();
+```
+
+### Options (`UseKineticChoreographyOptions`)
+* `initialValues?: Partial<KineticTrackValues>`: Initial values for channels (`x`, `y`, `z`, `scale`, `rotateX`, `rotateY`, `rotateZ`, `opacity`).
+* `perspective?: number`: Perspective distance in points (default: `1000`).
+* `onStepComplete?: (stepIndex: number) => void`: Callback executed upon step finish.
+* `onComplete?: () => void`: Callback executed when queue is empty.
+* `onInterrupt?: (interruptedStep: number) => void`: Callback executed if `stop()` or an override interrupts active flight.
+
+### Properties (`UseKineticChoreographyReturn`)
+* `animatedStyle`: Pre-composed Reanimated transform style object (`transform: [{ perspective }, { translateX }, { translateY }, { rotateX }, { rotateY }, { rotateZ }, { scale }], opacity`).
+* `values`: Shared values map for fine-grained custom style access.
+* `isPlaying`: Shared value boolean indicating active execution.
+* `currentStep`: Shared value number of the current step in progress.
+* `chain()`: Initiates a fluent step builder.
+* `run(steps)`: Executes an array of step descriptors.
+* `stop()`: Halts execution immediately and cancels pending steps.
+* `reset()`: Resets all channels to their initial values.
+
+---
+
+## 15. Parametric Trajectories & Momentum Handoff
+
+Pure mathematical worklets for physics-driven gesture release, momentum transfer, and curved 3D motion.
+
+### Trajectory Generators
+* **`linearTrajectory(t, from, to)`**: Linear interpolation across `(x, y, z)`.
+* **`parabolicTrajectory(t, from, to, options)`**: Parabolic altitude curve adding vertical lift: $y(t) = \text{lerp}(y_0, y_1, t) - 4 \cdot \text{liftHeight} \cdot t(1 - t)$.
+* **`arcTrajectory(t, from, to, options)`**: Lateral arc curvature deflecting perpendicular to the flight vector.
+* **`quadraticBezier(t, p0, p1, p2)`**: 2D quadratic Bézier curve.
+* **`cubicBezier(t, p0, p1, p2, p3)`**: 2D cubic Bézier curve.
+
+### Momentum & Damping Math
+* **`transferVelocity(initialVelocity, options)`**: Converts high-velocity gesture flicks into bounded, critically-damped Reanimated spring configurations or decay animations without runaway oscillations or overshoot.
+* **`calculateCriticalDamping(stiffness, mass)`**: Computes the exact damping coefficient $c = 2\sqrt{k \cdot m}$ for zero overshoot ($\zeta = 1.0$).
+* **`calculateDampingRatio(damping, stiffness, mass)`**: Computes the damping ratio $\zeta = \frac{c}{2\sqrt{k \cdot m}}$.
+* **`makeCriticallyDampedConfig(stiffness, mass)`**: Returns a `{ damping, stiffness, mass }` configuration guaranteed to prevent oscillation.
+* **`projectEndpoint(currentPosition, velocity, decayResistance)`**: Projects the resting position of an object under inertial decay: $x_\infty = x_0 + \frac{v_0}{1 - r} \cdot 0.016$.
+* **`blendScalar(from, to, alpha)`**: Clamped scalar linear blend with bounds protection.
+
+---
+
+## 16. Spatial Coordinate Space, Drop-Zone Collision & Toss Physics (`SpatialSpace`, `useSpatialTarget`, `useSpatialToss`)
+
+Declarative coordinate registry and inertial 2D toss physics for multi-zone game boards (`deck`, `discard`, `table`, `playerHand`).
+
+### Coordinate Registry
+* **`<SpatialSpace>`**: Root coordinate container tracking relative target bounds.
+* **`useSpatialTarget(id, options)`**: Registers a target zone by `id` and returns `{ onLayout, bounds, center, isMeasured }`.
+* **`useSpatialVector(fromId, toId)`**: Computes reactive `{ from, to, delta, isReady }` flight coordinates between two registered targets.
+
+### Pure Drop-Zone & Pile Jitter Math
+* **`pointInBounds(point, bounds, padding?)`**: Worklet-safe AABB hit-testing with optional touch padding.
+* **`findTargetDropZone(point, zones, item?, padding?)`**: Finds the first drop zone containing `point` whose `accepts(item)` predicate passes.
+* **`getZoneCenter(bounds)`**: Computes the rounded center coordinate of a bounding box.
+* **`generateStackJitter(key, maxAngle?, maxOffset?)`**: Deterministic FNV-1a + MurmurHash3 32-bit stack jitter (`{ rotation, offsetX, offsetY }`) for organic card/tile piling.
+* **`projectTossLanding(start, velocity, decelerationRate?)`**: Projects the inertial resting coordinate of a 2D flick.
+* **`resolveTossDynamics(options)`**: Resolves whether a toss lands in a target drop zone (with stack jitter) or springs back to its `homeSlot` with critically damped restitution.
+* **`useSpatialToss(options)`** (alias `useCardToss`): Combines `Gesture.Pan()` drag tracking, horizontal velocity tilt (`calculateSwipeTilt`), 3D flip (`flip()`), and `resolveTossDynamics`.
+
+---
+
+## 17. UI-Thread Cascading Flight & Interactive Hand (`useCascadeFlight`, `useInteractiveHand`)
+
+### Cascading Deal & Flight Orchestration
+* **`calculateResponsiveHandFan(items, options)`**: Computes auto-compressing curved fan slot transforms (`slots`, `effectiveSpacing`, `totalWidth`, `isCompressed`) supporting both single-item (`selectedId`) and multi-item (`selectedIds`) selection lift.
+* **`computeSpatialCascadePlan(itemsToDeal, options)`** (alias `computeDealCascadePlan`): Deterministically plans staggered parabolic flights from an origin stack into responsive hand fan slots.
+* **`useCascadeFlight(options)`** (alias `useDealCascade`): State controller for active cascade deals (`activeFlights`, `isDealing`, `startDeal`, `handleFlightComplete`, `cancelDeal`).
+* **`useCascadeFlightItem({ spec, onComplete })`**: UI-thread flight driver that schedules staggered launch via Reanimated `withDelay(spec.startDelayMs, ...)` with zero JS `setTimeout` drift.
+
+### Unified Interactive Hand
+* **`useInteractiveHand(options)`**: Headless controller for card/tile hands supporting:
+  * Single and multi-item combo selection (`selectionMode: 'single' | 'multiple'`, `maxSelected`, `toggleSelect`, `playSelected`).
+  * Real-time horizontal drag-to-reorder along the fan (`beginDrag`, `updateDragOffset`, `endDrag`, `reorderHandItems`, `resolveHandReorderIndex`).
+  * Upward escape threshold and velocity detection (`escapeThresholdY`, `escapeVelocityY`) to transition seamlessly into playing an item (`onPlayItem`).
+
+---
+
+## 18. Headless Sensory Cues Capability (`createSensoryCues`)
+
+External-store-backed capability (`useSyncExternalStore`) coordinating haptic and audio feedback adapters with user mute preferences and per-cue cooldown throttling (`minIntervalMs`, default `35ms`).
+
+```typescript
+import { createSensoryCues } from 'alambre';
+
+export const sensory = createSensoryCues<'card.deal' | 'card.flip' | 'card.play'>({
+  minIntervalMs: 35,
+  onHaptic: (cue, payload) => { /* trigger expo-haptics */ },
+  onSound: (cue, payload) => { /* trigger expo-audio */ },
+});
+
+// Inside components:
+const { hapticsEnabled, soundEnabled, trigger, toggleHaptics, toggleSound } = sensory.useSensoryCues();
+```
+
+
