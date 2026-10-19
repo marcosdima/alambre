@@ -107,4 +107,43 @@ describe('kinetics token system', () => {
       expect(rubberBandFriction(delta, k)).toBe(-rubberBandFriction(-delta, k));
     });
   });
+
+  describe('trajectory namespace', () => {
+    it('exposes all parametric trajectory primitives', () => {
+      expect(kinetics.trajectory).toBeDefined();
+      expect(typeof kinetics.trajectory.linear).toBe('function');
+      expect(typeof kinetics.trajectory.parabolic).toBe('function');
+      expect(typeof kinetics.trajectory.arc).toBe('function');
+      expect(typeof kinetics.trajectory.quadraticBezier).toBe('function');
+      expect(typeof kinetics.trajectory.cubicBezier).toBe('function');
+      expect(typeof kinetics.trajectory.interpolate).toBe('function');
+    });
+
+    it('satisfies endpoint boundary conditions on linear and parabolic trajectories', () => {
+      const from = { x: 0, y: 0 };
+      const to = { x: 50, y: 100 };
+      expect(kinetics.trajectory.linear(0, from, to)).toEqual(from);
+      expect(kinetics.trajectory.linear(1, from, to)).toEqual(to);
+      expect(kinetics.trajectory.parabolic(0, from, to, 30)).toEqual(from);
+      expect(kinetics.trajectory.parabolic(1, from, to, 30)).toEqual(to);
+    });
+  });
+
+  describe('handoff namespace', () => {
+    it('exposes velocity transfer and projection primitives', () => {
+      expect(kinetics.handoff).toBeDefined();
+      expect(typeof kinetics.handoff.transferVelocity).toBe('function');
+      expect(typeof kinetics.handoff.projectEndpoint).toBe('function');
+      expect(typeof kinetics.handoff.blend).toBe('function');
+      expect(typeof kinetics.handoff.calculateCriticalDamping).toBe('function');
+      expect(typeof kinetics.handoff.calculateDampingRatio).toBe('function');
+      expect(typeof kinetics.handoff.makeCriticallyDampedConfig).toBe('function');
+    });
+
+    it('injects scaled velocity into spring configs', () => {
+      const conf = kinetics.handoff.transferVelocity(1000, kinetics.spring.snap);
+      expect(conf.velocity).toBe(850);
+    });
+  });
 });
+

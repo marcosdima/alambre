@@ -4,7 +4,32 @@ import {
   parabolicAltitudeCurve,
   calculateCarouselTransform,
   calculateSwipeTilt,
+  pointInBounds,
+  findTargetDropZone,
+  getZoneCenter,
+  generateStackJitter,
+  projectTossLanding,
+  resolveTossDynamics,
+  calculateResponsiveHandFan,
+  computeSpatialCascadePlan,
+  sampleFlightTrajectory,
 } from './spatial';
+import {
+  linearTrajectory,
+  parabolicTrajectory,
+  arcTrajectory,
+  quadraticBezier,
+  cubicBezier,
+  interpolateScalar,
+} from './trajectory';
+import {
+  transferVelocity,
+  projectEndpoint,
+  blendScalar,
+  calculateCriticalDamping,
+  calculateDampingRatio,
+  makeCriticallyDampedConfig,
+} from './handoff';
 
 export function rubberBandFriction(overscroll: number, constant: number = 0.55): number {
   'worklet';
@@ -130,8 +155,34 @@ export const kinetics = {
   spatial: {
     parabolicAltitude: parabolicAltitudeCurve,
     calculateHandFan,
+    calculateResponsiveHandFan,
     calculateCarouselTransform,
     calculateSwipeTilt,
+    pointInBounds,
+    findTargetDropZone,
+    getZoneCenter,
+    generateStackJitter,
+    projectTossLanding,
+    resolveTossDynamics,
+    computeSpatialCascadePlan,
+    sampleFlightTrajectory,
+  },
+  trajectory: {
+    linear: linearTrajectory,
+    parabolic: parabolicTrajectory,
+    arc: arcTrajectory,
+    quadraticBezier,
+    cubicBezier,
+    interpolate: interpolateScalar,
+  },
+  handoff: {
+    transferVelocity,
+    projectEndpoint,
+    blend: blendScalar,
+    calculateCriticalDamping,
+    calculateDampingRatio,
+    makeCriticallyDampedConfig,
   },
 };
+
 

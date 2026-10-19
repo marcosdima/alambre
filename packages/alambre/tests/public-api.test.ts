@@ -44,6 +44,8 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createLightDarkProvider).toBe('function');
     expect(typeof Alambre.createCollectionProvider).toBe('function');
     expect(typeof Alambre.createCollection).toBe('function');
+    expect(typeof Alambre.createSensoryCues).toBe('function');
+    expect(typeof Alambre.createSensoryCuesProvider).toBe('function');
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
@@ -92,13 +94,43 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useSpatialFlip).toBe('function');
     expect(typeof Alambre.useFlightTrajectory).toBe('function');
     expect(typeof Alambre.useKineticPipeline).toBe('function');
+    expect(typeof Alambre.useKineticChoreography).toBe('function');
+    expect(typeof Alambre.useSpatialToss).toBe('function');
+    expect(typeof Alambre.useCardToss).toBe('function');
+    expect(typeof Alambre.useCascadeFlight).toBe('function');
+    expect(typeof Alambre.useDealCascade).toBe('function');
+    expect(typeof Alambre.useCascadeFlightItem).toBe('function');
+    expect(typeof Alambre.reorderHandItems).toBe('function');
+    expect(typeof Alambre.resolveHandReorderIndex).toBe('function');
+    expect(typeof Alambre.useInteractiveHand).toBe('function');
     expect(typeof Alambre.useKineticSwipe).toBe('function');
     expect(typeof Alambre.useKineticCarousel).toBe('function');
     expect(typeof Alambre.useKineticCarouselItem).toBe('function');
     expect(typeof Alambre.KineticCarouselContext).toBe('object');
     expect(typeof Alambre.KineticCarouselProvider).toBe('function');
     expect(typeof Alambre.calculateHandFan).toBe('function');
+    expect(typeof Alambre.calculateResponsiveHandFan).toBe('function');
+    expect(typeof Alambre.pointInBounds).toBe('function');
+    expect(typeof Alambre.findTargetDropZone).toBe('function');
+    expect(typeof Alambre.getZoneCenter).toBe('function');
+    expect(typeof Alambre.generateStackJitter).toBe('function');
+    expect(typeof Alambre.projectTossLanding).toBe('function');
+    expect(typeof Alambre.resolveTossDynamics).toBe('function');
+    expect(typeof Alambre.computeSpatialCascadePlan).toBe('function');
+    expect(typeof Alambre.computeDealCascadePlan).toBe('function');
+    expect(typeof Alambre.sampleFlightTrajectory).toBe('function');
     expect(typeof Alambre.parabolicAltitudeCurve).toBe('function');
+    expect(typeof Alambre.linearTrajectory).toBe('function');
+    expect(typeof Alambre.parabolicTrajectory).toBe('function');
+    expect(typeof Alambre.arcTrajectory).toBe('function');
+    expect(typeof Alambre.quadraticBezier).toBe('function');
+    expect(typeof Alambre.cubicBezier).toBe('function');
+    expect(typeof Alambre.transferVelocity).toBe('function');
+    expect(typeof Alambre.projectEndpoint).toBe('function');
+    expect(typeof Alambre.blendScalar).toBe('function');
+    expect(typeof Alambre.calculateCriticalDamping).toBe('function');
+    expect(typeof Alambre.calculateDampingRatio).toBe('function');
+    expect(typeof Alambre.makeCriticallyDampedConfig).toBe('function');
     expect(typeof Alambre.calculateCarouselTransform).toBe('function');
     expect(typeof Alambre.calculateSwipeTilt).toBe('function');
     expect(typeof Alambre.criticallyDampedCurve).toBe('function');
@@ -135,6 +167,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.StepFlow).toBe('object');
     expect(typeof Alambre.useStepFlow).toBe('function');
     expect(typeof Alambre.StepFlowControls).toBe('function');
+    expect(typeof Alambre.SpatialSpace).toBe('function');
+    expect(typeof Alambre.useSpatialSpace).toBe('function');
+    expect(typeof Alambre.useSpatialTarget).toBe('function');
+    expect(typeof Alambre.useSpatialVector).toBe('function');
     expect(typeof Alambre.createAnimatedIcon).toBe('function');
     expect(typeof Alambre.MorphIcon).toBe('function');
     expect(typeof Alambre.HomeIcon).toBe('function');
@@ -406,6 +442,25 @@ describe('public API — type surface', () => {
     expect(carouselKineticsOptions).toBeDefined();
     expect(carouselPreset).toBe('card-stack');
     expect(kineticSwipeDir).toBe('down');
+
+    const choreoOptions: Alambre.UseKineticChoreographyOptions = {
+      initial: { x: 0, y: 0, scale: 1 },
+    };
+    const stepOptions: Alambre.KineticStepOptions = {
+      to: { x: 100 },
+      trajectory: { type: 'linear' },
+      duration: 300,
+    };
+    const velocityOptions: Alambre.TransferVelocityOptions = {
+      maxVelocity: 2000,
+      velocityScale: 0.85,
+      enforceCriticalDamping: true,
+    };
+    const point3d: Alambre.Point3D = { x: 10, y: 20, z: 30 };
+    expect(choreoOptions).toBeDefined();
+    expect(stepOptions).toBeDefined();
+    expect(velocityOptions).toBeDefined();
+    expect(point3d).toBeDefined();
 
 
     expect(buttonProps).toBeDefined();

@@ -53,6 +53,13 @@ export type {
 export type { ConfigState, UseConfigType } from './capabilities/config';
 export type { LangDictionary, Langs, LangState, UseLangType, CreateLangReturn } from './capabilities/lang';
 export type { UseCollectionType } from './capabilities/collection';
+export type {
+  SensoryCuesState,
+  SensoryCuePayload,
+  CreateSensoryCuesOptions,
+  SensoryCuesActions,
+  UseSensoryCuesReturn,
+} from './capabilities/sensory';
 
 
 export type { Storage } from './types/actions';
@@ -82,6 +89,8 @@ export {
   createLangProvider,
   createLightDark,
   createLightDarkProvider,
+  createSensoryCues,
+  createSensoryCuesProvider,
 } from './capabilities';
 
 // Behaviors.
@@ -164,6 +173,15 @@ export {
   KineticCarouselContext,
   KineticCarouselProvider,
   useKineticPipeline,
+  useKineticChoreography,
+  useSpatialToss,
+  useCardToss,
+  useCascadeFlight,
+  useDealCascade,
+  useCascadeFlightItem,
+  reorderHandItems,
+  resolveHandReorderIndex,
+  useInteractiveHand,
 } from './hooks';
 export type {
   HistoryState,
@@ -227,7 +245,26 @@ export type {
   KineticPipelineQueueItem,
   UseKineticPipelineOptions,
   UseKineticPipelineReturn,
+  KineticTrackValues,
+  KineticStepTrajectory,
+  KineticStepOptions,
+  UseKineticChoreographyOptions,
+  KineticChainBuilder,
+  UseKineticChoreographyReturn,
+  UseSpatialTossOptions,
+  UseSpatialTossReturn,
+  UseCardTossOptions,
+  UseCardTossReturn,
+  UseCascadeFlightOptions,
+  UseCascadeFlightReturn,
+  UseDealCascadeOptions,
+  UseDealCascadeReturn,
+  UseCascadeFlightItemOptions,
+  UseCascadeFlightItemReturn,
+  UseInteractiveHandOptions,
+  UseInteractiveHandReturn,
 } from './hooks';
+
 
 
 
@@ -292,8 +329,29 @@ export {
   calculateWavefrontPhase,
   parabolicAltitudeCurve,
   calculateHandFan,
+  calculateResponsiveHandFan,
   calculateCarouselTransform,
   calculateSwipeTilt,
+  pointInBounds,
+  findTargetDropZone,
+  getZoneCenter,
+  generateStackJitter,
+  projectTossLanding,
+  resolveTossDynamics,
+  computeSpatialCascadePlan,
+  computeDealCascadePlan,
+  sampleFlightTrajectory,
+  linearTrajectory,
+  parabolicTrajectory,
+  arcTrajectory,
+  quadraticBezier,
+  cubicBezier,
+  transferVelocity,
+  projectEndpoint,
+  blendScalar,
+  calculateCriticalDamping,
+  calculateDampingRatio,
+  makeCriticallyDampedConfig,
 } from './core';
 export type {
   Store,
@@ -301,9 +359,24 @@ export type {
   WavefrontPhaseOptions,
   HandFanOptions,
   HandFanItemTransform,
+  ResponsiveHandFanOptions,
+  HandFanSlot,
+  ResponsiveHandFanResult,
+  SpatialRect,
+  SpatialDropZone,
+  StackJitter,
+  ResolveTossOptions,
+  TossResolution,
+  SpatialCascadeOptions,
+  SpatialFlightSpec,
+  SpatialCascadePlan,
+  FlightInterpolationState,
   CarouselPreset,
   CarouselItemTransform,
+  Point3D,
+  TransferVelocityOptions,
 } from './core';
+
 
 
 // Spatial components.
@@ -313,6 +386,10 @@ export {
   StepFlow,
   useStepFlow,
   StepFlowControls,
+  SpatialSpace,
+  useSpatialSpace,
+  useSpatialTarget,
+  useSpatialVector,
 } from './components/spatial';
 export type {
   AccordionItemProps,
@@ -320,10 +397,17 @@ export type {
   StepFlowDirection,
   StepFlowContextType,
   StepFlowControlsProps,
+  SpatialTargetMeasurement,
+  SpatialVector,
+  SpatialSpaceContextValue,
+  SpatialSpaceProps,
+  UseSpatialTargetOptions,
+  UseSpatialTargetReturn,
 } from './components/spatial';
 
 // Animated Icons & Helpers.
 export { createAnimatedIcon, MorphIcon } from './components/icons/base';
 export type { AnimatedIconConfig, AnimatedIconProps, MorphIconProps } from './components/icons/base';
 export { HomeIcon, SettingsIcon } from './components/icons/generated';
+
 

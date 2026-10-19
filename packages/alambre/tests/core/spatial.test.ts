@@ -1,10 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   parabolicAltitudeCurve,
   calculateHandFan,
+  calculateResponsiveHandFan,
   calculateCarouselTransform,
   calculateSwipeTilt,
+  pointInBounds,
+  findTargetDropZone,
+  getZoneCenter,
+  generateStackJitter,
+  projectTossLanding,
+  resolveTossDynamics,
+  computeSpatialCascadePlan,
+  sampleFlightTrajectory,
 } from '../../src/core/spatial';
+import { reorderHandItems, resolveHandReorderIndex } from '../../src/hooks/use-interactive-hand';
+import { createSensoryCues } from '../../src/capabilities/sensory';
 import { kinetics } from '../../src/core/kinetics';
 
 describe('spatial kinetics primitives', () => {
@@ -30,8 +41,17 @@ describe('spatial kinetics primitives', () => {
     it('is accessible via kinetics.spatial token namespace', () => {
       expect(kinetics.spatial.parabolicAltitude).toBe(parabolicAltitudeCurve);
       expect(kinetics.spatial.calculateHandFan).toBe(calculateHandFan);
+      expect(kinetics.spatial.calculateResponsiveHandFan).toBe(calculateResponsiveHandFan);
       expect(kinetics.spatial.calculateCarouselTransform).toBe(calculateCarouselTransform);
       expect(kinetics.spatial.calculateSwipeTilt).toBe(calculateSwipeTilt);
+      expect(kinetics.spatial.pointInBounds).toBe(pointInBounds);
+      expect(kinetics.spatial.findTargetDropZone).toBe(findTargetDropZone);
+      expect(kinetics.spatial.getZoneCenter).toBe(getZoneCenter);
+      expect(kinetics.spatial.generateStackJitter).toBe(generateStackJitter);
+      expect(kinetics.spatial.projectTossLanding).toBe(projectTossLanding);
+      expect(kinetics.spatial.resolveTossDynamics).toBe(resolveTossDynamics);
+      expect(kinetics.spatial.computeSpatialCascadePlan).toBe(computeSpatialCascadePlan);
+      expect(kinetics.spatial.sampleFlightTrajectory).toBe(sampleFlightTrajectory);
     });
   });
 
@@ -172,4 +192,117 @@ describe('spatial kinetics primitives', () => {
       expect(calculateSwipeTilt(50, 14, 0)).toBe(0);
     });
   });
+
+  describe('Drop-zone collision, toss dynamics & responsive hand fan (Proposals 12 & 13)', () => {
+    it('evaluates AABB collision and resolves toss landing into drop zone or home slot', () => {
+      const zone = { id: 'table', x: 100, y: 50, width: 120, height: 100 };
+      expect(pointInBounds({ x: 150, y: 90 }, zone)).toBe(true);
+      expect(pointInBounds({ x: 20, y: 20 }, zone)).toBe(false);
+      expect(getZoneCenter(zone)).toEqual({ x: 160, y: 100 });
+
+      const item = { id: 'card_1' };
+      const hit = resolveTossDynamics({
+        releasePoint: { x: 155, y: 95 },
+        velocity: { vx: 10, vy: -10 },
+        dropZones: [zone],
+        item,
+        homeSlot: { x: 0, y: 300 },
+      });
+      expect(hit.isDropSuccess).toBe(true);
+      expect(hit.targetZone?.id).toBe('table');
+
+      const miss = resolveTossDynamics({
+        releasePoint: { x: 0, y: 290 },
+        velocity: { vx: 0, vy: 0 },
+        dropZones: [zone],
+        item,
+        homeSlot: { x: 0, y: 300 },
+        homeRotation: -4,
+      });
+      expect(miss.isDropSuccess).toBe(false);
+      expect(miss.destination).toEqual({ x: 0, y: 300 });
+      expect(miss.targetRotation).toBe(-4);
+    });
+
+    it('supports multi-selection in calculateResponsiveHandFan and computes cascade flight plans', () => {
+      const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+      const fan = calculateResponsiveHandFan(items, {
+        selectedIds: ['a', 'c'],
+        selectedLift: -30,
+      });
+      expect(fan.slots).toHaveLength(3);
+      expect(fan.slots[0]!.zIndex).toBe(999);
+      expect(fan.slots[1]!.zIndex).toBe(2);
+      expect(fan.slots[2]!.zIndex).toBe(999);
+
+      const plan = computeSpatialCascadePlan([{ id: 'd' }, { id: 'e' }], {
+        origin: { x: 0, y: -150 },
+        targetCenter: { x: 0, y: 120 },
+        currentItems: items,
+        staggerDelayMs: 80,
+        flightDurationMs: 300,
+      });
+      expect(plan.specs).toHaveLength(2);
+      expect(plan.targetTotal).toBe(5);
+      expect(plan.specs[1]!.startDelayMs).toBe(80);
+      expect(plan.totalDurationMs).toBe(380);
+
+      const midSample = sampleFlightTrajectory(plan.specs[0]!, 0.5);
+      expect(midSample.altitude).toBe(1);
+    });
+
+    it('reorders hand items immutably and resolves drag slot index', () => {
+      const items = [{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }];
+      const reordered = reorderHandItems(items, 0, 2);
+      expect(reordered.map((i) => i.id)).toEqual(['2', '3', '1', '4']);
+      expect(resolveHandReorderIndex(1, 76, 38, 4)).toBe(3);
+      expect(resolveHandReorderIndex(1, -200, 38, 4)).toBe(0);
+    });
+  });
+
+  describe('Sensory Cues Capability (Proposal 15)', () => {
+    it('dispatches haptic and sound cues with cooldown throttling and mute controls', async () => {
+      let currentNow = 1000;
+      const onHaptic = vi.fn();
+      const onSound = vi.fn();
+
+      const sensory = createSensoryCues<'card.deal' | 'card.play'>({
+        minIntervalMs: 40,
+        onHaptic,
+        onSound,
+        now: () => currentNow,
+      });
+
+      expect(sensory.actions.trigger('card.deal', { pitch: 1.0 })).toBe(true);
+      expect(onHaptic).toHaveBeenCalledTimes(1);
+      expect(onSound).toHaveBeenCalledTimes(1);
+
+      // Rapid duplicate within 40ms cooldown is throttled
+      currentNow = 1015;
+      expect(sensory.actions.trigger('card.deal', { pitch: 1.05 })).toBe(false);
+      expect(onHaptic).toHaveBeenCalledTimes(1);
+
+      // Different cue is not throttled
+      expect(sensory.actions.trigger('card.play')).toBe(true);
+      expect(onHaptic).toHaveBeenCalledTimes(2);
+
+      // After cooldown window elapses, 'card.deal' fires again
+      currentNow = 1050;
+      expect(sensory.actions.trigger('card.deal', { pitch: 1.1 })).toBe(true);
+      expect(onHaptic).toHaveBeenCalledTimes(3);
+
+      // Muting haptics still allows sound to fire
+      await sensory.actions.setHapticsEnabled(false);
+      currentNow = 1100;
+      expect(sensory.actions.trigger('card.deal')).toBe(true);
+      expect(onHaptic).toHaveBeenCalledTimes(3);
+      expect(onSound).toHaveBeenCalledTimes(4);
+
+      // Muting both channels returns false
+      await sensory.actions.setSoundEnabled(false);
+      currentNow = 1200;
+      expect(sensory.actions.trigger('card.deal')).toBe(false);
+    });
+  });
 });
+

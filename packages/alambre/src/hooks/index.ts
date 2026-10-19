@@ -150,3 +150,52 @@ export type {
   UseKineticPipelineReturn,
 } from './use-kinetic-pipeline';
 
+export {
+  useKineticChoreography,
+} from './use-kinetic-choreography';
+export type {
+  KineticTrackValues,
+  KineticStepTrajectory,
+  KineticStepOptions,
+  UseKineticChoreographyOptions,
+  KineticChainBuilder,
+  UseKineticChoreographyReturn,
+} from './use-kinetic-choreography';
+
+export {
+  useSpatialToss,
+  useCardToss,
+} from './use-spatial-toss';
+export type {
+  UseSpatialTossOptions,
+  UseSpatialTossReturn,
+  UseCardTossOptions,
+  UseCardTossReturn,
+} from './use-spatial-toss';
+
+export {
+  useCascadeFlight,
+  useDealCascade,
+  useCascadeFlightItem,
+} from './use-cascade-flight';
+export type {
+  UseCascadeFlightOptions,
+  UseCascadeFlightReturn,
+  UseDealCascadeOptions,
+  UseDealCascadeReturn,
+  UseCascadeFlightItemOptions,
+  UseCascadeFlightItemReturn,
+} from './use-cascade-flight';
+
+export {
+  reorderHandItems,
+  resolveHandReorderIndex,
+  useInteractiveHand,
+} from './use-interactive-hand';
+export type {
+  UseInteractiveHandOptions,
+  UseInteractiveHandReturn,
+} from './use-interactive-hand';
+
+
+
