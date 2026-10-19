@@ -49,7 +49,7 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
     const initialPlayerId = options.playerId || `p_${Math.random().toString(36).substring(2, 8)}`;
 
     this.state = {
-      status: "disconnected",
+      status: options.autoConnect ? "connecting" : "disconnected",
       mode: options.mode || "simulated",
       roomCode: initialRoomCode,
       playerId: initialPlayerId,
@@ -131,42 +131,63 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
     this.dispatchLocalMessage(message);
   }
 
-  joinRoom(code: string): void {
-    const cleanCode = sanitizeRoomCode(code);
+  join(roomCode: string): void {
+    const cleanCode = sanitizeRoomCode(roomCode);
     if (!cleanCode) return;
 
-    const wasConnected = this.state.status === "connected" || this.state.status === "connecting";
     this.disconnect();
-
     this.updateState({
       roomCode: cleanCode,
       isHost: false,
     });
+    this.connect();
+  }
 
-    if (wasConnected || this.options.autoConnect) {
-      this.connect();
-    }
+  create(options?: { length?: number; roomCode?: string }): string {
+    const code = options?.roomCode
+      ? sanitizeRoomCode(options.roomCode)
+      : generateRoomCode(options?.length ?? 4);
+
+    this.disconnect();
+    this.updateState({
+      roomCode: code,
+      isHost: true,
+    });
+    this.connect();
+    return code;
+  }
+
+  leave(): void {
+    this.disconnect();
+    this.updateState({
+      status: "idle",
+      peers: [],
+      latency: 0,
+    });
+  }
+
+  joinRoom(code: string): void {
+    this.join(code);
   }
 
   createRoom(length = 4): string {
-    const newCode = generateRoomCode(length);
-    const wasConnected = this.state.status === "connected" || this.state.status === "connecting";
-    this.disconnect();
-
-    this.updateState({
-      roomCode: newCode,
-      isHost: true,
-    });
-
-    if (wasConnected || this.options.autoConnect) {
-      this.connect();
-    }
-
-    return newCode;
+    return this.create({ length });
   }
 
   setPlayerName(name: string): void {
     this.updateState({ playerName: name });
+  }
+
+  setServerUrl(url: string): void {
+    if (this.options.serverUrl === url) return;
+    this.options.serverUrl = url;
+    if (this.state.mode === "websocket") {
+      const wasConnected = this.state.status === "connected" || this.state.status === "connecting";
+      this.disconnect();
+      if (wasConnected || this.options.autoConnect) {
+        this.connect();
+      }
+    }
   }
 
   setMode(mode: RelayTransportMode): void {
@@ -179,6 +200,13 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
 
     if (wasConnected || this.options.autoConnect) {
       this.connect();
+    }
+  }
+
+  setSimulatedLatency(ms: number): void {
+    this.options.simulatedLatencyMs = ms;
+    if (this.transport && "setLatency" in this.transport) {
+      (this.transport as { setLatency: (latency: number) => void }).setLatency(ms);
     }
   }
 

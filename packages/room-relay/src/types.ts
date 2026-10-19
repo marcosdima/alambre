@@ -2,6 +2,7 @@
  * Connection status states of a relay transport.
  */
 export type RelayConnectionStatus =
+  | "idle"
   | "disconnected"
   | "connecting"
   | "connected"
@@ -208,6 +209,9 @@ export interface RoomRelayState {
  * Action methods exported by the room relay client and hook.
  */
 export interface RoomRelayActions<TEvents extends DefaultRelayEvents = DefaultRelayEvents> {
+  join(roomCode: string): void;
+  create(options?: { length?: number; roomCode?: string }): string;
+  leave(): void;
   connect(): void;
   disconnect(): void;
   send<K extends keyof TEvents>(type: K, payload: TEvents[K]): void;
@@ -215,7 +219,9 @@ export interface RoomRelayActions<TEvents extends DefaultRelayEvents = DefaultRe
   joinRoom(code: string): void;
   createRoom(length?: number): string;
   setPlayerName(name: string): void;
+  setServerUrl(url: string): void;
   setMode(mode: RelayTransportMode): void;
+  setSimulatedLatency(ms: number): void;
   clearHistory(): void;
   on<K extends keyof TEvents>(
     type: K,

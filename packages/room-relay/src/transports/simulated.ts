@@ -220,6 +220,10 @@ export class SimulatedRelayTransport implements RelayTransport {
     };
   }
 
+  setLatency(ms: number): void {
+    this.latencyMs = ms;
+  }
+
   connect() {
     if (this.isDestroyedFlag) return;
     this.statusListeners.forEach((l) => l("connecting"));

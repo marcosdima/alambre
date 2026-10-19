@@ -53,3 +53,37 @@ export {
 export type {
   UseRoomRelayInput,
 } from "./react/use-room-relay";
+
+// Deterministic Seeded PRNG & Shuffle
+export {
+  hashSeed,
+  createSeededRng,
+  shuffleWithSeed,
+} from "./prng";
+
+// Authoritative Turn Engine
+export {
+  TURN_ENGINE_EVENTS,
+  TurnEngineClient,
+  createTurnEngine,
+} from "./turn-engine";
+export type {
+  TurnActionMeta,
+  TurnReducer,
+  TurnActionIntentPayload,
+  TurnActionCommitPayload,
+  TurnSyncRequestPayload,
+  TurnSyncSnapshotPayload,
+  TurnEngineState,
+  TurnEngineOptions,
+  ITurnEngineClient,
+} from "./turn-engine";
+
+export {
+  useTurnEngine,
+} from "./react/use-turn-engine";
+export type {
+  UseTurnEngineInput,
+  UseTurnEngineReturn,
+} from "./react/use-turn-engine";
+

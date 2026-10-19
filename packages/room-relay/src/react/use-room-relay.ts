@@ -74,6 +74,28 @@ export function useRoomRelay<TEvents extends DefaultRelayEvents = DefaultRelayEv
     };
   }, [isExternalClient]);
 
+  // Synchronize internal client when key options change dynamically
+  useEffect(() => {
+    if (isExternalClient || !client) return;
+
+    const opts = options as RoomRelayOptions<TEvents>;
+    if (opts.serverUrl) {
+      client.setServerUrl(opts.serverUrl);
+    }
+    if (opts.playerName) {
+      client.setPlayerName(opts.playerName);
+    }
+    if (opts.mode) {
+      client.setMode(opts.mode);
+    }
+  }, [
+    isExternalClient,
+    client,
+    !isExternalClient && (options as RoomRelayOptions<TEvents>).serverUrl,
+    !isExternalClient && (options as RoomRelayOptions<TEvents>).playerName,
+    !isExternalClient && (options as RoomRelayOptions<TEvents>).mode,
+  ]);
+
   // Subscribe to external store
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
@@ -91,13 +113,18 @@ export function useRoomRelay<TEvents extends DefaultRelayEvents = DefaultRelayEv
   return useMemo(
     () => ({
       ...state,
+      join: (code: string) => client.join(code),
+      create: (opts?: { length?: number; roomCode?: string }) => client.create(opts),
+      leave: () => client.leave(),
       connect: () => client.connect(),
       disconnect: () => client.disconnect(),
       send: (type: any, payload?: any) => client.send(type, payload),
       joinRoom: (code: string) => client.joinRoom(code),
       createRoom: (length?: number) => client.createRoom(length),
       setPlayerName: (name: string) => client.setPlayerName(name),
+      setServerUrl: (url: string) => client.setServerUrl(url),
       setMode: (mode) => client.setMode(mode),
+      setSimulatedLatency: (ms: number) => client.setSimulatedLatency(ms),
       clearHistory: () => client.clearHistory(),
       on: (type, handler) => client.on(type, handler),
       onMessage: (handler) => client.onMessage(handler),
