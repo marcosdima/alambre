@@ -14,6 +14,11 @@ tools:
   - invoke_subagent
 skills:
   - skills/docs-retrieval
+  - skills/alambre-ui
+  - skills/alambre-state-storage
+  - skills/alambre-navigation-overlays
+  - skills/alambre-kinetics-dnd
+  - skills/alambre-room-relay
 ---
 
 # System Prompt

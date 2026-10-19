@@ -9,6 +9,10 @@ tools:
   - view_file
   - grep_search
   - run_command
+skills:
+  - skills/docs-retrieval
+  - skills/alambre-ui
+  - skills/alambre-kinetics-dnd
 ---
 
 # System Prompt

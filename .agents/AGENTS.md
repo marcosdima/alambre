@@ -17,7 +17,7 @@ these definition files are thin wiring.
 ## Conventions
 
 - Project knowledge lives in `docs/` — do not duplicate it here (see `docs/index.md`).
-- All agents follow the retrieval protocol in `.agents/skills/docs-retrieval/SKILL.md`.
+- All agents follow the retrieval protocol in `.agents/skills/docs-retrieval/SKILL.md` and domain skills (`alambre-ui`, `alambre-state-storage`, `alambre-navigation-overlays`, `alambre-kinetics-dnd`, `alambre-room-relay`).
 - Full matrix, model routing, and emulator flow: `docs/guidelines/agents.md`.
 - Dynamic 4-level routing and anti-drift guardrails: `docs/guidelines/agents.md` §5.
 - UI verification flow & deterministic capture: `scripts/ui-capture.sh` (see `docs/guidelines/agents.md` §3).

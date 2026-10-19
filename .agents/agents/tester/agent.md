@@ -10,6 +10,10 @@ tools:
   - grep_search
   - replace_file_content
   - run_command
+skills:
+  - skills/docs-retrieval
+  - skills/alambre-state-storage
+  - skills/alambre-room-relay
 ---
 
 # System Prompt

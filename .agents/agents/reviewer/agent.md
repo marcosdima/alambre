@@ -9,6 +9,11 @@ tools:
   - view_file
   - grep_search
   - run_command
+skills:
+  - skills/docs-retrieval
+  - skills/alambre-state-storage
+  - skills/alambre-navigation-overlays
+  - skills/alambre-room-relay
 ---
 
 # System Prompt
