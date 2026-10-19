@@ -1,10 +1,10 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useNavigator, useToast, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
-import { AppTitle, AppButton } from '@some-alambre/ui';
+import { AppTitle, AppButton, AppText } from '@some-alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();
@@ -27,8 +27,8 @@ export default () => {
       >
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <AppTitle style={{ color: theme.color }}>{lang.home.title}</AppTitle>
-          <Text style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</Text>
-          <Text style={{ color: theme.primary }}>{config.greeting}</Text>
+          <AppText style={[styles.subtitle, { color: theme.muted }]}>{lang.home.subtitle}</AppText>
+          <AppText style={{ color: theme.primary }}>{config.greeting}</AppText>
         </View>
       </Animated.View>
 
@@ -37,9 +37,7 @@ export default () => {
           key={item.key}
           entering={FadeInDown.duration(280).delay(getDelay(index + 1)).easing(Easing.out(Easing.cubic))}
         >
-          <AppButton onPress={item.onPress}>
-            <Text style={{ color: theme.primary }}>{item.label}</Text>
-          </AppButton>
+          <AppButton label={item.label} onPress={item.onPress} fullWidth />
         </Animated.View>
       ))}
     </View>

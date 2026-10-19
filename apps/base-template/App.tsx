@@ -10,7 +10,26 @@ import Root from './src/navigator/Root';
 import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { TemplateToast } from './src/providers/toast';
-import { ConfirmDialog } from '@some-alambre/ui';
+import { ConfirmDialog, ThemeProvider } from '@some-alambre/ui';
+import { useLightDark } from './src/providers/theme';
+import { useConfig } from './src/providers/config';
+
+function AppContent() {
+  const { theme } = useLightDark();
+  const { config } = useConfig();
+
+  return (
+    <ThemeProvider theme={{ ...theme, fontFamily: config.fontFamily }}>
+      <NavigatorProvider pages={navigator}>
+        <ConfirmProvider ConfirmComponent={ConfirmDialog}>
+          <ToastProvider ToastComponent={TemplateToast}>
+            <Root />
+          </ToastProvider>
+        </ConfirmProvider>
+      </NavigatorProvider>
+    </ThemeProvider>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -26,13 +45,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <NavigatorProvider pages={navigator}>
-          <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-            <ToastProvider ToastComponent={TemplateToast}>
-              <Root />
-            </ToastProvider>
-          </ConfirmProvider>
-        </NavigatorProvider>
+        <AppContent />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

@@ -114,6 +114,7 @@ export default () => {
                     {
                       color: active ? theme.primary : theme.muted,
                       fontWeight: active ? '700' : '600',
+                      fontFamily: config.fontFamily,
                     },
                   ]}
                 >
@@ -267,28 +268,28 @@ export default () => {
       >
         <View style={styles.aboutContent}>
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
               {lang.settings.version}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.color }]}>
+            <Text style={[styles.aboutValue, { color: theme.color, fontFamily: config.fontFamily }]}>
                 1.0.0
             </Text>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
               {lang.settings.framework}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.color }]}>
+            <Text style={[styles.aboutValue, { color: theme.color, fontFamily: config.fontFamily }]}>
                 alambre v1.2.0
             </Text>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
               {lang.settings.developer}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.primary }]}>
+            <Text style={[styles.aboutValue, { color: theme.primary, fontFamily: config.fontFamily }]}>
                 @marcosdima
             </Text>
           </View>

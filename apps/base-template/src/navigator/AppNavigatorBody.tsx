@@ -29,6 +29,7 @@ type AppNavigatorBodyProps = ComponentProps<typeof View> & {
   pressStyle?: StyleProp<ViewStyle>;
   headerTitle?: string;
   titleColor?: ColorValue;
+  fontFamily?: string;
   headerStyle?: StyleProp<ViewStyle>;
   animations?: {
     go?: AppNavigatorAnimations;
@@ -46,6 +47,7 @@ export default ({
   width = 4,
   headerTitle,
   titleColor = 'black',
+  fontFamily,
   headerStyle,
   useNavigator,
   ...props
@@ -208,7 +210,7 @@ export default ({
           </Animated.View>
           <Animated.Text
             key={headerTitle}
-            style={[styles.headerTitle, { color: titleColor }]}
+            style={[styles.headerTitle, { color: titleColor, fontFamily }]}
             entering={FadeIn.duration(180)}
             numberOfLines={1}
           >

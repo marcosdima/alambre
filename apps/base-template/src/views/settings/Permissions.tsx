@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { AppState, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
-import { AppCard, AppButton } from '@some-alambre/ui';
+import { AppCard, AppButton, AppText } from '@some-alambre/ui';
 
 export default function Permissions() {
   const { theme } = useLightDark();
@@ -37,9 +37,9 @@ export default function Permissions() {
         title={lang.permissions.introTitle}
         style={styles.card}
       >
-        <Text style={[styles.bodyText, { color: theme.muted }]}>
+        <AppText style={[styles.bodyText, { color: theme.muted }]}>
           {lang.permissions.introDescription}
-        </Text>
+        </AppText>
       </AppCard>
 
       {/* Notifications Card */}
@@ -96,9 +96,9 @@ export default function Permissions() {
 
       {/* System Settings Footer Notice */}
       <View style={styles.footerNotice}>
-        <Text style={[styles.footerText, { color: theme.muted }]}>
+        <AppText style={[styles.footerText, { color: theme.muted }]}>
           {lang.permissions.statusNotice}
-        </Text>
+        </AppText>
       </View>
     </ScrollView>
   );

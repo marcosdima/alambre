@@ -1,7 +1,8 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
+import { AppText } from '@some-alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();
@@ -13,7 +14,7 @@ export default () => {
         entering={FadeInDown.duration(280).delay(60).easing(Easing.out(Easing.cubic))}
       >
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <Text style={[styles.text, { color: theme.color }]}>{lang.details.text}</Text>
+          <AppText style={[styles.text, { color: theme.color }]}>{lang.details.text}</AppText>
         </View>
       </Animated.View>
     </View>
