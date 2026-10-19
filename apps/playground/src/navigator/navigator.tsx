@@ -1,6 +1,4 @@
 import Home from '../views/home/Home';
-import KineticOrchestratorTestbed from '../views/kinetics/KineticOrchestratorTestbed';
-import KineticContainerTestbed from '../views/kinetics/KineticContainerTestbed';
 import CardGameTestbed from '../views/card-game/CardGameTestbed';
 import type { Page } from 'alambre';
 
@@ -15,19 +13,10 @@ export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
   },
-  kinetics: {
-    title: { es: 'Kinetic Orchestrator', en: 'Kinetic Orchestrator' },
-    component: <KineticOrchestratorTestbed />,
-  },
-  kineticContainers: {
-    title: { es: 'Kinetic Containers', en: 'Kinetic Containers' },
-    component: <KineticContainerTestbed />,
-  },
   cardGame: {
-    title: { es: 'Card Game Engine (Active)', en: 'Card Game Engine (Active)' },
+    title: { es: 'Card Game Arena', en: 'Card Game Arena' },
     component: <CardGameTestbed />,
   },
-
 };
 
 export default pages;

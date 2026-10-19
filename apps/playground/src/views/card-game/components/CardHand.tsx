@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -8,10 +8,10 @@ import Animated, {
   useReducedMotion,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { calculateHandFan, useKineticSwipe } from 'alambre';
+import { useKineticSwipe } from 'alambre';
 import { PlayingCard } from './PlayingCard';
-import type { PlayingCardData } from '../types';
-
+import type { HandFanSlot, PlayingCardData } from '../types';
+import { calculateResponsiveHandFan } from '../engine/hand-fan';
 
 export interface CardHandProps {
   cards: PlayingCardData[];
@@ -22,6 +22,7 @@ export interface CardHandProps {
   spreadAngle?: number; // degrees per card
   arcCurvature?: number; // vertical curve intensity
   cardSpacing?: number; // px horizontal distance between centers
+  maxSpan?: number; // maximum span before auto-compression kicks in
   size?: 'sm' | 'md' | 'lg';
   springDamping?: number;
   springStiffness?: number;
@@ -34,35 +35,46 @@ export const CardHand = memo(function CardHand({
   onSelectCard,
   onPlayCard,
   enableSwipeToPlay = false,
-  spreadAngle = 6,
-  arcCurvature = 4,
+  spreadAngle = 5,
+  arcCurvature = 3.5,
   cardSpacing = 38,
+  maxSpan = 280,
   size = 'md',
   springDamping = 16,
   springStiffness = 140,
   onHandLayout,
 }: CardHandProps) {
-  const total = cards.length;
+  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
+
+  const fanResult = useMemo(() => {
+    return calculateResponsiveHandFan(cards, {
+      containerWidth,
+      maxSpan,
+      baseSpacing: cardSpacing,
+      spreadAngle,
+      arcCurvature,
+      selectedCardId,
+    });
+  }, [cards, containerWidth, maxSpan, cardSpacing, spreadAngle, arcCurvature, selectedCardId]);
 
   return (
     <View
-      onLayout={(e) => onHandLayout?.(e.nativeEvent.layout)}
+      onLayout={(e) => {
+        const layout = e.nativeEvent.layout;
+        setContainerWidth(layout.width);
+        onHandLayout?.(layout);
+      }}
       style={styles.handContainer}
     >
-      {cards.map((card, index) => (
+      {fanResult.slots.map((slot) => (
         <HandCardItem
-          key={card.id}
-          card={card}
-          index={index}
-          total={total}
-          isSelected={selectedCardId === card.id}
-          spreadAngle={spreadAngle}
-          arcCurvature={arcCurvature}
-          cardSpacing={cardSpacing}
+          key={slot.card.id}
+          slot={slot}
+          isSelected={selectedCardId === slot.card.id}
           size={size}
           springDamping={springDamping}
           springStiffness={springStiffness}
-          onPress={() => onSelectCard?.(card)}
+          onPress={() => onSelectCard?.(slot.card)}
           onPlayCard={onPlayCard}
           enableSwipeToPlay={enableSwipeToPlay}
         />
@@ -71,15 +83,9 @@ export const CardHand = memo(function CardHand({
   );
 });
 
-
 interface HandCardItemProps {
-  card: PlayingCardData;
-  index: number;
-  total: number;
+  slot: HandFanSlot;
   isSelected: boolean;
-  spreadAngle: number;
-  arcCurvature: number;
-  cardSpacing: number;
   size: 'sm' | 'md' | 'lg';
   springDamping: number;
   springStiffness: number;
@@ -89,13 +95,8 @@ interface HandCardItemProps {
 }
 
 function HandCardItem({
-  card,
-  index,
-  total,
+  slot,
   isSelected,
-  spreadAngle,
-  arcCurvature,
-  cardSpacing,
   size,
   springDamping,
   springStiffness,
@@ -103,18 +104,13 @@ function HandCardItem({
   onPlayCard,
   enableSwipeToPlay = false,
 }: HandCardItemProps) {
-  const fanTransform = calculateHandFan(index, total, {
-    spreadAngle,
-    arcCurvature,
-    itemSpacing: cardSpacing,
-    isSelected,
-  });
+  const { card } = slot;
 
   // If card is currently arriving via flight, keep invisible so siblings open slot smoothly
   const initialOp = card.isArriving ? 0 : 0.4;
-  const transX = useSharedValue(fanTransform.translateX);
-  const transY = useSharedValue(fanTransform.translateY + (card.isArriving ? 0 : 24));
-  const rot = useSharedValue(fanTransform.rotateDeg);
+  const transX = useSharedValue(slot.translateX);
+  const transY = useSharedValue(slot.translateY + (card.isArriving ? 0 : 24));
+  const rot = useSharedValue(slot.rotateDeg);
   const sc = useSharedValue(card.isArriving ? 1 : 0.85);
   const op = useSharedValue(initialOp);
 
@@ -122,23 +118,23 @@ function HandCardItem({
 
   React.useEffect(() => {
     if (systemReducedMotion) {
-      transX.value = fanTransform.translateX;
-      transY.value = fanTransform.translateY;
-      rot.value = fanTransform.rotateDeg;
-      sc.value = fanTransform.scale;
+      transX.value = slot.translateX;
+      transY.value = slot.translateY;
+      rot.value = slot.rotateDeg;
+      sc.value = slot.scale;
       op.value = card.isArriving ? 0 : 1;
       return;
     }
-    transX.value = withSpring(fanTransform.translateX, { damping: springDamping, stiffness: springStiffness });
-    transY.value = withSpring(fanTransform.translateY, { damping: springDamping, stiffness: springStiffness });
-    rot.value = withSpring(fanTransform.rotateDeg, { damping: springDamping, stiffness: springStiffness });
-    sc.value = withSpring(fanTransform.scale, { damping: Math.max(10, springDamping - 2), stiffness: springStiffness + 10 });
+    transX.value = withSpring(slot.translateX, { damping: springDamping, stiffness: springStiffness });
+    transY.value = withSpring(slot.translateY, { damping: springDamping, stiffness: springStiffness });
+    rot.value = withSpring(slot.rotateDeg, { damping: springDamping, stiffness: springStiffness });
+    sc.value = withSpring(slot.scale, { damping: Math.max(10, springDamping - 2), stiffness: springStiffness + 10 });
     op.value = card.isArriving ? 0 : 1;
   }, [
-    fanTransform.translateX,
-    fanTransform.translateY,
-    fanTransform.rotateDeg,
-    fanTransform.scale,
+    slot.translateX,
+    slot.translateY,
+    slot.rotateDeg,
+    slot.scale,
     card.isArriving,
     systemReducedMotion,
     transX,
@@ -175,8 +171,8 @@ function HandCardItem({
 
   const tapGesture = useMemo(() => {
     return Gesture.Tap()
-      .enabled(!card.isArriving)
       .maxDuration(250)
+      .enabled(!card.isArriving)
       .onEnd(() => {
         'worklet';
         runOnJS(onPress)();
@@ -195,7 +191,7 @@ function HandCardItem({
       <Animated.View
         style={[
           styles.cardWrapper,
-          { zIndex: fanTransform.zIndex },
+          { zIndex: slot.zIndex },
           animatedStyle,
         ]}
       >
@@ -226,7 +222,7 @@ function HandCardItem({
     <Animated.View
       style={[
         styles.cardWrapper,
-        { zIndex: fanTransform.zIndex },
+        { zIndex: slot.zIndex },
         animatedStyle,
       ]}
     >

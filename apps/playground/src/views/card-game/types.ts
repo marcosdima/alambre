@@ -15,6 +15,17 @@ export type Rank =
   | 'Q'
   | 'K';
 
+export type CardSize = 'sm' | 'md' | 'lg';
+
+export interface CardDimensions {
+  width: number;
+  height: number;
+  radius: number;
+  fontSize: number;
+  suitSize: number;
+  centerSize: number;
+}
+
 export interface PlayingCardData {
   id: string;
   suit: Suit;
@@ -25,53 +36,85 @@ export interface PlayingCardData {
   playTarget?: { x: number; y: number; rotation?: number };
 }
 
-export type RelayConnectionStatus =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'error';
-
-export interface RelayPeer {
-  id: string;
-  name: string;
-  isHost: boolean;
-  ping?: number;
-  lastSeen: number;
+export interface Point2D {
+  x: number;
+  y: number;
 }
 
-export interface RelayMessage<T = unknown> {
-  id: string;
-  from: string;
-  senderName?: string;
-  type: string;
-  payload: T;
-  timestamp: number;
-  latencyMs?: number;
+export type DropZoneId = 'table' | 'discard' | 'deck' | 'hand' | 'opponent';
+
+export interface DropZoneBounds {
+  id: DropZoneId;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  accepts?: (card: PlayingCardData) => boolean;
 }
 
-export type RelayTransportMode = 'simulated' | 'websocket';
-
-export interface RoomRelayOptions {
-  roomCode?: string;
-  playerName?: string;
-  isHost?: boolean;
-  mode?: RelayTransportMode;
-  serverUrl?: string;
-  autoReconnect?: boolean;
-  pingIntervalMs?: number;
-  simulatedLatencyMs?: number;
+export interface DropZoneHitResult {
+  hit: boolean;
+  zoneId?: DropZoneId;
+  zoneCenter?: Point2D;
 }
 
-export interface RoomRelayState {
-  status: RelayConnectionStatus;
-  mode: RelayTransportMode;
-  roomCode: string;
-  playerId: string;
-  playerName: string;
-  isHost: boolean;
-  peers: RelayPeer[];
-  latency: number;
-  history: RelayMessage[];
-  error?: string;
+export interface HandFanSlot {
+  card: PlayingCardData;
+  index: number;
+  total: number;
+  translateX: number;
+  translateY: number;
+  rotateDeg: number;
+  scale: number;
+  zIndex: number;
+  centerCoord: Point2D;
 }
+
+export interface ResponsiveHandFanOptions {
+  containerWidth?: number;
+  maxSpan?: number;
+  baseSpacing?: number;
+  spreadAngle?: number;
+  arcCurvature?: number;
+  selectedCardId?: string | null;
+  selectedLift?: number;
+  selectedScale?: number;
+  selectedStraightenFactor?: number;
+  centerOffset?: Point2D;
+}
+
+export interface ResponsiveHandFanResult {
+  slots: HandFanSlot[];
+  effectiveSpacing: number;
+  totalWidth: number;
+  isCompressed: boolean;
+}
+
+export type PlayerId = 'alice' | 'bob' | string;
+
+export interface CardGameRelayEvents {
+  GAME_DEAL: {
+    aliceHand: PlayingCardData[];
+    bobHand: PlayingCardData[];
+    deckRemaining: PlayingCardData[];
+    turn: PlayerId;
+  };
+  CARD_PLAY: {
+    playerId: PlayerId;
+    card: PlayingCardData;
+    targetRotation: number;
+    destination: DropZoneId;
+    nextTurn: PlayerId;
+  };
+  CARD_DRAW: {
+    playerId: PlayerId;
+    card: PlayingCardData;
+    nextTurn: PlayerId;
+  };
+  GAME_RESET: {
+    deck: PlayingCardData[];
+  };
+  [key: string]: unknown;
+}
+

@@ -163,3 +163,49 @@ vi.mock('react-native-reanimated', async () => {
   };
 });
 
+vi.mock('react-native-gesture-handler', async () => {
+  const { View } = await import('react-native');
+
+  const createGestureBuilder = () => {
+    const builder: Record<string, unknown> = {
+      enabled: () => builder,
+      maxDuration: () => builder,
+      minPointers: () => builder,
+      maxPointers: () => builder,
+      shouldCancelWhenOutside: () => builder,
+      hitSlop: () => builder,
+      activeOffsetX: () => builder,
+      activeOffsetY: () => builder,
+      failOffsetX: () => builder,
+      failOffsetY: () => builder,
+      onBegin: () => builder,
+      onStart: () => builder,
+      onUpdate: () => builder,
+      onEnd: () => builder,
+      onFinalize: () => builder,
+      onTouchesDown: () => builder,
+      onTouchesMove: () => builder,
+      onTouchesUp: () => builder,
+      onTouchesCancelled: () => builder,
+    };
+    return builder;
+  };
+
+  return {
+    __esModule: true,
+    Gesture: {
+      Pan: () => createGestureBuilder(),
+      Tap: () => createGestureBuilder(),
+      Fling: () => createGestureBuilder(),
+      LongPress: () => createGestureBuilder(),
+      Pinch: () => createGestureBuilder(),
+      Rotation: () => createGestureBuilder(),
+      Exclusive: (...gestures: unknown[]) => gestures[0] ?? createGestureBuilder(),
+      Simultaneous: (...gestures: unknown[]) => gestures[0] ?? createGestureBuilder(),
+      Race: (...gestures: unknown[]) => gestures[0] ?? createGestureBuilder(),
+    },
+    GestureDetector: ({ children }: { children?: unknown }) => children,
+    GestureHandlerRootView: View,
+  };
+});
+

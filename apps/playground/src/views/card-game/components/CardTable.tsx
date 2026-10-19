@@ -67,7 +67,12 @@ export function CardTable({
           </View>
           <View style={styles.miniCardStack}>
             {Array.from({ length: Math.min(6, opponent.cardCount) }).map((_, i) => (
-              <View key={i} style={[styles.miniCard, { marginLeft: i > 0 ? -12 : 0 }]}>
+              <View
+                key={i}
+                accessible={false}
+                importantForAccessibility="no"
+                style={[styles.miniCard, { marginLeft: i > 0 ? -12 : 0 }]}
+              >
                 <CardBackPattern width={24} height={34} radius={3} />
               </View>
             ))}

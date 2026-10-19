@@ -12,21 +12,10 @@ export default () => {
 
   const navItems = [
     {
-      key: 'kinetics',
-      label: 'Kinetic Orchestrator (Wavefront & Stagger)',
-      onPress: () => navigate('kinetics'),
-    },
-    {
-      key: 'kineticContainers',
-      label: 'Kinetic Containers (Carousel & Swipe Deck)',
-      onPress: () => navigate('kineticContainers'),
-    },
-    {
       key: 'cardGame',
-      label: 'Card Game Engine (Active)',
+      label: 'Card Game Arena (Composite Gameplay)',
       onPress: () => navigate('cardGame'),
     },
-
   ];
 
   return (

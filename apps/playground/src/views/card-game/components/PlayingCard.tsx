@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Path, Rect, G, Circle } from 'react-native-svg';
+import { useLightDark } from '../../../providers/theme';
 import type { Rank, Suit } from '../types';
 
 export interface PlayingCardProps {
@@ -29,6 +30,7 @@ export const PlayingCard = memo(function PlayingCard({
   style,
   accessible = true,
 }: PlayingCardProps) {
+  const { theme } = useLightDark();
   const config = SIZE_CONFIGS[size];
   const isRed = suit === 'hearts' || suit === 'diamonds';
   const suitColor = isRed ? '#E02424' : '#1A1C23';
@@ -44,7 +46,7 @@ export const PlayingCard = memo(function PlayingCard({
             width: config.width,
             height: config.height,
             borderRadius: config.radius,
-            borderColor: selected ? '#6366F1' : '#CBD5E1',
+            borderColor: selected ? theme.primary : '#CBD5E1',
             borderWidth: selected ? 2 : 1,
           },
           styles.cardBackContainer,
@@ -66,7 +68,7 @@ export const PlayingCard = memo(function PlayingCard({
           width: config.width,
           height: config.height,
           borderRadius: config.radius,
-          borderColor: selected ? '#6366F1' : '#D1D5DB',
+          borderColor: selected ? theme.primary : '#D1D5DB',
           borderWidth: selected ? 2 : 1,
         },
         selected && styles.cardSelected,
