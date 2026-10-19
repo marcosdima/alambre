@@ -280,7 +280,7 @@ export default () => {
               {lang.settings.framework}
             </Text>
             <Text style={[styles.aboutValue, { color: theme.color }]}>
-                alambre v0.1.0
+                alambre v1.2.0
             </Text>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />

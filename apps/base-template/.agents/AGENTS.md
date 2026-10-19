@@ -5,15 +5,16 @@ This directory defines the agent coordination rules for building applications st
 ## 1. Principles for Application Development
 
 1. **Use `@alambre/ui` by Default:**
-   Always use standard components from `@alambre/ui` (`Button`, `Card`, `Badge`, `ActionSheet`, `Dialog`, `TextInput`, `Switch`, `Slider`, `Stepper`, `Title`, `Accordion`). Do not reinvent buttons, cards, or text inputs with raw `TouchableOpacity` or unstyled `View`.
+   Always use standard components from `@alambre/ui` (`AppButton`, `AppCard`, `AppBadge`, `AppActionSheet`, `AppDialog`, `AppTextInput`, `AppSwitch`, `AppSlider`, `AppStepper`, `AppTitle`, `AppAccordion`). Do not reinvent buttons, cards, or text inputs with raw `TouchableOpacity` or unstyled `View`.
 2. **Semantic Theme Discipline:**
    Consume palette colors via `useLightDark()` (`theme.primary`, `theme.surface`, `theme.background`, `theme.color`, `theme.border`, etc.). Never write hardcoded hex color codes in component styles.
 3. **Headless State & Storage:**
    Use `alambre` primitives for application logic:
    - Global reactive state: `createStore(initialState)`.
-   - Persisted collections: `createCollectionProvider({ key, initialRecords })`.
+   - Persisted collections: `createCollection({ key, initialRecords })`.
    - History / undo-redo: `useHistoryState()`.
    - Stopwatches / timers: `useStopwatch()`.
+   - Sensory cues (haptics / sound): `createSensoryCues()`.
 4. **Accessible by Default:**
    Always provide `accessibilityLabel`, accessible roles (`role="switch"`, `role="button"`), and ensure touch targets meet the minimum 44x44pt standard.
 

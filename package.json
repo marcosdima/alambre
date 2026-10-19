@@ -1,7 +1,7 @@
 {
   "name": "alambre-monorepo",
   "version": "0.0.0",
-  "private": true,
+  "private": false,
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "build": "pnpm -r build",
@@ -10,6 +10,7 @@
     "test": "pnpm -r test",
     "test:e2e": "scripts/e2e.sh",
     "validate": "pnpm -r typecheck && pnpm -r lint && pnpm --filter alambre test && pnpm build",
+    "relay:server": "node packages/room-relay/scripts/relay-server.mjs",
     "eas": "pnpm exec eas",
     "eas:login": "pnpm exec eas login"
   },
