@@ -93,7 +93,7 @@ export default function AppAccordion({
             <Text
               style={[
                 styles.title,
-                { color: disabled ? theme.muted : theme.color },
+                { color: disabled ? theme.muted : theme.color, fontFamily: theme.fontFamily },
                 titleStyle,
               ]}
             >
@@ -104,7 +104,7 @@ export default function AppAccordion({
             ) : null}
           </View>
           {subtitle ? (
-            <Text style={[styles.subtitle, { color: theme.muted }]}>
+            <Text style={[styles.subtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>
               {subtitle}
             </Text>
           ) : null}

@@ -23,14 +23,14 @@ export default function AppSlider({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+        <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
         <View
           style={[
             styles.valueBadge,
             { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
           ]}
         >
-          <Text style={[styles.valueText, { color: theme.primary }]}>
+          <Text style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}>
             {value}
             {unit}
           </Text>

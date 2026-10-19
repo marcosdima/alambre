@@ -18,7 +18,7 @@ export default function AppSegmentedControl<T = string>({
 
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={[styles.label, { color: theme.muted }]}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: theme.muted, fontFamily: theme.fontFamily }]}>{label}</Text>}
       <SegmentedControl
         value={value}
         options={options}
@@ -60,6 +60,7 @@ export default function AppSegmentedControl<T = string>({
                       {
                         color: active ? theme.primary : theme.color,
                         fontWeight: active ? '700' : '500',
+                        fontFamily: theme.fontFamily,
                       },
                     ]}
                   >

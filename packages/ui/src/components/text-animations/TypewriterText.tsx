@@ -145,7 +145,7 @@ export default function TypewriterText({
     >
       <Text
         textBreakStrategy="simple"
-        style={[styles.text, { color: theme.color }, textStyle]}
+        style={[styles.text, { color: theme.color, fontFamily: theme.fontFamily }, textStyle]}
       >
         {visibleText}
         {isCursorVisible ? (

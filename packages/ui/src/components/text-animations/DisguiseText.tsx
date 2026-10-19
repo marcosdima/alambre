@@ -138,7 +138,7 @@ export default function DisguiseText({
   const { theme } = useTheme();
   const textColor = color ?? theme.color;
   const effectiveMaskColor = maskColor ?? theme.primary;
-  const mergedTextStyle = [textStyle, style];
+  const mergedTextStyle = [{ fontFamily: theme.fontFamily }, textStyle, style];
 
   const characters = useMemo(() => Array.from(text), [text]);
 

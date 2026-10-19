@@ -22,7 +22,7 @@ export default function AppStepper({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
       <Stepper.Root
         value={value}
         min={min}
@@ -43,7 +43,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Decrement ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color }]}>-</Text>
+            <Text style={[styles.btnText, { color: theme.color, fontFamily: theme.fontFamily }]}>-</Text>
           </Stepper.Decrement>
 
           <View
@@ -54,7 +54,7 @@ export default function AppStepper({
           >
             <Stepper.Value
               format={(val) => `${val}${unit}`}
-              style={[styles.valueText, { color: theme.primary }]}
+              style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}
             />
           </View>
 
@@ -69,7 +69,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Increment ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color }]}>+</Text>
+            <Text style={[styles.btnText, { color: theme.color, fontFamily: theme.fontFamily }]}>+</Text>
           </Stepper.Increment>
         </View>
       </Stepper.Root>

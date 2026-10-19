@@ -26,14 +26,14 @@ export default function AppNumberPicker({
     <View style={styles.container}>
       {label && (
         <View style={styles.header}>
-          <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+          <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
           <View
             style={[
               styles.valueBadge,
               { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
             ]}
           >
-            <Text style={[styles.valueText, { color: theme.primary }]}>
+            <Text style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}>
               {selected}
               {unit}
             </Text>
@@ -56,7 +56,7 @@ export default function AppNumberPicker({
             <Text
               style={[
                 styles.itemText,
-                { color: isSelected ? theme.primary : theme.muted },
+                { color: isSelected ? theme.primary : theme.muted, fontFamily: theme.fontFamily },
                 isSelected && styles.itemTextSelected,
               ]}
             >

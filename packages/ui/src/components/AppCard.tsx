@@ -134,7 +134,7 @@ export default function AppCard({
             {badgePosition === 'inline' ? (
               <View style={styles.titleBadgeRow}>
                 {typeof title === 'string' ? (
-                  <Text style={[styles.titleText, { color: theme.color }]}>
+                  <Text style={[styles.titleText, { color: theme.color, fontFamily: theme.fontFamily }]}>
                     {title}
                   </Text>
                 ) : (
@@ -155,7 +155,7 @@ export default function AppCard({
                 ) : null}
               </View>
             ) : typeof title === 'string' ? (
-              <Text style={[styles.titleText, { color: theme.color }]}>
+              <Text style={[styles.titleText, { color: theme.color, fontFamily: theme.fontFamily }]}>
                 {title}
               </Text>
             ) : (
@@ -164,7 +164,7 @@ export default function AppCard({
 
             {subtitle ? (
               typeof subtitle === 'string' ? (
-                <Text style={[styles.subtitleText, { color: theme.muted }]}>
+                <Text style={[styles.subtitleText, { color: theme.muted, fontFamily: theme.fontFamily }]}>
                   {subtitle}
                 </Text>
               ) : (

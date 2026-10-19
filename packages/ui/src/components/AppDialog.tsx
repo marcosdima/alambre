@@ -164,11 +164,11 @@ export default function AppDialog({
           )}
 
           {/* Title */}
-          <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
+          <Text style={[styles.title, { color: theme.color, fontFamily: theme.fontFamily }]}>{title}</Text>
 
           {/* Description */}
           {description ? (
-            <Text style={[styles.description, { color: theme.muted }]}>
+            <Text style={[styles.description, { color: theme.muted, fontFamily: theme.fontFamily }]}>
               {description}
             </Text>
           ) : null}

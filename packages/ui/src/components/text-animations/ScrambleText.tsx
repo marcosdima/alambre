@@ -105,7 +105,7 @@ export default function ScrambleText({
         textBreakStrategy="simple"
         style={[
           styles.text,
-          { color: textColor },
+          { color: textColor, fontFamily: theme.fontFamily },
           textStyle,
         ]}
       >

@@ -194,6 +194,7 @@ export default function AppButton({
                       {
                         color: currentVariant.textColor,
                         fontSize: sizeConfig.fontSize,
+                        fontFamily: theme.fontFamily,
                       },
                       labelStyle,
                     ]}
@@ -212,6 +213,7 @@ export default function AppButton({
                           {
                             color: currentVariant.textColor,
                             fontSize: sizeConfig.fontSize,
+                            fontFamily: theme.fontFamily,
                           },
                           labelStyle,
                         ]}

@@ -35,7 +35,7 @@ export default function AppSelect<T = string>({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.muted }]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.muted, fontFamily: theme.fontFamily }]}>{label}</Text>
 
       {/* Trigger Button */}
       <Pressable
@@ -52,7 +52,7 @@ export default function AppSelect<T = string>({
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${selectedOption?.label || ''}`}
       >
-        <Text style={[styles.triggerText, { color: theme.color }]}>
+        <Text style={[styles.triggerText, { color: theme.color, fontFamily: theme.fontFamily }]}>
           {selectedOption?.label || String(value)}
         </Text>
         <Text style={[styles.arrow, { color: theme.muted }]}>
@@ -90,13 +90,14 @@ export default function AppSelect<T = string>({
                       {
                         color: isSelected ? theme.primary : theme.color,
                         fontWeight: isSelected ? '700' : '500',
+                        fontFamily: theme.fontFamily,
                       },
                     ]}
                   >
                     {opt.label}
                   </Text>
                   {opt.description && (
-                    <Text style={[styles.optionDesc, { color: theme.muted }]}>
+                    <Text style={[styles.optionDesc, { color: theme.muted, fontFamily: theme.fontFamily }]}>
                       {opt.description}
                     </Text>
                   )}

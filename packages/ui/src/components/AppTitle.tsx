@@ -86,7 +86,7 @@ export default function AppTitle({
       {...props}
       style={[
         levelStyles,
-        { color: color ?? theme.color, textAlign: align, fontFamily },
+        { color: color ?? theme.color, textAlign: align, fontFamily: fontFamily ?? theme.fontFamily },
         style,
       ]}
     >
@@ -123,7 +123,7 @@ export default function AppTitle({
             ]}
           >
             {typeof badge === 'string' ? (
-              <Text style={[styles.badgeText, { color: badgeColors.text }]}>{badge}</Text>
+              <Text style={[styles.badgeText, { color: badgeColors.text, fontFamily: theme.fontFamily }]}>{badge}</Text>
             ) : (
               badge
             )}
@@ -136,7 +136,7 @@ export default function AppTitle({
           <Text
             style={[
               styles.subtitle,
-              { color: theme.muted, textAlign: align },
+              { color: theme.muted, textAlign: align, fontFamily: theme.fontFamily },
               subtitleStyle,
             ]}
           >
@@ -214,7 +214,7 @@ export function AppText({
       {...props}
       style={[
         variantStyle,
-        { fontFamily: variant === 'code' ? 'monospace' : fontFamily },
+        { fontFamily: variant === 'code' ? 'monospace' : (fontFamily ?? theme.fontFamily) },
         color ? { color } : null,
         style,
       ]}

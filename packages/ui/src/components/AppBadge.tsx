@@ -151,6 +151,7 @@ export default function AppBadge({
             {
               color: vStyle.textColor,
               fontSize: sStyle.fontSize,
+              fontFamily: theme.fontFamily,
             },
             textStyle,
           ]}
@@ -241,6 +242,7 @@ export function AppChip({
               fontSize: sizePadding.fontSize,
               color: isSelected ? activeColor : theme.color,
               fontWeight: isSelected ? '700' : '500',
+              fontFamily: theme.fontFamily,
             },
           ]}
         >

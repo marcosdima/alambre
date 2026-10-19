@@ -217,10 +217,10 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
       {/* Label Lockup */}
       {label ? (
         <View style={styles.labelRow}>
-          <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }]}>
+          <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color, fontFamily: theme.fontFamily }]}>
             {label}
           </Input.Label>
-          {required ? <Text style={styles.requiredAsterisk}>*</Text> : null}
+          {required ? <Text style={[styles.requiredAsterisk, { fontFamily: theme.fontFamily }]}>*</Text> : null}
         </View>
       ) : null}
 
@@ -267,6 +267,7 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
               {
                 fontSize: sizeConfig.fontSize,
                 color: theme.color,
+                fontFamily: theme.fontFamily,
               },
               multiline && styles.multilineInput,
               style,
@@ -335,10 +336,10 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
             lineWidth={2}
             style={styles.feedbackIcon}
           />
-          <Input.Feedback style={[styles.feedbackText, { color: '#ef4444' }]}>{errorMessage}</Input.Feedback>
+          <Input.Feedback style={[styles.feedbackText, { color: '#ef4444', fontFamily: theme.fontFamily }]}>{errorMessage}</Input.Feedback>
         </View>
       ) : helperText ? (
-        <Input.Feedback style={[styles.helperText, { color: theme.muted }]}>{helperText}</Input.Feedback>
+        <Input.Feedback style={[styles.helperText, { color: theme.muted, fontFamily: theme.fontFamily }]}>{helperText}</Input.Feedback>
       ) : null}
     </Input.Root>
   );

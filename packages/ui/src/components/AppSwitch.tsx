@@ -198,10 +198,10 @@ export default function AppSwitch({
     >
       <View style={styles.textContainer}>
         {label ? (
-          <Text style={[styles.label, { color: theme.color }]}>{label}</Text>
+          <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
         ) : null}
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</Text>
+          <Text style={[styles.subtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>{subtitle}</Text>
         ) : null}
       </View>
       <View pointerEvents="none" style={switchStyle}>

@@ -145,7 +145,7 @@ export default function WavyText({
                   active={active}
                   isReducedMotion={isStatic}
                   clock={clock}
-                  textStyle={[{ color: textColor }, textStyle]}
+                  textStyle={[{ color: textColor, fontFamily: theme.fontFamily }, textStyle]}
                 />
               );
             })}
@@ -154,7 +154,7 @@ export default function WavyText({
               <Text
                 style={[
                   styles.baseText,
-                  { color: textColor },
+                  { color: textColor, fontFamily: theme.fontFamily },
                   textStyle,
                   styles.space,
                 ]}

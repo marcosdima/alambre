@@ -125,10 +125,10 @@ export default function AppActionSheet({
                 {(title || description) && (
                   <View style={styles.header}>
                     {title ? (
-                      <Text style={[styles.title, { color: theme.color }]}>{title}</Text>
+                      <Text style={[styles.title, { color: theme.color, fontFamily: theme.fontFamily }]}>{title}</Text>
                     ) : null}
                     {description ? (
-                      <Text style={[styles.description, { color: theme.muted }]}>
+                      <Text style={[styles.description, { color: theme.muted, fontFamily: theme.fontFamily }]}>
                         {description}
                       </Text>
                     ) : null}
@@ -184,11 +184,11 @@ export default function AppActionSheet({
                       ) : null}
 
                       <View style={styles.optionContent}>
-                        <Text style={[styles.optionLabel, { color: textColor }]}>
+                        <Text style={[styles.optionLabel, { color: textColor, fontFamily: theme.fontFamily }]}>
                           {option.label}
                         </Text>
                         {option.subtitle ? (
-                          <Text style={[styles.optionSubtitle, { color: theme.muted }]}>
+                          <Text style={[styles.optionSubtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>
                             {option.subtitle}
                           </Text>
                         ) : null}

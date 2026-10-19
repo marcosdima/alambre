@@ -138,10 +138,11 @@ export default function TickerText({
       {
         fontSize,
         color: textColor,
+        fontFamily: theme.fontFamily,
       },
       textStyle,
     ],
-    [fontSize, textColor, textStyle],
+    [fontSize, textColor, textStyle, theme.fontFamily],
   );
 
   return (

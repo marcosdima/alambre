@@ -1,4 +1,5 @@
 export interface ThemeTokens {
+  fontFamily?: string;
   color: string;
   background: string;
   surface: string;
@@ -22,6 +23,7 @@ export interface ThemeTokens {
 }
 
 export const defaultLightTheme: ThemeTokens = {
+  fontFamily: undefined,
   color: '#2d2f2d',
   background: '#ece6d6',
   surface: '#f3eedf',
@@ -45,6 +47,7 @@ export const defaultLightTheme: ThemeTokens = {
 };
 
 export const defaultDarkTheme: ThemeTokens = {
+  fontFamily: undefined,
   color: '#ece6d6',
   background: '#1a1c1a',
   surface: '#252725',

@@ -162,6 +162,7 @@ export default function MarqueeText({
                 color: textColor,
                 width: effectiveTextWidth,
                 flexShrink: 0,
+                fontFamily: theme.fontFamily,
               },
               textStyle,
             ]}
@@ -178,6 +179,7 @@ export default function MarqueeText({
                 color: textColor,
                 width: effectiveTextWidth,
                 flexShrink: 0,
+                fontFamily: theme.fontFamily,
               },
               textStyle,
             ]}
@@ -188,7 +190,7 @@ export default function MarqueeText({
       ) : (
         <Text
           numberOfLines={1}
-          style={[styles.text, { color: textColor }, textStyle]}
+          style={[styles.text, { color: textColor, fontFamily: theme.fontFamily }, textStyle]}
         >
           {text}
         </Text>
