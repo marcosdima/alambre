@@ -50,7 +50,7 @@ export default (
     },
     drawIt,
     strokeOffset: 20,
-    iconAnimation,
+    iconAnimation: { ...iconAnimation, fillOpacity: 1 },
   };
 
   const rays = [...Array(RAYS)].map((_, i) => ({
