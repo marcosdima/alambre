@@ -1,13 +1,8 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { AlambreIcons, kinetics } from 'alambre';
+import Animated from 'react-native-reanimated';
+import { AlambreIcons, usePressKinetics } from 'alambre';
 import { useTheme } from '../theme';
 
 export type BadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'danger';
@@ -199,21 +194,11 @@ export function AppChip({
   contentStyle,
 }: AppChipProps) {
   const { theme } = useTheme();
-  const scale = useSharedValue(1);
-
-  const handlePressIn = () => {
-    if (disabled) return;
-    scale.value = withTiming(0.95, kinetics.timing.fast);
-  };
-
-  const handlePressOut = () => {
-    if (disabled) return;
-    scale.value = withSpring(1, kinetics.spring.stiff);
-  };
-
-  const animatedScale = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { animatedStyle: animatedScale, pressProps } = usePressKinetics({
+    activeScale: 0.95,
+    disabled,
+    onPress,
+  });
 
   const activeColor = tone === 'neutral' ? theme.color : theme.primary;
   const isSelected = selected;
@@ -224,10 +209,8 @@ export function AppChip({
 
   return (
     <Pressable
+      {...pressProps}
       accessibilityLabel={label}
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}

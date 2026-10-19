@@ -1,14 +1,9 @@
 import type { ReactNode } from 'react';
-import type { GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { ActivityIndicator, StyleSheet, Text } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import type { ButtonProps, ButtonState } from 'alambre';
-import { Button, kinetics } from 'alambre';
+import { Button, usePressKinetics } from 'alambre';
 import { useTheme } from '../theme';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
@@ -49,21 +44,12 @@ export default function AppButton({
   ...props
 }: AppButtonProps) {
   const { theme } = useTheme();
-  const scale = useSharedValue(1);
-
-  const handlePressIn = (event: GestureResponderEvent) => {
-    scale.value = withTiming(0.96, kinetics.timing.fast);
-    onPressIn?.(event);
-  };
-
-  const handlePressOut = (event: GestureResponderEvent) => {
-    scale.value = withSpring(1, kinetics.spring.stiff);
-    onPressOut?.(event);
-  };
-
-  const animatedScaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { animatedStyle: animatedScaleStyle, pressProps } = usePressKinetics({
+    activeScale: 0.96,
+    disabled: disabled || loading,
+    onPressIn,
+    onPressOut,
+  });
 
   const getToneColors = () => {
     switch (tone) {
@@ -157,10 +143,9 @@ export default function AppButton({
   return (
     <Button
       {...props}
+      {...pressProps}
       loading={loading}
       disabled={disabled}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
       style={
         typeof style === 'function'
           ? (state) => [fullWidth && styles.fullWidth, style(state)]

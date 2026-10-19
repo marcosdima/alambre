@@ -1,13 +1,8 @@
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
-import { AlambreIcons, kinetics } from 'alambre';
+import Animated from 'react-native-reanimated';
+import { AlambreIcons, usePressKinetics } from 'alambre';
 import { useTheme } from '../theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
@@ -60,23 +55,14 @@ export default function AppCard({
   children,
 }: AppCardProps) {
   const { theme } = useTheme();
-  const scale = useSharedValue(1);
 
   const isInteractive = (Boolean(onPress) || Boolean(interactive)) && !disabled;
 
-  const handlePressIn = () => {
-    if (!isInteractive) return;
-    scale.value = withTiming(0.98, kinetics.timing.fast);
-  };
-
-  const handlePressOut = () => {
-    if (!isInteractive) return;
-    scale.value = withSpring(1, kinetics.spring.stiff);
-  };
-
-  const animatedScaleStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { animatedStyle: animatedScaleStyle, pressProps } = usePressKinetics({
+    activeScale: 0.98,
+    disabled: !isInteractive,
+    onPress,
+  });
 
   const getPaddingValue = () => {
     switch (padding) {
@@ -233,9 +219,7 @@ export default function AppCard({
   if (onPress) {
     return (
       <Pressable
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        {...pressProps}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityState={{ selected, disabled }}
@@ -249,8 +233,7 @@ export default function AppCard({
   if (interactive) {
     return (
       <Pressable
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        {...pressProps}
         disabled={disabled}
         accessibilityState={{ selected, disabled }}
         style={style}

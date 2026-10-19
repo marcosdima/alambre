@@ -7,8 +7,8 @@ export type { AppButtonProps, AppButtonProps as ButtonProps, ButtonVariant, Butt
 export { default as AppCard, default as Card } from './components/AppCard';
 export type { AppCardProps, AppCardProps as CardProps, CardVariant } from './components/AppCard';
 
-export { default as AppBadge, default as Badge } from './components/AppBadge';
-export type { AppBadgeProps, AppBadgeProps as BadgeProps, BadgeVariant, BadgeTone, BadgeSize } from './components/AppBadge';
+export { default as AppBadge, default as Badge, AppChip, AppChip as Chip } from './components/AppBadge';
+export type { AppBadgeProps, AppBadgeProps as BadgeProps, BadgeVariant, BadgeTone, BadgeSize, AppChipProps, AppChipProps as ChipProps } from './components/AppBadge';
 
 export { default as AppActionSheet, default as ActionSheet } from './components/AppActionSheet';
 export type { AppActionSheetProps, AppActionSheetProps as ActionSheetProps, ActionSheetOption, ActionSheetOption as ActionSheetAction } from './components/AppActionSheet';
