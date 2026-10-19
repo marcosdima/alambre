@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useRoomRelay, useTurnEngine } from '@alambre/room-relay';
+import { useRoomRelay, useTurnEngine } from '@some-alambre/room-relay';
 import type { CardGameRelayEvents, DropZoneId, PlayerId, PlayingCardData } from '../types';
 import {
   createInitialGameState,

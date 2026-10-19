@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { AppTextInput } from '@alambre/ui';
-import { generateRoomCode } from '@alambre/room-relay';
+import { AppTextInput } from '@some-alambre/ui';
+import { generateRoomCode } from '@some-alambre/room-relay';
 import AppCard from '../../../components/AppCard';
 import AppButton from '../../../components/AppButton';
 import AppBadge from '../../../components/AppBadge';

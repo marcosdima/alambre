@@ -1,5 +1,5 @@
 {
-  "name": "@alambre/room-relay",
+  "name": "@some-alambre/room-relay",
   "version": "1.0.0",
   "type": "module",
   "description": "Lightweight, headless ephemeral room relay for real-time multiplayer and multi-device state synchronization.",

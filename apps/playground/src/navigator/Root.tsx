@@ -6,7 +6,7 @@ import {
 } from 'react-native-reanimated';
 import { useNavigator } from 'alambre';
 import type { Page } from 'alambre';
-import { ThemeProvider } from '@alambre/ui';
+import { ThemeProvider } from '@some-alambre/ui';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { pages, type PageTitle } from './navigator';

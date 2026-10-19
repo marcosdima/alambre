@@ -25,7 +25,7 @@ if (fs.existsSync(alambrePackage)) {
     if (moduleName === 'alambre') {
       return { filePath: alambreSource, type: 'sourceFile' };
     }
-    if (moduleName === '@alambre/ui') {
+    if (moduleName === '@some-alambre/ui' || moduleName === '@alambre/ui') {
       return { filePath: uiSource, type: 'sourceFile' };
     }
     return context.resolveRequest(context, moduleName, platform);

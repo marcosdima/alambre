@@ -1,3 +1,3 @@
-export { AppTitle as default, AppTitle, AppText } from '@alambre/ui';
-export type { AppTitleProps, AppTextProps } from '@alambre/ui';
+export { AppTitle as default, AppTitle, AppText } from '@some-alambre/ui';
+export type { AppTitleProps, AppTextProps } from '@some-alambre/ui';
 

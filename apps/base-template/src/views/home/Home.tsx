@@ -4,7 +4,7 @@ import { useNavigator, useToast, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
-import { AppTitle, AppButton } from '@alambre/ui';
+import { AppTitle, AppButton } from '@some-alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();

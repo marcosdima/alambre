@@ -1,3 +1,3 @@
-export { AppSegmentedControl as default, AppSegmentedControl } from '@alambre/ui';
-export type { AppSegmentedControlProps } from '@alambre/ui';
+export { AppSegmentedControl as default, AppSegmentedControl } from '@some-alambre/ui';
+export type { AppSegmentedControlProps } from '@some-alambre/ui';
 

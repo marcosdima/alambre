@@ -66,7 +66,7 @@ export interface UseTurnEngineReturn<
 }
 
 /**
- * React hook for host-authoritative turn-based state synchronization over `@alambre/room-relay`.
+ * React hook for host-authoritative turn-based state synchronization over `@some-alambre/room-relay`.
  * Backed by `useSyncExternalStore` for tearing-free updates.
  */
 export function useTurnEngine<

@@ -1,4 +1,4 @@
-import { createSeededRng, hashSeed, shuffleWithSeed } from '@alambre/room-relay';
+import { createSeededRng, hashSeed, shuffleWithSeed } from '@some-alambre/room-relay';
 import type { PlayingCardData, Rank, Suit } from '../types';
 
 export { createSeededRng, hashSeed, shuffleWithSeed };

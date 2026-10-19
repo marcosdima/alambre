@@ -9,7 +9,7 @@ import type { Page } from 'alambre';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
 import { pages, type PageTitleFn } from './navigator';
-import { ThemeProvider } from '@alambre/ui';
+import { ThemeProvider } from '@some-alambre/ui';
 import AppNavigatorBody from './AppNavigatorBody';
 
 const resolvePageTitle = (

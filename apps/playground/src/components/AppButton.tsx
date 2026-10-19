@@ -1,3 +1,3 @@
-export { AppButton as default, AppButton } from '@alambre/ui';
-export type { AppButtonProps, ButtonVariant, ButtonTone, ButtonSize } from '@alambre/ui';
+export { AppButton as default, AppButton } from '@some-alambre/ui';
+export type { AppButtonProps, ButtonVariant, ButtonTone, ButtonSize } from '@some-alambre/ui';
 

@@ -4,8 +4,8 @@ This directory defines the agent coordination rules for building applications st
 
 ## 1. Principles for Application Development
 
-1. **Use `@alambre/ui` by Default:**
-   Always use standard components from `@alambre/ui` (`AppButton`, `AppCard`, `AppBadge`, `AppActionSheet`, `AppDialog`, `AppTextInput`, `AppSwitch`, `AppSlider`, `AppStepper`, `AppTitle`, `AppAccordion`). Do not reinvent buttons, cards, or text inputs with raw `TouchableOpacity` or unstyled `View`.
+1. **Use `@some-alambre/ui` by Default:**
+   Always use standard components from `@some-alambre/ui` (`AppButton`, `AppCard`, `AppBadge`, `AppActionSheet`, `AppDialog`, `AppTextInput`, `AppSwitch`, `AppSlider`, `AppStepper`, `AppTitle`, `AppAccordion`). Do not reinvent buttons, cards, or text inputs with raw `TouchableOpacity` or unstyled `View`.
 2. **Semantic Theme Discipline:**
    Consume palette colors via `useLightDark()` (`theme.primary`, `theme.surface`, `theme.background`, `theme.color`, `theme.border`, etc.). Never write hardcoded hex color codes in component styles.
 3. **Headless State & Storage:**
@@ -23,7 +23,7 @@ This directory defines the agent coordination rules for building applications st
 | Role | Responsibility |
 | --- | --- |
 | **`@lead`** | Application builder. Owns production feature development, screen composition, navigation routing, and store wiring. |
-| **`@reviewer`** | Design-system and code auditor. Verifies that screens respect `@alambre/ui` tokens, checks for hardcoded colors, and inspects accessibility. |
+| **`@reviewer`** | Design-system and code auditor. Verifies that screens respect `@some-alambre/ui` tokens, checks for hardcoded colors, and inspects accessibility. |
 | **`@tester`** | QA engineer. Writes Vitest tests for domain state, formatters, and collection actions. |
 
 ## 3. Validation Workflow

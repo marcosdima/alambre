@@ -25,8 +25,11 @@ if (fs.existsSync(alambrePackage)) {
     if (moduleName === 'alambre') {
       return { filePath: alambreSource, type: 'sourceFile' };
     }
-    if (moduleName === '@alambre/ui') {
+    if (moduleName === '@some-alambre/ui' || moduleName === '@alambre/ui') {
       return { filePath: uiSource, type: 'sourceFile' };
+    }
+    if (moduleName === '@some-alambre/room-relay' || moduleName === '@alambre/room-relay') {
+      return { filePath: path.resolve(workspaceRoot, 'packages/room-relay/src/index.ts'), type: 'sourceFile' };
     }
     return context.resolveRequest(context, moduleName, platform);
   };

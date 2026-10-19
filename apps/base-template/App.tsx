@@ -10,7 +10,7 @@ import Root from './src/navigator/Root';
 import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { TemplateToast } from './src/providers/toast';
-import { ConfirmDialog } from '@alambre/ui';
+import { ConfirmDialog } from '@some-alambre/ui';
 
 export default function App() {
   const [fontsLoaded] = useFonts({

@@ -5,9 +5,9 @@ pnpm workspace monorepo for the `alambre` React Native framework and its applica
 ## Structure
 
 - `packages/alambre` — the reusable headless framework/library. Published to npm as `alambre`. Contains the capability factories (`createConfig`, `createLang`, `createLightDark`, `createCollection`), behaviors (`createApi`, `NavigatorProvider`, `ToastHost`, `ConfirmHost`), headless kinetic/spatial hooks (`useWavefront`, `usePressKinetics`, `useSpatialFlip`, `useFlightTrajectory`, `useKineticSwipe`, `useKineticCarousel`, `useKineticPipeline`, `useKineticChoreography`), compound form primitives, and icons. Must never depend on application code.
-- `packages/ui` (`@alambre/ui`) — tactile, accessible mobile UI kit and design token system built on top of `alambre`.
-- `packages/room-relay` (`@alambre/room-relay`) — lightweight headless ephemeral multi-device room synchronization over WebSockets and in-memory simulated hubs.
-- `apps/base-template` — the canonical application **template**: a generic, product-free skeleton to bootstrap new apps on top of `alambre` and `@alambre/ui` (capabilities wired, navigator with subpages, toast, storage adapters, validation setup). Its standalone copy is the GitHub template repository `marcosdima/base-expo` (see *Bootstrapping a new app* below).
+- `packages/ui` (`@some-alambre/ui`) — tactile, accessible mobile UI kit and design token system built on top of `alambre`.
+- `packages/room-relay` (`@some-alambre/room-relay`) — lightweight headless ephemeral multi-device room synchronization over WebSockets and in-memory simulated hubs.
+- `apps/base-template` — the canonical application **template**: a generic, product-free skeleton to bootstrap new apps on top of `alambre` and `@some-alambre/ui` (capabilities wired, navigator with subpages, toast, storage adapters, validation setup). Its standalone copy is the GitHub template repository `marcosdima/base-expo` (see *Bootstrapping a new app* below).
 - `apps/playground` — the behavioral and kinetic proving ground for prototyping and verifying headless physics, spatial card mechanics, and multiplayer room synchronization before extraction.
 
 Detailed functional reference for all alambre capabilities, hooks, behaviors, and components is documented in [`docs/reference/index.md`](docs/reference/index.md).
@@ -28,16 +28,21 @@ pnpm --filter alambre build           # build the core library only
 pnpm --filter @alambre/playground ios # run the Playground app
 ```
 
-Inside the monorepo the apps resolve `alambre`, `@alambre/ui`, and `@alambre/room-relay` from their TypeScript source via Metro (Fast Refresh); standalone apps bootstrapped from the template resolve `alambre` from the published package `exports` (`dist/module`). Either way, rebuild the library after a change: `pnpm --filter alambre build`.
+Inside the monorepo the apps resolve `alambre`, `@some-alambre/ui`, and `@some-alambre/room-relay` from their TypeScript source via Metro (Fast Refresh); standalone apps bootstrapped from the template resolve `alambre` from the published package `exports` (`dist/module`). Either way, rebuild the library after a change: `pnpm --filter alambre build`.
 
 ## Publishing
 
-The library is published from `packages/alambre`:
+The library and packages are published from their respective directories:
 
 ```bash
-cd packages/alambre
-npm version <bump>
-npm publish
+# Core framework
+cd packages/alambre && npm stage publish
+
+# UI package
+cd packages/ui && npm stage publish
+
+# Room relay package
+cd packages/room-relay && npm stage publish
 ```
 
 The package is built with `react-native-builder-bob` (ESM `module` target + TypeScript definitions). `files` includes both `dist/` and `src/`. The package is currently in a frozen pre-baseline versioning phase — see the versioning policy in `docs/framework/architecture.md` §9 before changing versions.

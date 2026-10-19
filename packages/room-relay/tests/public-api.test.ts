@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as RoomRelayAPI from "../src/index";
 
-describe("Public API Contract: @alambre/room-relay", () => {
+describe("Public API Contract: @some-alambre/room-relay", () => {
   it("exports room code utilities", () => {
     expect(RoomRelayAPI.ROOM_CODE_ALPHABET).toBeDefined();
     expect(typeof RoomRelayAPI.generateRoomCode).toBe("function");

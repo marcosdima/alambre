@@ -3,9 +3,9 @@ title: Room Relay Reference
 summary: Lightweight headless ephemeral room relay for real-time multiplayer and multi-device state synchronization.
 ---
 
-# Room Relay (`@alambre/room-relay`)
+# Room Relay (`@some-alambre/room-relay`)
 
-The `@alambre/room-relay` package provides a lightweight, headless ephemeral room synchronization engine designed for real-time multi-device local/casual multiplayer, companion displays, and collaborative interfaces in mobile apps.
+The `@some-alambre/room-relay` package provides a lightweight, headless ephemeral room synchronization engine designed for real-time multi-device local/casual multiplayer, companion displays, and collaborative interfaces in mobile apps.
 
 It eliminates the fragility and discovery barriers of traditional local LAN networking while avoiding heavyweight database backends.
 
@@ -33,7 +33,7 @@ flowchart TD
 
 ### 2.1 Room Code Generation
 ```ts
-import { generateRoomCode, sanitizeRoomCode } from "@alambre/room-relay";
+import { generateRoomCode, sanitizeRoomCode } from "@some-alambre/room-relay";
 
 // Generates 4-char code without ambiguous characters (I, 1, O, 0)
 const code = generateRoomCode(); // e.g. "XK89"
@@ -46,7 +46,7 @@ const clean = sanitizeRoomCode("  xk89  "); // "XK89"
 Pure TypeScript class usable in React, Node, or background tasks without React test harnesses:
 
 ```ts
-import { createRoomRelay } from "@alambre/room-relay";
+import { createRoomRelay } from "@some-alambre/room-relay";
 
 type GameEvents = {
   CARD_PLAYED: { cardId: string; x: number; y: number };
@@ -80,7 +80,7 @@ client.setServerUrl("ws://192.168.1.14:8787"); // Dynamically updates target and
 Synchronized via `useSyncExternalStore` for tearing-free rendering:
 
 ```tsx
-import { useRoomRelay, useRoomRelaySelector } from "@alambre/room-relay";
+import { useRoomRelay, useRoomRelaySelector } from "@some-alambre/room-relay";
 
 function MultiplayerGame() {
   const relay = useRoomRelay({
@@ -124,7 +124,7 @@ function PingBadge({ client }) {
 ### `SimulatedRelayTransport`
 In-memory simulated edge relay hub. Allows running multiple virtual clients in parallel:
 ```ts
-import { SimulatedRelayTransport, createSimulatedRelayHub } from "@alambre/room-relay";
+import { SimulatedRelayTransport, createSimulatedRelayHub } from "@some-alambre/room-relay";
 
 // Create isolated hub for unit tests
 const testHub = createSimulatedRelayHub();
@@ -142,7 +142,7 @@ const transport = new SimulatedRelayTransport({
 ### `WebSocketRelayTransport`
 Edge WebSocket transport supporting standard WebSocket schema:
 ```ts
-import { WebSocketRelayTransport } from "@alambre/room-relay";
+import { WebSocketRelayTransport } from "@some-alambre/room-relay";
 
 const transport = new WebSocketRelayTransport({
   url: "wss://relay.alambre.party/room",
@@ -161,10 +161,10 @@ const transport = new WebSocketRelayTransport({
 
 ## Deterministic Seeded PRNG & Shuffling
 
-For verifiable fair shuffles, deterministic match replays, and reproducible Vitest multiplayer tests, `@alambre/room-relay` provides a zero-dependency 32-bit seeded PRNG (Mulberry32) and Fisher-Yates shuffle:
+For verifiable fair shuffles, deterministic match replays, and reproducible Vitest multiplayer tests, `@some-alambre/room-relay` provides a zero-dependency 32-bit seeded PRNG (Mulberry32) and Fisher-Yates shuffle:
 
 ```ts
-import { hashSeed, createSeededRng, shuffleWithSeed } from "@alambre/room-relay";
+import { hashSeed, createSeededRng, shuffleWithSeed } from "@some-alambre/room-relay";
 
 const rng = createSeededRng("ROOM_XK89_ROUND_1");
 const nextFloat = rng(); // [0, 1)
@@ -183,7 +183,7 @@ const shuffledDeck = shuffleWithSeed(deck, "ROOM_XK89_ROUND_1");
 - **Optional Turn Countdown Timer:** Built-in `turnDurationMs`, `remainingTurnMs`, and host `onTurnTimeout` handler.
 
 ```tsx
-import { useTurnEngine } from "@alambre/room-relay";
+import { useTurnEngine } from "@some-alambre/room-relay";
 
 const turn = useTurnEngine<GameState, GameAction>({
   roomCode: "XK89",

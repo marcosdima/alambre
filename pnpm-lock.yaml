@@ -176,9 +176,6 @@ importers:
 
   apps/base-template:
     dependencies:
-      '@alambre/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@expo-google-fonts/inter':
         specifier: ^0.4.2
         version: 0.4.2
@@ -197,6 +194,9 @@ importers:
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
         version: 2.2.0(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.87.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))
+      '@some-alambre/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: ^5.0.0
         version: 5.91.2(react@19.2.3)
@@ -264,18 +264,18 @@ importers:
 
   apps/playground:
     dependencies:
-      '@alambre/room-relay':
-        specifier: workspace:*
-        version: link:../../packages/room-relay
-      '@alambre/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
         version: 2.2.0(react-native@0.86.3(@babel/core@7.29.7(supports-color@8.1.1))(@react-native/metro-config@0.87.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.3)(supports-color@8.1.1))
       '@react-native-community/slider':
         specifier: 5.2.0
         version: 5.2.0
+      '@some-alambre/room-relay':
+        specifier: workspace:*
+        version: link:../../packages/room-relay
+      '@some-alambre/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/react-query':
         specifier: ^5.0.0
         version: 5.91.2(react@19.2.3)

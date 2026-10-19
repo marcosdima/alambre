@@ -5,7 +5,7 @@ Canonical starting point for a new application on top of `alambre`. This is a **
 ## What is wired in
 
 - Expo SDK 57 (managed, no prebuild committed; run native features with `npx expo run:android`).
-- `@alambre/ui` tactile design tokens and accessible mobile components (`AppButton`, `AppCard`, `AppTextInput`, `AppBadge`, `ToggleLightDark`, `ConfirmDialog`).
+- `@some-alambre/ui` tactile design tokens and accessible mobile components (`AppButton`, `AppCard`, `AppTextInput`, `AppBadge`, `ToggleLightDark`, `ConfirmDialog`).
 - `alambre` capabilities and behaviors, connected through a `Storage` adapter over AsyncStorage:
   - `createConfig` (`src/providers/config.ts`)
   - `createLightDark` (`src/providers/theme.ts`)

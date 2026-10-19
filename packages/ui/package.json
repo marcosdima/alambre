@@ -1,5 +1,5 @@
 {
-  "name": "@alambre/ui",
+  "name": "@some-alambre/ui",
   "version": "1.0.0",
   "type": "module",
   "description": "Tactile, accessible mobile UI components and design tokens built on alambre.",
