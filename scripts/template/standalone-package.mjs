@@ -46,5 +46,11 @@ pkg.dependencies['@some-alambre/ui'] = uiVersion;
 delete pkg.dependencies['@alambre/ui'];
 pkg.dependencies['@tanstack/react-query'] = '^5.0.0';
 
+pkg.overrides = pkg.overrides ?? {};
+pkg.overrides['@react-native/metro-config'] = '~0.86.3';
+
+pkg.resolutions = pkg.resolutions ?? {};
+pkg.resolutions['@react-native/metro-config'] = '~0.86.3';
+
 fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 console.log(`package.json rewritten for standalone: alambre pinned to ${alambreVersion}, @some-alambre/ui pinned to ${uiVersion}`);
