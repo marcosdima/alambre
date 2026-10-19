@@ -1,34 +1,47 @@
-# Application Agent System (Base Template)
+# Application Agent System
 
-This directory defines the agent coordination rules for building applications starting from `base-template`. When this template is cloned to create a new mobile application, these rules govern AI-assisted product development.
+This repository uses a specialized multi-agent team configured for mobile application development on top of `alambre` and `@some-alambre/ui`.
 
-## 1. Principles for Application Development
+## 1. Roles & Topology
 
-1. **Use `@some-alambre/ui` by Default:**
-   Always use standard components from `@some-alambre/ui` (`AppButton`, `AppCard`, `AppBadge`, `AppActionSheet`, `AppDialog`, `AppTextInput`, `AppSwitch`, `AppSlider`, `AppStepper`, `AppTitle`, `AppAccordion`). Do not reinvent buttons, cards, or text inputs with raw `TouchableOpacity` or unstyled `View`.
-2. **Semantic Theme Discipline:**
-   Consume palette colors via `useLightDark()` (`theme.primary`, `theme.surface`, `theme.background`, `theme.color`, `theme.border`, etc.). Never write hardcoded hex color codes in component styles.
-3. **Headless State & Storage:**
-   Use `alambre` primitives for application logic:
-   - Global reactive state: `createStore(initialState)`.
-   - Persisted collections: `createCollection({ key, initialRecords })`.
-   - History / undo-redo: `useHistoryState()`.
-   - Stopwatches / timers: `useStopwatch()`.
-   - Sensory cues (haptics / sound): `createSensoryCues()`.
-4. **Accessible by Default:**
-   Always provide `accessibilityLabel`, accessible roles (`role="switch"`, `role="button"`), and ensure touch targets meet the minimum 44x44pt standard.
+| Identifier | Definition | Tier | Write Authority | Responsibility |
+| --- | --- | --- | --- | --- |
+| **`@lead`** | `.agents/agents/lead/agent.md` | `pro` | Full (`src/**`, `App.tsx`) | Primary orchestrator and sole author of production code; feature architecture, screens, stores, navigation, i18n, and final validation. `mainAgent`. |
+| **`@reviewer`** | `.agents/agents/reviewer/agent.md` | `flash` | Read-only | Codebase investigation, state/persistence boundary audits, navigation routing, and `es`/`en` i18n parity. |
+| **`@ui-reviewer`** | `.agents/agents/ui-reviewer/agent.md` | `flash` | Read-only | Static UI/UX audit: `@some-alambre/ui` component adoption, semantic theme tokens, `fontFamily` propagation, and accessibility. |
+| **`@tester`** | `.agents/agents/tester/agent.md` | `flash` | `tests/**` only | Vitest unit and integration testing for domain stores, collections, storage adapters, and utilities. |
 
-## 2. Roles
+## 2. Progressive-Disclosure Skills
 
-| Role | Responsibility |
-| --- | --- |
-| **`@lead`** | Application builder. Owns production feature development, screen composition, navigation routing, and store wiring. |
-| **`@reviewer`** | Design-system and code auditor. Verifies that screens respect `@some-alambre/ui` tokens, checks for hardcoded colors, and inspects accessibility. |
-| **`@tester`** | QA engineer. Writes Vitest tests for domain state, formatters, and collection actions. |
+Agents automatically load the relevant skill on demand when working in its domain:
 
-## 3. Validation Workflow
+| Skill | Path | Domain |
+| --- | --- | --- |
+| **`alambre-ui`** | `.agents/skills/alambre-ui/SKILL.md` | `@some-alambre/ui` components, props, semantic theme tokens, `fontFamily` propagation, and kinetic text. |
+| **`alambre-state-storage`** | `.agents/skills/alambre-state-storage/SKILL.md` | `createStore`, `createCollection`, `createConfig`, `createLang`, `createLightDark`, `createSensoryCues`, `useHistoryState`, `useStopwatch`, `createApi`, and Vitest storage mocks. |
+| **`alambre-navigation-overlays`** | `.agents/skills/alambre-navigation-overlays/SKILL.md` | `NavigatorProvider`, `pages` & `subpages`, `useNavigator()`, `useConfirm()`, and `useToast()`. |
+| **`alambre-kinetics-dnd`** | `.agents/skills/alambre-kinetics-dnd/SKILL.md` | `kinetics` presets, `usePressKinetics`, `useCollapsible`, `useWavefront`, `DndProvider` (`Draggable`, `Droppable`, `SortableRow`), `SpatialSpace`, and `AlambreIcons`. |
+| **`alambre-room-relay`** | `.agents/skills/alambre-room-relay/SKILL.md` | `@some-alambre/room-relay` multiplayer rooms (`useRoomRelay`), authoritative turn engine (`useTurnEngine`), room codes, and seeded PRNG (`createSeededRng`). |
 
-Before finishing any feature:
-1. `pnpm typecheck` — TypeScript verification.
-2. `pnpm lint` — ESLint verification.
-3. `pnpm test` — Unit test suite.
+## 3. Core Application Conventions
+
+1. **Design System First (`@some-alambre/ui`):**
+   Use standard primitives (`AppTitle`, `AppText`, `AppButton`, `AppCard`, `AppBadge`, `AppChip`, `AppTextInput`, `AppSwitch`, `AppSlider`, `AppStepper`, `AppSelect`, `AppNumberPicker`, `AppSegmentedControl`, `AppAccordion`, `AppDialog`, `AppActionSheet`, `ToggleLightDark`, `ConfirmDialog`). Never reinvent buttons, cards, dialogs, or text with unstyled primitives.
+2. **Theme, Typography & Provider Tree:**
+   - Keep `<ThemeProvider theme={{ ...theme, fontFamily: config.fontFamily }}>` at the top of `App.tsx` above `NavigatorProvider`, `ConfirmProvider`, `ToastProvider`, and `Root`.
+   - Consume colors and typography via `useTheme()` (`@some-alambre/ui`) or `useLightDark()` (`src/providers/theme.ts`). Never hardcode hex/RGB colors.
+   - Use `AppText` / `AppTitle` so `theme.fontFamily` applies automatically; bind `fontFamily` explicitly on any custom `<Text>` or `<Animated.Text>`.
+3. **Headless State & Persistence (`alambre`):**
+   Keep domain state out of views using `createStore`, `createConfig`, `createCollection`, `useHistoryState`, and `useStopwatch`, wired to the shared `storage` adapter (`src/storage/index.ts`).
+4. **Navigation & Localization:**
+   - Register pages and subpages in `src/navigator/navigator.tsx` with localized `title: (lang) => ...` functions.
+   - Define all user-facing copy in both `es` and `en` inside `src/providers/lang.tsx` (`useLang()`).
+5. **Accessibility by Default:**
+   Provide `accessibilityRole`, `accessibilityLabel`, and `accessibilityState`, and maintain a 44x44pt minimum touch target.
+
+## 4. Validation Order
+
+Run from the project root before completing any task:
+1. `pnpm lint`
+2. `pnpm typecheck`
+3. `pnpm test`
