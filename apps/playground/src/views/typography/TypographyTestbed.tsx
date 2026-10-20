@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Platform, type TextStyle } from 'react-native';
+import { View, StyleSheet, ScrollView, Platform } from 'react-native';
 import {
   ThemeProvider,
   AppCard,
@@ -10,6 +10,7 @@ import {
   AppTextInput,
   resolveTypography,
   type ThemeFontFamily,
+  type TypographyWeight,
   TickerText,
   CountUpText,
   TypewriterText,
@@ -57,7 +58,7 @@ export default function TypographyTestbed() {
   }, [theme, activeFontFamily]);
 
   // Sample weights to inspect
-  const weightSamples: Array<{ label: string; weight: TextStyle['fontWeight'] }> = [
+  const weightSamples: Array<{ label: string; weight: TypographyWeight }> = [
     { label: 'Normal (400)', weight: 'normal' },
     { label: 'Medium (500)', weight: '500' },
     { label: 'SemiBold (600)', weight: '600' },

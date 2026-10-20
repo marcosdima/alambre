@@ -1,13 +1,12 @@
-import React from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { StyleSheet, View } from 'react-native';
+import Animated, { type useAnimatedStyle } from 'react-native-reanimated';
 import type { HandArrivalFlight } from 'alambre';
 import { PlayingCard } from '../card-game/components/PlayingCard';
 import type { CardSize, PlayingCardData } from '../card-game/types';
 
 export interface ArrivalFlightOverlayProps {
   activeArrival: HandArrivalFlight<PlayingCardData> | null;
-  flightAnimatedStyle: StyleProp<ViewStyle>;
+  flightAnimatedStyle: ReturnType<typeof useAnimatedStyle>;
   size?: CardSize;
 }
 
