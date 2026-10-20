@@ -197,5 +197,15 @@ export type {
   UseInteractiveHandReturn,
 } from './use-interactive-hand';
 
+export {
+  useHandArrival,
+} from './use-hand-arrival';
+export type {
+  UseHandArrivalOptions,
+  HandArrivalFlight,
+  StartArrivalOverrides,
+  UseHandArrivalReturn,
+} from './use-hand-arrival';
+
 
 

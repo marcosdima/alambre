@@ -13,6 +13,7 @@ import {
   resolveTossDynamics,
   computeSpatialCascadePlan,
   sampleFlightTrajectory,
+  predictHandArrivalSlot,
 } from '../../src/core/spatial';
 import { reorderHandItems, resolveHandReorderIndex } from '../../src/hooks/use-interactive-hand';
 import { createSensoryCues } from '../../src/capabilities/sensory';
@@ -257,6 +258,38 @@ describe('spatial kinetics primitives', () => {
       expect(reordered.map((i) => i.id)).toEqual(['2', '3', '1', '4']);
       expect(resolveHandReorderIndex(1, 76, 38, 4)).toBe(3);
       expect(resolveHandReorderIndex(1, -200, 38, 4)).toBe(0);
+    });
+
+    it('predicts exact arrival slot coordinates and layout for incoming card', () => {
+      const currentHand = [{ id: 'c1' }, { id: 'c2' }, { id: 'c3' }, { id: 'c4' }, { id: 'c5' }, { id: 'c6' }, { id: 'c7' }];
+      const centerOffset = { x: 200, y: 600 };
+
+      // 1. Predict arriving at the end of a 7-card hand (becoming 8 cards total)
+      const arrival = predictHandArrivalSlot(currentHand, {
+        centerOffset,
+        containerWidth: 400,
+      });
+
+      expect(arrival.targetTotal).toBe(8);
+      expect(arrival.targetSlotIndex).toBe(7);
+      expect(arrival.centerCoord.x).toBeGreaterThan(centerOffset.x); // Placed to the right of hand center
+      expect(arrival.centerCoord.y).toBeGreaterThanOrEqual(centerOffset.y); // Arc drop
+      expect(arrival.rotateDeg).toBeGreaterThan(0); // Fanned to the right
+      expect(arrival.zIndex).toBe(8);
+
+      // 2. Predict with number count instead of array
+      const countArrival = predictHandArrivalSlot(7, { centerOffset, containerWidth: 400 });
+      expect(countArrival).toEqual(arrival);
+
+      // 3. Predict arriving at custom insertionIndex (e.g. index 0, leftmost slot)
+      const leftArrival = predictHandArrivalSlot(currentHand, {
+        centerOffset,
+        containerWidth: 400,
+        insertionIndex: 0,
+      });
+      expect(leftArrival.targetSlotIndex).toBe(0);
+      expect(leftArrival.centerCoord.x).toBeLessThan(centerOffset.x);
+      expect(leftArrival.rotateDeg).toBeLessThan(0); // Fanned to the left
     });
   });
 

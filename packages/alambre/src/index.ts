@@ -182,6 +182,7 @@ export {
   reorderHandItems,
   resolveHandReorderIndex,
   useInteractiveHand,
+  useHandArrival,
 } from './hooks';
 export type {
   HistoryState,
@@ -263,6 +264,10 @@ export type {
   UseCascadeFlightItemReturn,
   UseInteractiveHandOptions,
   UseInteractiveHandReturn,
+  UseHandArrivalOptions,
+  HandArrivalFlight,
+  StartArrivalOverrides,
+  UseHandArrivalReturn,
 } from './hooks';
 
 
@@ -340,6 +345,7 @@ export {
   resolveTossDynamics,
   computeSpatialCascadePlan,
   computeDealCascadePlan,
+  predictHandArrivalSlot,
   sampleFlightTrajectory,
   linearTrajectory,
   parabolicTrajectory,
@@ -370,6 +376,8 @@ export type {
   SpatialCascadeOptions,
   SpatialFlightSpec,
   SpatialCascadePlan,
+  PredictArrivalSlotOptions,
+  PredictedHandArrivalSlot,
   FlightInterpolationState,
   CarouselPreset,
   CarouselItemTransform,

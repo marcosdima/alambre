@@ -780,3 +780,106 @@ export function sampleFlightTrajectory<T = any>(
   };
 }
 
+export interface PredictArrivalSlotOptions {
+  /** Width of the hand/target container for responsive fan calculations. */
+  containerWidth?: number;
+  /** Center offset coordinate of the hand fan. @default { x: 0, y: 0 } */
+  centerOffset?: Point2D;
+  /** Base distance between item centers in points. @default 38 */
+  baseSpacing?: number;
+  /** Radial spread angle in degrees. @default 5 */
+  spreadAngle?: number;
+  /** Vertical arc drop curvature in points. @default 3.5 */
+  arcCurvature?: number;
+  /** Maximum span width before auto-compressing cards. @default 280 */
+  maxSpan?: number;
+  /** Specific index where the arriving card will be inserted. Defaults to the end of the hand (existing count). */
+  insertionIndex?: number;
+}
+
+export interface PredictedHandArrivalSlot {
+  /** Target slot index within the hand fan. */
+  targetSlotIndex: number;
+  /** Expected total items in hand after this arrival. */
+  targetTotal: number;
+  /** Screen/world coordinate for the center of the arriving card's slot. */
+  centerCoord: Point2D;
+  /** Relative horizontal translation from hand center. */
+  translateX: number;
+  /** Relative vertical translation from hand center. */
+  translateY: number;
+  /** Target rotation angle in degrees for the slot. */
+  rotateDeg: number;
+  /** Target scale for the slot. */
+  scale: number;
+  /** Target zIndex for proper visual layering. */
+  zIndex: number;
+}
+
+/**
+ * Predicts the exact spatial slot coordinate and transform for a card arriving into a hand fan.
+ * Pure function, worklet-safe, executes on the UI thread without allocations.
+ *
+ * Solves the spatial discontinuity where drawn cards fly to screen center and snap abruptly to their slot.
+ */
+export function predictHandArrivalSlot<T = any>(
+  currentHandOrCount: readonly T[] | number,
+  options: PredictArrivalSlotOptions = {},
+): PredictedHandArrivalSlot {
+  'worklet';
+  const existingCount =
+    typeof currentHandOrCount === 'number'
+      ? Math.max(0, currentHandOrCount)
+      : currentHandOrCount.length;
+
+  const targetTotal = existingCount + 1;
+  const targetSlotIndex =
+    options.insertionIndex !== undefined
+      ? Math.max(0, Math.min(existingCount, options.insertionIndex))
+      : existingCount;
+
+  const {
+    containerWidth,
+    maxSpan: customMaxSpan,
+    baseSpacing = 38,
+    spreadAngle = 5,
+    arcCurvature = 3.5,
+    centerOffset = { x: 0, y: 0 },
+  } = options;
+
+  const availableSpan = containerWidth
+    ? Math.max(80, containerWidth - 90)
+    : customMaxSpan ?? 280;
+
+  const effectiveSpacing =
+    targetTotal > 1 ? Math.min(baseSpacing, availableSpan / (targetTotal - 1)) : baseSpacing;
+
+  const isCompressed = effectiveSpacing < baseSpacing;
+  const compressionRatio = isCompressed ? effectiveSpacing / baseSpacing : 1;
+  const effectiveSpreadAngle = spreadAngle * Math.max(0.65, compressionRatio);
+
+  const transform = calculateHandFan(targetSlotIndex, targetTotal, {
+    spreadAngle: effectiveSpreadAngle,
+    arcCurvature,
+    itemSpacing: effectiveSpacing,
+    maxSpan: availableSpan,
+    isSelected: false,
+  });
+
+  const centerCoord: Point2D = {
+    x: Math.round(centerOffset.x + transform.translateX),
+    y: Math.round(centerOffset.y + transform.translateY),
+  };
+
+  return {
+    targetSlotIndex,
+    targetTotal,
+    centerCoord,
+    translateX: transform.translateX,
+    translateY: transform.translateY,
+    rotateDeg: transform.rotateDeg,
+    scale: transform.scale,
+    zIndex: transform.zIndex,
+  };
+}
+
