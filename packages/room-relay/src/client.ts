@@ -57,6 +57,7 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
       isHost: options.isHost ?? true,
       peers: [],
       latency: 0,
+      latencyMs: 0,
       history: [],
     };
 
@@ -101,6 +102,7 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
       status: "disconnected",
       peers: [],
       latency: 0,
+      latencyMs: 0,
     });
   }
 
@@ -312,7 +314,7 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
     if (type === "pong" && typeof msg.sentAt === "number") {
       this.clearWatchdog();
       const rtt = Math.max(1, Math.round(Date.now() - msg.sentAt));
-      this.updateState({ latency: rtt });
+      this.updateState({ latency: rtt, latencyMs: rtt });
       return;
     }
 

@@ -1,6 +1,66 @@
 import type { RelayConnectionStatus, RelayTransport } from "../types";
 import { sanitizeRoomCode } from "../code";
 
+declare const __DEV__: boolean | undefined;
+
+export interface ResolveRelayUrlOptions {
+  /** Optional fallback URL when input is empty. @default "ws://localhost:8080" */
+  defaultUrl?: string;
+  /** Whether we are in a production environment. */
+  isProduction?: boolean;
+  /** Whether to explicitly allow insecure ws:// in production without warning. @default false */
+  allowInsecure?: boolean;
+}
+
+/**
+ * Validates, normalizes, and secures WebSocket relay URLs.
+ * Automatically enforces or warns when insecure ws:// is used outside localhost in production.
+ */
+export function resolveRelayUrl(
+  inputUrl?: string | null,
+  options: ResolveRelayUrlOptions = {},
+): string {
+  const {
+    defaultUrl = "ws://localhost:8080",
+    isProduction = typeof __DEV__ !== "undefined"
+      ? !__DEV__
+      : typeof process !== "undefined" && process.env?.NODE_ENV === "production",
+    allowInsecure = false,
+  } = options;
+
+  let raw = (inputUrl ?? "").trim();
+  if (!raw) {
+    raw = defaultUrl;
+  }
+
+  // Convert http/https schemes to ws/wss
+  if (raw.startsWith("http://")) {
+    raw = "ws://" + raw.slice("http://".length);
+  } else if (raw.startsWith("https://")) {
+    raw = "wss://" + raw.slice("https://".length);
+  }
+
+  // If no scheme was provided, default according to environment
+  if (!raw.startsWith("ws://") && !raw.startsWith("wss://")) {
+    raw = (isProduction ? "wss://" : "ws://") + raw;
+  }
+
+  const isLocal =
+    raw.includes("localhost") ||
+    raw.includes("127.0.0.1") ||
+    raw.includes("10.0.2.2") ||
+    raw.includes("::1");
+
+  if (isProduction && raw.startsWith("ws://") && !isLocal && !allowInsecure) {
+    console.warn(
+      `[room-relay] Insecure WebSocket URL "${raw}" detected in production environment. ` +
+        `Multiplayer rooms should use secure "wss://" to prevent cleartext leakage and MITM attacks.`,
+    );
+  }
+
+  return raw;
+}
+
 export interface WebSocketRelayTransportOptions {
   url: string;
   id: string;
@@ -45,7 +105,7 @@ export class WebSocketRelayTransport implements RelayTransport {
   private isExplicitlyDisconnected = false;
 
   constructor(options: WebSocketRelayTransportOptions) {
-    this.url = options.url;
+    this.url = resolveRelayUrl(options.url);
     this.id = options.id;
     this.name = options.name;
     this.roomCode = sanitizeRoomCode(options.roomCode);

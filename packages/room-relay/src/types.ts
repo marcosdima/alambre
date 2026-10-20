@@ -201,6 +201,10 @@ export interface RoomRelayState {
   isHost: boolean;
   peers: RelayPeer[];
   latency: number;
+  /**
+   * Round-trip time (RTT) heartbeat latency in milliseconds.
+   */
+  latencyMs: number;
   history: RelayMessage<string, unknown>[];
   error?: string;
 }

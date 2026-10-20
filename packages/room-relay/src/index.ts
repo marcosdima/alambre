@@ -34,9 +34,11 @@ export type {
 
 export {
   WebSocketRelayTransport,
+  resolveRelayUrl,
 } from "./transports/websocket";
 export type {
   WebSocketRelayTransportOptions,
+  ResolveRelayUrlOptions,
 } from "./transports/websocket";
 
 // Headless Core Client

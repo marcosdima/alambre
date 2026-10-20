@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { RoomRelayClient, createRoomRelay } from "../src/client";
 import { createSimulatedRelayHub } from "../src/transports/simulated";
+import { resolveRelayUrl } from "../src/transports/websocket";
 
 describe("RoomRelayClient (Headless Core)", () => {
   let hub: ReturnType<typeof createSimulatedRelayHub>;
@@ -247,5 +248,67 @@ describe("RoomRelayClient (Headless Core)", () => {
     expect(client.getState().history).toHaveLength(1);
 
     client.destroy();
+  });
+
+  it("tracks RTT latency and exposes latencyMs on pong receipt", () => {
+    const client = new RoomRelayClient({
+      roomCode: "PING_PONG",
+      simulatedLatencyMs: 10,
+      simulatedHub: hub,
+    });
+
+    expect(client.getState().latency).toBe(0);
+    expect(client.getState().latencyMs).toBe(0);
+
+    // Simulate incoming pong
+    const sentAt = Date.now() - 42;
+    (client as any).handleIncomingRaw({
+      type: "pong",
+      sentAt,
+    });
+
+    expect(client.getState().latency).toBe(42);
+    expect(client.getState().latencyMs).toBe(42);
+
+    client.disconnect();
+    expect(client.getState().latency).toBe(0);
+    expect(client.getState().latencyMs).toBe(0);
+
+    client.destroy();
+  });
+
+  describe("resolveRelayUrl", () => {
+    it("converts http to ws and https to wss", () => {
+      expect(resolveRelayUrl("http://api.relay.com/room")).toBe("ws://api.relay.com/room");
+      expect(resolveRelayUrl("https://api.relay.com/room")).toBe("wss://api.relay.com/room");
+    });
+
+    it("prepends wss in production when scheme is omitted", () => {
+      expect(resolveRelayUrl("relay.alambre.party/room", { isProduction: true })).toBe("wss://relay.alambre.party/room");
+    });
+
+    it("prepends ws in development when scheme is omitted", () => {
+      expect(resolveRelayUrl("localhost:8080/room", { isProduction: false })).toBe("ws://localhost:8080/room");
+    });
+
+    it("falls back to defaultUrl when input is empty", () => {
+      expect(resolveRelayUrl("", { defaultUrl: "ws://localhost:8787" })).toBe("ws://localhost:8787");
+    });
+
+    it("warns when insecure ws is used with remote host in production", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      resolveRelayUrl("ws://production-relay.com/room", { isProduction: true });
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it("does not warn for localhost or when allowInsecure is true in production", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      resolveRelayUrl("ws://localhost:8787/room", { isProduction: true });
+      resolveRelayUrl("ws://10.0.2.2:8787/room", { isProduction: true });
+      resolveRelayUrl("ws://custom-relay.com/room", { isProduction: true, allowInsecure: true });
+      expect(warnSpy).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
   });
 });
