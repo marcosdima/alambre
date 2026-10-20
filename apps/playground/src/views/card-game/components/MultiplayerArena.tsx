@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { AppTextInput } from '@some-alambre/ui';
-import { generateRoomCode } from '@some-alambre/room-relay';
-import AppCard from '../../../components/AppCard';
-import AppButton from '../../../components/AppButton';
-import AppBadge from '../../../components/AppBadge';
-import AppTitle, { AppText } from '../../../components/AppTitle';
-import AppSegmentedControl from '../../../components/AppSegmentedControl';
+import {
+  AppBadge,
+  AppButton,
+  AppCard,
+  AppSegmentedControl,
+  AppTextInput,
+  AppTitle,
+  AppText,
+} from '@some-alambre/ui';
+import { generateRoomCode, resolveRelayUrl } from '@some-alambre/room-relay';
 import { CardTable } from './CardTable';
 import { CardHand } from './CardHand';
 import { CascadeFlightItem } from './CascadeFlightItem';
@@ -34,13 +37,15 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
     targetRotation: number;
   } | null>(null);
 
+  const resolvedUrl = useMemo(() => resolveRelayUrl(customWsUrl), [customWsUrl]);
+
   // Host Relay Client (Alice)
   const aliceSync = useCardRelaySync({
     roomCode: activeRoomCode,
     playerName: 'Alice (Host)',
     isHost: true,
     mode: transportMode,
-    serverUrl: customWsUrl,
+    serverUrl: resolvedUrl,
     onOpponentPlay: (event: OpponentFlightEvent) => {
       setAliceOpponentFlight({
         card: event.card,
@@ -55,7 +60,7 @@ export function MultiplayerArena({ physics }: { physics: CardPhysicsConfig }) {
     playerName: 'Bob',
     isHost: false,
     mode: transportMode,
-    serverUrl: customWsUrl,
+    serverUrl: resolvedUrl,
     onOpponentPlay: (event: OpponentFlightEvent) => {
       setBobOpponentFlight({
         card: event.card,

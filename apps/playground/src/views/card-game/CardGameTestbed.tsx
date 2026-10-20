@@ -1,9 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useLightDark } from '../../providers/theme';
-import AppCard from '../../components/AppCard';
-import AppButton from '../../components/AppButton';
-import AppTitle, { AppText } from '../../components/AppTitle';
+import { AppCard, AppButton, AppTitle, AppText } from '@some-alambre/ui';
 import { GummyTabs } from '../../components/test-utils/GummyTabs';
 import { TestCard } from '../../components/test-utils/TestCard';
 import { ConfigSlider } from '../../components/test-utils/ConfigSlider';

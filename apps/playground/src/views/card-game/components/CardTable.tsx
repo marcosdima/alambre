@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import AppBadge from '../../../components/AppBadge';
-import { AppText } from '../../../components/AppTitle';
+import { AppBadge, AppText } from '@some-alambre/ui';
 import { PlayingCard, CardBackPattern } from './PlayingCard';
 import type { PlayingCardData } from '../types';
 

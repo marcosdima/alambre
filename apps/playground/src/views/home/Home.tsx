@@ -2,8 +2,7 @@ import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useNavigator, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
-import AppTitle from '../../components/AppTitle';
-import AppButton from '../../components/AppButton';
+import { AppTitle, AppButton } from '@some-alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();

@@ -1,5 +1,4 @@
-import React from 'react';
-import AppSlider from '../AppSlider';
+import { AppSlider } from '@some-alambre/ui';
 
 export interface ConfigSliderProps {
   label: string;
