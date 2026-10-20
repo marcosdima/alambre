@@ -1,5 +1,16 @@
+export interface ThemeTypographyVariants {
+  regular: string;
+  medium?: string;
+  semiBold?: string;
+  bold?: string;
+  heavy?: string;
+  mono?: string;
+}
+
+export type ThemeFontFamily = string | ThemeTypographyVariants;
+
 export interface ThemeTokens {
-  fontFamily?: string;
+  fontFamily?: ThemeFontFamily;
   color: string;
   background: string;
   surface: string;

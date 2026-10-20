@@ -1,7 +1,7 @@
 import type { SegmentedControlProps } from 'alambre';
 import { SegmentedControl } from 'alambre';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type AppSegmentedControlProps<T = string> = SegmentedControlProps<T> & {
   label?: string;
@@ -15,10 +15,11 @@ export default function AppSegmentedControl<T = string>({
   disabled,
 }: AppSegmentedControlProps<T>) {
   const { theme } = useTheme();
+  const labelTypography = resolveTypography(theme, { weight: '600' });
 
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={[styles.label, { color: theme.muted, fontFamily: theme.fontFamily }]}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: theme.muted }, labelTypography]}>{label}</Text>}
       <SegmentedControl
         value={value}
         options={options}
@@ -59,9 +60,8 @@ export default function AppSegmentedControl<T = string>({
                       styles.segmentText,
                       {
                         color: active ? theme.primary : theme.color,
-                        fontWeight: active ? '700' : '500',
-                        fontFamily: theme.fontFamily,
                       },
+                      resolveTypography(theme, { weight: active ? '700' : '500' }),
                     ]}
                   >
                     {opt.label}
@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
     textTransform: 'uppercase',
   },
   bar: {

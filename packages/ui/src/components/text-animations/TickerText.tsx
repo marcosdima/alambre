@@ -9,7 +9,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { useTheme, resolveTypography } from '../../theme';
 
 export type TickerSpringConfig = {
   damping?: number;
@@ -101,6 +101,7 @@ export type TickerTextProps = {
   springConfig?: TickerSpringConfig;
   staggerMs?: number;
   staggerDirection?: 'left-to-right' | 'right-to-left';
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
 };
@@ -117,6 +118,7 @@ export default function TickerText({
   springConfig,
   staggerMs = 30,
   staggerDirection = 'right-to-left',
+  fontFamily,
   textStyle,
   containerStyle,
 }: TickerTextProps) {
@@ -132,17 +134,22 @@ export default function TickerText({
     return str.split('');
   }, [value, minDigits, padZero]);
 
+  const typography = useMemo(
+    () => resolveTypography(theme, { weight: '800', mono: true, fontFamilyOverride: fontFamily }),
+    [theme, fontFamily],
+  );
+
   const mergedTextStyle = useMemo<StyleProp<TextStyle>>(
     () => [
       styles.baseText,
       {
         fontSize,
         color: textColor,
-        fontFamily: theme.fontFamily,
       },
+      typography,
       textStyle,
     ],
-    [fontSize, textColor, textStyle, theme.fontFamily],
+    [fontSize, textColor, textStyle, typography],
   );
 
   return (
@@ -243,7 +250,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   baseText: {
-    fontWeight: '800',
     fontVariant: ['tabular-nums'],
     letterSpacing: -0.5,
   },

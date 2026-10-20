@@ -1,7 +1,7 @@
 import type { SliderProps } from 'alambre';
 import { Slider } from 'alambre';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type AppSliderProps = SliderProps & {
   label: string;
@@ -19,18 +19,20 @@ export default function AppSlider({
   disabled,
 }: AppSliderProps) {
   const { theme } = useTheme();
+  const labelTypography = resolveTypography(theme, { weight: '600' });
+  const valueTypography = resolveTypography(theme, { weight: '700', mono: true });
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
+        <Text style={[styles.label, { color: theme.color }, labelTypography]}>{label}</Text>
         <View
           style={[
             styles.valueBadge,
             { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
           ]}
         >
-          <Text style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}>
+          <Text style={[styles.valueText, { color: theme.primary }, valueTypography]}>
             {value}
             {unit}
           </Text>
@@ -98,7 +100,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
   },
   valueBadge: {
     paddingHorizontal: 8,
@@ -108,7 +109,6 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 12,
-    fontWeight: '700',
   },
   touchArea: {
     paddingVertical: 12,

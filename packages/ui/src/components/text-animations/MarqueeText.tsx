@@ -11,7 +11,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { useTheme, resolveTypography } from '../../theme';
 
 export type MarqueeTextProps = {
   text: string;
@@ -21,6 +21,7 @@ export type MarqueeTextProps = {
   spacing?: number; // gap between repeated text loops, default 40
   color?: string;
   forceScroll?: boolean;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   onLayoutMetrics?: (metrics: {
@@ -38,11 +39,13 @@ export default function MarqueeText({
   spacing = 40,
   color,
   forceScroll = false,
+  fontFamily,
   textStyle,
   containerStyle,
   onLayoutMetrics,
 }: MarqueeTextProps) {
   const { theme } = useTheme();
+  const typography = resolveTypography(theme, { weight: '600', fontFamilyOverride: fontFamily });
   const isReducedMotion = useReducedMotion();
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const [textWidth, setTextWidth] = useState<number | null>(null);
@@ -139,7 +142,7 @@ export default function MarqueeText({
           }
         }}
       >
-        <Text style={[styles.text, textStyle, { flexShrink: 0 }]}>
+        <Text style={[styles.text, typography, textStyle, { flexShrink: 0 }]}>
           {text}
         </Text>
       </ScrollView>
@@ -162,8 +165,8 @@ export default function MarqueeText({
                 color: textColor,
                 width: effectiveTextWidth,
                 flexShrink: 0,
-                fontFamily: theme.fontFamily,
               },
+              typography,
               textStyle,
             ]}
           >
@@ -179,8 +182,8 @@ export default function MarqueeText({
                 color: textColor,
                 width: effectiveTextWidth,
                 flexShrink: 0,
-                fontFamily: theme.fontFamily,
               },
+              typography,
               textStyle,
             ]}
           >
@@ -190,7 +193,7 @@ export default function MarqueeText({
       ) : (
         <Text
           numberOfLines={1}
-          style={[styles.text, { color: textColor, fontFamily: theme.fontFamily }, textStyle]}
+          style={[styles.text, { color: textColor }, typography, textStyle]}
         >
           {text}
         </Text>
@@ -211,7 +214,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: '600',
   },
   hiddenProbe: {
     position: 'absolute',

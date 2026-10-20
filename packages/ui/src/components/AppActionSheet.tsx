@@ -14,7 +14,7 @@ import Animated from 'react-native-reanimated';
 import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomSheet, type BottomSheetSpringConfig } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 import AppButton from './AppButton';
 
 export type ActionSheetOption = {
@@ -54,6 +54,10 @@ export default function AppActionSheet({
 }: AppActionSheetProps) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const titleTypography = resolveTypography(theme, { weight: '700' });
+  const descTypography = resolveTypography(theme, { weight: 'normal' });
+  const optionLabelTypography = resolveTypography(theme, { weight: '600' });
+  const optionSubtitleTypography = resolveTypography(theme, { weight: 'normal' });
 
   const {
     isMounted,
@@ -125,10 +129,10 @@ export default function AppActionSheet({
                 {(title || description) && (
                   <View style={styles.header}>
                     {title ? (
-                      <Text style={[styles.title, { color: theme.color, fontFamily: theme.fontFamily }]}>{title}</Text>
+                      <Text style={[styles.title, { color: theme.color }, titleTypography]}>{title}</Text>
                     ) : null}
                     {description ? (
-                      <Text style={[styles.description, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+                      <Text style={[styles.description, { color: theme.muted }, descTypography]}>
                         {description}
                       </Text>
                     ) : null}
@@ -184,11 +188,11 @@ export default function AppActionSheet({
                       ) : null}
 
                       <View style={styles.optionContent}>
-                        <Text style={[styles.optionLabel, { color: textColor, fontFamily: theme.fontFamily }]}>
+                        <Text style={[styles.optionLabel, { color: textColor }, optionLabelTypography]}>
                           {option.label}
                         </Text>
                         {option.subtitle ? (
-                          <Text style={[styles.optionSubtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+                          <Text style={[styles.optionSubtitle, { color: theme.muted }, optionSubtitleTypography]}>
                             {option.subtitle}
                           </Text>
                         ) : null}
@@ -269,7 +273,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
     textAlign: 'center',
   },
   description: {
@@ -307,7 +310,6 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 16,
-    fontWeight: '600',
   },
   optionSubtitle: {
     fontSize: 13,

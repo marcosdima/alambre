@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { AlambreIcons, useCollapsible } from 'alambre';
 import type { CollapsibleSpringConfig, CollapsibleTransitionType } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 import AppBadge from './AppBadge';
 
 export type AppAccordionProps = {
@@ -47,6 +47,8 @@ export default function AppAccordion({
   titleStyle,
 }: AppAccordionProps) {
   const { theme } = useTheme();
+  const titleTypography = resolveTypography(theme, { weight: '700' });
+  const subtitleTypography = resolveTypography(theme, { weight: 'normal' });
 
   const {
     isExpanded,
@@ -93,7 +95,8 @@ export default function AppAccordion({
             <Text
               style={[
                 styles.title,
-                { color: disabled ? theme.muted : theme.color, fontFamily: theme.fontFamily },
+                { color: disabled ? theme.muted : theme.color },
+                titleTypography,
                 titleStyle,
               ]}
             >
@@ -104,7 +107,7 @@ export default function AppAccordion({
             ) : null}
           </View>
           {subtitle ? (
-            <Text style={[styles.subtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+            <Text style={[styles.subtitle, { color: theme.muted }, subtitleTypography]}>
               {subtitle}
             </Text>
           ) : null}
@@ -164,7 +167,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '700',
     letterSpacing: -0.2,
   },
   subtitle: {

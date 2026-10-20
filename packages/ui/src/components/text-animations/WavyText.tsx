@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { resolveTypography, useTheme } from '../../theme';
 import { harmonicValue, useLoopClock, wrapPhase } from 'alambre';
 
 export type WavyTextProps = {
@@ -82,6 +82,7 @@ export default function WavyText({
     paused: !active,
   });
   const textColor = color ?? theme.color;
+  const typo = resolveTypography(theme.fontFamily, 'heavy');
 
   // Split into words so flexWrap wraps on whole word boundaries
   const words = useMemo(() => text.split(' '), [text]);
@@ -108,12 +109,13 @@ export default function WavyText({
                 active={active}
                 isReducedMotion={isStatic}
                 clock={clock}
-                textStyle={[{ color: textColor }, textStyle]}
+                textStyle={[typo, { color: textColor }, textStyle]}
               />
               {wordIndex < words.length - 1 ? (
                 <Text
                   style={[
                     styles.baseText,
+                    typo,
                     { color: textColor },
                     textStyle,
                     styles.space,
@@ -145,7 +147,7 @@ export default function WavyText({
                   active={active}
                   isReducedMotion={isStatic}
                   clock={clock}
-                  textStyle={[{ color: textColor, fontFamily: theme.fontFamily }, textStyle]}
+                  textStyle={[typo, { color: textColor }, textStyle]}
                 />
               );
             })}
@@ -154,7 +156,8 @@ export default function WavyText({
               <Text
                 style={[
                   styles.baseText,
-                  { color: textColor, fontFamily: theme.fontFamily },
+                  typo,
+                  { color: textColor },
                   textStyle,
                   styles.space,
                 ]}
@@ -182,7 +185,6 @@ const styles = StyleSheet.create({
   },
   baseText: {
     fontSize: 22,
-    fontWeight: '800',
     letterSpacing: -0.3,
   },
   space: {

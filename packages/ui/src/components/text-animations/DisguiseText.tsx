@@ -9,7 +9,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useStagger } from 'alambre';
-import { useTheme } from '../../theme';
+import { useTheme, resolveTypography } from '../../theme';
 import { kinetics } from 'alambre';
 
 export type DisguiseTextProps = {
@@ -21,6 +21,7 @@ export type DisguiseTextProps = {
   direction?: 'left-to-right' | 'right-to-left';
   color?: string;
   maskColor?: string;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   style?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
@@ -138,7 +139,8 @@ export default function DisguiseText({
   const { theme } = useTheme();
   const textColor = color ?? theme.color;
   const effectiveMaskColor = maskColor ?? theme.primary;
-  const mergedTextStyle = [{ fontFamily: theme.fontFamily }, textStyle, style];
+  const typography = resolveTypography(theme, { weight: '700' });
+  const mergedTextStyle = [typography, textStyle, style];
 
   const characters = useMemo(() => Array.from(text), [text]);
 
@@ -198,7 +200,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    fontWeight: '700',
     fontVariant: ['tabular-nums'],
   },
 });

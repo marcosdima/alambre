@@ -3,7 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, usePressKinetics } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
 
@@ -111,6 +111,8 @@ export default function AppCard({
   const variantStyles = getVariantStyles();
 
   const hasHeader = Boolean(title || subtitle || badge || headerAction || chevron);
+  const titleTypography = resolveTypography(theme, { weight: '700' });
+  const subtitleTypography = resolveTypography(theme, { weight: 'normal' });
 
   const cardContent = (
     <Animated.View
@@ -134,7 +136,7 @@ export default function AppCard({
             {badgePosition === 'inline' ? (
               <View style={styles.titleBadgeRow}>
                 {typeof title === 'string' ? (
-                  <Text style={[styles.titleText, { color: theme.color, fontFamily: theme.fontFamily }]}>
+                  <Text style={[styles.titleText, { color: theme.color }, titleTypography]}>
                     {title}
                   </Text>
                 ) : (
@@ -155,7 +157,7 @@ export default function AppCard({
                 ) : null}
               </View>
             ) : typeof title === 'string' ? (
-              <Text style={[styles.titleText, { color: theme.color, fontFamily: theme.fontFamily }]}>
+              <Text style={[styles.titleText, { color: theme.color }, titleTypography]}>
                 {title}
               </Text>
             ) : (
@@ -164,7 +166,7 @@ export default function AppCard({
 
             {subtitle ? (
               typeof subtitle === 'string' ? (
-                <Text style={[styles.subtitleText, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+                <Text style={[styles.subtitleText, { color: theme.muted }, subtitleTypography]}>
                   {subtitle}
                 </Text>
               ) : (
@@ -268,7 +270,6 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 16,
-    fontWeight: '700',
     letterSpacing: -0.2,
     flexShrink: 1,
     includeFontPadding: false,

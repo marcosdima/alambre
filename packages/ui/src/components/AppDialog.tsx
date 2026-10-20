@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, useDialog } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 import AppButton, { type ButtonTone } from './AppButton';
 
 export type DialogTone = 'primary' | 'danger' | 'warning' | 'success' | 'neutral';
@@ -164,11 +164,11 @@ export default function AppDialog({
           )}
 
           {/* Title */}
-          <Text style={[styles.title, { color: theme.color, fontFamily: theme.fontFamily }]}>{title}</Text>
+          <Text style={[styles.title, { color: theme.color }, resolveTypography(theme, { weight: '700' })]}>{title}</Text>
 
           {/* Description */}
           {description ? (
-            <Text style={[styles.description, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+            <Text style={[styles.description, { color: theme.muted }, resolveTypography(theme, { weight: 'normal' })]}>
               {description}
             </Text>
           ) : null}
@@ -251,7 +251,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 19,
-    fontWeight: '700',
     textAlign: 'center',
     letterSpacing: -0.2,
   },

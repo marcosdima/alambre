@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 export type TitleLevel = 1 | 2 | 3;
 export type TitleBadgeTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
 
@@ -40,23 +40,23 @@ export default function AppTitle({
         return {
           fontSize: 28,
           lineHeight: 34,
-          fontWeight: '800' as const,
           letterSpacing: -0.5,
+          weight: '800' as const,
         };
       case 3:
         return {
           fontSize: 17,
           lineHeight: 22,
-          fontWeight: '700' as const,
           letterSpacing: 0,
+          weight: '700' as const,
         };
       case 2:
       default:
         return {
           fontSize: 22,
           lineHeight: 28,
-          fontWeight: '700' as const,
           letterSpacing: -0.3,
+          weight: '700' as const,
         };
     }
   };
@@ -79,14 +79,26 @@ export default function AppTitle({
 
   const levelStyles = getLevelStyles();
   const badgeColors = getBadgeColors();
+  const titleTypography = resolveTypography(theme, {
+    weight: levelStyles.weight,
+    fontFamilyOverride: fontFamily,
+  });
+  const badgeTypography = resolveTypography(theme, { weight: '800' });
+  const subtitleTypography = resolveTypography(theme, { weight: 'normal' });
 
   // If simple title with no compound elements, render inline
   const titleElement = (
     <Text
       {...props}
       style={[
-        levelStyles,
-        { color: color ?? theme.color, textAlign: align, fontFamily: fontFamily ?? theme.fontFamily },
+        {
+          fontSize: levelStyles.fontSize,
+          lineHeight: levelStyles.lineHeight,
+          letterSpacing: levelStyles.letterSpacing,
+          color: color ?? theme.color,
+          textAlign: align,
+        },
+        titleTypography,
         style,
       ]}
     >
@@ -123,7 +135,7 @@ export default function AppTitle({
             ]}
           >
             {typeof badge === 'string' ? (
-              <Text style={[styles.badgeText, { color: badgeColors.text, fontFamily: theme.fontFamily }]}>{badge}</Text>
+              <Text style={[styles.badgeText, { color: badgeColors.text }, badgeTypography]}>{badge}</Text>
             ) : (
               badge
             )}
@@ -136,7 +148,8 @@ export default function AppTitle({
           <Text
             style={[
               styles.subtitle,
-              { color: theme.muted, textAlign: align, fontFamily: theme.fontFamily },
+              { color: theme.muted, textAlign: align },
+              subtitleTypography,
               subtitleStyle,
             ]}
           >
@@ -173,7 +186,6 @@ export function AppText({
         return {
           fontSize: 11,
           lineHeight: 15,
-          fontWeight: '700' as const,
           textTransform: 'uppercase' as const,
           letterSpacing: 0.5,
           color: theme.muted,
@@ -194,7 +206,6 @@ export function AppText({
         return {
           fontSize: 13,
           lineHeight: 18,
-          fontFamily: 'monospace',
           color: theme.primary,
         };
       case 'body':
@@ -208,13 +219,18 @@ export function AppText({
   };
 
   const variantStyle = getVariantStyle();
+  const typography = resolveTypography(theme, {
+    weight: variant === 'caption' ? '700' : 'normal',
+    mono: variant === 'code',
+    fontFamilyOverride: fontFamily,
+  });
 
   return (
     <Text
       {...props}
       style={[
         variantStyle,
-        { fontFamily: variant === 'code' ? 'monospace' : (fontFamily ?? theme.fontFamily) },
+        typography,
         color ? { color } : null,
         style,
       ]}
@@ -254,7 +270,6 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '800',
     letterSpacing: 0.5,
   },
   subtitle: {

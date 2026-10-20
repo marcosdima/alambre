@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { HorizontalPicker } from 'alambre';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type AppNumberPickerProps = ComponentProps<typeof HorizontalPicker.Root> & {
   label?: string;
@@ -21,19 +21,21 @@ export default function AppNumberPicker({
   ...props
 }: AppNumberPickerProps) {
   const { theme } = useTheme();
+  const labelTypography = resolveTypography(theme, { weight: '600' });
+  const valueTypography = resolveTypography(theme, { weight: '700', mono: true });
 
   return (
     <View style={styles.container}>
       {label && (
         <View style={styles.header}>
-          <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
+          <Text style={[styles.label, { color: theme.color }, labelTypography]}>{label}</Text>
           <View
             style={[
               styles.valueBadge,
               { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
             ]}
           >
-            <Text style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}>
+            <Text style={[styles.valueText, { color: theme.primary }, valueTypography]}>
               {selected}
               {unit}
             </Text>
@@ -56,7 +58,8 @@ export default function AppNumberPicker({
             <Text
               style={[
                 styles.itemText,
-                { color: isSelected ? theme.primary : theme.muted, fontFamily: theme.fontFamily },
+                { color: isSelected ? theme.primary : theme.muted },
+                resolveTypography(theme, { weight: isSelected ? '700' : '500', mono: true }),
                 isSelected && styles.itemTextSelected,
               ]}
             >
@@ -82,7 +85,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
   },
   valueBadge: {
     paddingHorizontal: 8,
@@ -92,7 +94,6 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 12,
-    fontWeight: '700',
   },
   pickerArea: {
     height: 50,
@@ -102,10 +103,8 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    fontWeight: '500',
   },
   itemTextSelected: {
     fontSize: 20,
-    fontWeight: '700',
   },
 });

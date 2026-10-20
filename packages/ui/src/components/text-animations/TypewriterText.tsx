@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { resolveTypography, useTheme } from '../../theme';
 
 export type TypewriterTextProps = {
   text: string;
@@ -136,6 +136,9 @@ export default function TypewriterText({
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
   const isCursorVisible = showCursor && (!isDone || blink);
 
+  const typo = resolveTypography(theme.fontFamily, 'regular');
+  const cursorTypo = resolveTypography(theme.fontFamily, 'bold');
+
   return (
     <View
       accessible
@@ -145,13 +148,14 @@ export default function TypewriterText({
     >
       <Text
         textBreakStrategy="simple"
-        style={[styles.text, { color: theme.color, fontFamily: theme.fontFamily }, textStyle]}
+        style={[styles.text, typo, { color: theme.color }, textStyle]}
       >
         {visibleText}
         {isCursorVisible ? (
           <Text
             style={[
               styles.cursor,
+              cursorTypo,
               { color: cursorColor ?? theme.primary },
               cursorStyle,
             ]}
@@ -173,7 +177,5 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     letterSpacing: -0.2,
   },
-  cursor: {
-    fontWeight: '700',
-  },
+  cursor: {},
 });

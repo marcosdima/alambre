@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text } from 'react-native';
 import Animated from 'react-native-reanimated';
 import type { ButtonProps, ButtonState } from 'alambre';
 import { Button, usePressKinetics } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 export type ButtonTone = 'primary' | 'secondary' | 'neutral' | 'success' | 'danger' | 'warning';
@@ -21,6 +21,7 @@ export type AppButtonProps = Omit<ButtonProps, 'children'> & {
   fullWidth?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
+  fontFamily?: string;
   children?: ReactNode | ((state: ButtonState) => ReactNode);
 };
 
@@ -35,6 +36,7 @@ export default function AppButton({
   fullWidth = false,
   loading = false,
   disabled = false,
+  fontFamily,
   style,
   contentStyle,
   labelStyle,
@@ -139,6 +141,10 @@ export default function AppButton({
   };
 
   const sizeConfig = getSizeStyles();
+  const labelTypography = resolveTypography(theme, {
+    weight: '700',
+    fontFamilyOverride: fontFamily,
+  });
 
   return (
     <Button
@@ -194,8 +200,8 @@ export default function AppButton({
                       {
                         color: currentVariant.textColor,
                         fontSize: sizeConfig.fontSize,
-                        fontFamily: theme.fontFamily,
                       },
+                      labelTypography,
                       labelStyle,
                     ]}
                     numberOfLines={1}
@@ -213,8 +219,8 @@ export default function AppButton({
                           {
                             color: currentVariant.textColor,
                             fontSize: sizeConfig.fontSize,
-                            fontFamily: theme.fontFamily,
                           },
+                          labelTypography,
                           labelStyle,
                         ]}
                         numberOfLines={1}
@@ -243,7 +249,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   labelText: {
-    fontWeight: '700',
     flexShrink: 1,
   },
   spinner: {

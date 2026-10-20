@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type SelectOptionItem<T = string> = {
   value: T;
@@ -25,6 +25,9 @@ export default function AppSelect<T = string>({
 }: AppSelectProps<T>) {
   const { theme } = useTheme();
   const [open, setOpen] = useState(false);
+  const labelTypography = resolveTypography(theme, { weight: '600' });
+  const triggerTypography = resolveTypography(theme, { weight: '600' });
+  const descTypography = resolveTypography(theme, { weight: 'normal' });
 
   const selectedOption = options.find((opt) => opt.value === value);
 
@@ -35,7 +38,7 @@ export default function AppSelect<T = string>({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.muted, fontFamily: theme.fontFamily }]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.muted }, labelTypography]}>{label}</Text>
 
       {/* Trigger Button */}
       <Pressable
@@ -52,7 +55,7 @@ export default function AppSelect<T = string>({
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${selectedOption?.label || ''}`}
       >
-        <Text style={[styles.triggerText, { color: theme.color, fontFamily: theme.fontFamily }]}>
+        <Text style={[styles.triggerText, { color: theme.color }, triggerTypography]}>
           {selectedOption?.label || String(value)}
         </Text>
         <Text style={[styles.arrow, { color: theme.muted }]}>
@@ -89,15 +92,14 @@ export default function AppSelect<T = string>({
                       styles.optionLabel,
                       {
                         color: isSelected ? theme.primary : theme.color,
-                        fontWeight: isSelected ? '700' : '500',
-                        fontFamily: theme.fontFamily,
                       },
+                      resolveTypography(theme, { weight: isSelected ? '700' : '500' }),
                     ]}
                   >
                     {opt.label}
                   </Text>
                   {opt.description && (
-                    <Text style={[styles.optionDesc, { color: theme.muted, fontFamily: theme.fontFamily }]}>
+                    <Text style={[styles.optionDesc, { color: theme.muted }, descTypography]}>
                       {opt.description}
                     </Text>
                   )}
@@ -120,7 +122,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
     textTransform: 'uppercase',
   },
   trigger: {
@@ -134,7 +135,6 @@ const styles = StyleSheet.create({
   },
   triggerText: {
     fontSize: 14,
-    fontWeight: '600',
   },
   arrow: {
     fontSize: 10,

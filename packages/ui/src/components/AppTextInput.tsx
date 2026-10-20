@@ -14,7 +14,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { AlambreIcons, Input, kinetics } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type InputVariant = 'outline' | 'soft' | 'underlined';
 export type InputTone = 'default' | 'success' | 'warning' | 'danger';
@@ -207,6 +207,11 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
     return theme.surface;
   };
 
+  const labelTypography = resolveTypography(theme, { weight: '700' });
+  const inputTypography = resolveTypography(theme, { weight: 'normal' });
+  const feedbackTypography = resolveTypography(theme, { weight: '500' });
+  const helperTypography = resolveTypography(theme, { weight: 'normal' });
+
   return (
     <Input.Root
       disabled={disabled}
@@ -217,10 +222,10 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
       {/* Label Lockup */}
       {label ? (
         <View style={styles.labelRow}>
-          <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color, fontFamily: theme.fontFamily }]}>
+          <Input.Label style={[styles.label, { color: isFocused ? toneConfig.accent : theme.color }, labelTypography]}>
             {label}
           </Input.Label>
-          {required ? <Text style={[styles.requiredAsterisk, { fontFamily: theme.fontFamily }]}>*</Text> : null}
+          {required ? <Text style={[styles.requiredAsterisk, labelTypography]}>*</Text> : null}
         </View>
       ) : null}
 
@@ -267,8 +272,8 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
               {
                 fontSize: sizeConfig.fontSize,
                 color: theme.color,
-                fontFamily: theme.fontFamily,
               },
+              inputTypography,
               multiline && styles.multilineInput,
               style,
             ]}
@@ -336,10 +341,10 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
             lineWidth={2}
             style={styles.feedbackIcon}
           />
-          <Input.Feedback style={[styles.feedbackText, { color: '#ef4444', fontFamily: theme.fontFamily }]}>{errorMessage}</Input.Feedback>
+          <Input.Feedback style={[styles.feedbackText, { color: '#ef4444' }, feedbackTypography]}>{errorMessage}</Input.Feedback>
         </View>
       ) : helperText ? (
-        <Input.Feedback style={[styles.helperText, { color: theme.muted, fontFamily: theme.fontFamily }]}>{helperText}</Input.Feedback>
+        <Input.Feedback style={[styles.helperText, { color: theme.muted }, helperTypography]}>{helperText}</Input.Feedback>
       ) : null}
     </Input.Root>
   );
@@ -359,13 +364,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '700',
     letterSpacing: 0.2,
   },
   requiredAsterisk: {
     color: '#ef4444',
     fontSize: 14,
-    fontWeight: '700',
   },
   shell: {
     flexDirection: 'row',
@@ -414,6 +417,5 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '500',
   },
 });

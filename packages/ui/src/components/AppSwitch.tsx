@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 import { kinetics } from 'alambre';
 
 export type SwitchSize = 'sm' | 'md' | 'lg';
@@ -198,10 +198,10 @@ export default function AppSwitch({
     >
       <View style={styles.textContainer}>
         {label ? (
-          <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
+          <Text style={[styles.label, { color: theme.color }, resolveTypography(theme, { weight: '700' })]}>{label}</Text>
         ) : null}
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: theme.muted, fontFamily: theme.fontFamily }]}>{subtitle}</Text>
+          <Text style={[styles.subtitle, { color: theme.muted }, resolveTypography(theme, { weight: 'normal' })]}>{subtitle}</Text>
         ) : null}
       </View>
       <View pointerEvents="none" style={switchStyle}>
@@ -237,7 +237,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '700',
   },
   subtitle: {
     fontSize: 12,

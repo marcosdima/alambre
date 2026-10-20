@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { resolveTypography, useTheme } from '../../theme';
 
 export type ScrambleTextProps = {
   text: string;
@@ -94,6 +94,8 @@ export default function ScrambleText({
     triggerKey,
   ]);
 
+  const typo = resolveTypography(theme.fontFamily, 'bold');
+
   return (
     <View
       accessible
@@ -105,7 +107,8 @@ export default function ScrambleText({
         textBreakStrategy="simple"
         style={[
           styles.text,
-          { color: textColor, fontFamily: theme.fontFamily },
+          typo,
+          { color: textColor },
           textStyle,
         ]}
       >
@@ -121,7 +124,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
-    fontWeight: '700',
     fontVariant: ['tabular-nums'],
     letterSpacing: -0.2,
   },

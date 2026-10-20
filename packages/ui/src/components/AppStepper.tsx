@@ -1,7 +1,7 @@
 import type { StepperProps } from 'alambre';
 import { Stepper } from 'alambre';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type AppStepperProps = StepperProps & {
   label: string;
@@ -19,10 +19,13 @@ export default function AppStepper({
   disabled,
 }: AppStepperProps) {
   const { theme } = useTheme();
+  const labelTypography = resolveTypography(theme, { weight: '600' });
+  const btnTypography = resolveTypography(theme, { weight: '700' });
+  const valueTypography = resolveTypography(theme, { weight: '700', mono: true });
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.color, fontFamily: theme.fontFamily }]}>{label}</Text>
+      <Text style={[styles.label, { color: theme.color }, labelTypography]}>{label}</Text>
       <Stepper.Root
         value={value}
         min={min}
@@ -43,7 +46,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Decrement ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color, fontFamily: theme.fontFamily }]}>-</Text>
+            <Text style={[styles.btnText, { color: theme.color }, btnTypography]}>-</Text>
           </Stepper.Decrement>
 
           <View
@@ -54,7 +57,7 @@ export default function AppStepper({
           >
             <Stepper.Value
               format={(val) => `${val}${unit}`}
-              style={[styles.valueText, { color: theme.primary, fontFamily: theme.fontFamily }]}
+              style={[styles.valueText, { color: theme.primary }, valueTypography]}
             />
           </View>
 
@@ -69,7 +72,7 @@ export default function AppStepper({
             ]}
             accessibilityLabel={`Increment ${label}`}
           >
-            <Text style={[styles.btnText, { color: theme.color, fontFamily: theme.fontFamily }]}>+</Text>
+            <Text style={[styles.btnText, { color: theme.color }, btnTypography]}>+</Text>
           </Stepper.Increment>
         </View>
       </Stepper.Root>
@@ -86,7 +89,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
   },
   controlRow: {
     flexDirection: 'row',
@@ -103,7 +105,6 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: 18,
-    fontWeight: '700',
     lineHeight: 20,
   },
   valueBox: {
@@ -117,7 +118,6 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: 14,
-    fontWeight: '700',
     includeFontPadding: false,
     top: -1,
   },

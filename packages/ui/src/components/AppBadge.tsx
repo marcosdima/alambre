@@ -3,7 +3,7 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, usePressKinetics } from 'alambre';
-import { useTheme } from '../theme';
+import { useTheme, resolveTypography } from '../theme';
 
 export type BadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'danger';
 export type BadgeVariant = 'soft' | 'solid' | 'outline';
@@ -125,6 +125,7 @@ export default function AppBadge({
 
   const sStyle = getSizeStyles();
   const content = label ?? children;
+  const badgeTypography = resolveTypography(theme, { weight: '800' });
 
   return (
     <View
@@ -151,8 +152,8 @@ export default function AppBadge({
             {
               color: vStyle.textColor,
               fontSize: sStyle.fontSize,
-              fontFamily: theme.fontFamily,
             },
+            badgeTypography,
             textStyle,
           ]}
         >
@@ -208,6 +209,8 @@ export function AppChip({
     ? { paddingHorizontal: 8, paddingVertical: 4, fontSize: 12, borderRadius: 10 }
     : { paddingHorizontal: 12, paddingVertical: 7, fontSize: 13, borderRadius: 12 };
 
+  const chipTypography = resolveTypography(theme, { weight: isSelected ? '700' : '500' });
+
   return (
     <Pressable
       {...pressProps}
@@ -241,9 +244,8 @@ export function AppChip({
             {
               fontSize: sizePadding.fontSize,
               color: isSelected ? activeColor : theme.color,
-              fontWeight: isSelected ? '700' : '500',
-              fontFamily: theme.fontFamily,
             },
+            chipTypography,
           ]}
         >
           {label}
@@ -281,7 +283,6 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeText: {
-    fontWeight: '800',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
     includeFontPadding: false,

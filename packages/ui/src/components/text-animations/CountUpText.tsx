@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { useTheme } from '../../theme';
+import { useTheme, resolveTypography } from '../../theme';
 
 export type CountUpTextProps = {
   value: number;
@@ -16,6 +16,7 @@ export type CountUpTextProps = {
   formatter?: (val: number) => string;
   onComplete?: () => void;
   color?: string;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
 };
@@ -32,10 +33,12 @@ export default function CountUpText({
   formatter,
   onComplete,
   color,
+  fontFamily,
   textStyle,
   containerStyle,
 }: CountUpTextProps) {
   const { theme } = useTheme();
+  const typography = resolveTypography(theme, { weight: '800', mono: true, fontFamilyOverride: fontFamily });
   const isReducedMotion = useReducedMotion();
   const [displayNumber, setDisplayNumber] = useState(() => from ?? value);
 
@@ -119,7 +122,8 @@ export default function CountUpText({
         textBreakStrategy="simple"
         style={[
           styles.text,
-          { color: textColor, fontFamily: theme.fontFamily },
+          { color: textColor },
+          typography,
           textStyle,
         ]}
       >
@@ -135,7 +139,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 24,
-    fontWeight: '800',
     fontVariant: ['tabular-nums'],
     letterSpacing: -0.3,
   },
