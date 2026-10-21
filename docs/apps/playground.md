@@ -13,6 +13,19 @@
    - **Stays here / stays in its app:** single-consumer, domain-specific (e.g. card-game mechanics, edge relays) or experimental ideas. Keep them as testbeds or delete them.
 8. **Subagent Peer Review:** After implementing a complex visual or mechanical testbed, the Lead must invoke the `@ui-reviewer` subagent to audit the code to avoid "maker's blindness". The reviewer must specifically check for Rule 2 violations (e.g., leaving hardcoded physics instead of using ConfigSliders) and Reanimated UI-thread state desyncs.
 
+## 9. Testbed Unit Testing (`apps/playground/tests/`)
+
+Every playground testbed must have its corresponding unit test file in `tests/`. The mandatory rules are:
+
+1. **Location and Naming:** `tests/<domain>/<Testbed>.test.tsx`, matching the exact name of the file under test. One `describe` block per component.
+2. **Shared Render Helper:** Exclusively use `renderWithProviders` from `tests/render.tsx`. Do not duplicate the `ConfigProvider` + `LightDarkProvider` wrapper inside individual test files.
+3. **Mandatory Providers:** Every test must render under `ConfigProvider` and `LightDarkProvider` (handled by `renderWithProviders`).
+4. **Resilient Queries:** Prefer `getByTestId` / `getByLabelText` over `getByText`. Testbeds must expose `testID` or `accessibilityLabel` on interactive elements. Reserve `getByText` for stable public contract copy.
+5. **Do Not Test Internal Animation Ticks:** Never assert on internal Reanimated values (`withSpring`, `withTiming`, etc.); they are mocked and non-deterministic. Test resulting state, layout, and telemetry instead.
+6. **Async:** Use `await act(async () => { ... })` for interactions that trigger animations or state transitions, and `waitFor` for asynchronous updates.
+7. **Mocks:** `tests/setup.ts` globally stubs worklets, Expo modules, Reanimated, and gesture-handler. Do not introduce new global mocks without consulting `@reviewer`; use local `vi.mock()` within specific tests when needed.
+8. **Extraction Audit Relationship:** When a testbed is extracted to `packages/alambre` following an Extraction Audit (`docs/guidelines/agents.md` §6), its contract tests are promoted to `packages/alambre/tests/`. Testbed-specific interaction tests stay in the playground.
+
 ## Canonical Testbed Example
 
 When scaffolding a new testbed, use the following structure as the baseline:
