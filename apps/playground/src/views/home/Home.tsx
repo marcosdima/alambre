@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useNavigator, useStagger } from 'alambre';
 import { useLightDark } from '../../providers/theme';
-import { AppTitle, AppText, AppBadge, AppCard } from '@some-alambre/ui';
+import { AppTitle, AppText, AppCard, AppBadge } from '@some-alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();
@@ -12,39 +12,27 @@ export default () => {
 
   const navItems = [
     {
-      key: 'cardArrival',
-      title: 'Card Arrival Simulation',
-      description: 'Continuous parabolic trajectory from deck to hand slot without center snap (useHandArrival & predictHandArrivalSlot).',
-      badge: 'FIXED MOTION',
-      badgeTone: 'primary' as const,
-      onPress: () => navigate('cardArrival'),
-    },
-    {
-      key: 'cardGame',
-      title: 'Card Game Arena',
-      description: 'Multi-card cascade dealing, spring toss physics, and live Room Relay multiplayer synchronization.',
-      badge: 'MULTIPLAYER',
-      badgeTone: 'neutral' as const,
-      onPress: () => navigate('cardGame'),
-    },
-    {
-      key: 'typography',
-      title: 'Typography & Android Defense',
-      description: 'Android typeface fallback defense: variant mapping, fontWeight sanitization, and kinetic text verification.',
-      badge: 'TOKEN AUDIT',
-      badgeTone: 'warning' as const,
-      onPress: () => navigate('typography'),
+      key: 'roomRelayWeb',
+      title: 'Relay Web & Mensajería',
+      description:
+        'Conexión cliente a cliente en tiempo real mediante PartyKit / WebSocket web con inspector de paquetes en vivo.',
+      badge: 'ROOM-RELAY',
+      badgeTone: 'success' as const,
+      onPress: () => navigate('roomRelayWeb'),
     },
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent} style={[styles.container, { backgroundColor: theme.background }]}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <Animated.View
         entering={FadeInDown.duration(300).delay(getDelay(0)).easing(Easing.out(Easing.cubic))}
       >
         <View style={[styles.headerCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <AppTitle level={2}>Alambre Showcase</AppTitle>
-          <AppText variant="muted">Interactive Physics & System Testbeds</AppText>
+          <AppTitle level={2}>Alambre Playground</AppTitle>
+          <AppText variant="muted">Laboratorio interactivo de físicas y conexiones cinéticas</AppText>
         </View>
       </Animated.View>
 
@@ -67,7 +55,7 @@ export default () => {
               <AppText variant="muted">{item.description}</AppText>
               <View style={styles.actionPrompt}>
                 <AppText variant="subtitle" style={{ color: theme.primary, fontWeight: '600', fontSize: 13 }}>
-                  Launch Simulator ➔
+                  Abrir Testbed ➔
                 </AppText>
               </View>
             </AppCard>

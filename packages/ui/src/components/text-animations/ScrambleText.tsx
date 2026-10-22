@@ -13,6 +13,7 @@ export type ScrambleTextProps = {
   onComplete?: () => void;
   triggerKey?: string | number;
   color?: string;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
 };
@@ -28,6 +29,7 @@ export default function ScrambleText({
   onComplete,
   triggerKey,
   color,
+  fontFamily,
   textStyle,
   containerStyle,
 }: ScrambleTextProps) {
@@ -94,7 +96,11 @@ export default function ScrambleText({
     triggerKey,
   ]);
 
-  const typo = resolveTypography(theme.fontFamily, 'bold');
+  const typo = resolveTypography(theme, {
+    weight: 'bold',
+    fontFamilyOverride: fontFamily,
+    style: textStyle,
+  });
 
   return (
     <View
@@ -107,9 +113,9 @@ export default function ScrambleText({
         textBreakStrategy="simple"
         style={[
           styles.text,
-          typo,
           { color: textColor },
           textStyle,
+          typo,
         ]}
       >
         {displayText}

@@ -199,6 +199,7 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
   const isHorizontal = direction === 'horizontal';
 
   const frontAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
     const rot = interpolate(progress.value, [0, 1], [0, 180], Extrapolation.CLAMP);
     const opacity = progress.value > 0.5 ? 0 : 1;
     const transform = isHorizontal
@@ -214,6 +215,7 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
   });
 
   const backAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
     const rot = interpolate(progress.value, [0, 1], [180, 360], Extrapolation.CLAMP);
     const opacity = progress.value <= 0.5 ? 0 : 1;
     const transform = isHorizontal
@@ -229,6 +231,7 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
   });
 
   const containerAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
     const liftY = interpolate(
       progress.value,
       [0, 0.5, 1],

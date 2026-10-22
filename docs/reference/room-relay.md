@@ -199,3 +199,32 @@ const turn = useTurnEngine<GameState, GameAction>({
 turn.dispatch({ type: "PLAY_CARD", cardId: "c_spades_A" });
 ```
 
+---
+
+## 5. Web Providers & Edge Deployment (PartyKit / Cloudflare)
+
+When moving beyond local development, `@some-alambre/room-relay` connects to serverless edge WebSockets (e.g. PartyKit on Cloudflare Workers):
+
+### 5.1 Environment Configuration (Expo)
+In Expo / React Native applications, expose the public relay WebSocket endpoint using the `EXPO_PUBLIC_` prefix in `.env` (automatically bundled without native rebuilds):
+
+```env
+# .env
+EXPO_PUBLIC_RELAY_URL=wss://relay.alambre.party/room
+```
+
+```tsx
+const relay = useRoomRelay({
+  roomCode: "XK89",
+  playerName: "Alice",
+  mode: "websocket",
+  serverUrl: process.env.EXPO_PUBLIC_RELAY_URL ?? "wss://relay.alambre.party/room",
+});
+```
+
+### 5.2 PartyKit Edge Server
+The repository includes an edge worker template under `packages/room-relay/partykit/`:
+- `server.ts`: Handles room routing, ephemeral peer presence, and sub-30ms message broadcasting.
+- `partykit.json`: Configuration deploying instantly with `npx partykit deploy`.
+
+

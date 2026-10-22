@@ -18,15 +18,23 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ToastComponentProps, ToastTone, ToastPosition, ToastPayload } from 'alambre';
 import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
+import { resolveTypography } from '@some-alambre/ui';
 import { useLightDark } from './theme';
+import { useConfig } from './config';
 
 export type { ToastTone, ToastPosition, ToastPayload };
 
 export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentProps) {
   const { theme } = useLightDark();
+  const { config } = useConfig();
   const { noPreviousPages } = useNavigator();
   const insets = useSafeAreaInsets();
   const { data } = toast;
+
+  const titleTypo = resolveTypography(config.fontFamily, 'bold');
+  const contentTypo = resolveTypography(config.fontFamily, 'regular');
+  const actionTypo = resolveTypography(config.fontFamily, 'bold');
+  const queueTypo = resolveTypography(config.fontFamily, 'bold');
 
   const parsed = parseToastPayload(data.payload);
   const isTop = parsed.position !== 'bottom';
@@ -219,12 +227,12 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
               {/* Message Body */}
               <View style={styles.textContainer}>
                 {parsed.title ? (
-                  <Text style={[styles.title, { color: theme.color }]} numberOfLines={1}>
+                  <Text style={[styles.title, titleTypo, { color: theme.color }]} numberOfLines={1}>
                     {parsed.title}
                   </Text>
                 ) : null}
                 {parsed.content ? (
-                  <Text style={[styles.content, { color: theme.color }]}>{parsed.content}</Text>
+                  <Text style={[styles.content, contentTypo, { color: theme.color }]}>{parsed.content}</Text>
                 ) : null}
 
                 {/* Action Buttons if any */}
@@ -244,7 +252,7 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                           hitSlop={8}
                           accessibilityRole="button"
                         >
-                          <Text style={[styles.actionBtnText, { color: btnColor }]}>
+                          <Text style={[styles.actionBtnText, actionTypo, { color: btnColor }]}>
                             {action.label}
                           </Text>
                         </Pressable>
@@ -262,8 +270,8 @@ export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentPro
                     { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
                   ]}
                 >
-                  <Text style={[styles.queueBadgeText, { color: theme.muted }]}>
-                  +{queueLength}
+                  <Text style={[styles.queueBadgeText, queueTypo, { color: theme.muted }]}>
+                    +{queueLength}
                   </Text>
                 </View>
               ) : null}
@@ -348,7 +356,6 @@ const styles = StyleSheet.create({
   },
   infoMark: {
     fontSize: 16,
-    fontWeight: '800',
   },
   textContainer: {
     flex: 1,
@@ -356,7 +363,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '700',
   },
   content: {
     fontSize: 13,
@@ -375,7 +381,6 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     fontSize: 12,
-    fontWeight: '700',
   },
   queueBadge: {
     paddingHorizontal: 6,
@@ -385,14 +390,12 @@ const styles = StyleSheet.create({
   },
   queueBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
   },
   closeBtn: {
     padding: 4,
   },
   closeText: {
     fontSize: 14,
-    fontWeight: '700',
   },
   progressTrack: {
     height: 3,

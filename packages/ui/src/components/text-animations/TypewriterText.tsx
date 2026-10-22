@@ -17,6 +17,7 @@ export type TypewriterTextProps = {
   eraseOnLoop?: boolean;
   eraseSpeed?: number;
   onComplete?: () => void;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   cursorStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
@@ -35,6 +36,7 @@ export default function TypewriterText({
   eraseOnLoop = true,
   eraseSpeed,
   onComplete,
+  fontFamily,
   textStyle,
   cursorStyle,
   containerStyle,
@@ -136,8 +138,16 @@ export default function TypewriterText({
   const showCursor = cursor && (!hideCursorOnComplete || !isDone);
   const isCursorVisible = showCursor && (!isDone || blink);
 
-  const typo = resolveTypography(theme.fontFamily, 'regular');
-  const cursorTypo = resolveTypography(theme.fontFamily, 'bold');
+  const typo = resolveTypography(theme, {
+    weight: 'regular',
+    fontFamilyOverride: fontFamily,
+    style: textStyle,
+  });
+  const cursorTypo = resolveTypography(theme, {
+    weight: 'bold',
+    fontFamilyOverride: fontFamily,
+    style: cursorStyle,
+  });
 
   return (
     <View
@@ -148,16 +158,16 @@ export default function TypewriterText({
     >
       <Text
         textBreakStrategy="simple"
-        style={[styles.text, typo, { color: theme.color }, textStyle]}
+        style={[styles.text, { color: theme.color }, textStyle, typo]}
       >
         {visibleText}
         {isCursorVisible ? (
           <Text
             style={[
               styles.cursor,
-              cursorTypo,
               { color: cursorColor ?? theme.primary },
               cursorStyle,
+              cursorTypo,
             ]}
           >
             {cursorChar}

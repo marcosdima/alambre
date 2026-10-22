@@ -9,6 +9,7 @@ import type { Page } from 'alambre';
 import { ThemeProvider } from '@some-alambre/ui';
 import { useLightDark } from '../providers/theme';
 import { useLang } from '../providers/lang';
+import { useConfig } from '../providers/config';
 import { pages, type PageTitle } from './navigator';
 import AppNavigatorBody from './AppNavigatorBody';
 
@@ -29,13 +30,14 @@ const resolvePageTitle = (
 export default () => {
   const { theme } = useLightDark();
   const { currentLang } = useLang();
+  const { config } = useConfig();
   const { currentPage } = useNavigator();
 
   const title = resolvePageTitle(currentPage);
   const headerTitle = title?.[currentLang as 'es' | 'en'];
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={{ ...theme, fontFamily: config.fontFamily }}>
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <AppNavigatorBody
           style={styles.container}
@@ -44,6 +46,7 @@ export default () => {
           arrowBorderColor={theme.border}
           headerStyle={{ backgroundColor: theme.surfaceAlt }}
           titleColor={theme.color}
+          fontFamily={config.fontFamily}
           headerTitle={headerTitle}
           animations={{
             go: {

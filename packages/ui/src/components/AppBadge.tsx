@@ -125,7 +125,10 @@ export default function AppBadge({
 
   const sStyle = getSizeStyles();
   const content = label ?? children;
-  const badgeTypography = resolveTypography(theme, { weight: '800' });
+  const badgeTypography = resolveTypography(theme, {
+    weight: '800',
+    style: textStyle,
+  });
 
   return (
     <View
@@ -153,8 +156,8 @@ export default function AppBadge({
               color: vStyle.textColor,
               fontSize: sStyle.fontSize,
             },
-            badgeTypography,
             textStyle,
+            badgeTypography,
           ]}
         >
           {content}

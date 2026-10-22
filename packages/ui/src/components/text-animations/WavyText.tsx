@@ -16,6 +16,7 @@ export type WavyTextProps = {
   staggerMs?: number;
   active?: boolean;
   color?: string;
+  fontFamily?: string;
   textStyle?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
 };
@@ -73,6 +74,7 @@ export default function WavyText({
   staggerMs = 60,
   active = true,
   color,
+  fontFamily,
   textStyle,
   containerStyle,
 }: WavyTextProps) {
@@ -82,7 +84,11 @@ export default function WavyText({
     paused: !active,
   });
   const textColor = color ?? theme.color;
-  const typo = resolveTypography(theme.fontFamily, 'heavy');
+  const typo = resolveTypography(theme, {
+    weight: 'heavy',
+    fontFamilyOverride: fontFamily,
+    style: textStyle,
+  });
 
   // Split into words so flexWrap wraps on whole word boundaries
   const words = useMemo(() => text.split(' '), [text]);
@@ -109,15 +115,15 @@ export default function WavyText({
                 active={active}
                 isReducedMotion={isStatic}
                 clock={clock}
-                textStyle={[typo, { color: textColor }, textStyle]}
+                textStyle={[{ color: textColor }, textStyle, typo]}
               />
               {wordIndex < words.length - 1 ? (
                 <Text
                   style={[
                     styles.baseText,
-                    typo,
                     { color: textColor },
                     textStyle,
+                    typo,
                     styles.space,
                   ]}
                 >
@@ -147,7 +153,7 @@ export default function WavyText({
                   active={active}
                   isReducedMotion={isStatic}
                   clock={clock}
-                  textStyle={[typo, { color: textColor }, textStyle]}
+                  textStyle={[{ color: textColor }, textStyle, typo]}
                 />
               );
             })}
@@ -156,9 +162,9 @@ export default function WavyText({
               <Text
                 style={[
                   styles.baseText,
-                  typo,
                   { color: textColor },
                   textStyle,
+                  typo,
                   styles.space,
                 ]}
               >

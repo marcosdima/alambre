@@ -614,4 +614,68 @@ describe('typography resolver', () => {
       });
     });
   });
+
+  describe('style inspection and fontWeight defense in resolveTypography', () => {
+    const fullVariants: ThemeTypographyVariants = {
+      regular: 'Inter_400Regular',
+      medium: 'Inter_500Medium',
+      semiBold: 'Inter_600SemiBold',
+      bold: 'Inter_700Bold',
+      heavy: 'Inter_900Black',
+      mono: 'SpaceMono_400Regular',
+    };
+
+    it('extracts fontWeight from inline style object and maps to variant', () => {
+      const result = resolveTypography(fullVariants, {
+        style: { fontSize: 16, fontWeight: '700' },
+      });
+      expect(result).toEqual({
+        fontFamily: 'Inter_700Bold',
+        fontWeight: 'normal',
+      });
+    });
+
+    it('extracts fontWeight from nested style array and maps to variant', () => {
+      const result = resolveTypography(fullVariants, {
+        style: [{ fontSize: 14 }, [{ color: 'red' }, { fontWeight: 'bold' }]],
+      });
+      expect(result).toEqual({
+        fontFamily: 'Inter_700Bold',
+        fontWeight: 'normal',
+      });
+    });
+
+    it('sanitizes inline style fontWeight to normal on Android for flat custom fonts', () => {
+      Platform.OS = 'android';
+      const result = resolveTypography('Kranky', {
+        style: { fontWeight: 'bold' },
+      });
+      expect(result).toEqual({
+        fontFamily: 'Kranky',
+        fontWeight: 'normal',
+      });
+    });
+
+    it('preserves system font bold when style specifies fontWeight and no fontFamily is configured', () => {
+      Platform.OS = 'android';
+      const result = resolveTypography(undefined, {
+        style: { fontWeight: '700' },
+      });
+      expect(result).toEqual({
+        fontFamily: undefined,
+        fontWeight: '700',
+      });
+    });
+
+    it('extracts fontFamily override from style when no explicit override is provided', () => {
+      Platform.OS = 'android';
+      const result = resolveTypography(undefined, {
+        style: { fontFamily: 'Kranky', fontWeight: 'bold' },
+      });
+      expect(result).toEqual({
+        fontFamily: 'Kranky',
+        fontWeight: 'normal',
+      });
+    });
+  });
 });

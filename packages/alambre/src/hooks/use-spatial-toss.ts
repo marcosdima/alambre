@@ -31,6 +31,8 @@ export interface UseSpatialTossOptions<
   disabled?: boolean;
   /** Spring stiffness for landing/restitution. @default 140 */
   stiffness?: number;
+  /** Deceleration rate for inertial projection. @default 0.996 */
+  decelerationRate?: number;
   /** Maximum drag tilt angle in degrees. @default 12 */
   maxTiltAngle?: number;
   /** Scale applied while actively dragging. @default 1.08 */
@@ -79,6 +81,7 @@ export function useSpatialToss<
     dropZones,
     disabled = false,
     stiffness = 140,
+    decelerationRate,
     maxTiltAngle = 12,
     dragScale = 1.08,
     onDropSuccess,
@@ -123,6 +126,7 @@ export function useSpatialToss<
         homeSlot,
         homeRotation,
         stiffness,
+        decelerationRate,
       });
 
       choreo.transitionTo({
@@ -148,7 +152,7 @@ export function useSpatialToss<
         },
       });
     },
-    [dropZones, targetItem, homeSlot, homeRotation, stiffness, choreo],
+    [dropZones, targetItem, homeSlot, homeRotation, stiffness, decelerationRate, choreo],
   );
 
   const flip = useCallback(() => {
@@ -165,16 +169,17 @@ export function useSpatialToss<
     });
   }, [choreo]);
 
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+    callbacksRef.current.onDragStart?.();
+  }, []);
+
   const panGesture = useMemo<GestureType>(() => {
     return Gesture.Pan()
       .enabled(!disabled)
       .onStart(() => {
         'worklet';
-        runOnJS(setIsDragging)(true);
-        const onStartCb = callbacksRef.current.onDragStart;
-        if (onStartCb) {
-          runOnJS(onStartCb)();
-        }
+        runOnJS(handleDragStart)();
       })
       .onUpdate((e) => {
         'worklet';
@@ -198,7 +203,7 @@ export function useSpatialToss<
           { vx: e.velocityX, vy: e.velocityY },
         );
       });
-  }, [disabled, homeSlot, homeRotation, maxTiltAngle, dragScale, choreo, releaseToss]);
+  }, [disabled, handleDragStart, homeSlot, homeRotation, maxTiltAngle, dragScale, choreo, releaseToss]);
 
   return {
     gesture: panGesture,

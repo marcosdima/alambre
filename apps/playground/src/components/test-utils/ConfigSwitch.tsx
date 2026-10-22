@@ -1,30 +1,64 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button } from 'alambre';
-import { AppText } from '@some-alambre/ui';
+import { AppText, useTheme } from '@some-alambre/ui';
 
 export interface ConfigSwitchProps {
   label: string;
   value: boolean;
   onChange: (val: boolean) => void;
+  testID?: string;
 }
 
-export function ConfigSwitch({ label, value, onChange }: ConfigSwitchProps) {
+export function ConfigSwitch({ label, value, onChange, testID }: ConfigSwitchProps) {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={testID}>
       <AppText variant="subtitle" style={styles.label}>{label}</AppText>
-      <View style={styles.buttonGroup}>
+      <View
+        style={[
+          styles.buttonGroup,
+          { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+        ]}
+      >
         <Button
-          style={[styles.button, value ? styles.buttonActive : styles.buttonInactive]}
+          testID={testID ? `${testID}-on` : undefined}
+          accessibilityLabel={`${label} On`}
+          style={[
+            styles.button,
+            value
+              ? [styles.buttonActive, { backgroundColor: theme.primary }]
+              : styles.buttonInactive,
+          ]}
           onPress={() => onChange(true)}
         >
-          <AppText variant="body" style={value ? styles.textActive : styles.textInactive}>On</AppText>
+          <AppText
+            variant="body"
+            weight={value ? 'bold' : 'normal'}
+            style={{ color: value ? theme.onPrimary : theme.muted, fontSize: 12 }}
+          >
+            On
+          </AppText>
         </Button>
         <Button
-          style={[styles.button, !value ? styles.buttonActive : styles.buttonInactive]}
+          testID={testID ? `${testID}-off` : undefined}
+          accessibilityLabel={`${label} Off`}
+          style={[
+            styles.button,
+            !value
+              ? [styles.buttonActive, { backgroundColor: theme.surface }]
+              : styles.buttonInactive,
+          ]}
           onPress={() => onChange(false)}
         >
-          <AppText variant="body" style={!value ? styles.textActive : styles.textInactive}>Off</AppText>
+          <AppText
+            variant="body"
+            weight={!value ? 'bold' : 'normal'}
+            style={{ color: !value ? theme.color : theme.muted, fontSize: 12 }}
+          >
+            Off
+          </AppText>
         </Button>
       </View>
     </View>
@@ -43,30 +77,19 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     flexDirection: 'row',
-    backgroundColor: '#E5E5EA',
     borderRadius: 8,
+    borderWidth: 1,
     padding: 2,
   },
   button: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 6,
   },
   buttonActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
+    elevation: 1,
   },
   buttonInactive: {
     backgroundColor: 'transparent',
-  },
-  textActive: {
-    color: '#000',
-  },
-  textInactive: {
-    color: '#666',
   },
 });

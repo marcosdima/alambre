@@ -105,7 +105,15 @@ export default function AppSelect<T = string>({
                   )}
                 </View>
                 {isSelected && (
-                  <Text style={[styles.check, { color: theme.primary }]}>✓</Text>
+                  <Text
+                    style={[
+                      styles.check,
+                      { color: theme.primary },
+                      resolveTypography(theme, { weight: '700' }),
+                    ]}
+                  >
+                    ✓
+                  </Text>
                 )}
               </Pressable>
             );
@@ -167,7 +175,6 @@ const styles = StyleSheet.create({
   },
   check: {
     fontSize: 15,
-    fontWeight: '700',
     marginLeft: 8,
   },
 });

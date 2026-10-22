@@ -8,6 +8,8 @@ import {
   useReducedMotion,
   cancelAnimation,
   type SharedValue,
+  type EasingFunction,
+  type EasingFunctionFactory,
 } from 'react-native-reanimated';
 import {
   predictHandArrivalSlot,
@@ -28,6 +30,8 @@ export interface UseHandArrivalOptions<T = any> extends PredictArrivalSlotOption
   peakScale?: number;
   /** Whether the card flips mid-air (180 deg rotateY). @default false */
   flipOnFly?: boolean;
+  /** Reanimated easing function. Defaults to smooth decelerating bezier (0.22, 1, 0.36, 1). */
+  easing?: ((t: number) => number) | EasingFunction | EasingFunctionFactory;
   /** Callback fired when an item completes flight and lands in its slot. */
   onArrivalComplete?: (item: T, slot: PredictedHandArrivalSlot) => void;
 }
@@ -43,12 +47,14 @@ export interface HandArrivalFlight<T = any> {
   flipOnFly: boolean;
 }
 
-export interface StartArrivalOverrides {
+export interface StartArrivalOverrides<T = any> {
+  currentHand?: readonly T[] | number;
   insertionIndex?: number;
   durationMs?: number;
   liftHeight?: number;
   peakScale?: number;
   flipOnFly?: boolean;
+  easing?: ((t: number) => number) | EasingFunction | EasingFunctionFactory;
 }
 
 export interface UseHandArrivalReturn<T = any> {
@@ -58,15 +64,22 @@ export interface UseHandArrivalReturn<T = any> {
   isArriving: boolean;
   /** Shared value representing current flight progress from 0 to 1. */
   progress: SharedValue<number>;
-  /** Reanimated animated style for the in-flight card. */
+  /** Reanimated animated style for the in-flight card container. */
   flightAnimatedStyle: ReturnType<typeof useAnimatedStyle>;
+  /** Animated style for the front face layer (handles midpoint opacity swap during 3D flip). */
+  frontLayerStyle: ReturnType<typeof useAnimatedStyle>;
+  /** Animated style for the back face layer (handles 180deg counter-rotation & midpoint opacity swap). */
+  backLayerStyle: ReturnType<typeof useAnimatedStyle>;
   /** Predicts arrival slot geometry for a given insertion index or next slot without initiating a flight. */
-  predictSlot: (insertionIndex?: number) => PredictedHandArrivalSlot;
+  predictSlot: (
+    insertionIndex?: number,
+    currentHandOverride?: readonly T[] | number,
+  ) => PredictedHandArrivalSlot;
   /** Initiates an arrival flight from a source point into the predicted hand slot. */
   startArrival: (
     from: Point2D,
     item: T,
-    overrides?: StartArrivalOverrides,
+    overrides?: StartArrivalOverrides<T>,
   ) => PredictedHandArrivalSlot;
   /** Cancels any active arrival immediately. */
   cancelArrival: () => void;
@@ -98,9 +111,12 @@ export function useHandArrival<T = any>(
   const flipOnFlySv = useSharedValue(0);
 
   const predictSlot = useCallback(
-    (insertionIndex?: number): PredictedHandArrivalSlot => {
+    (
+      insertionIndex?: number,
+      currentHandOverride?: readonly T[] | number,
+    ): PredictedHandArrivalSlot => {
       const opts = optionsRef.current;
-      const hand = opts.currentHand ?? 0;
+      const hand = currentHandOverride ?? opts.currentHand ?? 0;
       return predictHandArrivalSlot(hand, {
         containerWidth: opts.containerWidth,
         centerOffset: opts.centerOffset,
@@ -114,17 +130,21 @@ export function useHandArrival<T = any>(
     [],
   );
 
-  const handleFlightLanded = useCallback(
-    (flight: HandArrivalFlight<T>) => {
-      setActiveArrival(null);
+  const activeFlightRef = useRef<HandArrivalFlight<T> | null>(null);
+
+  const handleFlightLanded = useCallback(() => {
+    const flight = activeFlightRef.current;
+    activeFlightRef.current = null;
+    setActiveArrival(null);
+    if (flight) {
       optionsRef.current.onArrivalComplete?.(flight.item, flight.slot);
-    },
-    [],
-  );
+    }
+  }, []);
 
   const cancelArrival = useCallback(() => {
     cancelAnimation(progress);
     progress.value = 0;
+    activeFlightRef.current = null;
     setActiveArrival(null);
   }, [progress]);
 
@@ -132,10 +152,10 @@ export function useHandArrival<T = any>(
     (
       from: Point2D,
       item: T,
-      overrides: StartArrivalOverrides = {},
+      overrides: StartArrivalOverrides<T> = {},
     ): PredictedHandArrivalSlot => {
       const opts = optionsRef.current;
-      const slot = predictSlot(overrides.insertionIndex);
+      const slot = predictSlot(overrides.insertionIndex, overrides.currentHand);
 
       const durationMs = overrides.durationMs ?? opts.flightDurationMs ?? 320;
       const lift = overrides.liftHeight ?? opts.liftHeight ?? 50;
@@ -153,6 +173,7 @@ export function useHandArrival<T = any>(
         flipOnFly: flip,
       };
 
+      activeFlightRef.current = flight;
       setActiveArrival(flight);
 
       fromX.value = from.x;
@@ -166,20 +187,24 @@ export function useHandArrival<T = any>(
 
       if (isReducedMotion) {
         progress.value = 1;
-        handleFlightLanded(flight);
+        handleFlightLanded();
         return slot;
       }
+
+      const resolvedEasing =
+        overrides.easing ?? opts.easing ?? Easing.bezier(0.22, 1, 0.36, 1);
 
       progress.value = 0;
       progress.value = withTiming(
         1,
         {
           duration: Math.max(16, durationMs),
-          easing: Easing.bezier(0.25, 1, 0.5, 1),
+          easing: resolvedEasing,
         },
         (finished) => {
+          'worklet';
           if (finished) {
-            runOnJS(handleFlightLanded)(flight);
+            runOnJS(handleFlightLanded)();
           }
         },
       );
@@ -203,6 +228,7 @@ export function useHandArrival<T = any>(
   );
 
   const flightAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
     const p = progress.value;
     const altitude = parabolicAltitudeCurve(p);
     const pos = parabolicTrajectory(
@@ -220,6 +246,7 @@ export function useHandArrival<T = any>(
       left: 0,
       top: 0,
       transform: [
+        { perspective: 1000 },
         { translateX: pos.x },
         { translateY: pos.y },
         { scale: currentScale },
@@ -229,11 +256,35 @@ export function useHandArrival<T = any>(
     };
   });
 
+  const frontLayerStyle = useAnimatedStyle(() => {
+    'worklet';
+    const showFront = flipOnFlySv.value === 0 || progress.value >= 0.5;
+    return {
+      opacity: showFront ? 1 : 0,
+      zIndex: showFront ? 2 : 1,
+      backfaceVisibility: 'hidden' as const,
+      transform: [{ rotateY: '0deg' }],
+    };
+  });
+
+  const backLayerStyle = useAnimatedStyle(() => {
+    'worklet';
+    const showBack = flipOnFlySv.value > 0 && progress.value < 0.5;
+    return {
+      opacity: showBack ? 1 : 0,
+      zIndex: showBack ? 2 : 1,
+      backfaceVisibility: 'hidden' as const,
+      transform: [{ rotateY: '180deg' }],
+    };
+  });
+
   return {
     activeArrival,
     isArriving: activeArrival !== null,
     progress,
     flightAnimatedStyle,
+    frontLayerStyle,
+    backLayerStyle,
     predictSlot,
     startArrival,
     cancelArrival,

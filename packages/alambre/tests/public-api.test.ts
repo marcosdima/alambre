@@ -103,6 +103,8 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.reorderHandItems).toBe('function');
     expect(typeof Alambre.resolveHandReorderIndex).toBe('function');
     expect(typeof Alambre.useInteractiveHand).toBe('function');
+    expect(typeof Alambre.useHandArrival).toBe('function');
+    expect(typeof Alambre.predictHandArrivalSlot).toBe('function');
     expect(typeof Alambre.useKineticSwipe).toBe('function');
     expect(typeof Alambre.useKineticCarousel).toBe('function');
     expect(typeof Alambre.useKineticCarouselItem).toBe('function');
@@ -138,6 +140,8 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.cubicEaseOutCurve).toBe('function');
     expect(typeof Alambre.polynomialOvershootCurve).toBe('function');
     expect(typeof Alambre.calculateWavefrontPhase).toBe('function');
+    expect(typeof Alambre.withSettledSpring).toBe('function');
+    expect(Alambre.DEFAULT_SPRING_ENERGY_THRESHOLD).toBe(0.001);
     expect(typeof Alambre.useCollapsible).toBe('function');
 
     expect(typeof Alambre.useHarmonicMotion).toBe('function');

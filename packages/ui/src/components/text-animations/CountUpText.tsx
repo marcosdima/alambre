@@ -38,7 +38,12 @@ export default function CountUpText({
   containerStyle,
 }: CountUpTextProps) {
   const { theme } = useTheme();
-  const typography = resolveTypography(theme, { weight: '800', mono: true, fontFamilyOverride: fontFamily });
+  const typography = resolveTypography(theme, {
+    weight: '800',
+    mono: true,
+    fontFamilyOverride: fontFamily,
+    style: textStyle,
+  });
   const isReducedMotion = useReducedMotion();
   const [displayNumber, setDisplayNumber] = useState(() => from ?? value);
 
@@ -123,8 +128,8 @@ export default function CountUpText({
         style={[
           styles.text,
           { color: textColor },
-          typography,
           textStyle,
+          typography,
         ]}
       >
         {formattedText}

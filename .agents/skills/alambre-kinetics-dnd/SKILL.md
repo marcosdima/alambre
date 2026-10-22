@@ -35,13 +35,29 @@ withTiming(target, kinetics.timing.slow);  // 350ms
 withTiming(target, kinetics.timing.sheet); // 300ms
 ```
 
-**CRITICAL REANIMATED GUARDRAIL:**
-Never pass `withSpring(...)` or `withTiming(...)` directly inside `interpolate(...)` — they return animation descriptors, not numbers, resulting in `NaN` and invisible UI. Either assign them to a style property directly or derive a shared value first:
+**CRITICAL REANIMATED GUARDRAILS:**
+1. **Never pass `withSpring(...)` or `withTiming(...)` directly inside `interpolate(...)`** — they return animation descriptors, not numbers, resulting in `NaN` and invisible UI. Either assign them to a style property directly or derive a shared value first:
 ```tsx
 const progress = useDerivedValue(() => withSpring(active ? 1 : 0, kinetics.spring.snappy));
 const style = useAnimatedStyle(() => ({
   opacity: interpolate(progress.value, [0, 1], [0.4, 1]),
 }));
+```
+
+2. **NEVER read `SharedValue.value` during component render (JSX)**:
+Reanimated `SharedValue` instances reside on the C++/UI-thread. Accessing `sharedValue.value` directly in the render function body or inside JSX inline style/props causes `WARN [Reanimated] Reading from value during component render`, silent desynchronization, and thread tearing.
+- **Always read `.value` inside a worklet**: use `useAnimatedStyle(() => { 'worklet'; return { ... }; })` or `useDerivedValue(() => { 'worklet'; return ...; })`.
+- **Apply the style to an `Animated.*` component**: e.g., `<Animated.View style={animatedStyle}>` or `<Animated.Text style={animatedTextStyle}>`.
+- **Never evaluate `.value` inline in JSX**:
+```tsx
+// ❌ FORBIDDEN: Reads .value during React component render
+<Text style={{ color: colorProgress.value > 0.5 ? 'white' : 'black' }} />
+
+// ✅ CORRECT: Encapsulated in a worklet applied to Animated.* component
+const animatedTextStyle = useAnimatedStyle(() => ({
+  color: interpolateColor(colorProgress.value, [0, 1], [theme.color, '#ffffff']),
+}));
+<Animated.Text style={animatedTextStyle} />
 ```
 
 ---

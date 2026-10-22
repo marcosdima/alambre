@@ -6,10 +6,11 @@ export interface ConfigSliderProps {
   min?: number;
   max?: number;
   step?: number;
+  unit?: string;
   onChange: (val: number) => void;
 }
 
-export function ConfigSlider({ label, value, min = 0, max = 100, step = 1, onChange }: ConfigSliderProps) {
+export function ConfigSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }: ConfigSliderProps) {
   return (
     <AppSlider
       label={label}
@@ -17,6 +18,7 @@ export function ConfigSlider({ label, value, min = 0, max = 100, step = 1, onCha
       min={min}
       max={max}
       step={step}
+      unit={unit}
       onChange={onChange}
     />
   );

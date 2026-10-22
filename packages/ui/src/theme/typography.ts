@@ -1,4 +1,4 @@
-import { Platform, type TextStyle } from 'react-native';
+import { Platform, type StyleProp, type TextStyle } from 'react-native';
 import type { ThemeFontFamily, ThemeTokens, ThemeTypographyVariants } from './tokens';
 
 export type TypographyWeight =
@@ -22,6 +22,7 @@ export interface ResolveTypographyOptions {
   weight?: TypographyWeight;
   mono?: boolean;
   fontFamilyOverride?: string;
+  style?: StyleProp<TextStyle>;
 }
 
 export interface ResolvedTypography {
@@ -33,6 +34,60 @@ export function isTypographyVariants(
   val: ThemeFontFamily | undefined,
 ): val is ThemeTypographyVariants {
   return typeof val === 'object' && val !== null && 'regular' in val;
+}
+
+function flattenTextStyle(style: StyleProp<TextStyle>): TextStyle | undefined {
+  if (!style) return undefined;
+  if (Array.isArray(style)) {
+    const merged: TextStyle = {};
+    for (const item of style) {
+      const flat = flattenTextStyle(item as StyleProp<TextStyle>);
+      if (flat) Object.assign(merged, flat);
+    }
+    return merged;
+  }
+  if (typeof style === 'object') {
+    return style as TextStyle;
+  }
+  return undefined;
+}
+
+function normalizeStyleFontWeight(
+  rawWeight: TextStyle['fontWeight'] | number | undefined,
+): TypographyWeight | undefined {
+  if (rawWeight === undefined || rawWeight === null) return undefined;
+  const str = String(rawWeight).trim();
+  switch (str) {
+    case 'normal':
+    case 'regular':
+    case 'medium':
+    case 'semiBold':
+    case 'bold':
+    case 'heavy':
+    case '100':
+    case '200':
+    case '300':
+    case '400':
+    case '500':
+    case '600':
+    case '700':
+    case '800':
+    case '900':
+      return str;
+    case 'semibold':
+    case 'demibold':
+      return 'semiBold';
+    case 'extrabold':
+    case 'ultrabold':
+    case 'black':
+      return 'heavy';
+    case 'light':
+    case 'thin':
+    case 'ultralight':
+      return 'regular';
+    default:
+      return undefined;
+  }
 }
 
 /**
@@ -53,10 +108,19 @@ export function resolveTypography(
 ): ResolvedTypography {
   const opts: ResolveTypographyOptions =
     typeof options === 'string' ? { weight: options } : options;
-  const { weight = 'normal', mono = false, fontFamilyOverride } = opts;
+  const flatStyle = flattenTextStyle(opts.style);
+  const styleWeight = normalizeStyleFontWeight(flatStyle?.fontWeight);
+  const styleFontFamily =
+    typeof flatStyle?.fontFamily === 'string' && flatStyle.fontFamily.trim().length > 0
+      ? flatStyle.fontFamily
+      : undefined;
+
+  const weight = styleWeight ?? opts.weight ?? 'normal';
+  const { mono = false, fontFamilyOverride } = opts;
 
   const activeFontFamily =
     fontFamilyOverride ??
+    styleFontFamily ??
     (typeof themeOrFont === 'object' && themeOrFont !== null && 'fontFamily' in themeOrFont
       ? (themeOrFont as ThemeTokens).fontFamily
       : (themeOrFont as ThemeFontFamily | undefined));

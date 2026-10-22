@@ -3,7 +3,7 @@ import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
 import { useLightDark, light as lightTokens, dark as darkTokens } from '../../providers/theme';
-import { AppCard, AppButton, ToggleLightDark } from '@some-alambre/ui';
+import { AppCard, AppButton, ToggleLightDark, resolveTypography } from '@some-alambre/ui';
 
 const GITHUB_URL = 'https://github.com/marcosdima';
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';
@@ -113,9 +113,8 @@ export default () => {
                     styles.segmentedText,
                     {
                       color: active ? theme.primary : theme.muted,
-                      fontWeight: active ? '700' : '600',
-                      fontFamily: config.fontFamily,
                     },
+                    resolveTypography(config.fontFamily, active ? '700' : '600'),
                   ]}
                 >
                   {label}
@@ -268,28 +267,28 @@ export default () => {
       >
         <View style={styles.aboutContent}>
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }, resolveTypography(config.fontFamily, 'normal')]}>
               {lang.settings.version}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.color, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutValue, { color: theme.color }, resolveTypography(config.fontFamily, '600')]}>
                 1.0.0
             </Text>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }, resolveTypography(config.fontFamily, 'normal')]}>
               {lang.settings.framework}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.color, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutValue, { color: theme.color }, resolveTypography(config.fontFamily, '600')]}>
                 alambre v1.2.0
             </Text>
           </View>
           <View style={[styles.aboutDivider, { backgroundColor: theme.border }]} />
           <View style={styles.aboutRow}>
-            <Text style={[styles.aboutLabel, { color: theme.muted, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutLabel, { color: theme.muted }, resolveTypography(config.fontFamily, 'normal')]}>
               {lang.settings.developer}
             </Text>
-            <Text style={[styles.aboutValue, { color: theme.primary, fontFamily: config.fontFamily }]}>
+            <Text style={[styles.aboutValue, { color: theme.primary }, resolveTypography(config.fontFamily, '600')]}>
                 @marcosdima
             </Text>
           </View>
@@ -420,7 +419,6 @@ const styles = StyleSheet.create({
   },
   aboutValue: {
     fontSize: 14,
-    fontWeight: '600',
   },
   aboutDivider: {
     height: StyleSheet.hairlineWidth,

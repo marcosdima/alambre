@@ -45,7 +45,11 @@ export default function MarqueeText({
   onLayoutMetrics,
 }: MarqueeTextProps) {
   const { theme } = useTheme();
-  const typography = resolveTypography(theme, { weight: '600', fontFamilyOverride: fontFamily });
+  const typography = resolveTypography(theme, {
+    weight: '600',
+    fontFamilyOverride: fontFamily,
+    style: textStyle,
+  });
   const isReducedMotion = useReducedMotion();
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const [textWidth, setTextWidth] = useState<number | null>(null);
@@ -142,7 +146,7 @@ export default function MarqueeText({
           }
         }}
       >
-        <Text style={[styles.text, typography, textStyle, { flexShrink: 0 }]}>
+        <Text style={[styles.text, textStyle, typography, { flexShrink: 0 }]}>
           {text}
         </Text>
       </ScrollView>
@@ -166,8 +170,8 @@ export default function MarqueeText({
                 width: effectiveTextWidth,
                 flexShrink: 0,
               },
-              typography,
               textStyle,
+              typography,
             ]}
           >
             {text}
@@ -183,8 +187,8 @@ export default function MarqueeText({
                 width: effectiveTextWidth,
                 flexShrink: 0,
               },
-              typography,
               textStyle,
+              typography,
             ]}
           >
             {text}
@@ -193,7 +197,7 @@ export default function MarqueeText({
       ) : (
         <Text
           numberOfLines={1}
-          style={[styles.text, { color: textColor }, typography, textStyle]}
+          style={[styles.text, { color: textColor }, textStyle, typography]}
         >
           {text}
         </Text>

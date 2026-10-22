@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { kinetics, rubberBandFriction } from '../../src/core/kinetics';
+import {
+  kinetics,
+  rubberBandFriction,
+  withSettledSpring,
+  DEFAULT_SPRING_ENERGY_THRESHOLD,
+} from '../../src/core/kinetics';
 
 describe('kinetics token system', () => {
   describe('spring profiles', () => {
@@ -143,6 +148,16 @@ describe('kinetics token system', () => {
     it('injects scaled velocity into spring configs', () => {
       const conf = kinetics.handoff.transferVelocity(1000, kinetics.spring.snap);
       expect(conf.velocity).toBe(850);
+    });
+  });
+
+  describe('settled spring helper', () => {
+    it('defines the default energy threshold of 1e-3', () => {
+      expect(DEFAULT_SPRING_ENERGY_THRESHOLD).toBe(0.001);
+    });
+
+    it('exposes withSettledSpring as a function', () => {
+      expect(typeof withSettledSpring).toBe('function');
     });
   });
 });

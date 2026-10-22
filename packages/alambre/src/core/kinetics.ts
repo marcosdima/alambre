@@ -1,4 +1,4 @@
-import type { WithSpringConfig, WithTimingConfig } from 'react-native-reanimated';
+import { withSpring, type AnimationCallback, type WithSpringConfig, type WithTimingConfig } from 'react-native-reanimated';
 import {
   calculateHandFan,
   parabolicAltitudeCurve,
@@ -184,5 +184,27 @@ export const kinetics = {
     makeCriticallyDampedConfig,
   },
 };
+
+export const DEFAULT_SPRING_ENERGY_THRESHOLD = 1e-3;
+
+/**
+ * Enhanced Reanimated withSpring wrapper that guarantees the spring settles
+ * cleanly and fires its completion callback on visual touchdown without lingering micro-oscillations.
+ */
+export function withSettledSpring(
+  toValue: number,
+  userConfig?: WithSpringConfig,
+  callback?: AnimationCallback,
+) {
+  'worklet';
+  return withSpring(
+    toValue,
+    {
+      energyThreshold: DEFAULT_SPRING_ENERGY_THRESHOLD,
+      ...userConfig,
+    },
+    callback,
+  );
+}
 
 

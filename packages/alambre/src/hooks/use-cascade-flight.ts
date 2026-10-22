@@ -40,6 +40,14 @@ export interface UseCascadeFlightOptions<T extends { id: string }> {
   peakScale?: number;
   /** Whether the item flips mid-air (180° rotateY) from face-down to face-up. @default true */
   flipOnFly?: boolean;
+  /** Ideal horizontal spacing between centers when unconstrained. @default 38 */
+  baseSpacing?: number;
+  /** Angular spread per item in degrees. @default 5 */
+  spreadAngle?: number;
+  /** Vertical arc curvature drop in points. @default 3.5 */
+  arcCurvature?: number;
+  /** Maximum allowed span between outermost item centers. @default 280 */
+  maxSpan?: number;
   /** Callback fired immediately when an individual item touches down into its target slot. */
   onItemLanded?: (item: T, targetSlotIndex: number) => void;
   /** Alias for `onItemLanded` (backward-compatible with card-game). */
@@ -98,6 +106,10 @@ export function useCascadeFlight<T extends { id: string }>(
         liftHeight: opts.liftHeight ?? 55,
         peakScale: opts.peakScale ?? 1.12,
         flipOnFly: opts.flipOnFly ?? true,
+        baseSpacing: opts.baseSpacing,
+        spreadAngle: opts.spreadAngle,
+        arcCurvature: opts.arcCurvature,
+        maxSpan: opts.maxSpan,
         currentItems,
         ...overrides,
       };
@@ -254,15 +266,27 @@ export function useCascadeFlightItem<T extends { id: string }>({
     };
   });
 
-  const frontLayerStyle = useAnimatedStyle(() => ({
-    backfaceVisibility: 'hidden' as const,
-    transform: [{ rotateY: '0deg' }],
-  }));
+  const frontLayerStyle = useAnimatedStyle(() => {
+    'worklet';
+    const showFront = !spec.flipOnFly || progress.value >= 0.5;
+    return {
+      opacity: showFront ? 1 : 0,
+      zIndex: showFront ? 2 : 1,
+      backfaceVisibility: 'hidden' as const,
+      transform: [{ rotateY: '0deg' }],
+    };
+  });
 
-  const backLayerStyle = useAnimatedStyle(() => ({
-    backfaceVisibility: 'hidden' as const,
-    transform: [{ rotateY: '180deg' }],
-  }));
+  const backLayerStyle = useAnimatedStyle(() => {
+    'worklet';
+    const showBack = Boolean(spec.flipOnFly) && progress.value < 0.5;
+    return {
+      opacity: showBack ? 1 : 0,
+      zIndex: showBack ? 2 : 1,
+      backfaceVisibility: 'hidden' as const,
+      transform: [{ rotateY: '180deg' }],
+    };
+  });
 
   return {
     progress,

@@ -840,4 +840,26 @@ export const sensory = createSensoryCues<'card.deal' | 'card.flip' | 'card.play'
 const { hapticsEnabled, soundEnabled, trigger, toggleHaptics, toggleSound } = sensory.useSensoryCues();
 ```
 
+---
+
+## 19. Settled Spring Kinetic Helper (`withSettledSpring`)
+
+Reanimated 4 spring wrapper enforcing clean resting touchdown without lingering micro-oscillations:
+
+```typescript
+import { withSettledSpring, DEFAULT_SPRING_ENERGY_THRESHOLD } from 'alambre';
+
+// Snaps to resting state and fires callback immediately upon visual arrival:
+scale.value = withSettledSpring(1, { stiffness: 180, damping: 15 }, (finished) => {
+  'worklet';
+  if (finished) {
+    runOnJS(notifyPhase)('settled');
+  }
+});
+```
+
+* `DEFAULT_SPRING_ENERGY_THRESHOLD = 1e-3`: Clamps micro-oscillations that otherwise delay completion callbacks by hundreds of milliseconds.
+* Runs purely as a UI worklet.
+
+
 

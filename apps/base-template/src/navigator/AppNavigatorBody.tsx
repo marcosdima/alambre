@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 import { kinetics } from 'alambre';
+import { resolveTypography } from '@some-alambre/ui';
 
 type AppNavigatorAnimations = {
   pageEntering?: EntryOrExitLayoutType;
@@ -210,7 +211,11 @@ export default ({
           </Animated.View>
           <Animated.Text
             key={headerTitle}
-            style={[styles.headerTitle, { color: titleColor, fontFamily }]}
+            style={[
+              styles.headerTitle,
+              { color: titleColor },
+              resolveTypography(fontFamily, '700'),
+            ]}
             entering={FadeIn.duration(180)}
             numberOfLines={1}
           >
@@ -267,7 +272,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     fontSize: 20,
-    fontWeight: '700',
   },
   pageScroll: {
     flex: 1,

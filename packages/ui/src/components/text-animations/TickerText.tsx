@@ -135,8 +135,14 @@ export default function TickerText({
   }, [value, minDigits, padZero]);
 
   const typography = useMemo(
-    () => resolveTypography(theme, { weight: '800', mono: true, fontFamilyOverride: fontFamily }),
-    [theme, fontFamily],
+    () =>
+      resolveTypography(theme, {
+        weight: '800',
+        mono: true,
+        fontFamilyOverride: fontFamily,
+        style: textStyle,
+      }),
+    [theme, fontFamily, textStyle],
   );
 
   const mergedTextStyle = useMemo<StyleProp<TextStyle>>(
@@ -146,8 +152,8 @@ export default function TickerText({
         fontSize,
         color: textColor,
       },
-      typography,
       textStyle,
+      typography,
     ],
     [fontSize, textColor, textStyle, typography],
   );

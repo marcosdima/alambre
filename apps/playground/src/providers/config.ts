@@ -3,6 +3,7 @@ import { storage } from '../storage';
 
 const config = {
   greeting: 'Hello from alambre',
+  fontFamily: 'Inter',
 };
 
 export const { ConfigProvider, useConfig } = createConfigProvider(

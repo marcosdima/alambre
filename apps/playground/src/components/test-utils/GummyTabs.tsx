@@ -2,26 +2,55 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppSegmentedControl } from '@some-alambre/ui';
 
-export interface GummyTabsProps {
-  tabs: { id: string; label: string; content: React.ReactNode }[];
+export interface GummyTabItem {
+  id?: string;
+  key?: string;
+  label: string;
+  content?: React.ReactNode;
 }
 
-export function GummyTabs({ tabs }: GummyTabsProps) {
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id);
-  const options = tabs.map((tab) => ({ label: tab.label, value: tab.id }));
+export interface GummyTabsProps {
+  tabs: GummyTabItem[];
+  activeTab?: string;
+  onChange?: (id: string) => void;
+}
+
+export function GummyTabs({ tabs, activeTab: controlledActiveTab, onChange: controlledOnChange }: GummyTabsProps) {
+  const [internalActiveTab, setInternalActiveTab] = useState(
+    tabs[0]?.id ?? tabs[0]?.key ?? '',
+  );
+
+  const isControlled = controlledActiveTab !== undefined;
+  const currentActiveTab = isControlled ? controlledActiveTab : internalActiveTab;
+
+  const options = tabs.map((tab) => ({
+    label: tab.label,
+    value: tab.id ?? tab.key ?? tab.label,
+  }));
+
+  const handleTabChange = (val: string) => {
+    if (!isControlled) {
+      setInternalActiveTab(val);
+    }
+    controlledOnChange?.(val);
+  };
+
+  const activeContent = tabs.find(
+    (t) => (t.id ?? t.key ?? t.label) === currentActiveTab,
+  )?.content;
 
   return (
     <View style={styles.container}>
       <View style={styles.tabsWrapper}>
         <AppSegmentedControl
-          value={activeTab}
+          value={currentActiveTab}
           options={options}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
         />
       </View>
-      <View style={styles.contentContainer}>
-        {tabs.find((t) => t.id === activeTab)?.content}
-      </View>
+      {activeContent ? (
+        <View style={styles.contentContainer}>{activeContent}</View>
+      ) : null}
     </View>
   );
 }

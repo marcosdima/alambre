@@ -132,6 +132,7 @@ export default function DisguiseText({
   direction = 'left-to-right',
   color,
   maskColor,
+  fontFamily,
   textStyle,
   style,
   containerStyle,
@@ -139,8 +140,12 @@ export default function DisguiseText({
   const { theme } = useTheme();
   const textColor = color ?? theme.color;
   const effectiveMaskColor = maskColor ?? theme.primary;
-  const typography = resolveTypography(theme, { weight: '700' });
-  const mergedTextStyle = [typography, textStyle, style];
+  const typography = resolveTypography(theme, {
+    weight: '700',
+    fontFamilyOverride: fontFamily,
+    style: [textStyle, style],
+  });
+  const mergedTextStyle = [textStyle, style, typography];
 
   const characters = useMemo(() => Array.from(text), [text]);
 

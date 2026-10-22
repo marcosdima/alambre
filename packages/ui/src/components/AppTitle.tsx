@@ -1,12 +1,13 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
-import { useTheme, resolveTypography } from '../theme';
+import { useTheme, resolveTypography, type TypographyWeight } from '../theme';
 export type TitleLevel = 1 | 2 | 3;
 export type TitleBadgeTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
 
 export type AppTitleProps = Omit<ComponentProps<typeof Text>, 'style'> & {
   level?: TitleLevel;
+  weight?: TypographyWeight;
   subtitle?: ReactNode;
   badge?: ReactNode;
   badgeTone?: TitleBadgeTone;
@@ -20,6 +21,7 @@ export type AppTitleProps = Omit<ComponentProps<typeof Text>, 'style'> & {
 
 export default function AppTitle({
   level = 2,
+  weight,
   subtitle,
   badge,
   badgeTone = 'primary',
@@ -80,11 +82,19 @@ export default function AppTitle({
   const levelStyles = getLevelStyles();
   const badgeColors = getBadgeColors();
   const titleTypography = resolveTypography(theme, {
-    weight: levelStyles.weight,
+    weight: weight ?? levelStyles.weight,
+    fontFamilyOverride: fontFamily,
+    style,
+  });
+  const badgeTypography = resolveTypography(theme, {
+    weight: '800',
     fontFamilyOverride: fontFamily,
   });
-  const badgeTypography = resolveTypography(theme, { weight: '800' });
-  const subtitleTypography = resolveTypography(theme, { weight: 'normal' });
+  const subtitleTypography = resolveTypography(theme, {
+    weight: 'normal',
+    fontFamilyOverride: fontFamily,
+    style: subtitleStyle,
+  });
 
   // If simple title with no compound elements, render inline
   const titleElement = (
@@ -98,8 +108,8 @@ export default function AppTitle({
           color: color ?? theme.color,
           textAlign: align,
         },
-        titleTypography,
         style,
+        titleTypography,
       ]}
     >
       {children}
@@ -149,8 +159,8 @@ export default function AppTitle({
             style={[
               styles.subtitle,
               { color: theme.muted, textAlign: align },
-              subtitleTypography,
               subtitleStyle,
+              subtitleTypography,
             ]}
           >
             {subtitle}
@@ -166,12 +176,14 @@ export default function AppTitle({
 export type TextVariant = 'body' | 'caption' | 'subtitle' | 'muted' | 'code';
 export type AppTextProps = ComponentProps<typeof Text> & {
   variant?: TextVariant;
+  weight?: TypographyWeight;
   color?: ColorValue;
   fontFamily?: string;
 };
 
 export function AppText({
   variant = 'body',
+  weight,
   color,
   fontFamily,
   style,
@@ -220,9 +232,10 @@ export function AppText({
 
   const variantStyle = getVariantStyle();
   const typography = resolveTypography(theme, {
-    weight: variant === 'caption' ? '700' : 'normal',
+    weight: weight ?? (variant === 'caption' ? '700' : 'normal'),
     mono: variant === 'code',
     fontFamilyOverride: fontFamily,
+    style,
   });
 
   return (
@@ -230,9 +243,9 @@ export function AppText({
       {...props}
       style={[
         variantStyle,
-        typography,
         color ? { color } : null,
         style,
+        typography,
       ]}
     >
       {children}

@@ -326,6 +326,8 @@ export {
   createStore,
   useExternalStore,
   kinetics,
+  withSettledSpring,
+  DEFAULT_SPRING_ENERGY_THRESHOLD,
   rubberBandFriction,
   criticallyDampedCurve,
   bouncyCurve,

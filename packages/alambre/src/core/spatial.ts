@@ -626,6 +626,14 @@ export interface SpatialCascadeOptions<T = any> {
   peakScale?: number;
   /** Whether the item flips mid-air (180° rotateY) from face-down to face-up. @default true */
   flipOnFly?: boolean;
+  /** Ideal horizontal spacing between centers when unconstrained. @default 38 */
+  baseSpacing?: number;
+  /** Angular spread per item in degrees. @default 5 */
+  spreadAngle?: number;
+  /** Vertical arc curvature drop in points. @default 3.5 */
+  arcCurvature?: number;
+  /** Maximum allowed span between outermost item centers. @default 280 */
+  maxSpan?: number;
 }
 
 export interface SpatialFlightSpec<T = any> {
@@ -686,6 +694,10 @@ export function computeSpatialCascadePlan<T extends { id: string }>(
     liftHeight = 55,
     peakScale = 1.12,
     flipOnFly = true,
+    baseSpacing,
+    spreadAngle,
+    arcCurvature,
+    maxSpan,
   } = options;
 
   const sourceOrigin = origin ?? deckOrigin ?? { x: 0, y: 0 };
@@ -697,6 +709,10 @@ export function computeSpatialCascadePlan<T extends { id: string }>(
   const fanResult = calculateResponsiveHandFan(simulatedHand, {
     containerWidth: resolvedWidth,
     centerOffset: resolvedCenter,
+    baseSpacing,
+    spreadAngle,
+    arcCurvature,
+    maxSpan,
   });
 
   const specs: SpatialFlightSpec<T>[] = itemsToDeal.map((item, dealIndex) => {

@@ -144,6 +144,7 @@ export default function AppButton({
   const labelTypography = resolveTypography(theme, {
     weight: '700',
     fontFamilyOverride: fontFamily,
+    style: labelStyle,
   });
 
   return (
@@ -201,8 +202,8 @@ export default function AppButton({
                         color: currentVariant.textColor,
                         fontSize: sizeConfig.fontSize,
                       },
-                      labelTypography,
                       labelStyle,
+                      labelTypography,
                     ]}
                     numberOfLines={1}
                   >
@@ -220,8 +221,8 @@ export default function AppButton({
                             color: currentVariant.textColor,
                             fontSize: sizeConfig.fontSize,
                           },
-                          labelTypography,
                           labelStyle,
+                          labelTypography,
                         ]}
                         numberOfLines={1}
                       >
