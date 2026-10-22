@@ -15,7 +15,7 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 
 ### Guidelines & Workflows
 - **[Agent Matrix & Routing](./guidelines/agents.md)**: Subagent definitions, routing tier rules, and prompts.
-- **[Testing](./guidelines/testing.md)**: Maestro E2E testing architecture, atomic flows, and unit test rules (Vitest + React Native Testing Library) for playground and alambre.
+- **[Testing](./guidelines/testing.md)**: Maestro E2E testing architecture and unit test rules.
 - **[Workflow](./guidelines/workflow.md)**: Build commands, linting, publishing, and PR workflows.
 
 ### Logs
