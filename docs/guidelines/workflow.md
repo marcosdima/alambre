@@ -2,7 +2,7 @@
 
 Build, validation, and commit conventions for the monorepo. Commands are
 workspace scripts defined in the root `package.json`; dependency direction is
-one-way (`apps/* -> packages/alambre`).
+one-way (`apps/* -> packages/*`).
 
 ---
 
@@ -57,8 +57,8 @@ Conventional Commits. Type is required; scope is optional.
 ```
 
 Observed types in history: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`,
-`perf`. Observed scopes: `alambre`, `playground`, `colguetti`, `base-template`,
-`agents`.
+`perf`. Observed scopes: `alambre`, `ui`, `room-relay`, `playground`, `colguetti`,
+`base-template`, `agents`.
 
 ```bash
 feat(playground): add carousel laboratory view

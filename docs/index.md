@@ -12,6 +12,17 @@ Welcome to the Alambre repository. To maximize LLM context window efficiency, do
 ### Applications
 - **[Base Template (`apps/base-template`)](./apps/base-template.md)**: The canonical starter application and app agent guidelines.
 - **[Playground (`apps/playground`)](./apps/playground.md)**: Strict rules for the behavioral testing proving ground.
+- **[Cross-App Logic](./apps/cross-logic.md)**: Guidelines for domain models and shared logic across applications.
+
+### Reference & API
+- **[Functional Reference Catalog](./reference/index.md)**: Complete API index for alambre capabilities, behaviors, hooks, storage, and components.
+  - **[Capabilities](./reference/capabilities.md)**: Headless stores (`createConfig`, `createLang`, `createLightDark`, `createCollection`).
+  - **[Behaviors](./reference/behaviors.md)**: Navigation, overlays (`confirm`, `toast`), kinetic carousels, and pickers.
+  - **[Storage](./reference/storage.md)**: Persistence contracts and JSON/collection adapters.
+  - **[Hooks & Utilities](./reference/hooks.md)**: Headless interaction and motion drivers (`useHistoryState`, `useStopwatch`, `useCollapsible`).
+  - **[Drag & Drop](./reference/dnd.md)**: Tactile kinetic drag-and-drop contracts.
+  - **[Text Animations](./reference/text-animations.md)**: Staggered, ticker, and kinetic typography.
+  - **[UI Components](./reference/components.md)**: Tactile mobile UI primitives and design tokens.
 
 ### Guidelines & Workflows
 - **[Agent Matrix & Routing](./guidelines/agents.md)**: Subagent definitions, routing tier rules, and prompts.
