@@ -48,3 +48,6 @@ apps/*/ios
 
 # agent artifacts (screenshots, verification evidence)
 .agents/artifacts/
+
+# PartyKit runtime state (SQLite files)
+packages/room-relay/partykit/.partykit/
