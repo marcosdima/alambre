@@ -73,7 +73,7 @@ Use for:
 - Safe-area and reduced-motion behavior.
 - Accessibility.
 - Theme consistency.
-*Default: read-only, source-only.* The UI reviewer audits JSX, styles and tokens against the contracts in `docs/framework/ui-decisions.md`. It has no device access and must never claim visual verification.
+*Default: read-only, source-only.* The UI reviewer audits JSX, styles and tokens against the contracts in `docs/packages/ui/overview.md` and `docs/packages/ui/components.md`. It has no device access and must never claim visual verification.
 
 **`@ui-verifier`** (runtime, read-only)
 Use for:
@@ -157,7 +157,7 @@ Do not silently redefine established architectural concepts. Stop and consult th
 
 - Do not invent repository conventions when existing conventions can be inspected. Search for existing examples and read the documentation first.
 - Do not rely on unverified assumptions about native, Expo, React Native, or library behavior. Verify it through documentation or an appropriate focused experiment.
-- Treat ideas that change architectural understanding as proposals (`docs/logs/proposals.md`) rather than silently adopting them. Promotion to `alambre` or `base-template` goes through the Extraction Audit (`docs/guidelines/agents.md` §6).
+- Treat ideas that change architectural understanding as proposals (`docs/proposals/proposals.md`) rather than silently adopting them. Promotion to `alambre` or `base-template` goes through the Extraction Audit (`docs/guidelines/agents.md` §6).
 
 ## Public API Discipline
 

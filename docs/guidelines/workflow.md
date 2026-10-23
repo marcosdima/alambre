@@ -46,7 +46,7 @@ pnpm test:e2e -- --tag ui  # filter by tag
 The runner prepares the device (disables OS transition animations, wakes the
 device, bypasses Chrome first-run) and restores animation scales on exit. See
 `docs/guidelines/testing.md` for flow architecture and
-`docs/reference/dnd.md` for gesture-level contracts.
+`docs/packages/alambre/dnd.md` for gesture-level contracts.
 
 ## 3. Commit format
 
@@ -82,4 +82,4 @@ Before considering work done:
    inferred from a successful compile.
 3. The final diff was reviewed for unintended files or dependency changes.
 4. Documentation was updated if a public contract or architectural boundary
-   moved. See `docs/framework/architecture.md` for what counts as a boundary.
+   moved. See `docs/packages/alambre/architecture.md` for what counts as a boundary.

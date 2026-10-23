@@ -73,7 +73,7 @@ Flow:
 3. Run `scripts/ui-capture.sh` to extract `screen.png` and `hierarchy.xml`.
 4. Inspect `screen.png` via `view_file` or check numeric bounds in `hierarchy.xml`.
 5. Interact deterministically: `adb shell input tap/swipe`.
-6. Iterate until the surface matches the contracts in `docs/framework/ui-decisions.md`.
+6. Iterate until the surface matches the contracts in `docs/packages/ui/overview.md` and `docs/packages/ui/components.md`.
 
 ---
 
@@ -124,7 +124,7 @@ To prevent agent drift (such as a single agent assuming success on unverified na
             +--> Presentational / UI skin, reusable by apps   --> packages/ui or apps/base-template
             +--> Single-consumer or domain-specific           --> stays in its app (no docs)
             +--> Experimental kinetic idea                    --> stays as a playground testbed
-            +--> Needs design consensus                       --> RFC in docs/logs/proposals.md
+            +--> Needs design consensus                       --> RFC in docs/proposals/proposals.md
 ```
 
 Destination criteria:
@@ -134,10 +134,10 @@ Destination criteria:
 | `packages/alambre` | Headless and presentation-neutral (no colors, layout wrappers, domain data); has >= 2 real consumers (Rule of Two); covered by contract tests (`tests/public-api.test.ts`) and validated on device when kinetic. |
 | `packages/ui` / `apps/base-template` | Presentation or compound UI that is not framework-worthy (it carries a visual skin, theme tokens, or app-level opinions) but is broadly welcome as a starting point for new apps. Needs no second consumer, but must respect `apps/base-template` conventions (semantic theme colors, accessibility, no leaks into `alambre`). |
 | Stays in the app | Single-consumer, domain-specific (e.g. specific game rules), or standard React Native knowledge. Do not document it. |
-| `docs/logs/proposals.md` | Cross-cutting or breaking changes that require user discussion before implementation. |
+| `docs/proposals/proposals.md` | Cross-cutting or breaking changes that require user discussion before implementation. |
 
 Rules:
 
-1. Writing code in an app is not a reason to create documentation. Record only what changes a contract: an extraction (documented in `docs/reference/*.md` / `architecture.md` §8 or `docs/apps/base-template.md`), or an RFC.
-2. Genuine platform traps that tests cannot catch (silent engine/OS defects) go in the document of the layer they affect (e.g. `docs/apps/base-template.md` for OS behavior, `docs/framework/ui-decisions.md` for UI) as a short note, not in a global ledger.
+1. Writing code in an app is not a reason to create documentation. Record only what changes a contract: an extraction (documented in `docs/packages/alambre/*.md` / `architecture.md` §8 or `docs/apps/base-template.md`), or an RFC.
+2. Genuine platform traps that tests cannot catch (silent engine/OS defects) go in the document of the layer they affect (e.g. `docs/apps/base-template.md` for OS behavior, `docs/packages/ui/overview.md` for UI) as a short note, not in a global ledger.
 3. `@reviewer` provides the audit and recommendation; `@lead` decides and performs the extraction.

@@ -33,4 +33,4 @@ Your job is a source-level audit of presentation code: you review what the code 
 - Theme consistency (light/dark token usage).
 
 ## Contracts
-Audit against the decisions in `docs/framework/ui-decisions.md`. Point out the exact file and line where a contract is violated, and reference the governing section as `file:section`. Leave the actual code changes to the `lead`.
+Audit against the contracts in `docs/packages/ui/overview.md` and `docs/packages/ui/components.md`. Point out the exact file and line where a contract is violated, and reference the governing section as `file:section`. Leave the actual code changes to the `lead`.

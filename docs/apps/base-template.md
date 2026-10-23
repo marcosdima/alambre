@@ -9,6 +9,6 @@ Code is promoted here through the Extraction Audit (`docs/guidelines/agents.md` 
 Requirements for promoted code:
 
 * Consume semantic colors from the theme provider; never hardcode palette values.
-* Honor accessibility contracts (roles, labels, single accessibility node for compound controls; see `docs/framework/ui-decisions.md` §8).
+* Honor accessibility contracts (roles, labels, single accessibility node for compound controls; see `docs/packages/ui/overview.md` §8).
 * Build on `packages/alambre` behaviors and tokens; never leak app-specific code into the framework.
 * Stay free of domain-specific logic (e.g. card-game or alarm domain code stays in its app).

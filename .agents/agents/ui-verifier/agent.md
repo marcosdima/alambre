@@ -30,4 +30,4 @@ Your job is observation, not implementation: you confirm on a real device that a
 - Confirming that an implemented change actually renders and behaves correctly.
 
 ## Contracts
-Audit the rendered surface against `docs/framework/ui-decisions.md`. Report findings as `file:section` citations plus the observed screen state. Distinguish clearly between what you verified on device and what you could not observe.
+Audit the rendered surface against `docs/packages/ui/overview.md` and `docs/packages/ui/components.md`. Report findings as `file:section` citations plus the observed screen state. Distinguish clearly between what you verified on device and what you could not observe.

@@ -16,14 +16,16 @@ Follow this protocol whenever you need to consult or update documentation.
 
 Start from `docs/index.md` (the catalog), then navigate to the relevant document:
 
-- `docs/framework/architecture.md` — architectural principles, boundaries, framework/app split, public type contract (§8), and versioning (§9).
-- `docs/framework/ui-decisions.md` — concrete UI direction and component decisions (materializes `architecture.md` §6).
+- `docs/packages/alambre/architecture.md` — architectural principles, boundaries, headless primitives, public API contract (§8), and versioning (§9).
+- `docs/packages/alambre/*.md` — headless capabilities, behaviors, hooks, storage, dnd, and text animations.
+- `docs/packages/ui/overview.md` — tactile UI direction, headless-to-presentation layering, and platform traps.
+- `docs/packages/ui/theme.md` & `components.md` — design tokens and tactile component contracts for `@some-alambre/ui`.
+- `docs/packages/room-relay/architecture.md` — real-time room relay, simulated/WS/PartyKit transports, and turn engine.
 - `docs/guidelines/agents.md` — the agent system, model routing, UI verification, and anti-drift guardrails (§5).
 - `docs/guidelines/workflow.md` — validation order, E2E invocation, and commit format.
 - `docs/guidelines/testing.md` — Maestro E2E flow architecture and unit test rules.
-- `docs/guidelines/agents.md` §6 — the Extraction Audit: how reusable code is promoted to `alambre` or `base-template`.
-- `docs/logs/proposals.md` — pending framework changes and roadmap items.
-- `docs/reference/*.md` — functional reference for capabilities, behaviors, hooks, storage, and components.
+- `docs/guidelines/agents.md` §6 — the Extraction Audit: how reusable code is promoted to packages or templates.
+- `docs/proposals/proposals.md` — pending framework changes and roadmap items.
 - `docs/apps/*.md` — per-application contracts and constraints.
 
 Do not guess content: read the index, then the specific file.
@@ -33,16 +35,16 @@ Do not guess content: read the index, then the specific file.
 Use search to jump to a heading instead of reading whole documents. The
 reference mappings are stable:
 
-- Public API surface → `docs/framework/architecture.md` §8.
-- Versioning / baseline / SemVer → `docs/framework/architecture.md` §9.
+- Public API surface → `docs/packages/alambre/architecture.md` §8.
+- Versioning / baseline / SemVer → `docs/packages/alambre/architecture.md` §9.
 - Validation order, E2E, commit format → `docs/guidelines/workflow.md`.
 - Agent system, delegation, anti-drift → `docs/guidelines/agents.md` §5.
-- UI contracts → `docs/framework/ui-decisions.md`.
+- UI contracts & platform traps → `docs/packages/ui/overview.md` and `docs/packages/ui/components.md`.
 
 ## 3. Cite, do not paraphrase
 
 When an agent report or change references a decision, cite `file:section`
-(e.g. `docs/framework/architecture.md` §8). Architectural and UI decisions are
+(e.g. `docs/packages/alambre/architecture.md` §8). Architectural and UI decisions are
 contractual: never summarize them in a way that changes their meaning.
 
 ## 4. Updating documentation
@@ -52,14 +54,12 @@ When adding or changing documented knowledge:
 1. Update the source `docs/*.md` file first — it is the truth.
 2. Keep existing section numbering and structure stable; append when a new
    concept does not fit an existing section.
-3. If the change adds a new document or reference entry, update the catalog
-   entry in `docs/index.md` (and `docs/reference/index.md` for functional
-   reference additions).
+3. If the change adds a new document or entry, update the catalog
+   entry in `docs/index.md`.
 4. Do not log "discoveries" after finishing work. Reusable candidates are
    handled by the Extraction Audit (`docs/guidelines/agents.md` §6); only
-   contract changes are documented (`docs/framework/architecture.md` /
-   `docs/framework/ui-decisions.md` / `docs/reference/*.md`), and pending
-   design decisions go to `docs/logs/proposals.md`.
+   contract changes are documented (`docs/packages/alambre/architecture.md` /
+   `docs/packages/ui/overview.md`), and pending design decisions go to `docs/proposals/proposals.md`.
 5. Keep `frontmatter` (`title`, `summary`) accurate for retrieval.
 6. Do not duplicate content into `AGENTS.md` or agent definitions.
 
