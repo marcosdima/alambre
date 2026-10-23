@@ -15,6 +15,10 @@
       "types": "./dist/typescript/index.d.ts",
       "default": "./dist/module/index.js"
     },
+    "./partykit": {
+      "types": "./dist/typescript/partykit.d.ts",
+      "default": "./dist/module/partykit.js"
+    },
     "./package.json": "./package.json"
   },
   "react-native-builder-bob": {
