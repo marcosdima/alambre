@@ -227,4 +227,18 @@ The repository includes an edge worker template under `packages/room-relay/party
 - `server.ts`: Handles room routing, ephemeral peer presence, and sub-30ms message broadcasting.
 - `partykit.json`: Configuration deploying instantly with `npx partykit deploy`.
 
+### 5.3 PartyKit Runtime State
+
+When running the PartyKit dev server locally (`npx partykit dev`), it persists ephemeral state as SQLite files under:
+
+```
+packages/room-relay/partykit/.partykit/state/party/
+```
+
+These are **runtime artifacts** and must **not** be version-controlled. The `.gitignore` already excludes the entire `.partykit/` directory. To reset the local state, delete the contents:
+
+```bash
+rm -rf packages/room-relay/partykit/.partykit/state/party/*
+```
+
 
