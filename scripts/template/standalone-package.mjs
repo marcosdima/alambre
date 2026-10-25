@@ -14,6 +14,10 @@ if (!monorepoRoot || !stageDir) {
   process.exit(1);
 }
 
+const rootPkg = JSON.parse(
+  fs.readFileSync(path.join(monorepoRoot, 'package.json'), 'utf8'),
+);
+
 const alambreVersion = JSON.parse(
   fs.readFileSync(path.join(monorepoRoot, 'packages/alambre/package.json'), 'utf8'),
 ).version;
@@ -38,7 +42,7 @@ const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 pkg.name = 'base-template';
 pkg.description = 'Generic React Native app skeleton on top of alambre (Expo SDK 57).';
 pkg.private = true;
-pkg.packageManager = 'pnpm@12.4.1';
+pkg.packageManager = rootPkg.packageManager || 'pnpm@12.11.2';
 
 pkg.dependencies = pkg.dependencies ?? {};
 pkg.dependencies.alambre = alambreVersion;
