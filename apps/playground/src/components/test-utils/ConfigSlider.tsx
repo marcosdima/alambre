@@ -1,4 +1,4 @@
-import { AppSlider } from '@some-alambre/ui';
+import { AppSlider } from 'alambre/ui';
 
 export interface ConfigSliderProps {
   label: string;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { AppCard, AppButton, useTheme } from '@some-alambre/ui';
+import { AppCard, AppButton, useTheme } from 'alambre/ui';
 import { ConfigSlider } from './ConfigSlider';
 
 export interface PhysicsParams {

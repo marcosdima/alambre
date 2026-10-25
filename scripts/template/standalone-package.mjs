@@ -22,17 +22,8 @@ const alambreVersion = JSON.parse(
   fs.readFileSync(path.join(monorepoRoot, 'packages/alambre/package.json'), 'utf8'),
 ).version;
 
-const uiVersion = JSON.parse(
-  fs.readFileSync(path.join(monorepoRoot, 'packages/ui/package.json'), 'utf8'),
-).version;
-
 if (!alambreVersion) {
   console.error('could not read alambre version from packages/alambre/package.json');
-  process.exit(1);
-}
-
-if (!uiVersion) {
-  console.error('could not read @some-alambre/ui version from packages/ui/package.json');
   process.exit(1);
 }
 
@@ -46,7 +37,7 @@ pkg.packageManager = rootPkg.packageManager || 'pnpm@12.11.2';
 
 pkg.dependencies = pkg.dependencies ?? {};
 pkg.dependencies.alambre = alambreVersion;
-pkg.dependencies['@some-alambre/ui'] = uiVersion;
+delete pkg.dependencies['@some-alambre/ui'];
 delete pkg.dependencies['@alambre/ui'];
 pkg.dependencies['@tanstack/react-query'] = '^5.0.0';
 
@@ -57,4 +48,4 @@ pkg.resolutions = pkg.resolutions ?? {};
 pkg.resolutions['@react-native/metro-config'] = '~0.86.3';
 
 fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
-console.log(`package.json rewritten for standalone: alambre pinned to ${alambreVersion}, @some-alambre/ui pinned to ${uiVersion}`);
+console.log(`package.json rewritten for standalone: alambre pinned to ${alambreVersion}`);

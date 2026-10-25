@@ -1,5 +1,5 @@
 import { createLightDarkProvider } from 'alambre';
-import type { ThemeTokens } from '@some-alambre/ui';
+import type { ThemeTokens } from 'alambre/ui';
 import { storage } from '../storage';
 
 export const light: ThemeTokens = {

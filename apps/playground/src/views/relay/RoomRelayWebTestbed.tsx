@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
-import { useRoomRelay, generateRoomCode, type RelayMessage } from '@some-alambre/room-relay';
+import { useRoomRelay, generateRoomCode, type RelayMessage } from 'alambre/relay';
 import { useLightDark } from '../../providers/theme';
 import {
   AppCard,
@@ -10,7 +10,7 @@ import {
   AppBadge,
   AppButton,
   AppTextInput,
-} from '@some-alambre/ui';
+} from 'alambre/ui';
 import { TestCard } from '../../components/test-utils';
 
 interface PacketLogEntry {

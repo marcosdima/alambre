@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { EntryOrExitLayoutType } from 'react-native-reanimated';
 import { kinetics } from 'alambre';
-import { resolveTypography } from '@some-alambre/ui';
+import { resolveTypography } from 'alambre/ui';
 
 type AppNavigatorAnimations = {
   pageEntering?: EntryOrExitLayoutType;

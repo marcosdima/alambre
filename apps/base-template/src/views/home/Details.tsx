@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
-import { AppText } from '@some-alambre/ui';
+import { AppText } from 'alambre/ui';
 
 export default () => {
   const { theme } = useLightDark();

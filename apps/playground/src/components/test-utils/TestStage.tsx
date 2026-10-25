@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { useTheme, AppText, AppBadge, AppButton } from '@some-alambre/ui';
+import { useTheme, AppText, AppBadge, AppButton } from 'alambre/ui';
 
 export type StageBadgeTone = 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
 

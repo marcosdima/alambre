@@ -3,7 +3,7 @@ import { AlambreIcons, useConfirm, useNavigator, useToast } from 'alambre';
 import { useLang } from '../../providers/lang';
 import { useConfig } from '../../providers/config';
 import { useLightDark, light as lightTokens, dark as darkTokens } from '../../providers/theme';
-import { AppCard, AppButton, ToggleLightDark, resolveTypography } from '@some-alambre/ui';
+import { AppCard, AppButton, ToggleLightDark, resolveTypography } from 'alambre/ui';
 
 const GITHUB_URL = 'https://github.com/marcosdima';
 const CAFECITO_URL = 'https://cafecito.app/marcosdima';

@@ -3,7 +3,7 @@ import { AppState, Linking, ScrollView, StyleSheet, View } from 'react-native';
 import { AlambreIcons } from 'alambre';
 import { useLightDark } from '../../providers/theme';
 import { useLang } from '../../providers/lang';
-import { AppCard, AppButton, AppText } from '@some-alambre/ui';
+import { AppCard, AppButton, AppText } from 'alambre/ui';
 
 export default function Permissions() {
   const { theme } = useLightDark();

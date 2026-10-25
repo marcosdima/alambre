@@ -1,11 +1,11 @@
 ---
 name: alambre-ui
-description: Tactile mobile UI components, design tokens, and typography from @some-alambre/ui. Use whenever building or auditing screens, cards, buttons, inputs, selects, dialogs, action sheets, switches, sliders, steppers, number pickers, accordions, or kinetic text animations. Always prefer @some-alambre/ui over raw React Native primitives or @expo/ui.
+description: Tactile mobile UI components, design tokens, and typography from alambre/ui. Use whenever building or auditing screens, cards, buttons, inputs, selects, dialogs, action sheets, switches, sliders, steppers, number pickers, accordions, or kinetic text animations. Always prefer alambre/ui over raw React Native primitives or @expo/ui.
 ---
 
-# `@some-alambre/ui` Design System & Components
+# `alambre/ui` Design System & Components
 
-Use `@some-alambre/ui` as the default component library for all screens and visual surfaces. Never reinvent buttons, cards, inputs, dialogs, or text with raw React Native primitives when a design-system component exists.
+Use `alambre/ui` as the default component library for all screens and visual surfaces. Never reinvent buttons, cards, inputs, dialogs, or text with raw React Native primitives when a design-system component exists.
 
 ---
 
@@ -15,7 +15,7 @@ Use `@some-alambre/ui` as the default component library for all screens and visu
 `<ThemeProvider>` must sit at the top of the provider tree (above `NavigatorProvider`, `ConfirmProvider`, `ToastProvider`, and `Root`) and receive both the active color palette and `fontFamily`:
 
 ```tsx
-import { ThemeProvider } from '@some-alambre/ui';
+import { ThemeProvider } from 'alambre/ui';
 
 <ThemeProvider theme={{ ...theme, fontFamily: config.fontFamily }}>
   {/* NavigatorProvider, ConfirmProvider, ToastProvider, Root */}
@@ -24,7 +24,7 @@ import { ThemeProvider } from '@some-alambre/ui';
 
 ### Consuming Tokens (`useTheme`)
 ```tsx
-import { useTheme } from '@some-alambre/ui';
+import { useTheme } from 'alambre/ui';
 
 const theme = useTheme();
 ```
@@ -42,7 +42,7 @@ const theme = useTheme();
 | `theme.border` / `theme.borderSoft` | Standard and subtle borders/dividers |
 | `theme.success` / `theme.warning` / `theme.danger` / `theme.dangerSoft` | Semantic status colors |
 | `theme.overlay` / `theme.overlayBar` | Modal backdrop and grabber bar colors |
-| `theme.fontFamily` | Active global font family propagated to all `@some-alambre/ui` components |
+| `theme.fontFamily` | Active global font family propagated to all `alambre/ui` components |
 
 **Strict Rules:**
 - Never hardcode hex/RGB colors in component or view styles.
@@ -54,7 +54,7 @@ const theme = useTheme();
 
 ### Typography: `AppTitle` & `AppText`
 ```tsx
-import { AppTitle, AppText } from '@some-alambre/ui';
+import { AppTitle, AppText } from 'alambre/ui';
 
 <AppTitle
   title="Dashboard"
@@ -72,7 +72,7 @@ import { AppTitle, AppText } from '@some-alambre/ui';
 
 ### Buttons: `AppButton` (alias `Button`)
 ```tsx
-import { AppButton } from '@some-alambre/ui';
+import { AppButton } from 'alambre/ui';
 
 <AppButton
   label="Save Changes"
@@ -90,7 +90,7 @@ import { AppButton } from '@some-alambre/ui';
 
 ### Containers: `AppCard` & `AppAccordion`
 ```tsx
-import { AppCard, AppAccordion } from '@some-alambre/ui';
+import { AppCard, AppAccordion } from 'alambre/ui';
 
 <AppCard
   variant="outlined" // 'elevated' | 'outlined' | 'filled' | 'ghost'
@@ -114,7 +114,7 @@ import { AppCard, AppAccordion } from '@some-alambre/ui';
 
 ### Badges & Chips: `AppBadge` & `AppChip`
 ```tsx
-import { AppBadge, AppChip } from '@some-alambre/ui';
+import { AppBadge, AppChip } from 'alambre/ui';
 
 <AppBadge
   label="New"
@@ -142,7 +142,7 @@ import {
   AppSegmentedControl,
   AppSelect,
   AppNumberPicker,
-} from '@some-alambre/ui';
+} from 'alambre/ui';
 
 <AppTextInput
   label="Username"
@@ -216,7 +216,7 @@ import {
 
 ### Overlays: `AppDialog`, `AppActionSheet`, `ConfirmDialog`
 ```tsx
-import { AppDialog, AppActionSheet } from '@some-alambre/ui';
+import { AppDialog, AppActionSheet } from 'alambre/ui';
 
 <AppDialog
   visible={open}

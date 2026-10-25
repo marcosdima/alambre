@@ -21,7 +21,6 @@ TEMPLATE_URL="${TEMPLATE_URL:-https://github.com/marcosdima/base-expo.git}"
 STAGE="$(mktemp -d "${TMPDIR:-/tmp}/base-template-export.XXXXXX")"
 SEED_BRANCH="temp/template-seed"
 VERSION="$(node -p "require('$ROOT/packages/alambre/package.json').version")"
-UI_VERSION="$(node -p "require('$ROOT/packages/ui/package.json').version")"
 
 cleanup() {
   git -C "$ROOT" worktree remove "$STAGE" --force >/dev/null 2>&1 || true
@@ -69,15 +68,13 @@ echo "==> [6/8] regenerate lockfile from the registry"
 (cd "$STAGE" && pnpm install --lockfile-only)
 
 if [[ "${SKIP_VERIFY:-0}" != "1" ]]; then
-  echo "==> [7/8] verify standalone against published alambre@$VERSION and @some-alambre/ui@$UI_VERSION"
+  echo "==> [7/8] verify standalone against published alambre@$VERSION"
   if ! (cd "$STAGE" && pnpm install && pnpm typecheck && pnpm test && pnpm lint); then
     echo "error: the standalone template does not compile/test against published packages." >&2
     echo "       The npm registry copy is stale or missing the current public API." >&2
     echo "       Publish the current source first, then run this script again:" >&2
     echo "         pnpm build" >&2
-    echo "         cd packages/alambre && npm stage publish" >&2
-    echo "         cd packages/ui && npm stage publish" >&2
-    echo "         cd packages/room-relay && npm stage publish" >&2
+    echo "         cd packages/alambre && npm publish" >&2
     echo "       (pnpm is only the installer for consumers — publishing is an npm registry action.)" >&2
     exit 1
   fi

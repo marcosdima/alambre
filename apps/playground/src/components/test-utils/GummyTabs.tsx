@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { AppSegmentedControl } from '@some-alambre/ui';
+import { AppSegmentedControl } from 'alambre/ui';
 
 export interface GummyTabItem {
   id?: string;

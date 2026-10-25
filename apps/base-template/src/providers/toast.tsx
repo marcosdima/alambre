@@ -18,7 +18,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ToastComponentProps } from 'alambre';
 import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
-import { useTheme, resolveTypography } from '@some-alambre/ui';
+import { useTheme, resolveTypography } from 'alambre/ui';
 import { kinetics } from 'alambre';
 
 export function TemplateToast({ toast, dismiss, queueLength }: ToastComponentProps) {

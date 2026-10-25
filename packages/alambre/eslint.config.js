@@ -13,7 +13,7 @@ export default [
   js.configs.recommended,
 
   {
-    files: ['**/*.{ts,tsx,js,jsx}'],
+    files: ['**/*.{ts,tsx,js,jsx,mjs}'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -28,6 +28,15 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        process: 'readonly',
+        URL: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        WebSocket: 'readonly',
+        Event: 'readonly',
+        CloseEvent: 'readonly',
+        MessageEvent: 'readonly',
+        navigator: 'readonly',
       },
     },
     plugins: {
@@ -71,6 +80,13 @@ export default [
     },
     settings: {
       react: { version: 'detect' },
+    },
+  },
+
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ];

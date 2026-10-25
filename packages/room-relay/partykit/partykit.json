@@ -1,6 +1,0 @@
-{
-  "$schema": "https://www.partykit.io/schema.json",
-  "name": "alambre-room-relay",
-  "main": "server.ts",
-  "compatibilityDate": "2024-04-01"
-}

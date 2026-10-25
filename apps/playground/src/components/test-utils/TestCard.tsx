@@ -1,4 +1,4 @@
-import { AppCard, type AppCardProps } from '@some-alambre/ui';
+import { AppCard, type AppCardProps } from 'alambre/ui';
 
 export interface TestCardProps extends Omit<AppCardProps, 'title' | 'subtitle'> {
   title: string;

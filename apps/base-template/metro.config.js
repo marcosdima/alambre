@@ -19,14 +19,18 @@ if (fs.existsSync(alambrePackage)) {
   ];
 
   const alambreSource = path.resolve(workspaceRoot, 'packages/alambre/src/index.ts');
-  const uiSource = path.resolve(workspaceRoot, 'packages/ui/src/index.ts');
+  const uiSource = path.resolve(workspaceRoot, 'packages/alambre/src/ui/index.ts');
+  const relaySource = path.resolve(workspaceRoot, 'packages/alambre/src/relay/index.ts');
 
   config.resolver.resolveRequest = (context, moduleName, platform) => {
     if (moduleName === 'alambre') {
       return { filePath: alambreSource, type: 'sourceFile' };
     }
-    if (moduleName === '@some-alambre/ui' || moduleName === '@alambre/ui') {
+    if (moduleName === 'alambre/ui' || moduleName === '@some-alambre/ui' || moduleName === '@alambre/ui') {
       return { filePath: uiSource, type: 'sourceFile' };
+    }
+    if (moduleName === 'alambre/relay' || moduleName === 'alambre/room-relay' || moduleName === '@some-alambre/room-relay') {
+      return { filePath: relaySource, type: 'sourceFile' };
     }
     return context.resolveRequest(context, moduleName, platform);
   };

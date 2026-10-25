@@ -18,7 +18,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ToastComponentProps, ToastTone, ToastPosition, ToastPayload } from 'alambre';
 import { AlambreIcons, parseToastPayload, useNavigator } from 'alambre';
-import { resolveTypography } from '@some-alambre/ui';
+import { resolveTypography } from 'alambre/ui';
 import { useLightDark } from './theme';
 import { useConfig } from './config';
 

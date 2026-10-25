@@ -10,7 +10,7 @@ import Root from './src/navigator/Root';
 import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
 import { TemplateToast } from './src/providers/toast';
-import { ConfirmDialog, ThemeProvider } from '@some-alambre/ui';
+import { ConfirmDialog, ThemeProvider } from 'alambre/ui';
 import { useLightDark } from './src/providers/theme';
 import { useConfig } from './src/providers/config';
 
