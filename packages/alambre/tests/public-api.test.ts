@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import * as Alambre from '../src/index';
+import * as AlambreUI from '../src/ui/index';
 
 vi.mock('react-native-reanimated', () => {
   const key = '__alambreIconSharedValues__';
@@ -49,10 +50,29 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
+    expect(typeof Alambre.navigatorActions).toBe('object');
+    expect(typeof Alambre.navigatorActions.navigate).toBe('function');
+    expect(typeof Alambre.navigatorActions.replace).toBe('function');
+    expect(typeof Alambre.navigatorActions.reset).toBe('function');
+    expect(typeof Alambre.navigatorActions.popToTop).toBe('function');
+    expect(typeof Alambre.navigatorActions.previous).toBe('function');
+    expect(typeof Alambre.navigatorActions.setScrollTop).toBe('function');
+    expect(typeof Alambre.useNavigationGuard).toBe('function');
+    expect(typeof Alambre.registerNavigationGuard).toBe('function');
     expect(typeof Alambre.NavigatorHost).toBe('function');
     expect(typeof Alambre.initNavigator).toBe('function');
     expect(typeof Alambre.ToastProvider).toBe('function');
+    expect(typeof Alambre.ToastHost).toBe('function');
     expect(typeof Alambre.useToast).toBe('function');
+    expect(typeof Alambre.useToastGesture).toBe('function');
+    expect(typeof Alambre.toast).toBe('object');
+    expect(typeof Alambre.toast.show).toBe('function');
+    expect(typeof Alambre.toast.success).toBe('function');
+    expect(typeof Alambre.toast.error).toBe('function');
+    expect(typeof Alambre.toast.warning).toBe('function');
+    expect(typeof Alambre.toast.info).toBe('function');
+    expect(typeof Alambre.toast.dismiss).toBe('function');
+    expect(typeof Alambre.toast.clear).toBe('function');
     expect(typeof Alambre.ConfirmProvider).toBe('function');
     expect(typeof Alambre.useConfirm).toBe('function');
     expect(typeof Alambre.createStorage).toBe('function');
@@ -316,12 +336,32 @@ describe('public API — type surface', () => {
     const navReturn: Alambre.NavigatorReturn = {
       currentPage: page,
       pageKey: 'home',
+      routeKey: 'home',
+      currentRoute: 'home',
+      currentSubpage: undefined,
       noPreviousPages: true,
+      canGoBack: false,
       scrollTop: 0,
       navigate: () => undefined,
+      replace: () => undefined,
+      reset: () => undefined,
+      popToTop: () => undefined,
       previous: () => undefined,
       setScrollTop: () => undefined,
     };
+    const navGuard: Alambre.NavigationGuard = () => true;
+    expect(navGuard).toBeDefined();
+    const storeState: Alambre.Store<{ count: number }> = {
+      getState: () => ({ count: 0 }),
+      setState: () => undefined,
+      get: () => ({ count: 0 }),
+      set: () => undefined,
+      subscribe: () => () => undefined,
+      dispose: () => undefined,
+    };
+    const storeListener: Alambre.StoreListener<{ count: number }> = () => undefined;
+    expect(storeState).toBeDefined();
+    expect(storeListener).toBeDefined();
     const navSettings: Alambre.NavigationSettings = { subpage: 'detail' };
     const configState: Alambre.ConfigState<{ key: string }> = { config: { key: 'val' }, loading: false };
     const useConfigType: Alambre.UseConfigType<{ key: string }> = {
@@ -504,6 +544,22 @@ describe('public API — type surface', () => {
     expect(useConfigType).toBeDefined();
     expect(useCollectionType).toBeDefined();
     expect(navigatorHostProps).toBeDefined();
+  });
+
+  it('exposes intentional AlambreUI contracts', () => {
+    expect(typeof AlambreUI.AppToast).toBe('function');
+    expect(typeof AlambreUI.AppNavigatorBody).toBe('function');
+    expect(typeof AlambreUI.AppNavigatorShell).toBe('function');
+    expect(typeof AlambreUI.ThemeProvider).toBe('function');
+    expect(typeof AlambreUI.useTheme).toBe('function');
+    expect(typeof AlambreUI.bindThemeStore).toBe('function');
+    expect(typeof AlambreUI.unbindThemeStore).toBe('function');
+    expect(typeof AlambreUI.defaultLightTheme).toBe('object');
+    expect(typeof AlambreUI.defaultDarkTheme).toBe('object');
+    expect(typeof AlambreUI.AppDialog).toBe('function');
+    expect(typeof AlambreUI.AppActionSheet).toBe('function');
+    expect(AlambreUI.AppTextInput).toBeDefined();
+    expect(typeof AlambreUI.ConfirmDialog).toBe('function');
   });
 
   it('does not expose internal/plumbing namespaces', () => {

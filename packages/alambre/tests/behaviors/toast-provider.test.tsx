@@ -357,4 +357,181 @@ describe('ToastProvider', () => {
     expect(calls[calls.length - 1]!.toast?.data.id).toBe('b');
     expect(getApi().queueLength).toBe(0);
   });
+
+  describe('zero-context semantic tone helpers (toast.success, error, warning, info)', () => {
+    it('dispatches toast.success with string content and options', () => {
+      act(() => {
+        toast.success('Saved successfully!', { title: 'Success', position: 'bottom', duration: 3000 });
+      });
+
+      const current = defaultToastStore.store.getState().currentToast;
+      expect(current).not.toBeNull();
+      expect(current?.data.duration).toBe(3000);
+      expect(current?.data.payload).toEqual({
+        content: 'Saved successfully!',
+        title: 'Success',
+        position: 'bottom',
+        tone: 'success',
+      });
+    });
+
+    it('dispatches toast.error with danger tone', () => {
+      act(() => {
+        toast.error('Something went wrong');
+      });
+
+      const current = defaultToastStore.store.getState().currentToast;
+      expect(current?.data.payload).toEqual({
+        content: 'Something went wrong',
+        title: undefined,
+        position: 'top',
+        tone: 'danger',
+      });
+    });
+
+    it('dispatches toast.warning and toast.info with proper tone mapping', () => {
+      act(() => {
+        toast.warning('Check inputs', { title: 'Careful' });
+      });
+      let current = defaultToastStore.store.getState().currentToast;
+      expect(current?.data.payload).toEqual({
+        content: 'Check inputs',
+        title: 'Careful',
+        position: 'top',
+        tone: 'warning',
+      });
+
+      act(() => {
+        toast.dismiss();
+        toast.info('New version available');
+      });
+      current = defaultToastStore.store.getState().currentToast;
+      expect(current?.data.payload).toEqual({
+        content: 'New version available',
+        title: undefined,
+        position: 'top',
+        tone: 'info',
+      });
+    });
+
+    it('hook useToast exposes semantic tone helpers', () => {
+      const { calls, getApi } = setup();
+
+      act(() => {
+        getApi().success('Hook success');
+      });
+
+      const last = calls[calls.length - 1];
+      expect(last?.toast?.data.payload).toEqual({
+        content: 'Hook success',
+        title: undefined,
+        position: 'top',
+        tone: 'success',
+      });
+    });
+
+    it('accepts object payload and applies options overrides for semantic helpers', () => {
+      act(() => {
+        toast.success(
+          { content: 'Payload body', title: 'Initial', position: 'bottom' },
+          { title: 'Overridden', position: 'top', duration: 2500 },
+        );
+      });
+
+      const current = defaultToastStore.store.getState().currentToast;
+      expect(current?.data.duration).toBe(2500);
+      expect(current?.data.payload).toEqual({
+        content: 'Payload body',
+        title: 'Overridden',
+        position: 'top',
+        tone: 'success',
+      });
+    });
+
+    it('replaces pending queue when using semantic helpers in replace mode', () => {
+      defaultToastStore.configure({ queueMode: 'replace', defaultDuration: 1000 });
+
+      act(() => {
+        toast.info('Active toast');
+        toast.warning('Queued warning');
+        toast.error('Queued error replacing warning');
+      });
+
+      const state = defaultToastStore.store.getState();
+      expect((state.currentToast?.data.payload as any).content).toBe('Active toast');
+      expect((state.currentToast?.data.payload as any).tone).toBe('info');
+      expect(state.queue).toHaveLength(1);
+      expect((state.queue[0]?.payload as any).content).toBe('Queued error replacing warning');
+      expect((state.queue[0]?.payload as any).tone).toBe('danger');
+
+      act(() => {
+        toast.dismiss();
+      });
+
+      const nextState = defaultToastStore.store.getState();
+      expect((nextState.currentToast?.data.payload as any).content).toBe('Queued error replacing warning');
+      expect(nextState.queue).toHaveLength(0);
+    });
+
+    it('appends to queue in FIFO order when using semantic helpers in queue mode', () => {
+      defaultToastStore.configure({ queueMode: 'queue', defaultDuration: 1000 });
+
+      act(() => {
+        toast.info('First');
+        toast.success('Second');
+        toast.warning('Third');
+      });
+
+      let state = defaultToastStore.store.getState();
+      expect((state.currentToast?.data.payload as any).content).toBe('First');
+      expect(state.queue).toHaveLength(2);
+      expect((state.queue[0]?.payload as any).content).toBe('Second');
+      expect((state.queue[1]?.payload as any).content).toBe('Third');
+
+      act(() => {
+        toast.dismiss();
+      });
+      state = defaultToastStore.store.getState();
+      expect((state.currentToast?.data.payload as any).content).toBe('Second');
+      expect(state.queue).toHaveLength(1);
+
+      act(() => {
+        toast.dismiss();
+      });
+      state = defaultToastStore.store.getState();
+      expect((state.currentToast?.data.payload as any).content).toBe('Third');
+      expect(state.queue).toHaveLength(0);
+    });
+
+    it('replaces pending queue via hook in ToastProvider with queueMode="replace"', () => {
+      let api: UseToastType | undefined;
+      const Consumer = () => {
+        api = useToast();
+        return null;
+      };
+
+      render(
+        <ToastProvider queueMode="replace" ToastComponent={() => null}>
+          <Consumer />
+        </ToastProvider>,
+      );
+
+      act(() => {
+        api!.success('Active success');
+        api!.warning('Will be replaced');
+        api!.error('Final queued');
+      });
+
+      expect((api!.toast?.data.payload as any).content).toBe('Active success');
+      expect(api!.queueLength).toBe(1);
+
+      act(() => {
+        api!.dismiss();
+      });
+
+      expect((api!.toast?.data.payload as any).content).toBe('Final queued');
+      expect(api!.queueLength).toBe(0);
+    });
+  });
 });
+

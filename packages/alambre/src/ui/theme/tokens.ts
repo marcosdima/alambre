@@ -26,7 +26,9 @@ export interface ThemeTokens {
   borderSoft: string;
   muted: string;
   success: string;
+  successSoft?: string;
   warning: string;
+  warningSoft?: string;
   danger: string;
   dangerSoft: string;
   overlay: string;
@@ -50,7 +52,9 @@ export const defaultLightTheme: ThemeTokens = {
   borderSoft: '#d6cfbd',
   muted: '#737a73',
   success: '#16a34a',
+  successSoft: '#dcfce7',
   warning: '#d97706',
+  warningSoft: '#fef3c7',
   danger: '#c16757',
   dangerSoft: '#e2c5c0',
   overlay: 'rgba(45, 47, 45, 0.45)',
@@ -74,7 +78,9 @@ export const defaultDarkTheme: ThemeTokens = {
   borderSoft: '#313431',
   muted: '#a3a8a3',
   success: '#34d399',
+  successSoft: '#143823',
   warning: '#fbbf24',
+  warningSoft: '#3d2e0f',
   danger: '#e2c5c0',
   dangerSoft: '#472d28',
   overlay: 'rgba(0, 0, 0, 0.65)',

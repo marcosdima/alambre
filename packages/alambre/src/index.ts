@@ -47,6 +47,7 @@ export type {
   NavigatorProviderProps,
   NavigationSettings,
   AnimationDefault,
+  NavigationGuard,
 } from './types/navigator';
 
 // Capability types.
@@ -76,6 +77,9 @@ export type {
   RegisterToast,
   Toast,
   UseToastType,
+  ToastHelperOptions,
+  ToastHelperFn,
+  UseToastGestureOptions,
 } from './behaviors';
 export type { ConfirmComponentProps } from './behaviors';
 
@@ -105,11 +109,15 @@ export {
   NavigatorProvider,
   useNavigator,
   initNavigator,
+  navigatorActions,
+  useNavigationGuard,
+  registerNavigationGuard,
   ToastProvider,
   ToastHost,
   useToast,
   toast,
   parseToastPayload,
+  useToastGesture,
   useCarousel,
   calculateSnapInterval,
   calculateActiveIndex,

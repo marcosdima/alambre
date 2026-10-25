@@ -74,23 +74,23 @@ export default function AppDialog({
     switch (tone) {
       case 'danger':
         return {
-          accent: '#ef4444',
-          softBg: '#ef444418',
-          defaultIcon: <AlambreIcons.TriangleAlert color="#ef4444" lineWidth={2.2} style={styles.dialogIcon} />,
+          accent: theme.danger,
+          softBg: theme.dangerSoft || `${theme.danger}18`,
+          defaultIcon: <AlambreIcons.TriangleAlert color={theme.danger} lineWidth={2.2} style={styles.dialogIcon} />,
           defaultConfirmTone: 'danger' as ButtonTone,
         };
       case 'warning':
         return {
-          accent: '#f59e0b',
-          softBg: '#f59e0b18',
-          defaultIcon: <AlambreIcons.TriangleAlert color="#f59e0b" lineWidth={2.2} style={styles.dialogIcon} />,
+          accent: theme.warning,
+          softBg: theme.warningSoft || `${theme.warning}18`,
+          defaultIcon: <AlambreIcons.TriangleAlert color={theme.warning} lineWidth={2.2} style={styles.dialogIcon} />,
           defaultConfirmTone: 'warning' as ButtonTone,
         };
       case 'success':
         return {
-          accent: '#10b981',
-          softBg: '#10b98118',
-          defaultIcon: <AlambreIcons.CircleCheck color="#10b981" lineWidth={2.2} style={styles.dialogIcon} />,
+          accent: theme.success,
+          softBg: theme.successSoft || `${theme.success}18`,
+          defaultIcon: <AlambreIcons.CircleCheck color={theme.success} lineWidth={2.2} style={styles.dialogIcon} />,
           defaultConfirmTone: 'success' as ButtonTone,
         };
       case 'neutral':

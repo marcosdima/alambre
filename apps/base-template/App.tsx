@@ -9,8 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Root from './src/navigator/Root';
 import { ConfirmProvider, NavigatorProvider, ToastProvider } from 'alambre';
 import navigator from './src/navigator/navigator';
-import { TemplateToast } from './src/providers/toast';
-import { ConfirmDialog, ThemeProvider } from 'alambre/ui';
+import { ConfirmDialog, AppToast, ThemeProvider } from 'alambre/ui';
 import { useLightDark } from './src/providers/theme';
 import { useConfig } from './src/providers/config';
 
@@ -22,7 +21,7 @@ function AppContent() {
     <ThemeProvider theme={{ ...theme, fontFamily: config.fontFamily }}>
       <NavigatorProvider pages={navigator}>
         <ConfirmProvider ConfirmComponent={ConfirmDialog}>
-          <ToastProvider ToastComponent={TemplateToast}>
+          <ToastProvider ToastComponent={AppToast}>
             <Root />
           </ToastProvider>
         </ConfirmProvider>

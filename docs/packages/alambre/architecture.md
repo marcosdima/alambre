@@ -150,9 +150,10 @@ Intentional public type contracts:
 * `SegmentedControlProps`, `SelectOption`, `SelectOptions`, `SelectState` — the `SegmentedControl` primitive contract.
 * `InputProps`, `InputState` — the `Input` primitive contract.
 * `StaggerOptions`, `StaggerContextValue`, `StaggerProviderProps` — the `useStagger` headless timing contract.
-* `ToastComponentProps` — the client `ToastComponent` contract of `ToastProvider`.
+* `ToastComponentProps`, `ToastTone`, `ToastPosition`, `ToastAction`, `StandardToastPayload`, `ToastPayload`, `RegisterToast`, `Toast`, `UseToastType`, `ToastHelperOptions`, `ToastHelperFn`, `UseToastGestureOptions` — the headless toast and gesture contracts (`ToastProvider`, `ToastHost`, `useToast`, `toast`, `useToastGesture`).
+* `AppToastProps`, `AppNavigatorBodyProps`, `AppNavigatorAnimations` — the presentation overlay and navigation contracts exported from `alambre/ui`.
 * `ConfirmComponentProps` — the client `ConfirmComponent` contract of `ConfirmProvider`.
-* `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, `NavigationSettings`, `AnimationDefault` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`).
+* `Page`, `NavigatorObject`, `NavigatorReturn`, `NavigatorProviderProps`, `NavigationSettings`, `AnimationDefault`, `NavigationGuard` — the navigator behavior type contract (values exported via `NavigatorProvider`/`useNavigator`, `navigatorActions`, `useNavigationGuard`, `registerNavigationGuard`).
 * `ConfigState`, `UseConfigType` — the `createConfigProvider` contract (`config`, `loading`, `saveField`).
 * `Storage` — the `storage` option contract shared by `createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, and `createCollectionProvider`. `remove` is optional and additive.
 * `RawStorage` — the raw key-value binding adapted by `createStorage` (`removeItem` optional).

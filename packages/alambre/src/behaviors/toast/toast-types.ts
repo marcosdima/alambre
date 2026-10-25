@@ -58,6 +58,16 @@ export type Toast<TPayload = ToastPayload> = {
   startedAt: Date;
 };
 
+export type ToastHelperOptions = Omit<RegisterToast, 'payload'> & {
+  title?: string;
+  position?: ToastPosition;
+};
+
+export type ToastHelperFn = (
+  contentOrPayload: string | StandardToastPayload,
+  options?: ToastHelperOptions,
+) => void;
+
 export type UseToastType<TPayload = ToastPayload> = {
   next: () => RegisterToast<TPayload> | undefined;
   show: (message: RegisterToast<TPayload>) => void;
@@ -66,6 +76,10 @@ export type UseToastType<TPayload = ToastPayload> = {
   setMessage: (message: RegisterToast<TPayload>) => void;
   toast: Toast<TPayload> | null;
   queueLength: number;
+  success: ToastHelperFn;
+  error: ToastHelperFn;
+  warning: ToastHelperFn;
+  info: ToastHelperFn;
 };
 
 export type ToastComponentProps<TPayload = ToastPayload> = {

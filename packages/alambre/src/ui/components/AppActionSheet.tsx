@@ -153,12 +153,12 @@ export default function AppActionSheet({
                   const isDanger = option.tone === 'danger';
                   const isPrimary = option.tone === 'primary';
                   const textColor = isDanger
-                    ? '#ef4444'
+                    ? theme.danger
                     : isPrimary
                       ? theme.primary
                       : theme.color;
                   const iconBg = isDanger
-                    ? '#ef444415'
+                    ? (theme.dangerSoft || `${theme.danger}15`)
                     : isPrimary
                       ? theme.primarySoft
                       : theme.surfaceAlt;

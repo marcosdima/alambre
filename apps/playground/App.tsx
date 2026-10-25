@@ -26,9 +26,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LangProvider } from './src/providers/lang';
 import Root from './src/navigator/Root';
 import { ToastProvider, initNavigator } from 'alambre';
+import { AppToast } from 'alambre/ui';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import navigator from './src/navigator/navigator';
-import { TemplateToast } from './src/providers/toast';
 
 // Explicitly configure Reanimated logger; strict mode enforces best practices against .value reads in render
 configureReanimatedLogger({
@@ -66,7 +66,7 @@ export default function App() {
         <LightDarkProvider>
           <LangProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <ToastProvider ToastComponent={TemplateToast}>
+              <ToastProvider ToastComponent={AppToast}>
                 <Root />
               </ToastProvider>
             </GestureHandlerRootView>

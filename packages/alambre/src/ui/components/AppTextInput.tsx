@@ -115,21 +115,21 @@ const AppTextInput = forwardRef<TextInput, AppTextInputProps>(function AppTextIn
     switch (effectiveTone) {
       case 'danger':
         return {
-          blurBorder: '#ef444480',
-          focusBorder: '#ef4444',
-          accent: '#ef4444',
+          blurBorder: theme.dangerSoft || `${theme.danger}80`,
+          focusBorder: theme.danger,
+          accent: theme.danger,
         };
       case 'warning':
         return {
-          blurBorder: '#f59e0b80',
-          focusBorder: '#f59e0b',
-          accent: '#f59e0b',
+          blurBorder: theme.warningSoft || `${theme.warning}80`,
+          focusBorder: theme.warning,
+          accent: theme.warning,
         };
       case 'success':
         return {
-          blurBorder: '#10b98180',
-          focusBorder: '#10b981',
-          accent: '#10b981',
+          blurBorder: theme.successSoft || `${theme.success}80`,
+          focusBorder: theme.success,
+          accent: theme.success,
         };
       case 'default':
       default:

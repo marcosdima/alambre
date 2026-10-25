@@ -1,5 +1,12 @@
 import createStore from '../../core/create-store';
-import type { RegisterToast, Toast } from './toast-types';
+import type {
+  RegisterToast,
+  Toast,
+  ToastHelperFn,
+  ToastHelperOptions,
+  StandardToastPayload,
+  ToastTone,
+} from './toast-types';
 
 type ToastState = {
   queue: RegisterToast[];
@@ -113,6 +120,46 @@ export function createToastStore(options: ToastStoreOptions = {}) {
     return current;
   };
 
+  const showTone = (
+    tone: ToastTone,
+    contentOrPayload: string | StandardToastPayload,
+    options?: ToastHelperOptions,
+  ) => {
+    let payload: StandardToastPayload;
+    if (typeof contentOrPayload === 'string') {
+      payload = {
+        content: contentOrPayload,
+        title: options?.title,
+        position: options?.position ?? 'top',
+        tone,
+      };
+    } else {
+      payload = {
+        ...contentOrPayload,
+        tone,
+        title: options?.title ?? contentOrPayload.title,
+        position: options?.position ?? contentOrPayload.position ?? 'top',
+      };
+    }
+    const { title: _t, position: _p, ...restOptions } = options ?? {};
+    show({
+      ...restOptions,
+      payload,
+    });
+  };
+
+  const success: ToastHelperFn = (contentOrPayload, options) =>
+    showTone('success', contentOrPayload, options);
+
+  const error: ToastHelperFn = (contentOrPayload, options) =>
+    showTone('danger', contentOrPayload, options);
+
+  const warning: ToastHelperFn = (contentOrPayload, options) =>
+    showTone('warning', contentOrPayload, options);
+
+  const info: ToastHelperFn = (contentOrPayload, options) =>
+    showTone('info', contentOrPayload, options);
+
   // Wrap into the UseToastType shape for consumers
   const getActions = () => ({
     show,
@@ -120,6 +167,10 @@ export function createToastStore(options: ToastStoreOptions = {}) {
     clear,
     setMessage: show,
     next,
+    success,
+    error,
+    warning,
+    info,
   });
 
   return {
