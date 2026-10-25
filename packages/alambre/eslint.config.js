@@ -7,7 +7,7 @@ import reactNative from 'eslint-plugin-react-native';
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/android/**', '**/.expo/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', '**/android/**', '**/.expo/**', '**/templates/**'],
   },
 
   js.configs.recommended,
