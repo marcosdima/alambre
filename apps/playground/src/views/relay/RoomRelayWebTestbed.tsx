@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
-import { useRoomRelay, generateRoomCode } from '@some-alambre/room-relay';
+import { useRoomRelay, generateRoomCode, type RelayMessage } from '@some-alambre/room-relay';
 import { useLightDark } from '../../providers/theme';
 import {
   AppCard,
@@ -86,7 +86,7 @@ export default function RoomRelayWebTestbed() {
 
   // Subscribe to messages received on Bob
   useEffect(() => {
-    const unsub = clientB.onMessage((msg) => {
+    const unsub = clientB.onMessage((msg: RelayMessage) => {
       addLog(msg.senderName || msg.from || 'Alice', 'Bob', msg.type, msg.payload as Record<string, unknown>);
     });
     return unsub;
@@ -94,7 +94,7 @@ export default function RoomRelayWebTestbed() {
 
   // Subscribe to messages received on Alice
   useEffect(() => {
-    const unsub = clientA.onMessage((msg) => {
+    const unsub = clientA.onMessage((msg: RelayMessage) => {
       addLog(msg.senderName || msg.from || 'Bob', 'Alice', msg.type, msg.payload as Record<string, unknown>);
     });
     return unsub;

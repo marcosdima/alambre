@@ -72,7 +72,20 @@ export interface RelayMessage<TType extends string = string, TPayload = unknown>
 /**
  * Supported transport modes.
  */
-export type RelayTransportMode = "simulated" | "websocket";
+export type RelayTransportMode = "simulated" | "websocket" | "custom";
+
+/**
+ * Context payload passed to custom transport factories.
+ */
+export interface TransportContext {
+  id: string;
+  name: string;
+  roomCode: string;
+  isHost: boolean;
+  autoReconnect?: boolean;
+  webSocketFactory?: (url: string) => WebSocket;
+  password?: string;
+}
 
 /**
  * Abstract transport interface decoupled from native modules or WebSocket implementations.
@@ -137,6 +150,14 @@ export interface RoomRelayOptions<TEvents extends DefaultRelayEvents = DefaultRe
    * @default "simulated"
    */
   mode?: RelayTransportMode;
+  /**
+   * Optional room password / PIN for protected rooms.
+   */
+  password?: string;
+  /**
+   * Custom transport factory when mode is "custom" or when overriding the default transport.
+   */
+  transport?: (ctx: TransportContext) => RelayTransport;
   /**
    * WebSocket server endpoint for "websocket" mode.
    * @default "wss://relay.alambre.party/room"

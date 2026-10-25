@@ -84,25 +84,25 @@ export interface WebSocketRelayTransportOptions {
  * - Proper listener detaching to eliminate zombie sockets.
  */
 export class WebSocketRelayTransport implements RelayTransport {
-  private ws: WebSocket | null = null;
-  private url: string;
-  private id: string;
-  private name: string;
-  private roomCode: string;
-  private isHost: boolean;
-  private autoReconnect: boolean;
-  private initialRetryDelayMs: number;
-  private maxRetryDelayMs: number;
-  private backoffFactor: number;
-  private webSocketFactory?: (url: string) => WebSocket;
+  protected ws: WebSocket | null = null;
+  protected url: string;
+  protected id: string;
+  protected name: string;
+  protected roomCode: string;
+  protected isHost: boolean;
+  protected autoReconnect: boolean;
+  protected initialRetryDelayMs: number;
+  protected maxRetryDelayMs: number;
+  protected backoffFactor: number;
+  protected webSocketFactory?: (url: string) => WebSocket;
 
-  private messageListeners = new Set<(data: unknown) => void>();
-  private statusListeners = new Set<(status: RelayConnectionStatus, error?: string) => void>();
+  protected messageListeners = new Set<(data: unknown) => void>();
+  protected statusListeners = new Set<(status: RelayConnectionStatus, error?: string) => void>();
 
-  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
-  private reconnectAttempts = 0;
-  private isDestroyedFlag = false;
-  private isExplicitlyDisconnected = false;
+  protected reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  protected reconnectAttempts = 0;
+  protected isDestroyedFlag = false;
+  protected isExplicitlyDisconnected = false;
 
   constructor(options: WebSocketRelayTransportOptions) {
     this.url = resolveRelayUrl(options.url);
@@ -236,7 +236,7 @@ export class WebSocketRelayTransport implements RelayTransport {
     this.statusListeners.clear();
   }
 
-  private buildUrl(): string {
+  protected buildUrl(): string {
     const encodedRoom = encodeURIComponent(this.roomCode);
     const encodedId = encodeURIComponent(this.id);
     const encodedName = encodeURIComponent(this.name);

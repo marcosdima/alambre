@@ -3,6 +3,7 @@ import type {
   IRoomRelayClient,
   RoomRelayOptions,
   RoomRelayReturn,
+  TransportContext,
 } from "../types";
 import { createRoomRelay } from "../client";
 import { useRoomRelay } from "./use-room-relay";
@@ -20,6 +21,10 @@ export interface UsePartyKitRelayOptions<TEvents extends DefaultRelayEvents = De
    * @default "main"
    */
   party?: string;
+  /**
+   * Optional room password / PIN for protected rooms.
+   */
+  password?: string;
 }
 
 /**
@@ -44,7 +49,7 @@ export function usePartyKitRelay<TEvents extends DefaultRelayEvents = DefaultRel
   return useRoomRelay<TEvents>({
     ...rest,
     mode: "custom",
-    transport: (ctx) =>
+    transport: (ctx: TransportContext) =>
       new PartyKitRelayTransport({
         host,
         party,
@@ -52,7 +57,7 @@ export function usePartyKitRelay<TEvents extends DefaultRelayEvents = DefaultRel
         id: ctx.id,
         name: ctx.name,
         isHost: ctx.isHost,
-        password: ctx.password,
+        password: ctx.password ?? options.password,
         autoReconnect: ctx.autoReconnect,
         webSocketFactory: ctx.webSocketFactory,
       }),
@@ -70,7 +75,7 @@ export function createPartyKitRelay<TEvents extends DefaultRelayEvents = Default
   return createRoomRelay<TEvents>({
     ...rest,
     mode: "custom",
-    transport: (ctx) =>
+    transport: (ctx: TransportContext) =>
       new PartyKitRelayTransport({
         host,
         party,
@@ -78,7 +83,7 @@ export function createPartyKitRelay<TEvents extends DefaultRelayEvents = Default
         id: ctx.id,
         name: ctx.name,
         isHost: ctx.isHost,
-        password: ctx.password,
+        password: ctx.password ?? options.password,
         autoReconnect: ctx.autoReconnect,
         webSocketFactory: ctx.webSocketFactory,
       }),

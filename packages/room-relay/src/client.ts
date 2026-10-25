@@ -260,7 +260,17 @@ export class RoomRelayClient<TEvents extends DefaultRelayEvents = DefaultRelayEv
 
     const { mode, roomCode, playerId, playerName, isHost } = this.state;
 
-    if (mode === "simulated") {
+    if (this.options.transport) {
+      this.transport = this.options.transport({
+        id: playerId,
+        name: playerName,
+        roomCode,
+        isHost,
+        autoReconnect: this.options.autoReconnect ?? true,
+        webSocketFactory: this.options.webSocketFactory,
+        password: this.options.password,
+      });
+    } else if (mode === "simulated") {
       this.transport = new SimulatedRelayTransport({
         id: playerId,
         name: playerName,

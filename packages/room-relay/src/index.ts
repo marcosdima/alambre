@@ -11,6 +11,7 @@ export type {
   RoomRelayOptions,
   RoomRelayReturn,
   RoomRelayState,
+  TransportContext,
 } from "./types";
 
 // Room Code Utilities

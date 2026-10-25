@@ -164,6 +164,10 @@ export interface PartyKitRelayTransportOptions
    * @default "main"
    */
   party?: string;
+  /**
+   * Optional room password / PIN for protected rooms.
+   */
+  password?: string;
 }
 
 /**
@@ -175,6 +179,7 @@ export interface PartyKitRelayTransportOptions
 export class PartyKitRelayTransport extends WebSocketRelayTransport {
   protected party: string;
   protected host?: string;
+  protected password?: string;
 
   constructor(options: PartyKitRelayTransportOptions) {
     const initialUrl = resolvePartyKitUrl({
@@ -194,6 +199,7 @@ export class PartyKitRelayTransport extends WebSocketRelayTransport {
 
     this.party = options.party || "main";
     this.host = options.host;
+    this.password = options.password;
   }
 
   protected override buildUrl(): string {
