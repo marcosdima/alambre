@@ -20,6 +20,8 @@ export type NavigatorRouteKey<TRoute> = TRoute extends string
   ? TRoute
   : keyof TRoute & string;
 
+export type NavigationGuard = () => boolean | Promise<boolean>;
+
 export type NavigatorReturn<
   TRoute extends string | Record<string, unknown> = string,
   TSubpage extends string = string,
@@ -27,13 +29,26 @@ export type NavigatorReturn<
 > = {
   currentPage: Page;
   pageKey: string;
+  routeKey: string;
+  currentRoute: string;
+  currentSubpage?: string;
   currentParams?: TParams;
   noPreviousPages: boolean;
+  canGoBack: boolean;
   scrollTop: number;
   navigate: (
     target: NavigatorRouteKey<TRoute>,
     settings?: NavigationSettings<TSubpage, TParams>,
   ) => void;
+  replace: (
+    target: NavigatorRouteKey<TRoute>,
+    settings?: NavigationSettings<TSubpage, TParams>,
+  ) => void;
+  reset: (
+    target: NavigatorRouteKey<TRoute>,
+    settings?: NavigationSettings<TSubpage, TParams>,
+  ) => void;
+  popToTop: () => void;
   previous: () => void;
   setScrollTop: (value: number) => void;
 };

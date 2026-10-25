@@ -5,6 +5,9 @@ import {
   initNavigator,
   useNavigator,
   NavigatorProvider,
+  useNavigationGuard,
+  registerNavigationGuard,
+  navigatorActions,
 } from '../../src/behaviors/navigator';
 import type { NavigatorObject, NavigatorReturn } from '../../src';
 
@@ -253,4 +256,426 @@ describe('Headless Navigator behavior & store mechanics', () => {
 
     expect(result.current.currentPage).toEqual(pages.home.subpages?.form);
   });
+
+  it('exposes routeKey, currentRoute, currentSubpage, and canGoBack correctly', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    expect(result.current.canGoBack).toBe(false);
+    expect(result.current.currentRoute).toBe('home');
+    expect(result.current.currentSubpage).toBeUndefined();
+    expect(result.current.routeKey).toBe('home');
+
+    act(() => {
+      result.current.navigate('home', { subpage: 'form' });
+    });
+
+    expect(result.current.canGoBack).toBe(true);
+    expect(result.current.currentRoute).toBe('home');
+    expect(result.current.currentSubpage).toBe('form');
+    expect(result.current.routeKey).toBe('home > home,form');
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+
+    expect(result.current.canGoBack).toBe(true);
+    expect(result.current.currentRoute).toBe('alarms');
+    expect(result.current.currentSubpage).toBeUndefined();
+    expect(result.current.routeKey).toBe('home, home,form > alarms');
+  });
+
+  it('replace replaces the current page in-place without pushing to history stack', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+    expect(result.current.currentPage).toEqual(pages.alarms);
+    expect(result.current.pageKey).toBe('home');
+
+    act(() => {
+      result.current.replace('items');
+    });
+    expect(result.current.currentPage).toEqual(pages.items);
+    // Stack is still just 'home', not 'home, alarms'
+    expect(result.current.pageKey).toBe('home');
+
+    act(() => {
+      result.current.previous();
+    });
+    expect(result.current.currentPage).toEqual(pages.home);
+    expect(result.current.noPreviousPages).toBe(true);
+  });
+
+  it('reset clears the history stack and sets the new root page', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+      result.current.navigate('items');
+    });
+    expect(result.current.noPreviousPages).toBe(false);
+
+    act(() => {
+      result.current.reset('alarms');
+    });
+
+    expect(result.current.currentPage).toEqual(pages.alarms);
+    expect(result.current.noPreviousPages).toBe(true);
+    expect(result.current.canGoBack).toBe(false);
+    expect(result.current.pageKey).toBe('');
+  });
+
+  it('popToTop unwinds history back to the initial root screen', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+      result.current.navigate('items');
+    });
+    expect(result.current.noPreviousPages).toBe(false);
+
+    act(() => {
+      result.current.popToTop();
+    });
+
+    expect(result.current.currentPage).toEqual(pages.home);
+    expect(result.current.noPreviousPages).toBe(true);
+    expect(result.current.canGoBack).toBe(false);
+  });
+
+  it('blocks navigation when a navigation guard returns false', async () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+    expect(result.current.currentPage).toEqual(pages.alarms);
+
+    // Register a blocking guard
+    let allowLeave = false;
+    const unregister = registerNavigationGuard(() => allowLeave);
+
+    act(() => {
+      result.current.previous();
+    });
+
+    // Should still be on alarms because guard returned false
+    expect(result.current.currentPage).toEqual(pages.alarms);
+
+    // Allow leave and try again
+    allowLeave = true;
+    await act(async () => {
+      result.current.previous();
+    });
+
+    expect(result.current.currentPage).toEqual(pages.home);
+    unregister();
+  });
+
+  it('useNavigationGuard hook unregisters guard when component unmounts', async () => {
+    const { result: navResult } = renderHook(() => useNavigator());
+
+    act(() => {
+      navResult.current.navigate('alarms');
+    });
+
+    const guardSpy = vi.fn().mockReturnValue(false);
+    const { unmount } = renderHook(() => useNavigationGuard(guardSpy));
+
+    act(() => {
+      navResult.current.previous();
+    });
+
+    expect(guardSpy).toHaveBeenCalled();
+    expect(navResult.current.currentPage).toEqual(pages.alarms);
+
+    // Unmount the component holding the guard
+    unmount();
+
+    act(() => {
+      navResult.current.previous();
+    });
+
+    // Now navigation succeeds
+    expect(navResult.current.currentPage).toEqual(pages.home);
+  });
+
+  it('supports async navigation guards returning Promise<boolean>', async () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+    expect(result.current.currentPage).toEqual(pages.alarms);
+
+    let resolveGuard!: (allow: boolean) => void;
+    const asyncGuard = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveGuard = resolve;
+        }),
+    );
+
+    const unregister = registerNavigationGuard(asyncGuard);
+
+    try {
+      act(() => {
+        result.current.previous();
+      });
+
+      expect(asyncGuard).toHaveBeenCalledTimes(1);
+
+      // Guard resolves false -> navigation blocked
+      await act(async () => {
+        resolveGuard(false);
+      });
+      expect(result.current.currentPage).toEqual(pages.alarms);
+
+      // Trigger previous again
+      act(() => {
+        result.current.previous();
+      });
+
+      expect(asyncGuard).toHaveBeenCalledTimes(2);
+
+      // Guard resolves true -> navigation allowed
+      await act(async () => {
+        resolveGuard(true);
+      });
+      expect(result.current.currentPage).toEqual(pages.home);
+    } finally {
+      unregister();
+    }
+  });
+
+  it('safely catches errors in navigation guards and aborts navigation', async () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+
+    // Guard throwing a synchronous exception
+    const syncThrowingGuard = vi.fn(() => {
+      throw new Error('Guard synchronous crash');
+    });
+    let unregister = registerNavigationGuard(syncThrowingGuard);
+
+    try {
+      await act(async () => {
+        result.current.previous();
+      });
+      expect(syncThrowingGuard).toHaveBeenCalledTimes(1);
+      expect(result.current.currentPage).toEqual(pages.alarms);
+    } finally {
+      unregister();
+    }
+
+    // Guard returning a rejected promise
+    let rejectGuard!: (err: Error) => void;
+    const asyncRejectingGuard = vi.fn(
+      () =>
+        new Promise<boolean>((_, reject) => {
+          rejectGuard = reject;
+        }),
+    );
+    unregister = registerNavigationGuard(asyncRejectingGuard);
+
+    try {
+      act(() => {
+        result.current.previous();
+      });
+      expect(asyncRejectingGuard).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        rejectGuard(new Error('Guard async rejection'));
+      });
+      expect(result.current.currentPage).toEqual(pages.alarms);
+    } finally {
+      unregister();
+    }
+
+    // Now previous succeeds without guards
+    act(() => {
+      result.current.previous();
+    });
+    expect(result.current.currentPage).toEqual(pages.home);
+  });
+
+  it('evaluates multiple stacked navigation guards with short-circuiting', async () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+
+    const guard1 = vi.fn().mockReturnValue(false);
+    const guard2 = vi.fn().mockReturnValue(true);
+
+    const unregister1 = registerNavigationGuard(guard1);
+    const unregister2 = registerNavigationGuard(guard2);
+
+    try {
+      await act(async () => {
+        result.current.previous();
+      });
+
+      // guard1 returned false, so guard2 should be short-circuited
+      expect(guard1).toHaveBeenCalledTimes(1);
+      expect(guard2).not.toHaveBeenCalled();
+      expect(result.current.currentPage).toEqual(pages.alarms);
+
+      // Change guard1 to pass, but guard2 fails
+      guard1.mockReturnValue(true);
+      guard2.mockReturnValue(false);
+
+      await act(async () => {
+        result.current.previous();
+      });
+
+      expect(guard1).toHaveBeenCalledTimes(2);
+      expect(guard2).toHaveBeenCalledTimes(1);
+      expect(result.current.currentPage).toEqual(pages.alarms);
+
+      // Both pass
+      guard2.mockReturnValue(true);
+
+      await act(async () => {
+        result.current.previous();
+      });
+
+      expect(result.current.currentPage).toEqual(pages.home);
+    } finally {
+      unregister1();
+      unregister2();
+    }
+  });
+
+  it('popToTop respects navigation guards and aborts when guard returns false', async () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+      result.current.navigate('items');
+    });
+    expect(result.current.currentPage).toEqual(pages.items);
+
+    let allow = false;
+    const guard = vi.fn(async () => allow);
+    const unregister = registerNavigationGuard(guard);
+
+    try {
+      await act(async () => {
+        result.current.popToTop();
+      });
+
+      expect(guard).toHaveBeenCalledTimes(1);
+      expect(result.current.currentPage).toEqual(pages.items);
+      expect(result.current.canGoBack).toBe(true);
+
+      allow = true;
+      await act(async () => {
+        result.current.popToTop();
+      });
+
+      expect(guard).toHaveBeenCalledTimes(2);
+      expect(result.current.currentPage).toEqual(pages.home);
+      expect(result.current.canGoBack).toBe(false);
+    } finally {
+      unregister();
+    }
+  });
+
+  it('popToTop is a safe no-op when already at the root page', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    expect(result.current.noPreviousPages).toBe(true);
+    expect(result.current.currentPage).toEqual(pages.home);
+
+    act(() => {
+      result.current.popToTop();
+    });
+
+    expect(result.current.noPreviousPages).toBe(true);
+    expect(result.current.currentPage).toEqual(pages.home);
+  });
+
+  it('replace supports subpages and params and resets scrollTop', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.setScrollTop(300);
+      result.current.replace('home', { subpage: 'form', params: { editId: '123' } });
+    });
+
+    expect(result.current.currentPage).toEqual(pages.home.subpages?.form);
+    expect(result.current.currentRoute).toBe('home');
+    expect(result.current.currentSubpage).toBe('form');
+    expect(result.current.currentParams).toEqual({ editId: '123' });
+    expect(result.current.scrollTop).toBe(0);
+    expect(result.current.noPreviousPages).toBe(true);
+  });
+
+  it('reset supports subpages and params, resets scrollTop, and allows subsequent navigation', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    act(() => {
+      result.current.navigate('alarms');
+      result.current.navigate('items');
+      result.current.setScrollTop(150);
+    });
+
+    act(() => {
+      result.current.reset('home', { subpage: 'form', params: { step: 2 } });
+    });
+
+    expect(result.current.currentPage).toEqual(pages.home.subpages?.form);
+    expect(result.current.currentRoute).toBe('home');
+    expect(result.current.currentSubpage).toBe('form');
+    expect(result.current.currentParams).toEqual({ step: 2 });
+    expect(result.current.scrollTop).toBe(0);
+    expect(result.current.noPreviousPages).toBe(true);
+    expect(result.current.canGoBack).toBe(false);
+
+    // Subsequent navigation builds a clean new stack
+    act(() => {
+      result.current.navigate('items');
+    });
+
+    expect(result.current.currentPage).toEqual(pages.items);
+    expect(result.current.noPreviousPages).toBe(false);
+    expect(result.current.canGoBack).toBe(true);
+    expect(result.current.pageKey).toBe('home,form');
+  });
+
+  it('routeKey uniquely differentiates root and sibling subpage transitions', () => {
+    const { result } = renderHook(() => useNavigator());
+
+    // Root page routeKey is non-empty ('home') while legacy pageKey is ''
+    expect(result.current.routeKey).toBe('home');
+    expect(result.current.pageKey).toBe('');
+
+    act(() => {
+      result.current.navigate('home', { subpage: 'form' });
+    });
+
+    expect(result.current.routeKey).toBe('home > home,form');
+    expect(result.current.pageKey).toBe('home');
+
+    act(() => {
+      result.current.previous();
+    });
+
+    // Back to root
+    expect(result.current.routeKey).toBe('home');
+    expect(result.current.pageKey).toBe('');
+
+    act(() => {
+      result.current.navigate('alarms');
+    });
+
+    expect(result.current.routeKey).toBe('home > alarms');
+  });
 });
+

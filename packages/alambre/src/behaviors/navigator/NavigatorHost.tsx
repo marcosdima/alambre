@@ -30,6 +30,7 @@ export type NavigatorHostProps = ComponentProps<typeof View> & {
   titleColor?: ColorValue;
   headerStyle?: StyleProp<ViewStyle>;
   initialMountDelay?: number;
+  backLabel?: string;
   animations?: {
     go?: NavigatorAnimations;
     return?: NavigatorAnimations;
@@ -48,6 +49,7 @@ export const NavigatorHost = ({
   titleColor = 'black',
   headerStyle,
   initialMountDelay = 50,
+  backLabel = 'Volver',
   useNavigator = useDefaultNavigator,
   pressStyle,
   ...props
@@ -128,7 +130,7 @@ export const NavigatorHost = ({
       disabled={!canShowArrow}
       hitSlop={12}
       accessibilityRole="button"
-      accessibilityLabel="Volver"
+      accessibilityLabel={backLabel}
     >
       <Animated.View style={[styles.iconBody, iconStyle]}>
         <AlambreIcons.Arrow

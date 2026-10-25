@@ -54,4 +54,22 @@ describe('createStore', () => {
 
     expect(listener).not.toHaveBeenCalled();
   });
+
+  it('provides get and set aliases for backwards compatibility', () => {
+    const store = createStore<CountState>({ count: 5 });
+    const listener = vi.fn();
+
+    expect(store.get()).toEqual({ count: 5 });
+
+    store.subscribe(listener);
+    store.set({ count: 10 });
+
+    expect(store.get()).toEqual({ count: 10 });
+    expect(store.getState()).toEqual({ count: 10 });
+    expect(listener).toHaveBeenCalledWith({ count: 10 });
+
+    store.set((prev) => ({ count: prev.count + 5 }));
+    expect(store.get()).toEqual({ count: 15 });
+  });
 });
+
