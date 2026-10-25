@@ -157,7 +157,7 @@ Do not silently redefine established architectural concepts. Stop and consult th
 
 - Do not invent repository conventions when existing conventions can be inspected. Search for existing examples and read the documentation first.
 - Do not rely on unverified assumptions about native, Expo, React Native, or library behavior. Verify it through documentation or an appropriate focused experiment.
-- Treat ideas that change architectural understanding as proposals (`docs/proposals/proposals.md`) rather than silently adopting them. Promotion to `alambre` or `base-template` goes through the Extraction Audit (`docs/guidelines/agents.md` §6).
+- Treat ideas that change architectural understanding as proposals (`docs/proposals/index.md`) rather than silently adopting them. Promotion to `alambre` or `base-template` goes through the Extraction Audit (`docs/guidelines/agents.md` §6).
 
 ## Public API Discipline
 

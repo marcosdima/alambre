@@ -25,7 +25,7 @@ Start from `docs/index.md` (the catalog), then navigate to the relevant document
 - `docs/guidelines/workflow.md` — validation order, E2E invocation, and commit format.
 - `docs/guidelines/testing.md` — Maestro E2E flow architecture and unit test rules.
 - `docs/guidelines/agents.md` §6 — the Extraction Audit: how reusable code is promoted to packages or templates.
-- `docs/proposals/proposals.md` — pending framework changes and roadmap items.
+- `docs/proposals/index.md` — pending framework changes, RFCs, and roadmap items.
 - `docs/apps/*.md` — per-application contracts and constraints.
 
 Do not guess content: read the index, then the specific file.
@@ -59,7 +59,7 @@ When adding or changing documented knowledge:
 4. Do not log "discoveries" after finishing work. Reusable candidates are
    handled by the Extraction Audit (`docs/guidelines/agents.md` §6); only
    contract changes are documented (`docs/packages/alambre/architecture.md` /
-   `docs/packages/ui/overview.md`), and pending design decisions go to `docs/proposals/proposals.md`.
+   `docs/packages/ui/overview.md`), and pending design decisions go to `docs/proposals/index.md`.
 5. Keep `frontmatter` (`title`, `summary`) accurate for retrieval.
 6. Do not duplicate content into `AGENTS.md` or agent definitions.
 

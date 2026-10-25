@@ -32,6 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.npmrc
 
 # typescript
 *.tsbuildinfo
@@ -45,6 +46,8 @@ apps/*/android
 apps/*/ios
 
 .vscode
+projects
+*.geany
 
 # agent artifacts (screenshots, verification evidence)
 .agents/artifacts/

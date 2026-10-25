@@ -65,7 +65,16 @@
     "build": "bob build",
     "build:icons": "node scripts/generate-icons.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.tests.json --noEmit",
-    "test": "vitest run"
+    "check:quick": "tsc --noEmit && eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:fast": "vitest run --bail 1",
+    "test:behaviors": "vitest run tests/behaviors",
+    "test:core": "vitest run tests/core tests/capabilities",
+    "test:hooks": "vitest run tests/hooks",
+    "test:relay": "vitest run tests/relay",
+    "test:ui": "vitest run tests/ui",
+    "test:api": "vitest run tests/public-api.test.ts"
   },
   "peerDependencies": {
     "@tanstack/react-query": ">=5.0.0",

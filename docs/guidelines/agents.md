@@ -124,7 +124,7 @@ To prevent agent drift (such as a single agent assuming success on unverified na
             +--> Presentational / UI skin, reusable by apps   --> packages/ui or apps/base-template
             +--> Single-consumer or domain-specific           --> stays in its app (no docs)
             +--> Experimental kinetic idea                    --> stays as a playground testbed
-            +--> Needs design consensus                       --> RFC in docs/proposals/proposals.md
+            +--> Needs design consensus                       --> RFC in docs/proposals/index.md
 ```
 
 Destination criteria:
@@ -134,7 +134,7 @@ Destination criteria:
 | `packages/alambre` | Headless and presentation-neutral (no colors, layout wrappers, domain data); has >= 2 real consumers (Rule of Two); covered by contract tests (`tests/public-api.test.ts`) and validated on device when kinetic. |
 | `packages/ui` / `apps/base-template` | Presentation or compound UI that is not framework-worthy (it carries a visual skin, theme tokens, or app-level opinions) but is broadly welcome as a starting point for new apps. Needs no second consumer, but must respect `apps/base-template` conventions (semantic theme colors, accessibility, no leaks into `alambre`). |
 | Stays in the app | Single-consumer, domain-specific (e.g. specific game rules), or standard React Native knowledge. Do not document it. |
-| `docs/proposals/proposals.md` | Cross-cutting or breaking changes that require user discussion before implementation. |
+| `docs/proposals/` | Cross-cutting or breaking changes that require user discussion before implementation (catalogued in `docs/proposals/index.md`). |
 
 Rules:
 

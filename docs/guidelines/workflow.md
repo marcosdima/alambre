@@ -22,6 +22,19 @@ Progressive order rationale: `lint` and `typecheck` fail fast and cheaply, `test
 catches behavior, and `build` is the last gate because it is the slowest and most
 likely to be superseded by an earlier failure.
 
+Fast targeted iteration commands during active development:
+
+```bash
+pnpm check:quick    # Quick tsc + eslint for packages/alambre
+pnpm test:fast      # vitest run --bail 1
+pnpm test:behaviors # Overlay hosts, navigator, and kinetic containers
+pnpm test:core      # Stores, configuration, collections, sensory, and lang
+pnpm test:hooks     # Harmonic motion, stagger, and gesture hooks
+pnpm test:relay     # Multiplayer room relay and turn engine
+pnpm test:ui        # Tactile UI components and tokens
+pnpm test:api       # Public value and type surface contracts
+```
+
 Targeted scope when iterating on a single package:
 
 ```bash

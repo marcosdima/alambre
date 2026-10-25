@@ -29,4 +29,4 @@ Welcome to the Alambre monorepo documentation. The documentation mirrors the rep
 - **[Testing Guidelines](./guidelines/testing.md)**: Maestro E2E test architecture and Vitest unit testing contracts.
 
 ### Proposals
-- **[RFCs & Roadmap](./proposals/proposals.md)**: Pending framework changes and historical architectural proposals.
+- **[RFCs & Roadmap](./proposals/index.md)**: Master index of architectural proposals, lifecycle tracking, and individual RFC documents.
