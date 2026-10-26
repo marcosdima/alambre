@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, usePressKinetics } from '../..';
 import { useTheme, resolveTypography } from '../theme';
+import { isTextContent } from '../utils/text';
 import AppBadge from './AppBadge';
 import type { BadgeTone } from './AppBadge';
 
@@ -135,7 +136,7 @@ export default function AppCard({
           <View style={styles.titleColumn}>
             {badgePosition === 'inline' ? (
               <View style={styles.titleBadgeRow}>
-                {typeof title === 'string' ? (
+                {isTextContent(title) ? (
                   <Text style={[styles.titleText, { color: theme.color }, titleTypography]}>
                     {title}
                   </Text>
@@ -144,7 +145,7 @@ export default function AppCard({
                 )}
 
                 {badge ? (
-                  typeof badge === 'string' ? (
+                  isTextContent(badge) ? (
                     <AppBadge
                       label={badge}
                       tone={badgeTone}
@@ -156,7 +157,7 @@ export default function AppCard({
                   )
                 ) : null}
               </View>
-            ) : typeof title === 'string' ? (
+            ) : isTextContent(title) ? (
               <Text style={[styles.titleText, { color: theme.color }, titleTypography]}>
                 {title}
               </Text>
@@ -165,7 +166,7 @@ export default function AppCard({
             )}
 
             {subtitle ? (
-              typeof subtitle === 'string' ? (
+              isTextContent(subtitle) ? (
                 <Text style={[styles.subtitleText, { color: theme.muted }, subtitleTypography]}>
                   {subtitle}
                 </Text>
@@ -178,7 +179,7 @@ export default function AppCard({
           {/* Right Header Slot */}
           <View style={styles.headerRightSlot}>
             {badge && badgePosition === 'right' ? (
-              typeof badge === 'string' ? (
+              isTextContent(badge) ? (
                 <AppBadge
                   label={badge}
                   tone={badgeTone}

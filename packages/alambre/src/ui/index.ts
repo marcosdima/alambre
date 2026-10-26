@@ -75,3 +75,6 @@ export { default as ScrambleText } from './components/text-animations/ScrambleTe
 export { default as TickerText } from './components/text-animations/TickerText';
 export { default as TypewriterText } from './components/text-animations/TypewriterText';
 export { default as WavyText } from './components/text-animations/WavyText';
+
+// Utilities
+export { isTextContent } from './utils/text';

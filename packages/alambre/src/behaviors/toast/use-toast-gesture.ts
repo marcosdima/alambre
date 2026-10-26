@@ -68,6 +68,8 @@ export function useToastGesture<TPayload = unknown>({
     translateY.value = 0;
   }, [data.id, translateX, translateY]);
 
+  const toastId = data.id;
+
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
       translateX.value = event.translationX;
@@ -85,18 +87,18 @@ export function useToastGesture<TPayload = unknown>({
       if (dismissUp) {
         runOnJS(setIsGestureDismissed)(true);
         translateY.value = withTiming(-160, kinetics.timing.base, () => {
-          runOnJS(dismiss)(data.id);
+          runOnJS(dismiss)(toastId);
         });
       } else if (dismissDown) {
         runOnJS(setIsGestureDismissed)(true);
         translateY.value = withTiming(160, kinetics.timing.base, () => {
-          runOnJS(dismiss)(data.id);
+          runOnJS(dismiss)(toastId);
         });
       } else if (dismissHoriz) {
         runOnJS(setIsGestureDismissed)(true);
         const dir = Math.sign(event.translationX || event.velocityX || 1);
         translateX.value = withTiming(dir * 500, kinetics.timing.base, () => {
-          runOnJS(dismiss)(data.id);
+          runOnJS(dismiss)(toastId);
         });
       } else {
         translateX.value = withSpring(0, kinetics.spring.snappy);

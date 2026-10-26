@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { LayoutChangeEvent, ViewProps } from 'react-native';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,6 +8,7 @@ import Animated, {
   withRepeat,
   Easing,
 } from 'react-native-reanimated';
+import { isTextContent } from '../../core/text';
 
 export interface MarqueeProps extends ViewProps {
   children: React.ReactNode;
@@ -42,15 +43,17 @@ export function Marquee({ children, duration = 5000, gap = 50, speed = 1, style,
     setContentWidth(e.nativeEvent.layout.width);
   };
 
+  const renderedContent = isTextContent(children) ? <Text>{children}</Text> : children;
+
   return (
     <View style={[styles.container, style]} {...props}>
       <Animated.View style={[styles.row, animatedStyle]}>
         <View onLayout={onLayout} style={styles.content}>
-          {children}
+          {renderedContent}
         </View>
         {contentWidth > 0 && (
           <View style={[styles.content, { marginLeft: gap }]}>
-            {children}
+            {renderedContent}
           </View>
         )}
       </Animated.View>

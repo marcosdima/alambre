@@ -12,6 +12,7 @@ import {
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, useDialog } from '../..';
 import { useTheme, resolveTypography } from '../theme';
+import { isTextContent } from '../utils/text';
 import AppButton, { type ButtonTone } from './AppButton';
 
 export type DialogTone = 'primary' | 'danger' | 'warning' | 'success' | 'neutral';
@@ -174,7 +175,15 @@ export default function AppDialog({
           ) : null}
 
           {/* Optional Children Content */}
-          {children ? <View style={styles.childrenContainer}>{children}</View> : null}
+          {children ? (
+            <View style={styles.childrenContainer}>
+              {isTextContent(children) ? (
+                <Text style={[styles.description, { color: theme.color }]}>{children}</Text>
+              ) : (
+                children
+              )}
+            </View>
+          ) : null}
 
           {/* Action Buttons */}
           {customActions ? (

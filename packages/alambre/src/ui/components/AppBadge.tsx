@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { AlambreIcons, usePressKinetics } from '../..';
 import { useTheme, resolveTypography } from '../theme';
+import { isTextContent } from '../utils/text';
 
 export type BadgeTone = 'primary' | 'neutral' | 'success' | 'warning' | 'danger';
 export type BadgeVariant = 'soft' | 'solid' | 'outline';
@@ -148,7 +149,7 @@ export default function AppBadge({
       {...props}
     >
       {icon}
-      {typeof content === 'string' ? (
+      {isTextContent(content) ? (
         <Text
           style={[
             styles.badgeText,

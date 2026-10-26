@@ -10,6 +10,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme, resolveTypography } from '../../theme';
+import { isTextContent } from '../../utils/text';
 
 export type TickerSpringConfig = {
   damping?: number;
@@ -167,7 +168,7 @@ export default function TickerText({
     >
       {prefix ? (
         <View style={styles.prefixSlot}>
-          {typeof prefix === 'string' ? (
+          {isTextContent(prefix) ? (
             <Text style={mergedTextStyle}>{prefix}</Text>
           ) : (
             prefix
@@ -229,7 +230,7 @@ export default function TickerText({
 
       {suffix ? (
         <View style={styles.suffixSlot}>
-          {typeof suffix === 'string' ? (
+          {isTextContent(suffix) ? (
             <Text style={mergedTextStyle}>{suffix}</Text>
           ) : (
             suffix

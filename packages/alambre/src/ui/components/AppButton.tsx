@@ -5,6 +5,7 @@ import Animated from 'react-native-reanimated';
 import type { ButtonProps, ButtonState } from '../..';
 import { Button, usePressKinetics } from '../..';
 import { useTheme, resolveTypography } from '../theme';
+import { isTextContent } from '../utils/text';
 
 export type ButtonVariant = 'solid' | 'outline' | 'soft' | 'ghost';
 export type ButtonTone = 'primary' | 'secondary' | 'neutral' | 'success' | 'danger' | 'warning';
@@ -212,7 +213,7 @@ export default function AppButton({
                 ) : null}
                 {typeof children === 'function'
                   ? children({ pressed, disabled: isDisabled, loading: isLoading })
-                  : typeof children === 'string'
+                  : isTextContent(children)
                     ? (
                       <Text
                         style={[

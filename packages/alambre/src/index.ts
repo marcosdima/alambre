@@ -362,6 +362,7 @@ export type {
 export {
   createStore,
   useExternalStore,
+  isTextContent,
   kinetics,
   withSettledSpring,
   DEFAULT_SPRING_ENERGY_THRESHOLD,

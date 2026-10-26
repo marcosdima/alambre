@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import type { ColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme, resolveTypography, type TypographyWeight } from '../theme';
+import { isTextContent } from '../utils/text';
 export type TitleLevel = 1 | 2 | 3;
 export type TitleBadgeTone = 'primary' | 'neutral' | 'success' | 'danger' | 'warning';
 
@@ -144,7 +145,7 @@ export default function AppTitle({
               { backgroundColor: badgeColors.bg, borderColor: badgeColors.border },
             ]}
           >
-            {typeof badge === 'string' ? (
+            {isTextContent(badge) ? (
               <Text style={[styles.badgeText, { color: badgeColors.text }, badgeTypography]}>{badge}</Text>
             ) : (
               badge
@@ -154,7 +155,7 @@ export default function AppTitle({
       </View>
 
       {subtitle ? (
-        typeof subtitle === 'string' ? (
+        isTextContent(subtitle) ? (
           <Text
             style={[
               styles.subtitle,
