@@ -1,7 +1,7 @@
 ---
 id: RFC-0019
 title: "Proposal 19: Strict Headless Forms Architecture & Granular Subscription (`createForm`, `useField`, `getFieldProps`)"
-status: PROPOSED
+status: RESOLVED
 author: @lead
 scope: alambre (capabilities/forms)
 summary: "Strict headless forms architecture & granular subscription (`createForm`, `useField`, `getFieldProps`)."
@@ -10,8 +10,9 @@ summary: "Strict headless forms architecture & granular subscription (`createFor
 [← Back to Proposals Index](./index.md)
 
 # Proposal 19: Strict Headless Forms Architecture & Granular Subscription (`createForm`, `useField`, `getFieldProps`)
-- **Status**: PROPOSED
+- **Status**: RESOLVED
 - **Author**: @lead
+- **Resolution**: Fully implemented in `packages/alambre/src/capabilities/forms/`, exported publicly in `packages/alambre/src/index.ts`, tested with 100% coverage including isolated granular subscriptions in `packages/alambre/tests/capabilities/create-form.test.tsx`, and documented in `docs/packages/alambre/capabilities.md`.
 
 ### 1. Current Problem
 - **Unexported Prototype with Loose Typing:** `packages/alambre/src/capabilities/forms/` implements `createForm`, but it is not exported from `packages/alambre/src/index.ts` and lacks contract documentation.

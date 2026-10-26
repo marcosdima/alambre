@@ -61,6 +61,19 @@ export type {
   SensoryCuesActions,
   UseSensoryCuesReturn,
 } from './capabilities/sensory';
+export type {
+  FormErrors,
+  FormTouched,
+  FormDirtyFields,
+  FieldState,
+  FieldProps,
+  UseFieldReturn,
+  FormState,
+  FormActions,
+  FormContextType,
+  CreateFormOptions,
+  CreateFormReturn,
+} from './capabilities/forms';
 
 
 export type { Storage } from './types/actions';
@@ -95,6 +108,7 @@ export {
   createLightDarkProvider,
   createSensoryCues,
   createSensoryCuesProvider,
+  createForm,
 } from './capabilities';
 
 // Behaviors.

@@ -47,6 +47,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.createCollection).toBe('function');
     expect(typeof Alambre.createSensoryCues).toBe('function');
     expect(typeof Alambre.createSensoryCuesProvider).toBe('function');
+    expect(typeof Alambre.createForm).toBe('function');
     expect(typeof Alambre.createApiProvider).toBe('function');
     expect(typeof Alambre.NavigatorProvider).toBe('function');
     expect(typeof Alambre.useNavigator).toBe('function');
@@ -393,6 +394,32 @@ describe('public API — type surface', () => {
     const navigatorHostProps: Alambre.NavigatorHostProps = {
       headerTitle: 'Host',
     };
+    const formErrors: Alambre.FormErrors<{ name: string }> = { name: 'Error' };
+    const formTouched: Alambre.FormTouched<{ name: string }> = { name: true };
+    const formDirtyFields: Alambre.FormDirtyFields<{ name: string }> = { name: true };
+    const fieldState: Alambre.FieldState<string> = { value: 'val', isTouched: false, isDirty: false };
+    const fieldProps: Alambre.FieldProps<string> = {
+      value: 'val',
+      onChangeText: () => undefined,
+      onBlur: () => undefined,
+      hasError: false,
+    };
+    const formState: Alambre.FormState<{ name: string }> = {
+      values: { name: 'test' },
+      errors: {},
+      touched: {},
+      dirtyFields: {},
+      isDirty: false,
+      isValid: true,
+      isSubmitting: false,
+      isValidating: false,
+    };
+    expect(formErrors).toBeDefined();
+    expect(formTouched).toBeDefined();
+    expect(formDirtyFields).toBeDefined();
+    expect(fieldState).toBeDefined();
+    expect(fieldProps).toBeDefined();
+    expect(formState).toBeDefined();
     const historyState: Alambre.HistoryState<number> = { past: [], present: 1, future: [] };
     const stopwatchOptions: Alambre.UseStopwatchOptions = { autoStart: true, initialSeconds: 10 };
     const staggerOptions: Alambre.StaggerOptions = { initialDelay: 50, staggerMs: 30, maxDelay: 400 };

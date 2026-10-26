@@ -1,6 +1,6 @@
 ---
 title: Capabilities Reference
-summary: Content-driven external store factories backed by the Storage contract: createConfig, createLang, createLightDark, and createCollection.
+summary: Content-driven external store factories backed by the Storage contract: createConfig, createLang, createLightDark, createCollection, and createForm.
 ---
 
 # Capabilities Reference
@@ -284,5 +284,83 @@ All capabilities backed by `Storage` follow a consistent, non-blocking asynchron
 ### Storage Failure & Corrupted Data Handling
 - **Safe JSON Fallback:** `createCollection` wraps storage deserialization in a safe JSON parser. If stored raw text is null, unparseable, or not a JSON array, it safely falls back to `initialValue` without throwing unhandled exceptions.
 - **Async Write Resilience:** Mutating actions (`add`, `update`, `remove`, `saveField`, `changeLang`, `setThemeName`) update memory state optimistically and `await storage.set(...)`. If the underlying storage engine throws an error, the returned Promise rejects, allowing callers to catch errors or display toasts if desired.
+
+---
+
+## 6. `createForm` (Strict Headless Forms)
+
+Creates a high-performance, strictly typed headless form store with granular subscriptions, lifecycle metadata, and declarative component bindings.
+
+### Signature
+```typescript
+import { createForm } from 'alambre';
+
+const form = createForm<T extends Record<string, any>>({
+  initialValues: T,
+  validate?: (values: T) => FormErrors<T> | Promise<FormErrors<T>>,
+  onSubmit: (values: T) => void | Promise<void>,
+  validateOnChange?: boolean, // default: true
+  validateOnBlur?: boolean,   // default: true
+});
+```
+
+### Factory Return
+* **`store`**: Decoupled `Store<FormInternalState<T>>` instance.
+* **`actions`**: Object exposing imperative mutating methods:
+  * `setFieldValue<K extends keyof T>(field: K, value: T[K]): void`
+  * `setFieldError<K extends keyof T>(field: K, error: string | undefined): void`
+  * `setFieldTouched<K extends keyof T>(field: K, isTouched?: boolean): void`
+  * `setValues(values: Partial<T> | ((prev: T) => T)): void`
+  * `setErrors(errors: FormErrors<T>): void`
+  * `setTouched(touched: FormTouched<T>): void`
+  * `resetField<K extends keyof T>(field: K): void`
+  * `resetForm(nextInitialValues?: Partial<T>): void`
+  * `submitForm(): Promise<boolean>`: Touches all fields, validates, and runs `onSubmit` if valid.
+  * `validateForm(): Promise<boolean> | boolean`
+* **`getState()`**: Direct non-reactive snapshot of `FormState<T>` (`values`, `errors`, `touched`, `dirtyFields`, `isDirty`, `isValid`, `isSubmitting`, `isValidating`).
+* **`useForm()`**: Reactive hook returning full `FormContextType<T>` (`FormState<T> & FormActions<T> & { getFieldProps }`).
+* **`useField<K extends keyof T>(field: K)`**: Granular field hook backed by referential slice caching. **Only the active field re-renders on keystroke**; other fields remain untouched.
+* **`getFieldProps<K extends keyof T>(field: K)`**: Returns `{ value, onChangeText, onBlur, errorMessage, hasError }` directly spreadable onto `AppTextInput` or `Input`.
+* **`subscribe(listener)`**: Subscribes to store changes outside React.
+
+### Granular Re-Render Isolation (`useField`)
+Unlike monolithic form hooks that re-render entire screens on every keystroke, `useField` caches per-field state slices. When a user types in `username`, components subscribed to `password` or `email` will **never** re-render:
+
+```tsx
+// Re-renders ONLY when username changes
+function UsernameInput() {
+  const field = form.useField('username');
+  return <AppTextInput label="Username" {...field.fieldProps} />;
+}
+
+// Re-renders ONLY when password changes
+function PasswordInput() {
+  const field = form.useField('password');
+  return <AppTextInput label="Password" isPassword {...field.fieldProps} />;
+}
+```
+
+### Declarative Bindings (`getFieldProps`)
+`getFieldProps(field)` produces component-compatible props with touch-gated error display:
+- `errorMessage`: Only exposed when the field has been touched (or form submitted), preventing eager red validation errors on initial mount.
+- `hasError`: Boolean indicator when `isTouched && Boolean(error)`.
+- `onChangeText`: Automatically mutates field value and triggers validation.
+- `onBlur`: Marks the field as touched.
+
+```tsx
+// Using useForm() at top level
+function LoginFormScreen() {
+  const { getFieldProps, submitForm, isSubmitting } = form.useForm();
+
+  return (
+    <View>
+      <AppTextInput label="Email" {...getFieldProps('email')} />
+      <AppTextInput label="Password" isPassword {...getFieldProps('password')} />
+      <AppButton title="Sign In" loading={isSubmitting} onPress={submitForm} />
+    </View>
+  );
+}
+```
+
 
 
