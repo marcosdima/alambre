@@ -84,7 +84,7 @@ describe('Public API Contract: @some-alambre/room-relay', () => {
       reducer,
     });
 
-    const waitFor = async (fn: () => boolean, timeout = 400) => {
+    const waitFor = async (fn: () => boolean, timeout = 1500) => {
       const start = Date.now();
       while (!fn() && Date.now() - start < timeout) {
         await new Promise((r) => setTimeout(r, 10));

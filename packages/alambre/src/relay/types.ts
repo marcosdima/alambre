@@ -33,6 +33,10 @@ export interface RelayPeer {
    * Timestamp (epoch ms) when the peer was last observed.
    */
   lastSeen: number;
+  /**
+   * Timestamp (epoch ms) when the peer joined the room.
+   */
+  joinedAt?: number;
 }
 
 /**
@@ -47,6 +51,11 @@ export interface RelayMessage<TType extends string = string, TPayload = unknown>
    * Sender client ID.
    */
   from: string;
+  /**
+   * Target recipient client ID for point-to-point / fog-of-war routing.
+   * If omitted, message is broadcast to all peers in the room.
+   */
+  to?: string;
   /**
    * Sender display name.
    */
@@ -227,6 +236,7 @@ export interface RoomRelayState {
    */
   latencyMs: number;
   history: RelayMessage<string, unknown>[];
+  joinedAt?: number;
   error?: string;
 }
 
@@ -241,6 +251,9 @@ export interface RoomRelayActions<TEvents extends DefaultRelayEvents = DefaultRe
   disconnect(): void;
   send<K extends keyof TEvents>(type: K, payload: TEvents[K]): void;
   send(type: string, payload: unknown): void;
+  sendTo<K extends keyof TEvents>(peerId: string, type: K, payload: TEvents[K]): void;
+  sendTo(peerId: string, type: string, payload: unknown): void;
+  setHost(isHost: boolean): void;
   joinRoom(code: string): void;
   createRoom(length?: number): string;
   setPlayerName(name: string): void;

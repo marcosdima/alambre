@@ -1,7 +1,7 @@
 ---
 id: RFC-0020
 title: "Proposal 20: Multiplayer Fog-of-War, Optimistic Action Execution & Host Migration (`TurnEngineClient`, `@alambre/room-relay`)"
-status: PROPOSED
+status: RESOLVED
 author: @lead
 scope: alambre/relay (@alambre/room-relay)
 summary: "Multiplayer fog-of-war, optimistic action execution & host migration (`TurnEngineClient`, `@alambre/room-relay`)."
@@ -10,7 +10,7 @@ summary: "Multiplayer fog-of-war, optimistic action execution & host migration (
 [← Back to Proposals Index](./index.md)
 
 # Proposal 20: Multiplayer Fog-of-War, Optimistic Action Execution & Host Migration (`TurnEngineClient`, `@alambre/room-relay`)
-- **Status**: PROPOSED
+- **Status**: RESOLVED
 - **Author**: @lead
 
 ### 1. Current Problem
@@ -35,6 +35,24 @@ summary: "Multiplayer fog-of-war, optimistic action execution & host migration (
   - Prevents abandoned rooms on host disconnection.
 - **Cons:**
   - Optimistic actions require pure, deterministic reducers on both guest and host.
+
+### 4. Resolution
+- **Targeted Peer Messaging & Joined Timestamps**:
+  - Added optional `to?: string` targeting on `RelayMessage`.
+  - Added `joinedAt?: number` on `RelayPeer` and `RoomRelayState`.
+  - Added `sendTo(peerId, type, payload)` and `setHost(peerId)` actions in `RoomRelayActions`, implemented in `SimulatedRelayTransport`, `RoomRelayClient`, and exposed in `useRoomRelay`.
+- **Fog-of-War (`projectStateForPeer`)**:
+  - `TurnEngineOptions` accepts `projectStateForPeer?: (state: TState, peerId: string) => TState`.
+  - Host broadcasts redacted peer-specific snapshots and commits via targeted peer delivery (`sendTo`), while local host state remains authoritative and unredacted.
+  - Rejection frames (`ACTION_REJECT`) also pass through `projectStateForPeer` before transmission, eliminating data leaks.
+- **Optimistic Actions & Deterministic Rollback**:
+  - `TurnEngineOptions` accepts `optimistic?: boolean`.
+  - Guest `dispatch(action)` queues optimistic actions with monotonic `clientSeq` and immediately computes `optimisticGameState`.
+  - On host commit, acknowledged client sequences are pruned and remaining pending actions are replayed over the authoritative base.
+  - On host rejection (`ACTION_REJECT`), optimistic mutations roll back instantaneously to the host-provided authoritative state.
+- **Automated Deterministic Host Election**:
+  - When the room relay detects host disconnection, remaining connected peers evaluate the oldest peer using `joinedAt` (with lexicographical peer ID tie-breaking).
+  - The elected peer promotes itself via `relay.actions.setHost(candidateId)`, broadcasts `HOST_MIGRATED` with its current snapshot, and seamlessly assumes turn engine authority without data loss.
 
 ---
 

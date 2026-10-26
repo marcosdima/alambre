@@ -60,6 +60,7 @@ implements IRoomRelayClient<TEvents>
       latency: 0,
       latencyMs: 0,
       history: [],
+      joinedAt: Date.now(),
     };
 
     if (options.initialEvents) {
@@ -134,6 +135,35 @@ implements IRoomRelayClient<TEvents>
     this.dispatchLocalMessage(message);
   }
 
+  sendTo<K extends keyof TEvents>(peerId: string, type: K, payload: TEvents[K]): void;
+  sendTo(peerId: string, type: string, payload: unknown): void;
+  sendTo(peerId: string, type: any, payload: any): void {
+    if (this.isDestroyedFlag || !this.transport || this.state.status !== 'connected') {
+      return;
+    }
+
+    const now = Date.now();
+    const message: RelayMessage<string, unknown> = {
+      id: `msg_${now}_${Math.random().toString(36).substring(2, 7)}`,
+      from: this.state.playerId,
+      to: peerId,
+      senderName: this.state.playerName,
+      type: String(type),
+      payload,
+      timestamp: now,
+    };
+
+    // Forward through transport
+    this.transport.send(message as unknown as Record<string, unknown>);
+  }
+
+  setHost(isHost: boolean): void {
+    this.updateState({ isHost });
+    if (this.transport && typeof (this.transport as any).setHost === 'function') {
+      (this.transport as any).setHost(isHost);
+    }
+  }
+
   join(roomCode: string): void {
     const cleanCode = sanitizeRoomCode(roomCode);
     if (!cleanCode) return;
@@ -142,6 +172,7 @@ implements IRoomRelayClient<TEvents>
     this.updateState({
       roomCode: cleanCode,
       isHost: false,
+      joinedAt: Date.now(),
     });
     this.connect();
   }
@@ -155,6 +186,7 @@ implements IRoomRelayClient<TEvents>
     this.updateState({
       roomCode: code,
       isHost: true,
+      joinedAt: Date.now(),
     });
     this.connect();
     return code;
@@ -321,6 +353,11 @@ implements IRoomRelayClient<TEvents>
     const msg = raw as Record<string, unknown>;
     const type = msg.type as string;
 
+    // Filter messages targeted to a specific peer (Fog-of-War / point-to-point)
+    if (typeof msg.to === 'string' && msg.to !== this.state.playerId) {
+      return;
+    }
+
     // 1. Heartbeat Pong
     if (type === 'pong' && typeof msg.sentAt === 'number') {
       this.clearWatchdog();
@@ -331,13 +368,21 @@ implements IRoomRelayClient<TEvents>
 
     // 2. Room Joined Handshake
     if (type === 'room_joined' && Array.isArray(msg.peers)) {
-      this.updateState({ peers: msg.peers as RelayPeer[] });
+      const peersWithJoinedAt = (msg.peers as RelayPeer[]).map((p) => ({
+        ...p,
+        joinedAt: p.joinedAt ?? Date.now(),
+      }));
+      this.updateState({ peers: peersWithJoinedAt });
       return;
     }
 
     // 3. Peer Joined
     if (type === 'peer_joined' && msg.peer) {
       const peer = msg.peer as RelayPeer;
+      const peerWithJoinedAt: RelayPeer = {
+        ...peer,
+        joinedAt: peer.joinedAt ?? Date.now(),
+      };
       const filtered = this.state.peers.filter((p) => p.id !== peer.id);
       const systemMsg: RelayMessage<string, unknown> = {
         id: `sys_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -350,7 +395,7 @@ implements IRoomRelayClient<TEvents>
 
       this.recordHistory(systemMsg);
       this.updateState({
-        peers: [...filtered, peer],
+        peers: [...filtered, peerWithJoinedAt],
       });
       return;
     }
@@ -389,6 +434,7 @@ implements IRoomRelayClient<TEvents>
       const incoming: RelayMessage<string, unknown> = {
         id: (msg.id as string) || `msg_${now}_${Math.random().toString(36).substring(2, 6)}`,
         from,
+        to: typeof msg.to === 'string' ? msg.to : undefined,
         senderName: (msg.senderName as string) || 'Peer',
         type,
         payload: msg.payload,

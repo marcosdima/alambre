@@ -75,6 +75,8 @@ export type {
   TurnReducer,
   TurnActionIntentPayload,
   TurnActionCommitPayload,
+  TurnActionRejectPayload,
+  TurnHostMigratedPayload,
   TurnSyncRequestPayload,
   TurnSyncSnapshotPayload,
   TurnEngineState,

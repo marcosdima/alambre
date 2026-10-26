@@ -19,6 +19,7 @@ export interface SimulatedHubClient {
  */
 export class SimulatedEdgeRelayHub {
   private rooms = new Map<string, Set<SimulatedHubClient>>();
+  private clientJoinedAt = new Map<string, number>();
 
   /**
    * Connects a client to a simulated room.
@@ -29,6 +30,8 @@ export class SimulatedEdgeRelayHub {
       this.rooms.set(code, new Set());
     }
     const room = this.rooms.get(code)!;
+    const joinTime = Date.now();
+    this.clientJoinedAt.set(client.id, joinTime);
 
     // Simulate edge handshake delay
     setTimeout(() => {
@@ -44,6 +47,7 @@ export class SimulatedEdgeRelayHub {
           name: c.name,
           isHost: c.isHost,
           lastSeen: Date.now(),
+          joinedAt: this.clientJoinedAt.get(c.id) ?? Date.now(),
         }));
 
       client.receive({
@@ -58,6 +62,7 @@ export class SimulatedEdgeRelayHub {
         name: client.name,
         isHost: client.isHost,
         lastSeen: Date.now(),
+        joinedAt: joinTime,
       };
 
       for (const peer of room) {
@@ -84,6 +89,7 @@ export class SimulatedEdgeRelayHub {
     if (!room) return;
 
     room.delete(client);
+    this.clientJoinedAt.delete(client.id);
     if (!client.isDestroyed()) {
       client.setStatus('disconnected');
     }
@@ -108,14 +114,20 @@ export class SimulatedEdgeRelayHub {
 
   /**
    * Broadcasts a message to all other clients in the same room.
+   * If message.to is specified, delivers exclusively to that recipient.
    */
   broadcast(sender: SimulatedHubClient, message: Record<string, unknown>, latencyMs = 35) {
     const code = sanitizeRoomCode(sender.roomCode);
     const room = this.rooms.get(code);
     if (!room) return;
 
+    const targetPeerId = message.to as string | undefined;
+
     for (const peer of room) {
       if (peer.id !== sender.id && !peer.isDestroyed()) {
+        if (targetPeerId && peer.id !== targetPeerId) {
+          continue;
+        }
         const jitter = Math.random() * 16;
         setTimeout(() => {
           if (!peer.isDestroyed()) {
@@ -131,6 +143,7 @@ export class SimulatedEdgeRelayHub {
    */
   reset() {
     this.rooms.clear();
+    this.clientJoinedAt.clear();
   }
 
   /**
@@ -222,6 +235,10 @@ export class SimulatedRelayTransport implements RelayTransport {
 
   setLatency(ms: number): void {
     this.latencyMs = ms;
+  }
+
+  setHost(isHost: boolean): void {
+    this.client.isHost = isHost;
   }
 
   connect() {

@@ -181,6 +181,9 @@ const shuffledDeck = shuffleWithSeed(deck, "ROOM_XK89_ROUND_1");
 - **Host Arbitration & Monotonic Sequencing (`seq`):** Guest `dispatch(action)` calls send `TURN_ACTION_INTENT` to the host; the host validates via `validateAction`, increments `seq`, runs `reducer(state, action, meta)`, and broadcasts `TURN_ACTION_COMMIT`.
 - **Automatic Late-Join & Reconnect Snapshot Sync:** Guests automatically emit `TURN_SYNC_REQUEST` upon connection or sequence gap detection and hydrate from the host's `TURN_SYNC_SNAPSHOT`.
 - **Optional Turn Countdown Timer:** Built-in `turnDurationMs`, `remainingTurnMs`, and host `onTurnTimeout` handler.
+- **Fog-of-War State Projection (`projectStateForPeer`):** The host redacts sensitive hidden information (such as private card hands or face-down draw piles) using `projectStateForPeer?: (state: TState, peerId: string) => TState`. Each guest receives a tailored, redacted snapshot and action commit via targeted message routing (`sendTo`), while the host maintains the complete authoritative state. Rejection frames (`ACTION_REJECT`) are also projected.
+- **Optimistic Action Execution & Rollback:** With `optimistic: true`, guests apply their local reducer immediately, queueing pending actions with a monotonic `clientSeq`. On host commit, matching pending actions are pruned; on rejection (`ACTION_REJECT`), the client rolls back instantaneously to the authoritative state.
+- **Automated Host Migration:** When the host drops out, remaining peers deterministically elect a successor based on connection priority (`joinedAt` timestamp, with lexicographical peer ID tie-breaking). The elected peer promotes itself via `relay.actions.setHost()`, assumes engine authority, and broadcasts `HOST_MIGRATED` with its current snapshot.
 
 ```tsx
 import { useTurnEngine } from "@some-alambre/room-relay";
@@ -193,9 +196,17 @@ const turn = useTurnEngine<GameState, GameAction>({
   initialState: createInitialState(),
   reducer: (state, action, meta) => applyAction(state, action, meta.seq),
   turnDurationMs: 30000,
+  optimistic: true,
+  projectStateForPeer: (state, peerId) => ({
+    ...state,
+    opponents: state.players.filter((p) => p.id !== peerId).map((p) => ({
+      ...p,
+      hand: p.hand.map(() => 'hidden_card'),
+    })),
+  }),
 });
 
-// Dispatch an action (commits on host, sends intent on guest):
+// Dispatch an action (commits immediately if host, optimistically if guest):
 turn.dispatch({ type: "PLAY_CARD", cardId: "c_spades_A" });
 ```
 
