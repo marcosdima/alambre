@@ -20,6 +20,42 @@ export default () => {
       badgeTone: 'success' as const,
       onPress: () => navigate('roomRelayWeb'),
     },
+    {
+      key: 'kineticTabs',
+      title: 'Tabs Cinéticos & Esqueletos',
+      description:
+        'Física de indicador deslizante AppTabs (useKineticTabs) y placeholders AppSkeleton de reloj único O(1).',
+      badge: 'KINETICS-UI',
+      badgeTone: 'primary' as const,
+      onPress: () => navigate('kineticTabs'),
+    },
+    {
+      key: 'sortableDnd',
+      title: 'DnD Sortable (Lista & Grilla)',
+      description:
+        'Reordenamiento interactivo vertical (SortableList) y grilla 2D (SortableGrid) con tilt de velocidad y deslizamiento fluido.',
+      badge: 'DND',
+      badgeTone: 'warning' as const,
+      onPress: () => navigate('sortableDnd'),
+    },
+    {
+      key: 'turnEngineFoW',
+      title: 'Multiplayer Fog-of-War & Migración',
+      description:
+        'Simulación dual de cartas con redacción de niebla de guerra, acciones optimistas (0ms) con rollback y migración de host por joinedAt.',
+      badge: 'TURN-ENGINE',
+      badgeTone: 'danger' as const,
+      onPress: () => navigate('turnEngineFoW'),
+    },
+    {
+      key: 'sensoryKinetics',
+      title: 'Sensory Kinetics & Haptics',
+      description:
+        'Disparo declarativo de audio y hápticos en puntos de inflexión (giro 3D a 90°, ticks de rueda y aterrizaje de toss).',
+      badge: 'SENSORY',
+      badgeTone: 'neutral' as const,
+      onPress: () => navigate('sensoryKinetics'),
+    },
   ];
 
   return (
