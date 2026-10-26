@@ -176,6 +176,10 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.Draggable).toBe('function');
     expect(typeof Alambre.Droppable).toBe('function');
     expect(typeof Alambre.SortableRow).toBe('function');
+    expect(typeof Alambre.SortableList).toBe('function');
+    expect(typeof Alambre.SortableGrid).toBe('function');
+    expect(typeof Alambre.useKineticTabs).toBe('function');
+    expect(typeof Alambre.dispatchSensoryCue).toBe('function');
     expect(typeof Alambre.useCarousel).toBe('function');
     expect(typeof Alambre.calculateSnapInterval).toBe('function');
     expect(typeof Alambre.calculateActiveIndex).toBe('function');
@@ -587,6 +591,8 @@ describe('public API — type surface', () => {
     expect(typeof AlambreUI.AppActionSheet).toBe('function');
     expect(AlambreUI.AppTextInput).toBeDefined();
     expect(typeof AlambreUI.ConfirmDialog).toBe('function');
+    expect(typeof AlambreUI.AppTabs).toBe('function');
+    expect(typeof AlambreUI.AppSkeleton).toBe('function');
   });
 
   it('does not expose internal/plumbing namespaces', () => {

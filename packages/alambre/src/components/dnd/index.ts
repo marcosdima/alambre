@@ -4,3 +4,5 @@ export { useDroppable } from './useDroppable';
 export { Draggable } from './Draggable';
 export { Droppable } from './Droppable';
 export { SortableRow } from './SortableRow';
+export { SortableList } from './SortableList';
+export { SortableGrid } from './SortableGrid';

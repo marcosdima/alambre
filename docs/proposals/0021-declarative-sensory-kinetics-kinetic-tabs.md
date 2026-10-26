@@ -1,7 +1,7 @@
 ---
 id: RFC-0021
 title: "Proposal 21: Declarative Sensory Kinetics, Kinetic Tabs & Headless Virtualized Sortable Lists (`useKineticTabs`, `AppSkeleton`, `SortableList`)"
-status: PROPOSED
+status: RESOLVED
 author: @lead
 scope: alambre (kinetics, components), alambre/ui
 summary: "Declarative sensory kinetics, kinetic tabs & headless virtualized sortable lists (`useKineticTabs`, `AppSkeleton`, `SortableList`)."
@@ -10,7 +10,7 @@ summary: "Declarative sensory kinetics, kinetic tabs & headless virtualized sort
 [← Back to Proposals Index](./index.md)
 
 # Proposal 21: Declarative Sensory Kinetics, Kinetic Tabs & Headless Virtualized Sortable Lists (`useKineticTabs`, `AppSkeleton`, `SortableList`)
-- **Status**: PROPOSED
+- **Status**: RESOLVED
 - **Author**: @lead
 
 ### 1. Current Problem
@@ -35,6 +35,22 @@ summary: "Declarative sensory kinetics, kinetic tabs & headless virtualized sort
   - Fills major component gaps in `@alambre/ui`.
 - **Cons:**
   - Expands the headless gesture and UI component surface.
+
+### 4. Resolution
+- **Declarative Sensory Kinetics System**:
+  - Implemented `dispatchSensoryCue`, `KineticSensoryConfig`, `SensoryTriggerDispatcher` in `packages/alambre/src/types/sensory-kinetics.ts`.
+  - Seamlessly wired into `usePressKinetics`, `useSpatialFlip` (90° inflection midpoint & settle), `useWheelPicker` (discrete item ticks & snapping), and `useSpatialToss` (toss & drop landing).
+  - Works with `createSensoryCues` stores, action dispatchers, or raw callback functions with zero worklet boilerplate.
+- **Headless `useKineticTabs` & `@alambre/ui` `AppTabs`**:
+  - Implemented `useKineticTabs` in `packages/alambre/src/hooks/use-kinetic-tabs.ts` with spring-driven indicator offset/width tracking, auto-layout measurements, and full WAI-ARIA tablist accessibility (`tablist`, `tab`, `aria-selected`, keyboard actions).
+  - Implemented `AppTabs` in `packages/alambre/src/ui/components/AppTabs.tsx` supporting pill and segmented indicator styles, badges, icons, and theme integration.
+  - Modernized `apps/playground/src/components/test-utils/GummyTabs.tsx` to wrap `AppTabs`.
+- **`SortableList` & `SortableGrid`**:
+  - Implemented `SortableList` (1D vertical) and `SortableGrid` (2D multi-column) in `packages/alambre/src/components/dnd/`.
+  - Feature physics-driven neighbour shift springs (`glide`, `linear`, `bounce`, `instant`), ballistic velocity reordering, accessible TalkBack/VoiceOver reordering actions (`moveUp`, `moveDown`, `moveLeft`, `moveRight`), and seamless reduced motion handling.
+- **Single-Clock `AppSkeleton`**:
+  - Implemented `AppSkeleton` in `packages/alambre/src/ui/components/AppSkeleton.tsx` powered by unified `useLoopClock`.
+  - Supports `text`, `rect`, `circle`, and `pill` variants with $O(1)$ rendering overhead, static fallback under `useReducedMotion()`, and accessible `progressbar` semantics.
 
 ---
 

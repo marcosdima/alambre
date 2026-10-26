@@ -11,10 +11,12 @@ import {
   useKineticChoreography,
   type UseKineticChoreographyReturn,
 } from './use-kinetic-choreography';
+import { dispatchSensoryCue, type KineticSensoryConfig } from '../types/sensory-kinetics';
 
 export interface UseSpatialTossOptions<
   T = any,
   TZone extends SpatialDropZone<T> = SpatialDropZone<T>,
+  TCue extends string = string,
 > {
   /** The domain item being dragged/tossed (or alias `card`). */
   item?: T;
@@ -37,6 +39,8 @@ export interface UseSpatialTossOptions<
   maxTiltAngle?: number;
   /** Scale applied while actively dragging. @default 1.08 */
   dragScale?: number;
+  /** Optional declarative sensory configuration for toss and landing cues. */
+  sensory?: KineticSensoryConfig<TCue>;
   /** Callback fired when item successfully lands and settles in a drop zone. */
   onDropSuccess?: (item: T, targetZone: TZone, targetRotation: number) => void;
   /** Callback fired when toss misses all zones and returns to homeSlot. */
@@ -84,6 +88,7 @@ export function useSpatialToss<
     decelerationRate,
     maxTiltAngle = 12,
     dragScale = 1.08,
+    sensory,
     onDropSuccess,
     onRestitution,
     onDragStart,
@@ -111,12 +116,17 @@ export function useSpatialToss<
     perspective: 1000,
   });
 
-  const callbacksRef = useRef({ onDropSuccess, onRestitution, onDragStart });
-  callbacksRef.current = { onDropSuccess, onRestitution, onDragStart };
+  const callbacksRef = useRef({ onDropSuccess, onRestitution, onDragStart, sensory });
+  callbacksRef.current = { onDropSuccess, onRestitution, onDragStart, sensory };
 
   const releaseToss = useCallback(
     (releasePoint: Point2D, velocity: { vx: number; vy: number }) => {
       setIsDragging(false);
+
+      dispatchSensoryCue(
+        callbacksRef.current.sensory?.onToss,
+        callbacksRef.current.sensory?.store,
+      );
 
       const resolution = resolveTossDynamics<T, TZone>({
         releasePoint,
@@ -140,6 +150,10 @@ export function useSpatialToss<
         springConfig: resolution.springConfig,
         enforceCriticalDamping: true,
         onStepComplete: () => {
+          dispatchSensoryCue(
+            callbacksRef.current.sensory?.onLand,
+            callbacksRef.current.sensory?.store,
+          );
           if (resolution.isDropSuccess && resolution.targetZone) {
             callbacksRef.current.onDropSuccess?.(
               targetItem,

@@ -1,14 +1,16 @@
 import type { ComponentProps } from 'react';
 import { HorizontalPicker } from '../..';
+import type { KineticSensoryConfig } from '../../types/sensory-kinetics';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme, resolveTypography } from '../theme';
 
-export type AppNumberPickerProps = ComponentProps<typeof HorizontalPicker.Root> & {
+export type AppNumberPickerProps<TCue extends string = string> = ComponentProps<typeof HorizontalPicker.Root> & {
   label?: string;
   unit?: string;
+  sensory?: KineticSensoryConfig<TCue>;
 };
 
-export default function AppNumberPicker({
+export default function AppNumberPicker<TCue extends string = string>({
   label,
   unit = '',
   itemCount,
@@ -17,9 +19,10 @@ export default function AppNumberPicker({
   itemWidth = 60,
   visibleItems = 5,
   cycles,
+  sensory,
   style,
   ...props
-}: AppNumberPickerProps) {
+}: AppNumberPickerProps<TCue>) {
   const { theme } = useTheme();
   const labelTypography = resolveTypography(theme, { weight: '600' });
   const valueTypography = resolveTypography(theme, { weight: '700', mono: true });
@@ -50,6 +53,7 @@ export default function AppNumberPicker({
         itemWidth={itemWidth}
         visibleItems={visibleItems}
         cycles={cycles}
+        sensory={sensory}
         style={(state) => [styles.pickerArea, { borderColor: theme.border, backgroundColor: theme.surfaceAlt }, typeof style === 'function' ? style(state) : style]}
         {...props}
       >

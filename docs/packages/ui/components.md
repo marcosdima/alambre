@@ -273,3 +273,42 @@ import { AnimatedCascade } from '@some-alambre/ui';
 </AnimatedCascade>
 ```
 * **Patterns:** `'stagger' | 'wavefront'`
+
+---
+
+## 8. Navigation & Loaders
+
+### `AppTabs`
+Accessible, kinetic tab bar with spring-driven indicator pill and full WAI-ARIA tablist semantics.
+
+```tsx
+import { AppTabs, type AppTabItem } from '@some-alambre/ui';
+
+const tabs: AppTabItem[] = [
+  { id: 'feed', label: 'Feed', badge: 3, badgeTone: 'primary' },
+  { id: 'explore', label: 'Explore' },
+  { id: 'profile', label: 'Profile' },
+];
+
+<AppTabs
+  tabs={tabs}
+  activeTab={activeTab}
+  onChange={setActiveTab}
+  variant="pill" // 'pill' | 'segmented'
+  size="md"      // 'sm' | 'md' | 'lg'
+/>
+```
+
+### `AppSkeleton`
+Accessible tactile skeleton loader driven by a single-clock loop (`useLoopClock`), delivering $O(1)$ animation overhead with static fallback for reduced motion.
+
+```tsx
+import { AppSkeleton } from '@some-alambre/ui';
+
+<AppSkeleton variant="circle" width={48} height={48} />
+<AppSkeleton variant="text" width="80%" height={16} />
+<AppSkeleton variant="pill" width={72} height={28} />
+<AppSkeleton variant="rect" width="100%" height={120} />
+```
+* **Variants:** `'rect' | 'text' | 'circle' | 'pill'`
+* **Accessibility:** Declares `accessibilityRole="progressbar"` with configurable `accessibilityLabel` (`Loading content` default).

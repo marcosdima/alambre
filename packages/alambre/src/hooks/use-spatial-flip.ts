@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
+  useAnimatedReaction,
   withSpring,
   interpolate,
   Extrapolation,
@@ -12,8 +13,9 @@ import {
   type SharedValue,
 } from 'react-native-reanimated';
 import { kinetics } from '../core/kinetics';
+import { dispatchSensoryCue, type KineticSensoryConfig } from '../types/sensory-kinetics';
 
-export interface UseSpatialFlipOptions {
+export interface UseSpatialFlipOptions<TCue extends string = string> {
   /**
    * Controlled flipped state. When provided, the hook animates whenever this value changes.
    * If omitted, the hook operates in uncontrolled mode via `flip()` and `setFlipped()`.
@@ -60,6 +62,10 @@ export interface UseSpatialFlipOptions {
    * Callback fired when the flip spring completes settling.
    */
   onFlipComplete?: (flipped: boolean) => void;
+  /**
+   * Optional declarative sensory configuration for tactile audio/haptics.
+   */
+  sensory?: KineticSensoryConfig<TCue>;
   /**
    * Override reduced motion detection.
    */
@@ -111,6 +117,7 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
     springConfig = kinetics.spring.snap,
     onFlip,
     onFlipComplete,
+    sensory,
     forceReducedMotion,
   } = options;
 
@@ -122,15 +129,42 @@ export function useSpatialFlip(options: UseSpatialFlipOptions = {}): UseSpatialF
   const isReducedMotion = forceReducedMotion ?? (reducedMotionPref ?? false);
 
   const progress = useSharedValue(effectiveFlipped ? 1 : 0);
+  const midpointFired = useSharedValue(false);
   const isMountedRef = useRef(false);
   const prevFlippedRef = useRef(effectiveFlipped);
-  const callbacksRef = useRef({ onFlip, onFlipComplete, springConfig });
+  const callbacksRef = useRef({ onFlip, onFlipComplete, sensory, springConfig });
 
   useEffect(() => {
-    callbacksRef.current = { onFlip, onFlipComplete, springConfig };
+    callbacksRef.current = { onFlip, onFlipComplete, sensory, springConfig };
   });
 
+  const midpointTrigger = useCallback(() => {
+    dispatchSensoryCue(
+      callbacksRef.current.sensory?.onFlipMidpoint,
+      callbacksRef.current.sensory?.store,
+    );
+  }, []);
+
+  useAnimatedReaction(
+    () => progress.value,
+    (curr, prev) => {
+      if (prev === null) return;
+      if (!midpointFired.value && ((prev < 0.5 && curr >= 0.5) || (prev > 0.5 && curr <= 0.5))) {
+        midpointFired.value = true;
+        runOnJS(midpointTrigger)();
+      }
+      if (curr === 0 || curr === 1) {
+        midpointFired.value = false;
+      }
+    },
+    [midpointTrigger],
+  );
+
   const handleFlipFinished = useCallback((flipped: boolean) => {
+    dispatchSensoryCue(
+      callbacksRef.current.sensory?.onLand,
+      callbacksRef.current.sensory?.store,
+    );
     callbacksRef.current.onFlipComplete?.(flipped);
   }, []);
 

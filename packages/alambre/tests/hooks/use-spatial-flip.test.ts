@@ -37,6 +37,7 @@ vi.mock('react-native-reanimated', async () => {
     Extrapolation: { CLAMP: 'clamp' },
     runOnJS: (fn: (...args: unknown[]) => void) => fn,
     cancelAnimation: vi.fn(),
+    useAnimatedReaction: vi.fn(),
   };
 });
 

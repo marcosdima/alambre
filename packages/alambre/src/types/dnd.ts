@@ -224,3 +224,47 @@ export type SortableRowProps<T extends SortableItem> = {
   containerStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
 };
+
+/**
+ * Props for SortableList 1D vertical reordering container.
+ */
+export type SortableListProps<T extends SortableItem> = {
+  items: T[];
+  onReorder: (newItems: T[]) => void;
+  renderItem: (item: T, index: number, isDragging: boolean) => ReactNode;
+  itemHeight?: number;
+  gap?: number;
+  springDamping?: number;
+  springStiffness?: number;
+  neighborShiftMode?: NeighborShiftMode;
+  dragTiltDeg?: number;
+  reorderThreshold?: number;
+  dropAnimationMode?: DropAnimationMode;
+  slowMotion?: boolean;
+  activeScale?: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  disabled?: boolean;
+};
+
+/**
+ * Props for SortableGrid 2D multi-column reordering container.
+ */
+export type SortableGridProps<T extends SortableItem> = {
+  items: T[];
+  onReorder: (newItems: T[]) => void;
+  renderItem: (item: T, index: number, isDragging: boolean) => ReactNode;
+  numColumns?: number;
+  itemWidth?: number;
+  itemHeight?: number;
+  gap?: number;
+  springDamping?: number;
+  springStiffness?: number;
+  neighborShiftMode?: NeighborShiftMode;
+  dragTiltDeg?: number;
+  reorderThreshold?: number;
+  dropAnimationMode?: DropAnimationMode;
+  slowMotion?: boolean;
+  activeScale?: number;
+  containerStyle?: StyleProp<ViewStyle>;
+  disabled?: boolean;
+};

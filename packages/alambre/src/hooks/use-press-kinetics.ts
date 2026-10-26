@@ -9,8 +9,9 @@ import {
   type WithSpringConfig,
 } from 'react-native-reanimated';
 import { kinetics } from '../core/kinetics';
+import { dispatchSensoryCue, type KineticSensoryConfig } from '../types/sensory-kinetics';
 
-export interface UsePressKineticsOptions {
+export interface UsePressKineticsOptions<TCue extends string = string> {
   /**
    * Scale factor applied when the element is pressed down.
    * @default 0.96
@@ -60,6 +61,10 @@ export interface UsePressKineticsOptions {
    * Keeps alambre decoupled from specific native haptic modules.
    */
   hapticFeedback?: () => void;
+  /**
+   * Optional declarative sensory configuration for tactile audio/haptics.
+   */
+  sensory?: KineticSensoryConfig<TCue>;
   /**
    * Optional callback when press starts.
    */
@@ -114,7 +119,7 @@ export interface UsePressKineticsReturn {
  * clamped opacity) with asymmetric physics (immediate responsive press-in, bouncy tactile release)
  * and zero JS thread re-render overhead.
  */
-export function usePressKinetics({
+export function usePressKinetics<TCue extends string = string>({
   activeScale = 0.96,
   activeOpacity = 1,
   activeTranslateY = 0,
@@ -125,11 +130,12 @@ export function usePressKinetics({
   forceReducedMotion = false,
   trackState = false,
   hapticFeedback,
+  sensory,
   onPressIn,
   onPressOut,
   onPress,
   onLongPress,
-}: UsePressKineticsOptions = {}): UsePressKineticsReturn {
+}: UsePressKineticsOptions<TCue> = {}): UsePressKineticsReturn {
   const systemReducedMotion = useReducedMotion();
   const isReduced = Boolean(forceReducedMotion || systemReducedMotion);
 
@@ -142,6 +148,7 @@ export function usePressKinetics({
   // Keep user callbacks in a ref to preserve reference identity of handlers
   const callbacksRef = useRef({
     hapticFeedback,
+    sensory,
     onPressIn,
     onPressOut,
     onPress,
@@ -149,6 +156,7 @@ export function usePressKinetics({
   });
   callbacksRef.current = {
     hapticFeedback,
+    sensory,
     onPressIn,
     onPressOut,
     onPress,
@@ -169,6 +177,10 @@ export function usePressKinetics({
       if (trackState) setPressed(true);
 
       callbacksRef.current.hapticFeedback?.();
+      dispatchSensoryCue(
+        callbacksRef.current.sensory?.onPressIn,
+        callbacksRef.current.sensory?.store,
+      );
       callbacksRef.current.onPressIn?.(event);
 
       if (isReduced) {
@@ -185,6 +197,10 @@ export function usePressKinetics({
       if (disabled) return;
       if (trackState) setPressed(false);
 
+      dispatchSensoryCue(
+        callbacksRef.current.sensory?.onPressOut,
+        callbacksRef.current.sensory?.store,
+      );
       callbacksRef.current.onPressOut?.(event);
 
       if (isReduced) {

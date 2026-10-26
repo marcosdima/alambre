@@ -79,6 +79,12 @@ export type {
 export type { Storage } from './types/actions';
 export type { IconAnimationConfig } from './types/hooks';
 export type { IconProps } from './types/icons';
+export { dispatchSensoryCue } from './types/sensory-kinetics';
+export type {
+  SensoryCueInput,
+  SensoryTriggerDispatcher,
+  KineticSensoryConfig,
+} from './types/sensory-kinetics';
 
 export type {
   ToastComponentProps,
@@ -205,6 +211,7 @@ export {
   resolveHandReorderIndex,
   useInteractiveHand,
   useHandArrival,
+  useKineticTabs,
 } from './hooks';
 export type {
   HistoryState,
@@ -290,6 +297,10 @@ export type {
   HandArrivalFlight,
   StartArrivalOverrides,
   UseHandArrivalReturn,
+  KineticTabItem,
+  TabMeasurement,
+  UseKineticTabsOptions,
+  UseKineticTabsReturn,
 } from './hooks';
 
 
@@ -321,6 +332,8 @@ export {
   Draggable,
   Droppable,
   SortableRow,
+  SortableList,
+  SortableGrid,
 } from './components/dnd';
 export type {
   LayoutBounds,
@@ -342,6 +355,8 @@ export type {
   DropAnimationMode,
   NeighborShiftMode,
   SortableRowProps,
+  SortableListProps,
+  SortableGridProps,
 } from './types/dnd';
 // Core state & kinetics.
 export {

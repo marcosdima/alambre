@@ -207,5 +207,15 @@ export type {
   UseHandArrivalReturn,
 } from './use-hand-arrival';
 
+export {
+  useKineticTabs,
+} from './use-kinetic-tabs';
+export type {
+  KineticTabItem,
+  TabMeasurement,
+  UseKineticTabsOptions,
+  UseKineticTabsReturn,
+} from './use-kinetic-tabs';
+
 
 

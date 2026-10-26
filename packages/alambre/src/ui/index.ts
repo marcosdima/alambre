@@ -34,6 +34,12 @@ export type { AppAccordionProps, AppAccordionProps as AccordionProps } from './c
 export { default as AppSegmentedControl, default as SegmentedControl } from './components/AppSegmentedControl';
 export type { AppSegmentedControlProps, AppSegmentedControlProps as SegmentedControlProps } from './components/AppSegmentedControl';
 
+export { default as AppTabs } from './components/AppTabs';
+export type { AppTabsProps, AppTabItem } from './components/AppTabs';
+
+export { default as AppSkeleton } from './components/AppSkeleton';
+export type { AppSkeletonProps, SkeletonVariant } from './components/AppSkeleton';
+
 export { default as AppSelect, default as Select } from './components/AppSelect';
 export type { AppSelectProps, AppSelectProps as SelectProps } from './components/AppSelect';
 

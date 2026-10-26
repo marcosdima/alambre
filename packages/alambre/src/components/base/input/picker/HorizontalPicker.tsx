@@ -6,6 +6,7 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
 import { useWheelPicker } from '../../../../behaviors/wheel/useWheelPicker';
+import type { KineticSensoryConfig } from '../../../../types/sensory-kinetics';
 
 type PickerState = {
   currentPosition: SharedValue<number>;
@@ -24,28 +25,30 @@ function usePickerContext() {
   return context;
 }
 
-export type HorizontalPickerRootProps = Omit<ViewProps, 'style' | 'children'> & {
+export type HorizontalPickerRootProps<TCue extends string = string> = Omit<ViewProps, 'style' | 'children'> & {
   itemCount: number;
   selected: number;
   onSelect: (val: number) => void;
   itemWidth: number;
   visibleItems?: number;
   cycles?: number;
+  sensory?: KineticSensoryConfig<TCue>;
   style?: StyleProp<ViewStyle> | ((state: PickerState) => StyleProp<ViewStyle>);
   children?: ReactNode | ((state: PickerState) => ReactNode);
 };
 
-const Root = ({
+const Root = <TCue extends string = string>({
   itemCount,
   selected,
   onSelect,
   itemWidth,
   visibleItems = 3,
   cycles,
+  sensory,
   style,
   children,
   ...props
-}: HorizontalPickerRootProps) => {
+}: HorizontalPickerRootProps<TCue>) => {
   const { currentPosition, gesture, allItems } = useWheelPicker({
     itemCount,
     selected,
@@ -53,6 +56,7 @@ const Root = ({
     rowHeight: itemWidth,
     cycles,
     horizontal: true,
+    sensory,
   });
 
   const state = { currentPosition, gesture, allItems, selected, itemWidth, visibleItems };
