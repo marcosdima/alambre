@@ -17,8 +17,8 @@ summary: Directory pointer to the modular RFC proposals catalog under docs/propo
 - **[RFC Catalog & Lifecycle Index](./index.md)**
 - **[RFC-0017: Core Store Unification & Navigation Guards](./0017-core-store-navigator-resilience.md)** [RESOLVED]
 - **[RFC-0018: Zero-Context AppToast & Semantic Token Migration](./0018-zero-context-apptoast-token-migration.md)** [RESOLVED]
-- **[RFC-0019: Strict Headless Forms Architecture](./0019-strict-headless-forms-architecture.md)** [PROPOSED]
-- **[RFC-0020: Multiplayer Fog-of-War & Host Migration](./0020-multiplayer-fog-of-war-host-migration.md)** [PROPOSED]
-- **[RFC-0021: Declarative Sensory Kinetics, Kinetic Tabs & Virtualized Sortable Lists](./0021-declarative-sensory-kinetics-kinetic-tabs.md)** [PROPOSED]
+- **[RFC-0019: Strict Headless Forms Architecture](./0019-strict-headless-forms-architecture.md)** [RESOLVED]
+- **[RFC-0020: Multiplayer Fog-of-War & Host Migration](./0020-multiplayer-fog-of-war-host-migration.md)** [RESOLVED]
+- **[RFC-0021: Declarative Sensory Kinetics, Kinetic Tabs & Virtualized Sortable Lists](./0021-declarative-sensory-kinetics-kinetic-tabs.md)** [RESOLVED]
 
 Refer to **[index.md](./index.md)** for the complete list of RFCs from RFC-0001 through RFC-0021.

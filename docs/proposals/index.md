@@ -49,9 +49,9 @@ flowchart LR
 | **[RFC-0016](./0016-ui-consolidation-theme-provider.md)** | `@alambre/ui` Consolidation & Hygiene | `alambre/ui` | `RESOLVED` | Unified tactile component library, `<ThemeProvider>`, and demo cleanup. |
 | **[RFC-0017](./0017-core-store-navigator-resilience.md)** | Core Store Unification & Navigation Guards | `alambre/core` | `RESOLVED` | Unified `createStore`, resilient `useNavigator`, and sync/async `useNavigationGuard`. |
 | **[RFC-0018](./0018-zero-context-apptoast-token-migration.md)** | Zero-Context `AppToast` & Token Migration | `alambre/ui` | `RESOLVED` | Headless `toast` dispatcher, promoted `AppToast`, and token cleanup. |
-| **[RFC-0019](./0019-strict-headless-forms-architecture.md)** | Strict Headless Forms & Granular Subscriptions | `alambre/capabilities` | `PROPOSED` | Type-safe form engine `createForm`, `useField`, and `getFieldProps`. |
-| **[RFC-0020](./0020-multiplayer-fog-of-war-host-migration.md)** | Multiplayer Fog-of-War & Host Migration | `alambre/relay` | `PROPOSED` | View projection masks, optimistic action resolution, and host handover. |
-| **[RFC-0021](./0021-declarative-sensory-kinetics-kinetic-tabs.md)** | Declarative Sensory Kinetics & Kinetic Tabs | `alambre/kinetics` | `PROPOSED` | Auto-triggered sensory cues, sliding `useKineticTabs`, and `SortableList`. |
+| **[RFC-0019](./0019-strict-headless-forms-architecture.md)** | Strict Headless Forms & Granular Subscriptions | `alambre/capabilities` | `RESOLVED` | Type-safe form engine `createForm`, `useField`, and `getFieldProps`. |
+| **[RFC-0020](./0020-multiplayer-fog-of-war-host-migration.md)** | Multiplayer Fog-of-War & Host Migration | `alambre/relay` | `RESOLVED` | View projection masks, optimistic action resolution, and host handover. |
+| **[RFC-0021](./0021-declarative-sensory-kinetics-kinetic-tabs.md)** | Declarative Sensory Kinetics & Kinetic Tabs | `alambre/kinetics` | `RESOLVED` | Auto-triggered sensory cues, sliding `useKineticTabs`, and `SortableList`. |
 
 ---
 
