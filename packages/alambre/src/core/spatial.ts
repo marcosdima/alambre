@@ -478,6 +478,12 @@ export interface ResponsiveHandFanOptions {
   selectedStraightenFactor?: number;
   /** Center point of the hand container in parent coordinate space. @default { x: 0, y: 0 } */
   centerOffset?: Point2D;
+  /**
+   * Target total capacity to anchor hand fan geometry against.
+   * When specified and greater than items.length, slot positions for existing items
+   * are computed using totalCapacity, keeping existing slots rock-solid as new items arrive.
+   */
+  totalCapacity?: number;
 }
 
 export interface HandFanSlot<T = any> {
@@ -501,6 +507,8 @@ export interface ResponsiveHandFanResult<T = any> {
   effectiveSpacing: number;
   totalWidth: number;
   isCompressed: boolean;
+  /** Reserved slot positions when totalCapacity is greater than the number of items. */
+  reservedSlots?: HandFanSlot<T>[];
 }
 
 /**
@@ -513,12 +521,18 @@ export function calculateResponsiveHandFan<T extends { id: string }>(
   options: ResponsiveHandFanOptions = {},
 ): ResponsiveHandFanResult<T> {
   const total = items.length;
-  if (total === 0) {
+  const layoutTotal =
+    options.totalCapacity && options.totalCapacity > total
+      ? options.totalCapacity
+      : total;
+
+  if (layoutTotal === 0) {
     return {
       slots: [],
       effectiveSpacing: 0,
       totalWidth: 0,
       isCompressed: false,
+      reservedSlots: [],
     };
   }
 
@@ -553,7 +567,7 @@ export function calculateResponsiveHandFan<T extends { id: string }>(
     : customMaxSpan ?? 280;
 
   const effectiveSpacing =
-    total > 1 ? Math.min(baseSpacing, availableSpan / (total - 1)) : baseSpacing;
+    layoutTotal > 1 ? Math.min(baseSpacing, availableSpan / (layoutTotal - 1)) : baseSpacing;
 
   const isCompressed = effectiveSpacing < baseSpacing;
   const compressionRatio = isCompressed ? effectiveSpacing / baseSpacing : 1;
@@ -562,7 +576,7 @@ export function calculateResponsiveHandFan<T extends { id: string }>(
   const slots: HandFanSlot<T>[] = items.map((item, index) => {
     const isSelected = isItemSelected(item.id);
 
-    const transform = calculateHandFan(index, total, {
+    const transform = calculateHandFan(index, layoutTotal, {
       spreadAngle: effectiveSpreadAngle,
       arcCurvature,
       itemSpacing: effectiveSpacing,
@@ -582,7 +596,7 @@ export function calculateResponsiveHandFan<T extends { id: string }>(
       item,
       card: item,
       index,
-      total,
+      total: layoutTotal,
       translateX: transform.translateX,
       translateY: transform.translateY,
       rotateDeg: transform.rotateDeg,
@@ -593,13 +607,49 @@ export function calculateResponsiveHandFan<T extends { id: string }>(
     };
   });
 
-  const totalWidth = total > 1 ? Math.round((total - 1) * effectiveSpacing) : 0;
+  const reservedSlots: HandFanSlot<T>[] = [];
+  if (layoutTotal > total) {
+    for (let index = total; index < layoutTotal; index++) {
+      const transform = calculateHandFan(index, layoutTotal, {
+        spreadAngle: effectiveSpreadAngle,
+        arcCurvature,
+        itemSpacing: effectiveSpacing,
+        maxSpan: availableSpan,
+        isSelected: false,
+        selectedLift,
+        selectedScale,
+        selectedStraightenFactor,
+      });
+
+      const centerCoord: Point2D = {
+        x: Math.round(centerOffset.x + transform.translateX),
+        y: Math.round(centerOffset.y + transform.translateY),
+      };
+
+      reservedSlots.push({
+        item: null as any,
+        card: null as any,
+        index,
+        total: layoutTotal,
+        translateX: transform.translateX,
+        translateY: transform.translateY,
+        rotateDeg: transform.rotateDeg,
+        scale: transform.scale,
+        zIndex: transform.zIndex,
+        isSelected: false,
+        centerCoord,
+      });
+    }
+  }
+
+  const totalWidth = layoutTotal > 1 ? Math.round((layoutTotal - 1) * effectiveSpacing) : 0;
 
   return {
     slots,
     effectiveSpacing,
     totalWidth,
     isCompressed,
+    reservedSlots,
   };
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -84,9 +84,23 @@ export function useCascadeFlight<T extends { id: string }>(
   optionsRef.current = options;
 
   const [activeFlights, setActiveFlights] = useState<SpatialFlightSpec<T>[]>([]);
+  const activeFlightsRef = useRef<SpatialFlightSpec<T>[]>([]);
+  activeFlightsRef.current = activeFlights;
+
   const pendingBatchRef = useRef<T[]>([]);
   const landedCountRef = useRef(0);
   const totalInBatchRef = useRef(0);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      pendingBatchRef.current = [];
+      landedCountRef.current = 0;
+      totalInBatchRef.current = 0;
+    };
+  }, []);
 
   const startDeal = useCallback(
     (
@@ -124,6 +138,8 @@ export function useCascadeFlight<T extends { id: string }>(
   );
 
   const handleFlightComplete = useCallback((itemId: string) => {
+    if (!isMountedRef.current) return;
+
     setActiveFlights((prev) => {
       const completedSpec = prev.find((s) => s.item.id === itemId);
       if (completedSpec) {
@@ -144,19 +160,23 @@ export function useCascadeFlight<T extends { id: string }>(
   }, []);
 
   const cancelDeal = useCallback(() => {
+    if (activeFlightsRef.current.length === 0) return;
     setActiveFlights([]);
     pendingBatchRef.current = [];
     landedCountRef.current = 0;
     totalInBatchRef.current = 0;
   }, []);
 
-  return {
-    activeFlights,
-    isDealing: activeFlights.length > 0,
-    startDeal,
-    handleFlightComplete,
-    cancelDeal,
-  };
+  return useMemo(
+    () => ({
+      activeFlights,
+      isDealing: activeFlights.length > 0,
+      startDeal,
+      handleFlightComplete,
+      cancelDeal,
+    }),
+    [activeFlights, startDeal, handleFlightComplete, cancelDeal],
+  );
 }
 
 export const useDealCascade = useCascadeFlight;

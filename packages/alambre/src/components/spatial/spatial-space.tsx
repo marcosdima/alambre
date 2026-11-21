@@ -8,9 +8,17 @@ import React, {
   useState,
   type ReactNode,
 } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import Animated from 'react-native-reanimated';
 import { getZoneCenter, type SpatialDropZone, type SpatialRect } from '../../core/spatial';
 import type { Point2D } from '../../core/trajectory';
+import { useFlightTrajectory } from '../../hooks/use-flight-trajectory';
 
 export interface SpatialTargetRecord<T = any> extends SpatialDropZone<T> {
   parentId?: string;
@@ -21,7 +29,6 @@ export interface SpatialTargetRecord<T = any> extends SpatialDropZone<T> {
 }
 
 export type SpatialTargetMeasurement<T = any> = SpatialTargetRecord<T>;
-
 
 export interface RegisterSpatialTargetInput<T = any> {
   id: string;
@@ -34,6 +41,38 @@ export interface RegisterSpatialTargetInput<T = any> {
   isMeasured?: boolean;
 }
 
+export interface ActiveSpatialFlight<T = any> {
+  id: string;
+  from: Point2D;
+  to: Point2D;
+  item: T;
+  durationMs?: number;
+  liftHeight?: number;
+  peakScale?: number;
+  flipOnFly?: boolean;
+  fromRotation?: number;
+  targetRotation?: number;
+  renderItem?: (item: T, helpers: { frontStyle: any; backStyle: any }) => ReactNode;
+  onComplete?: () => void;
+}
+
+export interface LaunchSpatialFlightInput<T = any> {
+  id?: string;
+  from: string | Point2D;
+  to: string | Point2D;
+  item: T;
+  fromOffset?: Point2D;
+  toOffset?: Point2D;
+  durationMs?: number;
+  liftHeight?: number;
+  peakScale?: number;
+  flipOnFly?: boolean;
+  fromRotation?: number;
+  targetRotation?: number;
+  renderItem?: (item: T, helpers: { frontStyle: any; backStyle: any }) => ReactNode;
+  onComplete?: () => void;
+}
+
 export interface SpatialSpaceContextValue {
   targets: Record<string, SpatialTargetRecord>;
   registerTarget: (input: RegisterSpatialTargetInput) => void;
@@ -41,6 +80,9 @@ export interface SpatialSpaceContextValue {
   getTarget: (id: string) => SpatialTargetRecord | null;
   getCenter: (id: string, itemSize?: { width: number; height: number }) => Point2D;
   getDropZones: <T = any>(ids?: readonly string[]) => SpatialDropZone<T>[];
+  activeFlights: ActiveSpatialFlight[];
+  launchFlight: <T = any>(input: LaunchSpatialFlightInput<T>) => string;
+  cancelFlight: (flightId: string) => void;
 }
 
 const SpatialSpaceContext = createContext<SpatialSpaceContextValue | null>(null);
@@ -208,6 +250,77 @@ export function SpatialSpace({ children }: SpatialSpaceProps) {
     [targets],
   );
 
+  const [activeFlights, setActiveFlights] = useState<ActiveSpatialFlight[]>([]);
+
+  const launchFlight = useCallback(
+    <T = any,>(input: LaunchSpatialFlightInput<T>): string => {
+      const flightId =
+        input.id ?? `flight-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      let fromCoord: Point2D = { x: 0, y: 0 };
+      if (typeof input.from === 'string') {
+        const rec = targets[input.from];
+        if (rec) {
+          fromCoord = rec.center;
+        } else if (rawTargetsRef.current[input.from]) {
+          fromCoord = {
+            x: rawTargetsRef.current[input.from].bounds.x,
+            y: rawTargetsRef.current[input.from].bounds.y,
+          };
+        }
+      } else {
+        fromCoord = input.from;
+      }
+
+      let toCoord: Point2D = { x: 0, y: 0 };
+      if (typeof input.to === 'string') {
+        const rec = targets[input.to];
+        if (rec) {
+          toCoord = rec.center;
+        } else if (rawTargetsRef.current[input.to]) {
+          toCoord = {
+            x: rawTargetsRef.current[input.to].bounds.x,
+            y: rawTargetsRef.current[input.to].bounds.y,
+          };
+        }
+      } else {
+        toCoord = input.to;
+      }
+
+      const resolvedFrom: Point2D = {
+        x: Math.round(fromCoord.x + (input.fromOffset?.x ?? 0)),
+        y: Math.round(fromCoord.y + (input.fromOffset?.y ?? 0)),
+      };
+      const resolvedTo: Point2D = {
+        x: Math.round(toCoord.x + (input.toOffset?.x ?? 0)),
+        y: Math.round(toCoord.y + (input.toOffset?.y ?? 0)),
+      };
+
+      const flight: ActiveSpatialFlight<T> = {
+        id: flightId,
+        from: resolvedFrom,
+        to: resolvedTo,
+        item: input.item,
+        durationMs: input.durationMs,
+        liftHeight: input.liftHeight,
+        peakScale: input.peakScale,
+        flipOnFly: input.flipOnFly,
+        fromRotation: input.fromRotation,
+        targetRotation: input.targetRotation,
+        renderItem: input.renderItem,
+        onComplete: input.onComplete,
+      };
+
+      setActiveFlights((prev) => [...prev.filter((f) => f.id !== flightId), flight]);
+      return flightId;
+    },
+    [targets],
+  );
+
+  const cancelFlight = useCallback((flightId: string) => {
+    setActiveFlights((prev) => prev.filter((f) => f.id !== flightId));
+  }, []);
+
   const value = useMemo<SpatialSpaceContextValue>(
     () => ({
       targets,
@@ -216,8 +329,21 @@ export function SpatialSpace({ children }: SpatialSpaceProps) {
       getTarget,
       getCenter,
       getDropZones,
+      activeFlights,
+      launchFlight,
+      cancelFlight,
     }),
-    [targets, registerTarget, unregisterTarget, getTarget, getCenter, getDropZones],
+    [
+      targets,
+      registerTarget,
+      unregisterTarget,
+      getTarget,
+      getCenter,
+      getDropZones,
+      activeFlights,
+      launchFlight,
+      cancelFlight,
+    ],
   );
 
   return <SpatialSpaceContext.Provider value={value}>{children}</SpatialSpaceContext.Provider>;
@@ -229,6 +355,90 @@ export function useSpatialSpace(): SpatialSpaceContextValue {
     throw new Error('useSpatialSpace must be used within a <SpatialSpace> provider.');
   }
   return ctx;
+}
+
+export interface SpatialFlightLayerProps {
+  renderFallbackItem?: (item: any) => ReactNode;
+  style?: StyleProp<ViewStyle>;
+}
+
+function SpatialFlightRenderer({
+  flight,
+  renderFallback,
+  onFinished,
+}: {
+  flight: ActiveSpatialFlight;
+  renderFallback?: (item: any) => ReactNode;
+  onFinished: (id: string) => void;
+}) {
+  const { animatedStyle, frontAnimatedStyle, backAnimatedStyle } = useFlightTrajectory({
+    from: flight.from,
+    to: flight.to,
+    durationMs: flight.durationMs,
+    liftHeight: flight.liftHeight,
+    peakScale: flight.peakScale,
+    flipOnFly: flight.flipOnFly,
+    fromRotation: flight.fromRotation,
+    targetRotation: flight.targetRotation,
+    autoStart: true,
+    onComplete: () => {
+      onFinished(flight.id);
+    },
+  });
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[{ position: 'absolute', left: 0, top: 0, zIndex: 9999 }, animatedStyle]}
+    >
+      {flight.renderItem
+        ? flight.renderItem(flight.item, {
+          frontStyle: frontAnimatedStyle,
+          backStyle: backAnimatedStyle,
+        })
+        : renderFallback
+          ? renderFallback(flight.item)
+          : null}
+    </Animated.View>
+  );
+}
+
+/**
+ * Global flight overlay for `<SpatialSpace>`.
+ * Renders at the root coordinate level to bypass container clipping (e.g. Android HWUI borderRadius clipping)
+ * and animates items along 2D/3D parabolic trajectories.
+ */
+export function SpatialFlightLayer({
+  renderFallbackItem,
+  style,
+}: SpatialFlightLayerProps) {
+  const { activeFlights, cancelFlight } = useSpatialSpace();
+
+  const handleFinished = useCallback(
+    (id: string) => {
+      const flight = activeFlights.find((f) => f.id === id);
+      if (flight) {
+        flight.onComplete?.();
+      }
+      cancelFlight(id);
+    },
+    [activeFlights, cancelFlight],
+  );
+
+  if (activeFlights.length === 0) return null;
+
+  return (
+    <View style={[StyleSheet.absoluteFill, style]} pointerEvents="none">
+      {activeFlights.map((flight) => (
+        <SpatialFlightRenderer
+          key={flight.id}
+          flight={flight}
+          renderFallback={renderFallbackItem}
+          onFinished={handleFinished}
+        />
+      ))}
+    </View>
+  );
 }
 
 export interface UseSpatialTargetOptions<T = any> {

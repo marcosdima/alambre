@@ -50,6 +50,11 @@ export interface UseInteractiveHandOptions<T extends { id: string }> {
   items: readonly T[];
   /** Responsive hand fan layout options. */
   fanOptions?: Omit<ResponsiveHandFanOptions, 'selectedId' | 'selectedCardId' | 'selectedIds'>;
+  /**
+   * Optional total capacity / target card count to anchor fan geometry against.
+   * Keeps existing card slots rock-solid and stationary during progressive dealing or incoming flights.
+   */
+  totalCapacity?: number;
   /** Selection mode: single-item or multi-item combo selection. @default 'single' */
   selectionMode?: 'single' | 'multiple';
   /** Maximum number of items selectable simultaneously in 'multiple' mode. */
@@ -156,30 +161,63 @@ export function useInteractiveHand<T extends { id: string }>(
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragOriginIndexRef = useRef<number>(-1);
 
-  // Reconcile incoming items with local ordering
-  useEffect(() => {
-    setOrderedItems((prev) => {
-      const incomingMap = new Map(incomingItems.map((item) => [item.id, item]));
-      const next: T[] = [];
-      const seen = new Set<string>();
+  // Synchronous reconciliation of incoming items during render (supports external auto-sort and additions/removals)
+  const incomingSignature = incomingItems.map((item) => item.id).join(',');
+  const [prevIncomingSignature, setPrevIncomingSignature] = useState(incomingSignature);
+  const [prevIncomingRef, setPrevIncomingRef] = useState(incomingItems);
 
-      for (const existing of prev) {
-        const updated = incomingMap.get(existing.id);
-        if (updated !== undefined) {
-          next.push(updated);
-          seen.add(existing.id);
+  if (prevIncomingSignature !== incomingSignature) {
+    setPrevIncomingSignature(incomingSignature);
+    setPrevIncomingRef(incomingItems);
+
+    if (!draggingId) {
+      const prevIdSet = new Set(orderedItems.map((item) => item.id));
+      const isPermutation =
+        incomingItems.length === orderedItems.length &&
+        incomingItems.every((item) => prevIdSet.has(item.id));
+
+      if (isPermutation) {
+        // External sort/reorder: adopt incoming order directly
+        setOrderedItems([...incomingItems]);
+      } else {
+        // Additions/removals: preserve local ordering of existing items
+        const incomingMap = new Map(incomingItems.map((item) => [item.id, item]));
+        const next: T[] = [];
+        const seen = new Set<string>();
+
+        for (const existing of orderedItems) {
+          const updated = incomingMap.get(existing.id);
+          if (updated !== undefined) {
+            next.push(updated);
+            seen.add(existing.id);
+          }
         }
-      }
 
-      for (const incoming of incomingItems) {
-        if (!seen.has(incoming.id)) {
-          next.push(incoming);
+        for (const incoming of incomingItems) {
+          if (!seen.has(incoming.id)) {
+            next.push(incoming);
+          }
         }
-      }
 
-      return next;
+        setOrderedItems(next);
+      }
+    }
+  } else if (prevIncomingRef !== incomingItems) {
+    setPrevIncomingRef(incomingItems);
+    const incomingMap = new Map(incomingItems.map((item) => [item.id, item]));
+    let hasChanged = false;
+    const next = orderedItems.map((existing) => {
+      const updated = incomingMap.get(existing.id);
+      if (updated !== undefined && updated !== existing) {
+        hasChanged = true;
+        return updated;
+      }
+      return existing;
     });
-  }, [incomingItems]);
+    if (hasChanged) {
+      setOrderedItems(next);
+    }
+  }
 
   const activeSelectedIds = useMemo(() => {
     const raw = controlledSelectedIds ? [...controlledSelectedIds] : uncontrolledSelectedIds;
@@ -273,8 +311,9 @@ export function useInteractiveHand<T extends { id: string }>(
     return calculateResponsiveHandFan(orderedItems, {
       ...fanOptions,
       selectedIds: activeSelectedIds,
+      totalCapacity: options.totalCapacity ?? fanOptions?.totalCapacity,
     });
-  }, [activeSelectedIds, fanOptions, orderedItems]);
+  }, [activeSelectedIds, fanOptions, options.totalCapacity, orderedItems]);
 
   const beginDrag = useCallback(
     (id: string) => {
@@ -373,24 +412,43 @@ export function useInteractiveHand<T extends { id: string }>(
     return toPlay;
   }, [commitSelection, selectedItems]);
 
-  return {
-    items: orderedItems,
-    fan,
-    slots: fan.slots,
-    selectedIds: activeSelectedIds,
-    selectedId: activeSelectedIds[0] ?? null,
-    selectedItems,
-    draggingId,
-    isSelected,
-    toggleSelect,
-    select,
-    deselect,
-    clearSelection,
-    reorder,
-    beginDrag,
-    updateDragOffset,
-    endDrag,
-    playSelected,
-  };
+  return useMemo(
+    () => ({
+      items: orderedItems,
+      fan,
+      slots: fan.slots,
+      selectedIds: activeSelectedIds,
+      selectedId: activeSelectedIds[0] ?? null,
+      selectedItems,
+      draggingId,
+      isSelected,
+      toggleSelect,
+      select,
+      deselect,
+      clearSelection,
+      reorder,
+      beginDrag,
+      updateDragOffset,
+      endDrag,
+      playSelected,
+    }),
+    [
+      orderedItems,
+      fan,
+      activeSelectedIds,
+      selectedItems,
+      draggingId,
+      isSelected,
+      toggleSelect,
+      select,
+      deselect,
+      clearSelection,
+      reorder,
+      beginDrag,
+      updateDragOffset,
+      endDrag,
+      playSelected,
+    ],
+  );
 }
 

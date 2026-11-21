@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   useSharedValue,
   useAnimatedStyle,
@@ -333,13 +333,16 @@ export function useFlightTrajectory(options: UseFlightTrajectoryOptions): UseFli
     };
   });
 
-  return {
-    animatedStyle,
-    frontAnimatedStyle,
-    backAnimatedStyle,
-    progress,
-    start,
-    reset,
-    isFlying,
-  };
+  return useMemo(
+    () => ({
+      animatedStyle,
+      frontAnimatedStyle,
+      backAnimatedStyle,
+      progress,
+      start,
+      reset,
+      isFlying,
+    }),
+    [animatedStyle, frontAnimatedStyle, backAnimatedStyle, progress, start, reset, isFlying],
+  );
 }
