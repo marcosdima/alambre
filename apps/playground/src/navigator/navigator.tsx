@@ -1,10 +1,11 @@
-import Home from '../views/home/Home';
-import RoomRelayWebTestbed from '../views/relay/RoomRelayWebTestbed';
-import TurnEngineFoWTestbed from '../views/relay/TurnEngineFoWTestbed';
-import KineticTabsSkeletonTestbed from '../views/kinetics/KineticTabsSkeletonTestbed';
-import SortableDnDTestbed from '../views/kinetics/SortableDnDTestbed';
-import SensoryKineticsTestbed from '../views/kinetics/SensoryKineticsTestbed';
+import React from 'react';
 import type { Page } from 'alambre';
+import Home from '../views/home/Home';
+import CardMotionSimulation from '../views/simulations/CardMotionSimulation';
+import ElasticPhysicsSimulation from '../views/simulations/ElasticPhysicsSimulation';
+import FluidDndSimulation from '../views/simulations/FluidDndSimulation';
+import DeckSwipeSimulation from '../views/simulations/DeckSwipeSimulation';
+import SpatialMorphSimulation from '../views/simulations/SpatialMorphSimulation';
 
 export type PageTitle = Record<'es' | 'en', string>;
 
@@ -17,25 +18,25 @@ export const pages: Record<string, AppPage> = {
   home: {
     component: <Home />,
   },
-  roomRelayWeb: {
-    title: { es: 'Relay Web & Mensajería', en: 'Web Room Relay' },
-    component: <RoomRelayWebTestbed />,
+  cardMotion: {
+    title: { es: 'Card Kinetics & Spatial Flight', en: 'Card Kinetics & Spatial Flight' },
+    component: <CardMotionSimulation />,
   },
-  kineticTabs: {
-    title: { es: 'Tabs Cinéticos & Esqueletos', en: 'Kinetic Tabs & Skeletons' },
-    component: <KineticTabsSkeletonTestbed />,
+  elasticPhysics: {
+    title: { es: 'Elastic Physics & Collisions', en: 'Elastic Physics & Collisions' },
+    component: <ElasticPhysicsSimulation />,
   },
-  sortableDnd: {
-    title: { es: 'DnD Sortable (Lista & Grilla)', en: 'Sortable Drag & Drop' },
-    component: <SortableDnDTestbed />,
+  fluidDnd: {
+    title: { es: 'Fluid Drag & Drop Transfers', en: 'Fluid Drag & Drop Transfers' },
+    component: <FluidDndSimulation />,
   },
-  turnEngineFoW: {
-    title: { es: 'Fog-of-War & Migración Multiplayer', en: 'Multiplayer FoW & Migration' },
-    component: <TurnEngineFoWTestbed />,
+  deckSwipe: {
+    title: { es: '3D Kinetic Deck Swiping', en: '3D Kinetic Deck Swiping' },
+    component: <DeckSwipeSimulation />,
   },
-  sensoryKinetics: {
-    title: { es: 'Sensory Kinetics & Haptics', en: 'Sensory Kinetics & Haptics' },
-    component: <SensoryKineticsTestbed />,
+  spatialMorph: {
+    title: { es: 'Spatial Hero Morph & Wavefront', en: 'Spatial Hero Morph & Wavefront' },
+    component: <SpatialMorphSimulation />,
   },
 };
 

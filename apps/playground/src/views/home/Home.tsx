@@ -12,49 +12,49 @@ export default () => {
 
   const navItems = [
     {
-      key: 'roomRelayWeb',
-      title: 'Relay Web & Mensajería',
+      key: 'cardMotion',
+      title: 'Card Kinetics & Spatial Flight',
       description:
-        'Conexión cliente a cliente en tiempo real mediante PartyKit / WebSocket web con inspector de paquetes en vivo.',
-      badge: 'ROOM-RELAY',
-      badgeTone: 'success' as const,
-      onPress: () => navigate('roomRelayWeb'),
-    },
-    {
-      key: 'kineticTabs',
-      title: 'Tabs Cinéticos & Esqueletos',
-      description:
-        'Física de indicador deslizante AppTabs (useKineticTabs) y placeholders AppSkeleton de reloj único O(1).',
-      badge: 'KINETICS-UI',
+        'Parabolic deal cascade, locked-capacity stationary fan, clipping-free spatial overlay flights, and zero-frame auto-sort reconciliation.',
+      badge: 'CARDS & SPATIAL',
       badgeTone: 'primary' as const,
-      onPress: () => navigate('kineticTabs'),
+      onPress: () => navigate('cardMotion'),
     },
     {
-      key: 'sortableDnd',
-      title: 'DnD Sortable (Lista & Grilla)',
+      key: 'elasticPhysics',
+      title: 'Elastic Physics & Collisions',
       description:
-        'Reordenamiento interactivo vertical (SortableList) y grilla 2D (SortableGrid) con tilt de velocidad y deslizamiento fluido.',
-      badge: 'DND',
+        'High-velocity pan gestures with inertia fling, elastomeric boundary rebounds with restitution dissipation, and magnetic attraction wells.',
+      badge: '2D KINETICS',
       badgeTone: 'warning' as const,
-      onPress: () => navigate('sortableDnd'),
+      onPress: () => navigate('elasticPhysics'),
     },
     {
-      key: 'turnEngineFoW',
-      title: 'Multiplayer Fog-of-War & Migración',
+      key: 'fluidDnd',
+      title: 'Fluid Drag & Drop Transfers',
       description:
-        'Simulación dual de cartas con redacción de niebla de guerra, acciones optimistas (0ms) con rollback y migración de host por joinedAt.',
-      badge: 'TURN-ENGINE',
-      badgeTone: 'danger' as const,
-      onPress: () => navigate('turnEngineFoW'),
+        'Cross-container item transfers with velocity tilt physics, dynamic elevation lift, droppable hover glow, and snap/revert mechanics.',
+      badge: 'MULTI-ZONE DND',
+      badgeTone: 'success' as const,
+      onPress: () => navigate('fluidDnd'),
     },
     {
-      key: 'sensoryKinetics',
-      title: 'Sensory Kinetics & Haptics',
+      key: 'deckSwipe',
+      title: '3D Kinetic Deck Swiping',
       description:
-        'Disparo declarativo de audio y hápticos en puntos de inflexión (giro 3D a 90°, ticks de rueda y aterrizaje de toss).',
-      badge: 'SENSORY',
+        'Stacked 3D card deck with depth scale falloff, tri-directional threshold flick gestures, dynamic cue overlays, and reverse trajectory undo.',
+      badge: 'ROTATIONAL DECK',
+      badgeTone: 'primary' as const,
+      onPress: () => navigate('deckSwipe'),
+    },
+    {
+      key: 'spatialMorph',
+      title: 'Spatial Hero Morph & Wavefront',
+      description:
+        'Seamless coordinate-projected spatial flight from thumbnail to full hero modal, single-clock 2D wavefront entrance cascades, and spring collapsibles.',
+      badge: 'MORPH & CASCADE',
       badgeTone: 'neutral' as const,
-      onPress: () => navigate('sensoryKinetics'),
+      onPress: () => navigate('spatialMorph'),
     },
   ];
 
@@ -67,8 +67,10 @@ export default () => {
         entering={FadeInDown.duration(300).delay(getDelay(0)).easing(Easing.out(Easing.cubic))}
       >
         <View style={[styles.headerCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <AppTitle level={2}>Alambre Playground</AppTitle>
-          <AppText variant="muted">Laboratorio interactivo de físicas y conexiones cinéticas</AppText>
+          <AppTitle level={2}>Alambre Motion Playground</AppTitle>
+          <AppText variant="muted">
+            Interactive physics, spatial flight trajectories, and tactile kinetic simulations
+          </AppText>
         </View>
       </Animated.View>
 
@@ -91,7 +93,7 @@ export default () => {
               <AppText variant="muted">{item.description}</AppText>
               <View style={styles.actionPrompt}>
                 <AppText variant="subtitle" style={{ color: theme.primary, fontWeight: '600', fontSize: 13 }}>
-                  Abrir Testbed ➔
+                  Launch Simulation ➔
                 </AppText>
               </View>
             </AppCard>

@@ -23,8 +23,8 @@ export interface PhysicsControlGroupProps {
  * Standardized configuration group for spring and timing physics parameters.
  */
 export function PhysicsControlGroup({
-  title = 'Controles Físicos y Cinéticos',
-  subtitle = 'Ajusta la duración, elasticidad y dinámicas en tiempo real',
+  title = 'Physics & Kinetics Controls',
+  subtitle = 'Adjust duration, spring stiffness, damping, and dynamics in real time',
   params,
   onParamChange,
   onResetDefaults,
@@ -42,7 +42,7 @@ export function PhysicsControlGroup({
       <View style={styles.content}>
         {params?.durationMs !== undefined && onParamChange && (
           <ConfigSlider
-            label="Duración"
+            label="Duration"
             value={params.durationMs}
             min={100}
             max={1500}
@@ -54,7 +54,7 @@ export function PhysicsControlGroup({
 
         {params?.stiffness !== undefined && onParamChange && (
           <ConfigSlider
-            label="Rigidez (Stiffness)"
+            label="Stiffness"
             value={params.stiffness}
             min={40}
             max={400}
@@ -65,7 +65,7 @@ export function PhysicsControlGroup({
 
         {params?.damping !== undefined && onParamChange && (
           <ConfigSlider
-            label="Amortiguación (Damping)"
+            label="Damping"
             value={params.damping}
             min={6}
             max={50}
@@ -76,7 +76,7 @@ export function PhysicsControlGroup({
 
         {params?.mass !== undefined && onParamChange && (
           <ConfigSlider
-            label="Masa (Mass)"
+            label="Mass"
             value={params.mass}
             min={0.2}
             max={5}
@@ -95,7 +95,7 @@ export function PhysicsControlGroup({
             onPress={onResetDefaults}
             style={styles.resetBtn}
           >
-            Restablecer Valores por Defecto
+            Reset to Defaults
           </AppButton>
         )}
       </View>
