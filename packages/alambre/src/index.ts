@@ -143,6 +143,9 @@ export {
   calculateActiveIndex,
   getScrollTargetForIndex,
   useDeck,
+  useCardTable,
+  CardTable,
+  useDeckSwipe3D,
   useWheelPicker,
   useBottomSheet,
   useDialog,
@@ -157,7 +160,19 @@ export {
   NavigatorHost,
 } from './behaviors';
 export type { NavigatorHostProps } from './behaviors';
-export type { UseCarouselConfig, UseDeckConfig, UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps, DropInTitleProps, HangingTitleProps } from './behaviors';
+export type {
+  UseCarouselConfig,
+  UseDeckConfig,
+  BaseCardItem,
+  CardPoint,
+  UseCardTableConfig,
+  UseCardTableReturn,
+  CardTableProps,
+  RenderCardProps,
+  UseDeckSwipe3DConfig,
+  UseDeckSwipe3DReturn,
+  DeckSwipe3DTelemetry,
+  UseWheelPickerOptions, UseWheelPickerResult, UseBottomSheetOptions, BottomSheetSpringConfig, UseDialogOptions, CountUpProps, TypewriterProps, ScrambleProps, MarqueeProps, WavyTextProps, SlideInTextProps, DropInTitleProps, HangingTitleProps } from './behaviors';
 
 // Hooks & state utilities.
 export {
@@ -435,6 +450,7 @@ export {
   useStepFlow,
   StepFlowControls,
   SpatialSpace,
+  SpatialFlightLayer,
   useSpatialSpace,
   useSpatialTarget,
   useSpatialVector,
@@ -449,6 +465,9 @@ export type {
   SpatialVector,
   SpatialSpaceContextValue,
   SpatialSpaceProps,
+  SpatialFlightLayerProps,
+  ActiveSpatialFlight,
+  LaunchSpatialFlightInput,
   UseSpatialTargetOptions,
   UseSpatialTargetReturn,
 } from './components/spatial';

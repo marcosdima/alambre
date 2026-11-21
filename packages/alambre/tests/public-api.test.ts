@@ -185,6 +185,9 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.calculateActiveIndex).toBe('function');
     expect(typeof Alambre.getScrollTargetForIndex).toBe('function');
     expect(typeof Alambre.useDeck).toBe('function');
+    expect(typeof Alambre.useCardTable).toBe('function');
+    expect(typeof Alambre.CardTable).toBe('function');
+    expect(typeof Alambre.useDeckSwipe3D).toBe('function');
     expect(typeof Alambre.useWheelPicker).toBe('function');
     expect(typeof Alambre.AlambreIcons).toBe('object');
     expect(typeof Alambre.kinetics).toBe('object');
@@ -197,6 +200,7 @@ describe('public API — value surface', () => {
     expect(typeof Alambre.useStepFlow).toBe('function');
     expect(typeof Alambre.StepFlowControls).toBe('function');
     expect(typeof Alambre.SpatialSpace).toBe('function');
+    expect(typeof Alambre.SpatialFlightLayer).toBe('function');
     expect(typeof Alambre.useSpatialSpace).toBe('function');
     expect(typeof Alambre.useSpatialTarget).toBe('function');
     expect(typeof Alambre.useSpatialVector).toBe('function');

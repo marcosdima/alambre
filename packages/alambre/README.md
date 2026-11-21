@@ -34,6 +34,7 @@ const { ConfigProvider, useConfig } = createConfigProvider(
 
 ## Scope
 
+- **Kinetics & Card Table Primitives** (`useCardTable`, `CardTable`, `useDeckSwipe3D`, `useKineticSwipe`, `useCascadeFlight`, `kinetics`) — turnkey physical card containers, continuous magnetic equilibrium, 3D perspective deck swiping, and hardware-accelerated animations.
 - **Capabilities** (`createConfigProvider`, `createLangProvider`, `createLightDarkProvider`, `createCollectionProvider`) — persisted state over the `Storage` contract.
 - **Behaviors** (`createApiProvider`, `NavigatorProvider`, `ToastProvider`, `ConfirmProvider`) — interaction patterns decoupled from presentation.
 - **Hooks** (`useHistoryState`, `useStopwatch`, history/time helpers) — headless state utilities.

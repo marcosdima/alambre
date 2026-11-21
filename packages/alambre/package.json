@@ -1,6 +1,6 @@
 {
   "name": "alambre",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Tactile mobile UI kit, headless primitives, kinetic physics, and real-time room relay for React Native & Expo.",
   "type": "module",
   "main": "dist/module/index.js",
