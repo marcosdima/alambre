@@ -90,6 +90,7 @@ export {
 export type {
   UseTurnEngineInput,
   UseTurnEngineReturn,
+  StagedFlightPatch,
 } from './react/use-turn-engine';
 
 // PartyKit Transport & Hook

@@ -3,6 +3,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from 'react';
 import type {
@@ -40,6 +41,12 @@ function isEngineOption<
   );
 }
 
+export interface StagedFlightPatch<TState> {
+  id: string;
+  patch: (state: TState) => TState;
+  metadata?: Record<string, unknown>;
+}
+
 export interface UseTurnEngineReturn<
   TState,
   TAction,
@@ -63,6 +70,31 @@ export interface UseTurnEngineReturn<
   relay: IRoomRelayClient<TEvents>;
   /** Underlying turn engine client instance. */
   engine: ITurnEngineClient<TState, TAction, TEvents>;
+  /**
+   * Optimistically modified game state incorporating active in-flight patches.
+   * Piles and UI components can consume `visualGameState` to immediately reflect departing items
+   * during flight trajectories without causing ghost cards before authoritative commit.
+   */
+  visualGameState: TState;
+  /** Currently active staged flight patches. */
+  stagedFlights: StagedFlightPatch<TState>[];
+  /**
+   * Stages an optimistic patch during a flight animation.
+   * Returns a cleanup function that cancels the patch if not committed.
+   */
+  stageFlight: (
+    id: string,
+    patch: (state: TState) => TState,
+    metadata?: Record<string, unknown>,
+  ) => () => void;
+  /**
+   * Atomically removes the staged flight patch and commits the authoritative action.
+   */
+  commitFlight: (id: string, action: TAction) => boolean;
+  /**
+   * Cancels an active staged flight patch without dispatching an action.
+   */
+  cancelFlight: (id: string) => void;
 }
 
 /**
@@ -116,6 +148,43 @@ export function useTurnEngine<
   const turnState = useSyncExternalStore(subscribe, getTurnSnapshot, getTurnSnapshot);
   const relayState = useSyncExternalStore(subscribe, getRelaySnapshot, getRelaySnapshot);
 
+  const [stagedPatches, setStagedPatches] = useState<StagedFlightPatch<TState>[]>([]);
+
+  const stageFlight = useCallback(
+    (id: string, patch: (state: TState) => TState, metadata?: Record<string, unknown>) => {
+      setStagedPatches((prev) => [...prev.filter((p) => p.id !== id), { id, patch, metadata }]);
+      return () => {
+        setStagedPatches((prev) => prev.filter((p) => p.id !== id));
+      };
+    },
+    [],
+  );
+
+  const commitFlight = useCallback(
+    (id: string, action: TAction) => {
+      setStagedPatches((prev) => prev.filter((p) => p.id !== id));
+      return engine.dispatch(action);
+    },
+    [engine],
+  );
+
+  const cancelFlight = useCallback((id: string) => {
+    setStagedPatches((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const visualGameState = useMemo(() => {
+    if (stagedPatches.length === 0) return turnState.gameState;
+    let s = turnState.gameState;
+    for (const patchItem of stagedPatches) {
+      try {
+        s = patchItem.patch(s);
+      } catch {
+        // preserve safe unpatched state if a patch throws
+      }
+    }
+    return s;
+  }, [turnState.gameState, stagedPatches]);
+
   return useMemo(
     () => ({
       ...turnState,
@@ -129,8 +198,22 @@ export function useTurnEngine<
       relayState,
       relay: engine.relay,
       engine,
+      visualGameState,
+      stagedFlights: stagedPatches,
+      stageFlight,
+      commitFlight,
+      cancelFlight,
     }),
-    [turnState, relayState, engine],
+    [
+      turnState,
+      relayState,
+      engine,
+      visualGameState,
+      stagedPatches,
+      stageFlight,
+      commitFlight,
+      cancelFlight,
+    ],
   );
 }
 
